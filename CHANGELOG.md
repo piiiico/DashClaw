@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.0] - 2026-04-03
+
+### Added
+- **`dashclaw-agent-intel` Python Module**: Local semantic classification for agent tool calls — bash intent detection, file security analysis, 40-tool catalog, session tracking, and MCP health monitoring.
+- **Pretool Hook v2**: Governs 40+ tools with enriched intel context, replacing the regex-based 4-tool classification.
+- **Posttool Hook v2**: Structured outcome metadata, error classification, and 500-char summaries.
+- **`agent_sessions` and `session_events` Database Tables**: New schema for session lifecycle tracking.
+- **`permission_level` Column on `agent_pairings`**: Graduated autonomy levels — `readonly`, `workspace_write`, `danger`, `prompt`, `allow`.
+- **Session Lifecycle API**: `POST /api/sessions`, `GET /api/sessions`, `PATCH /api/sessions`, `GET /api/sessions/{id}/events`.
+- **3 New Guard Policy Types**: `permission_escalation`, `green_contract`, `branch_freshness`.
+- **4 New Signal Types**: `session_stalled`, `branch_stale`, `mcp_degraded`, `green_insufficient`.
+- **Recovery Recipe Engine**: 6 recipes mapping signals to suggestions and auto-actions.
+- **Guard Recovery Field**: Guard response now includes a `recovery` field with suggested remediation.
+
 ## [2.3.0] - 2026-03-19
 
 ### Added
