@@ -1,5 +1,5 @@
 /**
- * DashClaw SDK v2 (Stable Runtime API)
+ * DashClaw SDK v2.7.0 (Stable Runtime API)
  * Focused governance runtime client for AI agents.
  */
 
@@ -593,6 +593,55 @@ class DashClaw {
       agent_id: this.agentId,
       ...state,
     });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Session Lifecycle
+  // ---------------------------------------------------------------------------
+
+  /**
+   * POST /api/sessions — Create a new agent session.
+   * @param {string} agentId - Agent identifier (defaults to this.agentId)
+   * @param {string} workspace - Workspace path or identifier
+   * @param {string|null} [branch=null] - Optional git branch
+   */
+  async createSession(agentId, workspace, branch = null) {
+    return this._request('/api/sessions', 'POST', {
+      agent_id: agentId || this.agentId,
+      workspace,
+      branch,
+    });
+  }
+
+  /**
+   * GET /api/sessions/:id — Fetch a single session by ID.
+   */
+  async getSession(sessionId) {
+    return this._request(`/api/sessions/${sessionId}`, 'GET');
+  }
+
+  /**
+   * PATCH /api/sessions/:id — Update session state.
+   * @param {string} sessionId
+   * @param {Object} updates - Fields to update (status, green_level, branch_freshness, commits_behind, blocked_reason)
+   */
+  async updateSession(sessionId, updates) {
+    return this._request(`/api/sessions/${sessionId}`, 'PATCH', updates);
+  }
+
+  /**
+   * GET /api/sessions — List sessions with optional filters.
+   * @param {Object} [filters={}] - Query filters (agent_id, status, limit)
+   */
+  async listSessions(filters = {}) {
+    return this._request('/api/sessions', 'GET', null, filters);
+  }
+
+  /**
+   * GET /api/sessions/:id/events — Fetch events for a session.
+   */
+  async getSessionEvents(sessionId) {
+    return this._request(`/api/sessions/${sessionId}/events`, 'GET');
   }
 }
 
