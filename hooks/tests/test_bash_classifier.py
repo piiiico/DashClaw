@@ -1,0 +1,288 @@
+"""Tests for dashclaw_agent_intel.bash_classifier.classify_bash."""
+
+import unittest
+from dashclaw_agent_intel.bash_classifier import classify_bash
+
+
+# ---------------------------------------------------------------------------
+# Intent classification
+# ---------------------------------------------------------------------------
+
+class TestIntentClassification(unittest.TestCase):
+    """Verify the ``intent`` field for representative commands."""
+
+    def test_cat_is_readonly(self):
+        r = classify_bash("cat README.md")
+        self.assertEqual(r["intent"], "readonly")
+
+    def test_grep_is_readonly(self):
+        r = classify_bash("grep -rn TODO src/")
+        self.assertEqual(r["intent"], "readonly")
+
+    def test_git_log_is_readonly(self):
+        r = classify_bash("git log --oneline -10")
+        self.assertEqual(r["intent"], "readonly")
+
+    def test_git_push_is_write(self):
+        r = classify_bash("git push origin main")
+        self.assertEqual(r["intent"], "write")
+
+    def test_git_reset_hard_is_destructive(self):
+        r = classify_bash("git reset --hard HEAD~1")
+        self.assertEqual(r["intent"], "destructive")
+
+    def test_rm_rf_is_destructive(self):
+        r = classify_bash("rm -rf /tmp/build")
+        self.assertEqual(r["intent"], "destructive")
+
+    def test_curl_is_network(self):
+        r = classify_bash("curl https://example.com")
+        self.assertEqual(r["intent"], "network")
+
+    def test_npm_install_is_package_management(self):
+        r = classify_bash("npm install express")
+        self.assertEqual(r["intent"], "package_management")
+
+    def test_kill_is_process_management(self):
+        r = classify_bash("kill -9 1234")
+        self.assertEqual(r["intent"], "process_management")
+
+    def test_sudo_apt_is_system_admin(self):
+        r = classify_bash("sudo apt install nginx")
+        self.assertEqual(r["intent"], "system_admin")
+
+    def test_empty_command_is_unknown(self):
+        r = classify_bash("")
+        self.assertEqual(r["intent"], "unknown")
+
+
+# ---------------------------------------------------------------------------
+# Validation submodules
+# ---------------------------------------------------------------------------
+
+class TestReadonlyValidation(unittest.TestCase):
+    """Submodule 1: read_only_validation."""
+
+    def test_readonly_blocks_write_command(self):
+        r = classify_bash("cp a.txt b.txt", mode="readonly")
+        checks = {v["check"]: v for v in r["validations"]}
+        self.assertIn("read_only_validation", checks)
+        self.assertEqual(checks["read_only_validation"]["result"], "block")
+
+    def test_readonly_allows_safe_command(self):
+        r = classify_bash("ls -la", mode="readonly")
+        checks = {v["check"]: v for v in r["validations"]}
+        # read_only_validation should either be absent or 'allow'
+        if "read_only_validation" in checks:
+            self.assertEqual(checks["read_only_validation"]["result"], "allow")
+
+    def test_readonly_blocks_redirection(self):
+        r = classify_bash("echo hello > file.txt", mode="readonly")
+        checks = {v["check"]: v for v in r["validations"]}
+        self.assertIn("read_only_validation", checks)
+        self.assertEqual(checks["read_only_validation"]["result"], "block")
+
+
+class TestDestructiveCommandValidation(unittest.TestCase):
+    """Submodule 2: destructive_command."""
+
+    def test_rm_rf_warns(self):
+        r = classify_bash("rm -rf /tmp/build")
+        checks = {v["check"]: v for v in r["validations"]}
+        self.assertIn("destructive_command", checks)
+        self.assertIn(checks["destructive_command"]["result"], ("warn", "block"))
+
+    def test_rm_rf_root_blocks(self):
+        r = classify_bash("rm -rf /")
+        checks = {v["check"]: v for v in r["validations"]}
+        self.assertIn("destructive_command", checks)
+        self.assertEqual(checks["destructive_command"]["result"], "block")
+
+    def test_fork_bomb_blocks(self):
+        r = classify_bash(":(){ :|:& };:")
+        checks = {v["check"]: v for v in r["validations"]}
+        self.assertIn("destructive_command", checks)
+        self.assertEqual(checks["destructive_command"]["result"], "block")
+
+    def test_mkfs_blocks(self):
+        r = classify_bash("mkfs.ext4 /dev/sda1")
+        checks = {v["check"]: v for v in r["validations"]}
+        self.assertIn("destructive_command", checks)
+        self.assertEqual(checks["destructive_command"]["result"], "block")
+
+    def test_dd_blocks(self):
+        r = classify_bash("dd if=/dev/zero of=/dev/sda")
+        checks = {v["check"]: v for v in r["validations"]}
+        self.assertIn("destructive_command", checks)
+        self.assertEqual(checks["destructive_command"]["result"], "block")
+
+
+class TestModeValidation(unittest.TestCase):
+    """Submodule 3: mode_validation."""
+
+    def test_workspace_write_warns_system_path(self):
+        r = classify_bash("cp file /etc/config", mode="workspace_write")
+        checks = {v["check"]: v for v in r["validations"]}
+        self.assertIn("mode_validation", checks)
+        self.assertEqual(checks["mode_validation"]["result"], "warn")
+
+
+class TestSedValidation(unittest.TestCase):
+    """Submodule 4: sed_validation."""
+
+    def test_sed_i_blocked_in_readonly(self):
+        r = classify_bash("sed -i 's/old/new/' file.txt", mode="readonly")
+        checks = {v["check"]: v for v in r["validations"]}
+        self.assertIn("sed_validation", checks)
+        self.assertEqual(checks["sed_validation"]["result"], "block")
+
+    def test_sed_stdout_allowed_in_readonly(self):
+        r = classify_bash("sed 's/old/new/' file.txt", mode="readonly")
+        checks = {v["check"]: v for v in r["validations"]}
+        if "sed_validation" in checks:
+            self.assertEqual(checks["sed_validation"]["result"], "allow")
+
+    def test_sed_i_warns_in_workspace_write(self):
+        r = classify_bash("sed -i 's/old/new/' file.txt", mode="workspace_write")
+        checks = {v["check"]: v for v in r["validations"]}
+        self.assertIn("sed_validation", checks)
+        self.assertEqual(checks["sed_validation"]["result"], "warn")
+
+
+class TestPathValidation(unittest.TestCase):
+    """Submodule 5: path_validation."""
+
+    def test_path_traversal_warned(self):
+        r = classify_bash("cat ../../etc/passwd")
+        checks = {v["check"]: v for v in r["validations"]}
+        self.assertIn("path_validation", checks)
+        self.assertEqual(checks["path_validation"]["result"], "warn")
+
+    def test_home_ref_warned(self):
+        r = classify_bash("rm ~/important.txt")
+        checks = {v["check"]: v for v in r["validations"]}
+        self.assertIn("path_validation", checks)
+        self.assertEqual(checks["path_validation"]["result"], "warn")
+
+
+class TestCommandSemanticsValidation(unittest.TestCase):
+    """Submodule 6: command_semantics — always runs, always 'allow'."""
+
+    def test_semantics_always_present(self):
+        r = classify_bash("ls -la")
+        checks = {v["check"]: v for v in r["validations"]}
+        self.assertIn("command_semantics", checks)
+        self.assertEqual(checks["command_semantics"]["result"], "allow")
+
+
+# ---------------------------------------------------------------------------
+# Risk score
+# ---------------------------------------------------------------------------
+
+class TestRiskScore(unittest.TestCase):
+    """Risk score computation."""
+
+    def test_readonly_low_risk(self):
+        r = classify_bash("cat README.md")
+        self.assertLessEqual(r["risk_score"], 20)
+
+    def test_destructive_high_risk(self):
+        r = classify_bash("rm -rf /tmp/build")
+        self.assertGreaterEqual(r["risk_score"], 85)
+
+    def test_git_push_moderate_risk(self):
+        r = classify_bash("git push origin main")
+        # write base = 35, no boosts expected -> moderate
+        self.assertGreaterEqual(r["risk_score"], 30)
+        self.assertLessEqual(r["risk_score"], 60)
+
+    def test_sensitive_target_boosts_risk(self):
+        r = classify_bash("cat .env")
+        self.assertGreaterEqual(r["risk_score"], 20)  # base 5 + 15 = 20
+
+    def test_risk_capped_at_100(self):
+        r = classify_bash("rm -rf /")
+        self.assertLessEqual(r["risk_score"], 100)
+
+
+# ---------------------------------------------------------------------------
+# Reversibility
+# ---------------------------------------------------------------------------
+
+class TestReversibility(unittest.TestCase):
+    """Only destructive commands are irreversible."""
+
+    def test_readonly_is_reversible(self):
+        r = classify_bash("cat file.txt")
+        self.assertTrue(r["reversible"])
+
+    def test_write_is_reversible(self):
+        r = classify_bash("cp a.txt b.txt")
+        self.assertTrue(r["reversible"])
+
+    def test_destructive_is_irreversible(self):
+        r = classify_bash("rm -rf /tmp/build")
+        self.assertFalse(r["reversible"])
+
+    def test_network_is_reversible(self):
+        r = classify_bash("curl https://example.com")
+        self.assertTrue(r["reversible"])
+
+
+# ---------------------------------------------------------------------------
+# Return shape
+# ---------------------------------------------------------------------------
+
+class TestReturnShape(unittest.TestCase):
+    """classify_bash always returns a well-formed dict."""
+
+    def test_all_keys_present(self):
+        r = classify_bash("ls")
+        for key in ("intent", "risk_score", "reversible", "validations", "parsed"):
+            self.assertIn(key, r)
+
+    def test_parsed_comes_from_parser(self):
+        r = classify_bash("git push origin main")
+        self.assertEqual(r["parsed"]["base_command"], "git")
+        self.assertEqual(r["parsed"]["subcommand"], "push")
+
+
+# ---------------------------------------------------------------------------
+# Wrapper detection
+# ---------------------------------------------------------------------------
+
+class TestWrapperDetection(unittest.TestCase):
+    """Wrappers like sudo should be unwrapped for classification."""
+
+    def test_sudo_wrapper_detected(self):
+        r = classify_bash("sudo rm -rf /tmp/build")
+        self.assertEqual(r["intent"], "destructive")
+        self.assertEqual(r["parsed"]["wrapper"], "sudo")
+
+
+# ---------------------------------------------------------------------------
+# Git edge cases
+# ---------------------------------------------------------------------------
+
+class TestGitEdgeCases(unittest.TestCase):
+    """Git push --force is destructive, clean -f is destructive."""
+
+    def test_git_push_force_is_destructive(self):
+        r = classify_bash("git push --force origin main")
+        self.assertEqual(r["intent"], "destructive")
+
+    def test_git_clean_f_is_destructive(self):
+        r = classify_bash("git clean -f")
+        self.assertEqual(r["intent"], "destructive")
+
+    def test_git_status_is_readonly(self):
+        r = classify_bash("git status")
+        self.assertEqual(r["intent"], "readonly")
+
+    def test_git_add_is_write(self):
+        r = classify_bash("git add .")
+        self.assertEqual(r["intent"], "write")
+
+
+if __name__ == "__main__":
+    unittest.main()
