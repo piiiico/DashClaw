@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-DashClaw PreToolUse Hook for Claude Code.
+DashClaw PreToolUse Hook v2 for Claude Code.
 
-Evaluates Bash, Edit, Write, and MultiEdit tool calls against DashClaw
-guard policies before execution. Blocks or warns based on policy decisions.
+Evaluates all 40+ agent tool calls against DashClaw guard policies
+using the dashclaw_agent_intel module for semantic classification.
 
 Exit codes:
   0 - Allow the tool to proceed
@@ -12,7 +12,6 @@ Exit codes:
 
 import json
 import os
-import re
 import sys
 import tempfile
 import time
@@ -35,7 +34,6 @@ def _load_dotenv():
                 key, _, val = line.partition("=")
                 key = key.strip()
                 val = val.strip().strip('"').strip("'")
-                # Strip inline comments (e.g. value  # comment)
                 if " #" in val:
                     val = val[:val.index(" #")].strip()
                 if key and key not in os.environ:
@@ -46,6 +44,13 @@ def _load_dotenv():
 _load_dotenv()
 
 # ---------------------------------------------------------------------------
+# Import dashclaw_agent_intel (sibling directory)
+# ---------------------------------------------------------------------------
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from dashclaw_agent_intel import classify_bash, scan_file_operation, classify_tool, McpHealthMonitor
+
+# ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
 
@@ -53,9 +58,31 @@ BASE_URL = (os.environ.get("DASHCLAW_BASE_URL") or "").rstrip("/")
 API_KEY = os.environ.get("DASHCLAW_API_KEY") or ""
 AGENT_ID = os.environ.get("DASHCLAW_AGENT_ID") or "claude-code"
 HOOK_MODE = os.environ.get("DASHCLAW_HOOK_MODE") or "enforce"
-RISK_THRESHOLD = int(os.environ.get("DASHCLAW_RISK_THRESHOLD") or "60")
+WORKSPACE = os.environ.get("DASHCLAW_WORKSPACE") or os.getcwd()
+PERMISSION_MODE = os.environ.get("DASHCLAW_PERMISSION_MODE") or "danger"
+GUARD_TIMEOUT = float(os.environ.get("DASHCLAW_GUARD_TIMEOUT") or "2.5")
+APPROVAL_TIMEOUT = float(os.environ.get("DASHCLAW_APPROVAL_TIMEOUT") or "30")
 
-GOVERNED_TOOLS = {"Bash", "Edit", "Write", "MultiEdit"}
+# ---------------------------------------------------------------------------
+# Intent-to-action_type mapping
+# ---------------------------------------------------------------------------
+
+_INTENT_TO_ACTION: dict[str, str] = {
+    "readonly": "review",
+    "write": "apply",
+    "destructive": "security",
+    "network": "api",
+    "process_management": "security",
+    "package_management": "build",
+    "system_admin": "deploy",
+    "unknown": "other",
+}
+
+# ---------------------------------------------------------------------------
+# File-modifying tool names that trigger file scanning
+# ---------------------------------------------------------------------------
+
+_FILE_TOOLS = frozenset({"Write", "Edit", "MultiEdit", "NotebookEdit"})
 
 
 def log(msg):
@@ -68,8 +95,10 @@ def log(msg):
 # HTTP helpers (stdlib only, no third-party)
 # ---------------------------------------------------------------------------
 
-def api_request(method, path, body=None, timeout=2.5):
+def api_request(method, path, body=None, timeout=None):
     """Make an HTTP request to the DashClaw API. Returns parsed JSON or None."""
+    if timeout is None:
+        timeout = GUARD_TIMEOUT
     url = BASE_URL + path
     data = json.dumps(body).encode("utf-8") if body else None
     req = urllib.request.Request(
@@ -106,79 +135,165 @@ def get_action(action_id):
 
 
 # ---------------------------------------------------------------------------
-# Tool-to-action mapping
+# Intel enrichment
 # ---------------------------------------------------------------------------
 
-def _match_any(text, patterns):
-    lower = text.lower()
-    return any(p in lower for p in patterns)
+def _enrich_bash(tool_input: dict, tool_info: dict) -> dict:
+    """Run bash classifier and build enriched intel for a Bash tool call."""
+    command = tool_input.get("command") or ""
+    bash_intel = classify_bash(command, mode=PERMISSION_MODE, workspace=WORKSPACE)
 
+    # Map bash intent to action_type
+    action_type = _INTENT_TO_ACTION.get(bash_intel["intent"], "other")
 
-def map_bash(command):
-    """Map a Bash command string to DashClaw action context."""
-    risk = 20
-    action_type = "other"
-    reversible = True
+    # Risk: max of tool base_risk and bash risk_score
+    base_risk = tool_info["risk_profile"]["base_risk"]
+    risk_score = max(base_risk, bash_intel["risk_score"])
 
-    if _match_any(command, ["git push", "git merge", "git rebase", "git reset"]):
-        action_type, risk, reversible = "deploy", 80, False
-    elif _match_any(command, ["npm run deploy", "npm run build", "vercel", "netlify", "heroku", "fly deploy", "railway"]):
-        action_type, risk, reversible = "deploy", 75, False
-    elif _match_any(command, ["kubectl", "terraform", "ansible", "helm", "pulumi"]):
-        action_type, risk, reversible = "deploy", 85, False
-    elif _match_any(command, ["rm -rf", "drop table", "delete from", "truncate"]):
-        action_type, risk, reversible = "security", 90, False
-    elif _match_any(command, ["curl", "wget", "fetch", "http"]):
-        action_type, risk, reversible = "api", 40, True
-    elif _match_any(command, ["npm install", "pip install", "yarn add"]):
-        action_type, risk, reversible = "build", 30, True
+    # Boost for sensitive targets
+    parsed = bash_intel.get("parsed", {})
+    targets = parsed.get("targets", [])
+    redirections = parsed.get("redirections", [])
+    all_paths = list(targets) + [r.get("target", "") for r in redirections]
 
-    systems = ["shell"]
-    if _match_any(command, ["postgres", "psql"]):
-        systems = ["postgres"]
-    elif _match_any(command, ["redis"]):
-        systems = ["redis"]
-    elif _match_any(command, ["vercel"]):
-        systems = ["vercel"]
-    elif _match_any(command, ["kubectl", "kubernetes", "k8s"]):
-        systems = ["kubernetes"]
+    for path in all_paths:
+        if ".." in path.replace("\\", "/").split("/"):
+            risk_score += 20
+            break
+    for path in all_paths:
+        if _is_sensitive_path(path):
+            risk_score += 15
+            break
+
+    risk_score = min(risk_score, 100)
 
     return {
         "action_type": action_type,
-        "agent_id": AGENT_ID,
+        "risk_score": risk_score,
+        "reversible": bash_intel["reversible"],
         "declared_goal": "Bash: " + command[:120],
-        "risk_score": risk,
-        "reversible": reversible,
-        "systems_touched": systems,
+        "intel": {
+            "bash": {
+                "intent": bash_intel["intent"],
+                "risk_score": bash_intel["risk_score"],
+                "reversible": bash_intel["reversible"],
+                "validations": bash_intel["validations"],
+            },
+        },
     }
 
 
-def map_file_tool(tool_name, tool_input):
-    """Map Edit/Write/MultiEdit to DashClaw action context."""
-    path = tool_input.get("path") or tool_input.get("file_path") or "unknown"
-    path_lower = path.lower()
+def _enrich_file(tool_name: str, tool_input: dict, tool_info: dict) -> dict:
+    """Run file scanner and build enriched intel for a file tool call."""
+    path = tool_input.get("file_path") or tool_input.get("path") or "unknown"
+    content = tool_input.get("content") or ""
 
-    risk = 15
-    action_type = "other"
-    reversible = True
+    file_intel = scan_file_operation(path, content, workspace=WORKSPACE)
 
-    if re.search(r"(\.env|secret|credential|private_key|id_rsa)", path_lower):
-        action_type, risk, reversible = "security", 85, True
-    elif re.search(r"(migration|schema|seed)", path_lower):
-        action_type, risk, reversible = "migrate", 70, False
-    elif re.search(r"(deploy|infra|terraform|kubernetes|k8s)", path_lower):
-        action_type, risk, reversible = "deploy", 75, True
-    elif re.search(r"(auth|login|oauth|jwt|token|password)", path_lower):
-        action_type, risk, reversible = "security", 75, True
+    # Determine action_type from file characteristics
+    if file_intel["sensitive_path"]:
+        action_type = "security"
+    else:
+        action_type = "apply"
+
+    # Risk from tool base
+    base_risk = tool_info["risk_profile"]["base_risk"]
+    risk_score = base_risk
+
+    # Boost for traversal or outside workspace
+    if file_intel["traversal_detected"] or file_intel["outside_workspace"]:
+        risk_score += 20
+    # Boost for sensitive file
+    if file_intel["sensitive_path"]:
+        risk_score += 15
+
+    risk_score = min(risk_score, 100)
 
     return {
         "action_type": action_type,
-        "agent_id": AGENT_ID,
+        "risk_score": risk_score,
+        "reversible": True,
         "declared_goal": "%s: %s" % (tool_name, path),
-        "risk_score": risk,
-        "reversible": reversible,
-        "systems_touched": ["filesystem"],
+        "intel": {
+            "file": {
+                "traversal_detected": file_intel["traversal_detected"],
+                "outside_workspace": file_intel["outside_workspace"],
+                "sensitive_path": file_intel["sensitive_path"],
+                "sensitive_pattern": file_intel["sensitive_pattern"],
+                "binary_detected": file_intel["binary_detected"],
+                "size_bytes": file_intel["size_bytes"],
+                "resolved_path": file_intel["resolved_path"],
+            },
+        },
     }
+
+
+def _enrich_mcp(tool_name: str, tool_input: dict, tool_info: dict) -> dict:
+    """Check MCP server health and build enriched intel for an mcp__ tool."""
+    # Extract server name: mcp__<server>__<method>
+    parts = tool_name.split("__")
+    server_name = parts[1] if len(parts) >= 2 else "unknown"
+
+    monitor = McpHealthMonitor.from_state_file()
+    health = monitor.check(server_name)
+
+    base_risk = tool_info["risk_profile"]["base_risk"]
+    risk_score = base_risk
+
+    # Unhealthy servers get a risk boost
+    if not health["healthy"]:
+        risk_score += 15
+
+    risk_score = min(risk_score, 100)
+
+    return {
+        "action_type": "api",
+        "risk_score": risk_score,
+        "reversible": True,
+        "declared_goal": "MCP: %s" % tool_name,
+        "intel": {
+            "mcp": {
+                "server": health["server"],
+                "status": health["status"],
+                "healthy": health["healthy"],
+                "error": health["error"],
+            },
+        },
+    }
+
+
+def _enrich_default(tool_name: str, tool_input: dict, tool_info: dict) -> dict:
+    """Build intel context for any other governed tool."""
+    base_risk = tool_info["risk_profile"]["base_risk"]
+    category = tool_info["category"]
+
+    # Map category to a reasonable action_type
+    category_action_map = {
+        "execution": "security",
+        "orchestration": "deploy",
+        "file_io": "apply",
+        "interactive": "other",
+        "mcp": "api",
+        "unknown": "other",
+    }
+    action_type = category_action_map.get(category, "other")
+
+    return {
+        "action_type": action_type,
+        "risk_score": base_risk,
+        "reversible": True,
+        "declared_goal": "%s: %s" % (tool_name, json.dumps(tool_input)[:120]),
+        "intel": {},
+    }
+
+
+def _is_sensitive_path(path: str) -> bool:
+    """Quick check if a path string matches common sensitive patterns."""
+    lower = path.lower()
+    for pattern in (".env", "secret", "credential", "private_key", ".pem", "id_rsa", ".key"):
+        if pattern in lower:
+            return True
+    return False
 
 
 # ---------------------------------------------------------------------------
@@ -274,9 +389,9 @@ def handle_require_approval(guard_resp, context, tool_use_id):
     log("")
     log("Approve from terminal: dashclaw approve " + action_id)
     log("Or visit the approval queue in your DashClaw dashboard.")
-    log("Waiting for approval... (30s timeout, then blocking)")
+    log("Waiting for approval... (%ds timeout, then blocking)" % int(APPROVAL_TIMEOUT))
 
-    deadline = time.time() + 30
+    deadline = time.time() + APPROVAL_TIMEOUT
     while time.time() < deadline:
         time.sleep(3)
         action_resp = get_action(action_id)
@@ -307,7 +422,7 @@ def main():
     if not BASE_URL or not API_KEY:
         sys.exit(0)
 
-    # Parse stdin — read as raw bytes and decode as UTF-8 to handle
+    # Parse stdin -- read as raw bytes and decode as UTF-8 to handle
     # Windows PowerShell which pipes UTF-8 BOM bytes through cp1252 stdin
     try:
         raw = sys.stdin.buffer.read().decode("utf-8-sig").strip()
@@ -319,23 +434,46 @@ def main():
     tool_input = data.get("tool_input") or {}
     tool_use_id = data.get("tool_use_id") or "unknown"
 
-    # Only govern specific tools
-    if tool_name not in GOVERNED_TOOLS:
+    # Step 1: Classify the tool using the intel module
+    tool_info = classify_tool(tool_name, tool_input)
+
+    # Step 2: If not governed, exit 0 immediately
+    if not tool_info["governed"]:
         sys.exit(0)
 
-    # Map tool to action context
+    # Step 3: Build enriched intel context based on tool type
     if tool_name == "Bash":
-        command = tool_input.get("command") or ""
-        context = map_bash(command)
+        enrichment = _enrich_bash(tool_input, tool_info)
+    elif tool_name in _FILE_TOOLS:
+        enrichment = _enrich_file(tool_name, tool_input, tool_info)
+    elif tool_name.startswith("mcp__"):
+        enrichment = _enrich_mcp(tool_name, tool_input, tool_info)
     else:
-        context = map_file_tool(tool_name, tool_input)
+        enrichment = _enrich_default(tool_name, tool_input, tool_info)
 
-    # Call DashClaw guard
+    # Step 4: Build guard context
+    context = {
+        "action_type": enrichment["action_type"],
+        "agent_id": AGENT_ID,
+        "declared_goal": enrichment["declared_goal"],
+        "risk_score": enrichment["risk_score"],
+        "reversible": enrichment["reversible"],
+        "systems_touched": [tool_info["category"]],
+        "tool": {
+            "name": tool_name,
+            "category": tool_info["category"],
+            "required_permission": tool_info["required_permission"],
+        },
+        "intel": enrichment.get("intel", {}),
+    }
+
+    # Step 5: POST /api/guard with enriched context
     guard_resp = guard_check(context)
     if guard_resp is None:
         log("[DashClaw] Guard unavailable, proceeding")
         sys.exit(0)
 
+    # Step 6: Handle decision
     decision = guard_resp.get("decision", "allow")
 
     if decision == "allow":
