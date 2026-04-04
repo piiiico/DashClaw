@@ -1002,6 +1002,7 @@ export const agentPairings = pgTable('agent_pairings', {
   publicKey: text('public_key').notNull(),
   algorithm: text('algorithm').default('RSASSA-PKCS1-v1_5'),
   status: text('status').default('pending'),
+  permissionLevel: text('permission_level').default('danger'),
   expiresAt: timestamp('expires_at'),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
@@ -1017,3 +1018,31 @@ export const agentIdentities = pgTable('agent_identities', {
 }, (table) => ({
   pk: uniqueIndex('agent_identities_org_agent_unique').on(table.orgId, table.agentId),
 }));
+
+// --- Agent Sessions ---
+export const agentSessions = pgTable('agent_sessions', {
+  id: text('id').primaryKey(),
+  org_id: text('org_id').notNull(),
+  agent_id: text('agent_id').notNull(),
+  workspace: text('workspace'),
+  branch: text('branch'),
+  status: text('status').notNull().default('spawning'),
+  status_since: timestamp('status_since', { withTimezone: true }).defaultNow(),
+  blocked_reason: text('blocked_reason'),
+  green_level: text('green_level'),
+  branch_freshness: text('branch_freshness'),
+  commits_behind: integer('commits_behind'),
+  last_activity: timestamp('last_activity', { withTimezone: true }).defaultNow(),
+  created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updated_at: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+});
+
+export const sessionEvents = pgTable('session_events', {
+  id: serial('id').primaryKey(),
+  session_id: text('session_id').notNull(),
+  org_id: text('org_id').notNull(),
+  seq: integer('seq').notNull(),
+  kind: text('kind').notNull(),
+  detail: text('detail'),
+  created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
+});
