@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
 
 import { NextResponse } from 'next/server';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import postgres from 'postgres';
 
@@ -27,11 +27,16 @@ export async function POST() {
   const sql = postgres(url, { max: 1, connect_timeout: 30, idle_timeout: 5 });
 
   try {
-    // Read the Drizzle-generated DDL
-    const ddlPath = resolve(process.cwd(), 'drizzle', '0000_clammy_falcon.sql');
+    // Read all Drizzle migration SQL files in order
+    const drizzleDir = resolve(process.cwd(), 'drizzle');
     let ddl;
     try {
-      ddl = readFileSync(ddlPath, 'utf8');
+      const sqlFiles = readdirSync(drizzleDir)
+        .filter((f) => f.endsWith('.sql'))
+        .sort();
+      ddl = sqlFiles
+        .map((f) => readFileSync(resolve(drizzleDir, f), 'utf8'))
+        .join('\n--> statement-breakpoint\n');
     } catch {
       // Fallback: create only the critical tables needed for governance loop
       ddl = CRITICAL_TABLES_DDL;
