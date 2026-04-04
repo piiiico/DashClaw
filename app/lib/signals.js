@@ -4,7 +4,7 @@
  */
 
 /**
- * Compute all 7 risk signal types for an org.
+ * Compute all 11 risk signal types for an org.
  *
  * @param {string} orgId
  * @param {string|null} filterAgentId - optional agent filter
@@ -233,6 +233,114 @@ export async function computeSignals(orgId, filterAgentId, sql) {
   } catch {
     // integration_health table may not exist yet — skip silently
   }
+
+  // Detect sessions in 'running' status with no activity for 2+ hours
+  try {
+    const stalledSessions = await sql`
+      SELECT id, agent_id, status, last_activity, status_since
+      FROM agent_sessions
+      WHERE org_id = ${orgId}
+        AND status = 'running'
+        AND last_activity < NOW() - INTERVAL '2 hours'
+        ${filterAgentId ? sql`AND agent_id = ${filterAgentId}` : sql``}
+    `;
+    for (const sess of stalledSessions) {
+      const hoursStalled = Math.round((Date.now() - new Date(sess.last_activity).getTime()) / 3600000);
+      signals.push({
+        type: 'session_stalled',
+        severity: hoursStalled >= 4 ? 'red' : 'amber',
+        label: `Session stalled (${hoursStalled}h): ${sess.agent_id}`,
+        detail: `Session ${sess.id} has been running with no tool activity for ${hoursStalled} hours`,
+        help: 'Consider restarting the agent session or checking for blockers',
+        agent_id: sess.agent_id,
+        session_id: sess.id,
+      });
+    }
+  } catch (e) { /* signal collection is best-effort */ }
+
+  // Stale branch detection from recent guard decisions with intel
+  try {
+    const recentDecisions = await sql`
+      SELECT id, agent_id, context, created_at FROM guard_decisions
+      WHERE org_id = ${orgId} AND created_at > NOW() - INTERVAL '1 hour'
+      ${filterAgentId ? sql`AND agent_id = ${filterAgentId}` : sql``}
+      ORDER BY created_at DESC LIMIT 20
+    `;
+    const seenAgents = new Set();
+    for (const dec of recentDecisions) {
+      try {
+        const ctx = typeof dec.context === 'string' ? JSON.parse(dec.context) : dec.context;
+        const branch = ctx?.intel?.branch;
+        if (branch?.freshness === 'stale' && !seenAgents.has(dec.agent_id)) {
+          seenAgents.add(dec.agent_id);
+          const behind = branch.commits_behind || 0;
+          signals.push({
+            type: 'branch_stale', severity: behind >= 5 ? 'red' : 'amber',
+            label: `Stale branch: ${branch.name || 'unknown'} (${behind} behind)`,
+            detail: `Agent ${dec.agent_id} is working on a branch ${behind} commits behind main`,
+            help: 'Rebase or merge-forward before running tests',
+            agent_id: dec.agent_id,
+          });
+        }
+      } catch (e) {}
+    }
+  } catch (e) {}
+
+  // MCP server health from recent guard decisions with intel
+  try {
+    const seenServers = new Set();
+    const recentMcpDecisions = await sql`
+      SELECT id, agent_id, context FROM guard_decisions
+      WHERE org_id = ${orgId} AND created_at > NOW() - INTERVAL '30 minutes'
+      ${filterAgentId ? sql`AND agent_id = ${filterAgentId}` : sql``}
+      ORDER BY created_at DESC LIMIT 20
+    `;
+    for (const dec of recentMcpDecisions) {
+      try {
+        const ctx = typeof dec.context === 'string' ? JSON.parse(dec.context) : dec.context;
+        const mcp = ctx?.intel?.mcp;
+        if (mcp && !mcp.healthy && !seenServers.has(mcp.server)) {
+          seenServers.add(mcp.server);
+          signals.push({
+            type: 'mcp_degraded', severity: mcp.status === 'auth_required' ? 'red' : 'amber',
+            label: `MCP degraded: ${mcp.server} (${mcp.status})`,
+            detail: mcp.error || `MCP server ${mcp.server} is ${mcp.status}`,
+            help: 'Check MCP server configuration and connectivity',
+            agent_id: dec.agent_id,
+          });
+        }
+      } catch (e) {}
+    }
+  } catch (e) {}
+
+  // Green contract insufficiency from recent guard decisions
+  try {
+    const greenDecisions = await sql`
+      SELECT id, agent_id, context, reason FROM guard_decisions
+      WHERE org_id = ${orgId} AND created_at > NOW() - INTERVAL '1 hour'
+      AND decision IN ('block', 'warn')
+      ${filterAgentId ? sql`AND agent_id = ${filterAgentId}` : sql``}
+      ORDER BY created_at DESC LIMIT 10
+    `;
+    const seenGreenAgents = new Set();
+    for (const dec of greenDecisions) {
+      try {
+        const reason = dec.reason || '';
+        if (reason.includes('Green contract') && !seenGreenAgents.has(dec.agent_id)) {
+          seenGreenAgents.add(dec.agent_id);
+          const ctx = typeof dec.context === 'string' ? JSON.parse(dec.context) : dec.context;
+          const green = ctx?.intel?.green;
+          signals.push({
+            type: 'green_insufficient', severity: 'red',
+            label: `Green insufficient: ${dec.agent_id} (${green?.observed_level || 'none'})`,
+            detail: 'Agent attempted deploy/merge without sufficient test verification',
+            help: 'Run tests at the required green level before proceeding',
+            agent_id: dec.agent_id,
+          });
+        }
+      } catch (e) {}
+    }
+  } catch (e) {}
 
   // Post-filter by agent_id if requested
   const filteredSignals = filterAgentId
