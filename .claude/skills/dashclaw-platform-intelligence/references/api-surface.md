@@ -33,6 +33,8 @@
 - [Learning Analytics](#learning-analytics)
 - [Scoring Profiles](#scoring-profiles)
 - [Risk Templates](#risk-templates)
+- [Session Lifecycle](#session-lifecycle)
+- [Guard Policy Types](#guard-policy-types)
 - [Dashboard Data and Other Routes](#dashboard-data-and-other-routes)
 
 ## Action Recording
@@ -66,6 +68,8 @@
 | Endpoint | Methods | Node SDK | Python SDK |
 |---|---|---|---|
 | `/api/actions/signals` | GET | `getSignals` | `get_signals` |
+
+**Signal types:** `guard_block`, `guard_warn`, `approval_timeout`, `loop_stale`, `injection_detected`, `drift_alert`, `feedback_negative`, `session_stalled`, `branch_stale`, `mcp_degraded`, `green_insufficient`
 
 ## Behavior Guard
 
@@ -198,6 +202,8 @@ POST scans text for prompt injection attacks. Returns `{ clean, risk_level, reco
 | `/api/pairings/{pairingId}/approve` | POST | `approvePairing`, `waitForPairing` | `approve_pairing`, `wait_for_pairing` |
 
 `POST /api/pairings` — Agent identity pairing enrollment. `GET /api/pairings` — List all pairings. `POST /api/pairings/:id/approve` — Approve a pending pairing.
+
+`PATCH /api/pairings/{pairingId}` now accepts `permission_level` in the body. Valid values: `readonly`, `workspace_write`, `danger`, `prompt`, `allow`.
 
 Management UI: `/settings?tab=identity`
 
@@ -396,6 +402,40 @@ GET `/api/scoring/score?view=stats` returns aggregate statistics.
 Risk templates define rule-based risk scoring: `base_risk` + conditional `rules` (array of `{ condition, add }`).
 Condition operators: `==`, `!=`, `>`, `>=`, `<`, `<=`, `contains`. Supports nested paths.
 **ID prefix**: `rt_`.
+
+## Session Lifecycle
+
+**Maturity:** New (Phase 8)
+
+| Endpoint | Methods | Node SDK | Python SDK |
+|---|---|---|---|
+| `/api/sessions` | GET, POST | `createSession`, `listSessions` | `create_session`, `list_sessions` |
+| `/api/sessions/{sessionId}` | GET, PATCH | `getSession`, `updateSession` | `get_session`, `update_session` |
+| `/api/sessions/{sessionId}/events` | GET | `getSessionEvents` | `get_session_events` |
+
+`POST /api/sessions` — Create a session. Body: `{ agent_id, workspace, branch }`.
+`GET /api/sessions` — List sessions. Query: `agent_id`, `status`, `limit`.
+`GET /api/sessions/{sessionId}` — Get a single session.
+`PATCH /api/sessions/{sessionId}` — Update session. Body: `{ status, green_level, branch_freshness, commits_behind, blocked_reason }`.
+`GET /api/sessions/{sessionId}/events` — Get session lifecycle events.
+
+Session IDs use `sess_` prefix.
+
+## Guard Policy Types
+
+Guard policies use a `policy_type` field. All types are evaluated server-side without an LLM.
+
+| Policy Type | Purpose |
+|---|---|
+| `risk_threshold` | Block or require approval when risk exceeds a limit |
+| `cost_limit` | Cap per-action and daily spend |
+| `action_allowlist` | Only allow specific action types |
+| `content_filter` | Guard against sensitive data in outputs |
+| `permission_escalation` | Block when an agent requests a higher permission level than allowed |
+| `green_contract` | Require green (passing) test status before certain actions proceed |
+| `branch_freshness` | Block actions when the working branch is stale (N+ commits behind) |
+
+The three new types (`permission_escalation`, `green_contract`, `branch_freshness`) integrate with session lifecycle data. The guard evaluator reads `green_level`, `branch_freshness`, and `commits_behind` from the active session when evaluating these policies.
 
 ## Dashboard Data and Other Routes
 

@@ -105,6 +105,7 @@ Client request hits middleware.js
 | `sd_` | Scoring dimensions |
 | `ps_` | Profile scores |
 | `rt_` | Risk templates |
+| `sess_` | Sessions |
 
 ## Architectural Guardrails
 
@@ -145,6 +146,7 @@ Client request hits middleware.js
 | `/learning` | Learning loop (episodes, recommendations) |
 | `/learning/analytics` |
 | `/scoring` | Learning analytics (velocity, maturity, curves, summary) |
+| `/sessions` | Session Lifecycle dashboard (active sessions, stall detection, recovery) |
 | `/decisions/{actionId}` | Chronological decision timeline (guard decisions, messages, assumptions, actions, outcomes, open loops merged by timestamp) |
 
 The decisions ledger now shows inline message trails in expanded rows.
@@ -160,6 +162,26 @@ DashClaw has three integration surfaces beyond the SDK:
 **SDK terminal output**: The Node SDK's `waitForApproval()` method prints a structured approval block to stdout before blocking. The block includes the action ID, policy name, risk score, declared goal, and the replay URL. This gives terminal-first workflows full governance visibility without a browser.
 
 **Approval sync architecture**: All three surfaces (browser, CLI, SDK polling) converge at `POST /api/actions/:id/approve`. The API commits to Neon Postgres, publishes `action.updated` to the Redis stream, and every connected SSE listener receives the decision. The browser dashboard, the SDK polling loop, and the CLI inbox all stay in sync within the SSE heartbeat window (~1 second).
+
+## Signal Types
+
+DashClaw emits 11 signal types. All are evaluated server-side without an LLM.
+
+| Signal Type | Trigger |
+|---|---|
+| `guard_block` | Guard policy returned `block` decision |
+| `guard_warn` | Guard policy returned `warn` decision |
+| `approval_timeout` | Pending approval expired without response |
+| `loop_stale` | Open loop exceeded expected resolution time |
+| `injection_detected` | Prompt injection scan flagged content |
+| `drift_alert` | Behavioral drift z-score exceeded threshold |
+| `feedback_negative` | User submitted negative feedback |
+| `session_stalled` | Session had no activity beyond idle threshold |
+| `branch_stale` | Working branch fell N+ commits behind main |
+| `mcp_degraded` | MCP tool handshake failed or connection dropped |
+| `green_insufficient` | Test suite did not meet required green level for action |
+
+Session lifecycle, signal emission, and recovery workflows all operate without an LLM provider configured. They use rule-based evaluation and threshold checks only.
 
 ## Key Reference Files
 

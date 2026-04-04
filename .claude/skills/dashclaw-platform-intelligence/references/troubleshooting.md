@@ -10,6 +10,10 @@
 - [Actions Not Appearing in Dashboard](#actions-not-appearing-in-dashboard)
 - [Agent Pairing Fails](#agent-pairing-fails)
 - [Guard Blocks Unexpectedly](#guard-blocks-unexpectedly)
+- [Session Stalled](#session-stalled)
+- [Branch Freshness Block](#branch-freshness-block)
+- [MCP Degraded](#mcp-degraded)
+- [Permission Escalation Block](#permission-escalation-block)
 - [Common Gotchas](#common-gotchas)
 - [General Diagnostic Approach](#general-diagnostic-approach)
 - [Companion Diagnostic Scripts](#companion-diagnostic-scripts)
@@ -123,6 +127,105 @@ The agent pairing flow has several gotchas:
    ```
 3. Check guard policies on the server (v1 SDK constructor accepts `guardMode`, v2 uses server-side policy config)
 4. If using `DASHCLAW_GUARD_FALLBACK=block`, the guard fails closed when the LLM is unavailable
+
+## Session Stalled
+
+**Symptom:** Agent session shows `status: stalled` and no new actions are being recorded.
+
+**Cause:** The session exceeded the idle threshold without activity. DashClaw emits a `session_stalled` signal when no actions, messages, or heartbeats are received within the configured window.
+
+**Fix:**
+
+1. Check the session status and blocked reason:
+   ```bash
+   curl -H "x-api-key: $DASHCLAW_API_KEY" \
+     $DASHCLAW_BASE_URL/api/sessions/$SESSION_ID
+   ```
+2. If the agent is alive but idle, update the session to clear the stall:
+   ```javascript
+   await dc.updateSession(sessionId, {
+     status: 'active',
+     blocked_reason: null,
+   });
+   ```
+3. If the agent crashed, mark the session as `ended` and create a new one:
+   ```javascript
+   await dc.updateSession(sessionId, { status: 'ended', blocked_reason: 'agent_crash' });
+   const fresh = await dc.createSession({ agent_id, workspace, branch });
+   ```
+
+## Branch Freshness Block
+
+**Symptom:** Guard returns `block` with `matched_policies` containing a `branch_freshness` policy. Error message says the branch is behind main.
+
+**Cause:** The working branch has fallen too far behind the base branch. A `branch_freshness` guard policy is configured with a `max_commits_behind` threshold, and the session's `commits_behind` value exceeds it.
+
+**Fix:**
+
+1. Rebase or merge the latest changes from the base branch:
+   ```bash
+   git fetch origin && git rebase origin/main
+   ```
+2. Update the session to reflect the fresh state:
+   ```javascript
+   await dc.updateSession(sessionId, {
+     branch_freshness: 'fresh',
+     commits_behind: 0,
+   });
+   ```
+3. Retry the guarded action.
+
+## MCP Degraded
+
+**Symptom:** A `mcp_degraded` signal appears. MCP tools may timeout or return errors. Session may show `blocked_reason: mcp_handshake_failed`.
+
+**Cause:** The MCP tool connection dropped or the handshake failed. This can happen due to network issues, MCP server restarts, or misconfigured tool endpoints.
+
+**Fix:**
+
+1. Check MCP server health and network connectivity.
+2. Retry the MCP handshake:
+   ```javascript
+   // The hooks layer will automatically retry on the next tool call.
+   // To force a reconnect, restart the agent or Claude Code session.
+   ```
+3. If the MCP server is down, clear the blocked reason so other work can continue:
+   ```javascript
+   await dc.updateSession(sessionId, {
+     status: 'active',
+     blocked_reason: null,
+   });
+   ```
+4. Check the session events for the full error trail:
+   ```bash
+   curl -H "x-api-key: $DASHCLAW_API_KEY" \
+     $DASHCLAW_BASE_URL/api/sessions/$SESSION_ID/events
+   ```
+
+## Permission Escalation Block
+
+**Symptom:** Guard returns `block` with `matched_policies` containing a `permission_escalation` policy. The agent attempted an action requiring a higher permission level than its pairing allows.
+
+**Cause:** The agent's pairing has a `permission_level` (e.g., `readonly` or `workspace_write`) that is insufficient for the requested operation. A `permission_escalation` policy prevents the agent from self-elevating.
+
+**Fix:**
+
+1. Check the agent's current permission level:
+   ```bash
+   curl -H "x-api-key: $DASHCLAW_API_KEY" \
+     $DASHCLAW_BASE_URL/api/pairings/$PAIRING_ID
+   ```
+2. If the agent legitimately needs higher permissions, an operator must update the pairing:
+   ```javascript
+   // PATCH /api/pairings/{pairingId} with the new permission level
+   // Valid levels: readonly, workspace_write, danger, prompt, allow
+   await fetch(`${baseUrl}/api/pairings/${pairingId}`, {
+     method: 'PATCH',
+     headers: { 'x-api-key': operatorKey, 'Content-Type': 'application/json' },
+     body: JSON.stringify({ permission_level: 'workspace_write' }),
+   });
+   ```
+3. Retry the guarded action after the pairing is updated.
 
 ## Common Gotchas
 
