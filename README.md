@@ -73,7 +73,7 @@ This is the fastest path. We gave our own OpenClaw agent the skill and it put it
 
 ### Option 2: Drop in Claude Code hooks (zero-code)
 
-Govern every Bash, Edit, Write, and MultiEdit call Claude Code makes — no SDK instrumentation needed:
+Govern 40+ tool types with semantic classification — every Bash, Edit, Write, MultiEdit, and more — no SDK instrumentation needed. The bundled `dashclaw_agent_intel` module handles tool classification, risk scoring, and signal extraction automatically:
 
 ```bash
 cp hooks/dashclaw_pretool.py  .claude/hooks/
@@ -109,6 +109,10 @@ DashClaw provides decision infrastructure to:
 * Require human approval (HITL) for sensitive operations.
 * Record verifiable decision evidence to detect reasoning drift.
 * Track agent learning velocity — the only platform that measures whether your agents are getting better or worse over time.
+* Track session lifecycle with automatic recovery — sessions are created, monitored, and recoverable across agent restarts.
+* Enforce 3 new policy types: **permission escalation** (requires elevated permission_level), **green contract** (requires test verification before deploy), and **branch freshness** (blocks actions on stale branches).
+* Emit 4 new signal types for fine-grained governance decisions.
+* Generate recovery recipes — actionable remediation steps returned in guard responses when actions are blocked or degraded.
 
 ---
 
