@@ -11,6 +11,7 @@ import { scanSensitiveData } from './security.js';
 import { scanForPromptInjection } from './promptInjection.js';
 import { EVENTS, publishOrgEvent } from './events.js';
 import { getLearningContext } from './learning-context.js';
+import { evaluateRecoveryRecipes } from './recovery.js';
 
 const DECISION_SEVERITY = { allow: 0, warn: 1, require_approval: 2, block: 3 };
 
@@ -241,6 +242,27 @@ export async function evaluateGuard(orgId, context, sql, options = {}) {
     actionType: context.action_type,
   });
 
+  // Recovery recipe evaluation — best-effort
+  let recovery = null;
+  try {
+    if (highestDecision !== 'allow') {
+      const recentSignals = [];
+      if (context.intel?.branch?.freshness === 'stale') {
+        recentSignals.push({ type: 'branch_stale', severity: 'amber', agent_id: context.agent_id });
+      }
+      if (context.intel?.mcp?.healthy === false) {
+        recentSignals.push({ type: 'mcp_degraded', severity: 'amber', agent_id: context.agent_id });
+      }
+      if (reasons.some(r => r.includes('Green contract'))) {
+        recentSignals.push({ type: 'green_insufficient', severity: 'red', agent_id: context.agent_id });
+      }
+      const recipes = evaluateRecoveryRecipes(recentSignals);
+      if (recipes.length > 0) {
+        recovery = recipes[0];
+      }
+    }
+  } catch (e) { /* recovery is best-effort */ }
+
   return {
     decision: highestDecision,
     action_id: decisionId, // Standardized ID for the evaluation
@@ -251,6 +273,7 @@ export async function evaluateGuard(orgId, context, sql, options = {}) {
     agent_risk_score: agentRiskScore,
     evaluated_at,
     learning: learningContext || undefined,
+    ...(recovery ? { recovery } : {}),
     // Backward compatibility
     reasons,
     warnings,
@@ -396,6 +419,53 @@ export async function evaluatePolicy(policy, rules, context, sql, orgId, effecti
 
       if (result.allowed === false) {
         return { action: 'block', reason: `Semantic Violation: ${result.reason}` };
+      }
+      return null;
+    }
+
+    case 'permission_escalation': {
+      if (!rules.enforce) return null;
+      const toolPerm = context.intel?.tool?.required_permission;
+      if (!toolPerm) return null;
+      const [pairing] = await sql`
+        SELECT permission_level FROM agent_pairings
+        WHERE org_id = ${orgId} AND agent_id = ${context.agent_id} AND status = 'approved'
+        ORDER BY created_at DESC LIMIT 1
+      `;
+      const agentLevel = pairing?.permission_level || 'danger';
+      const PERM_RANK = { readonly: 0, workspace_write: 1, danger: 2, prompt: 3, allow: 4 };
+      if ((PERM_RANK[toolPerm] ?? 0) > (PERM_RANK[agentLevel] ?? 0)) {
+        return { action: rules.action || 'block', reason: `Permission escalation: agent has ${agentLevel}, tool requires ${toolPerm}` };
+      }
+      return null;
+    }
+
+    case 'green_contract': {
+      const actionTypes = rules.action_types || [];
+      if (!actionTypes.includes(context.action_type)) return null;
+      const observedLevel = context.intel?.green?.observed_level;
+      const requiredLevel = rules.required_level;
+      const GREEN_RANK = { targeted: 0, package: 1, workspace: 2, merge_ready: 3 };
+      if (!observedLevel) {
+        return { action: rules.action || 'block', reason: `Green contract: no test status reported, ${requiredLevel} required` };
+      }
+      if ((GREEN_RANK[observedLevel] ?? -1) < (GREEN_RANK[requiredLevel] ?? 0)) {
+        return { action: rules.action || 'block', reason: `Green contract: observed ${observedLevel}, required ${requiredLevel}` };
+      }
+      return null;
+    }
+
+    case 'branch_freshness': {
+      const actionTypes = rules.action_types || [];
+      if (!actionTypes.includes(context.action_type)) return null;
+      const branch = context.intel?.branch;
+      if (!branch) return null;
+      const triggerFreshness = rules.freshness || ['stale', 'diverged'];
+      if (triggerFreshness.includes(branch.freshness)) {
+        const maxBehind = rules.max_commits_behind ?? 0;
+        if ((branch.commits_behind ?? 0) > maxBehind) {
+          return { action: rules.action || 'block', reason: `Branch ${branch.name || 'unknown'} is ${branch.freshness} (${branch.commits_behind} commits behind)` };
+        }
       }
       return null;
     }
