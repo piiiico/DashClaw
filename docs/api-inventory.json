@@ -1207,7 +1207,8 @@
     {
       "path": "/api/pairings/{pairingId}",
       "methods": [
-        "GET"
+        "GET",
+        "PATCH"
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",

@@ -11,6 +11,7 @@ async function ensureTable(sql) {
       public_key TEXT NOT NULL,
       algorithm TEXT NOT NULL DEFAULT 'RSASSA-PKCS1-v1_5',
       status TEXT NOT NULL DEFAULT 'pending',
+      permission_level TEXT NOT NULL DEFAULT 'danger',
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
       expires_at TEXT NOT NULL
@@ -33,7 +34,7 @@ export async function createPairing(sql, { orgId, id, agentId, agentName, public
 export async function listPairings(sql, orgId, status = 'pending', limit = 50) {
   await ensureTable(sql);
   return sql`
-    SELECT id, agent_id, agent_name, algorithm, status, created_at, updated_at, expires_at
+    SELECT id, agent_id, agent_name, algorithm, status, permission_level, created_at, updated_at, expires_at
     FROM agent_pairings
     WHERE org_id = ${orgId} AND status = ${status}
     ORDER BY created_at DESC
@@ -44,7 +45,7 @@ export async function listPairings(sql, orgId, status = 'pending', limit = 50) {
 export async function getPairing(sql, orgId, pairingId) {
   await ensureTable(sql);
   return sql`
-    SELECT id, agent_id, agent_name, public_key, algorithm, status, created_at, updated_at, expires_at
+    SELECT id, agent_id, agent_name, public_key, algorithm, status, permission_level, created_at, updated_at, expires_at
     FROM agent_pairings
     WHERE org_id = ${orgId} AND id = ${pairingId}
     LIMIT 1
@@ -76,4 +77,17 @@ export async function expirePendingByAgent(sql, orgId, agentId) {
     SET status = 'expired', updated_at = CURRENT_TIMESTAMP
     WHERE org_id = ${orgId} AND agent_id = ${agentId} AND status = 'pending'
   `;
+}
+
+export async function updatePairing(sql, orgId, pairingId, { status = null, permission_level = null }) {
+  await ensureTable(sql);
+  const rows = await sql`
+    UPDATE agent_pairings SET
+      status           = COALESCE(${status}, status),
+      permission_level = COALESCE(${permission_level}, permission_level),
+      updated_at       = CURRENT_TIMESTAMP
+    WHERE org_id = ${orgId} AND id = ${pairingId}
+    RETURNING id, agent_id, agent_name, algorithm, status, permission_level, created_at, updated_at, expires_at
+  `;
+  return rows[0] || null;
 }

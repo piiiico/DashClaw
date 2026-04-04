@@ -4,7 +4,9 @@ export const revalidate = 0;
 import { NextResponse } from 'next/server';
 import { getSql } from '../../../lib/db.js';
 import { getOrgId } from '../../../lib/org.js';
-import { getPairing, expirePairing } from '../../../lib/repositories/pairings.repository.js';
+import { getPairing, expirePairing, updatePairing } from '../../../lib/repositories/pairings.repository.js';
+
+const VALID_PERMISSION_LEVELS = ['readonly', 'workspace_write', 'danger', 'prompt', 'allow'];
 
 export async function GET(request, { params }) {
   try {
@@ -31,5 +33,40 @@ export async function GET(request, { params }) {
   } catch (error) {
     console.error('Pairing fetch error:', error);
     return NextResponse.json({ error: 'Failed to fetch pairing' }, { status: 500 });
+  }
+}
+
+export async function PATCH(request, { params }) {
+  try {
+    const sql = getSql();
+    const orgId = getOrgId(request);
+    const { pairingId } = await params;
+    const body = await request.json();
+
+    const { status, permission_level } = body;
+
+    // At least one update field must be present
+    if (!status && !permission_level) {
+      return NextResponse.json({ error: 'No update fields provided' }, { status: 400 });
+    }
+
+    // Validate permission_level if provided
+    if (permission_level && !VALID_PERMISSION_LEVELS.includes(permission_level)) {
+      return NextResponse.json(
+        { error: `Invalid permission_level. Must be one of: ${VALID_PERMISSION_LEVELS.join(', ')}` },
+        { status: 400 }
+      );
+    }
+
+    const pairing = await updatePairing(sql, orgId, pairingId, { status, permission_level });
+
+    if (!pairing) {
+      return NextResponse.json({ error: 'Pairing not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ pairing });
+  } catch (error) {
+    console.error('Pairing update error:', error);
+    return NextResponse.json({ error: 'Failed to update pairing' }, { status: 500 });
   }
 }
