@@ -226,11 +226,12 @@ export async function evaluateGuard(orgId, context, sql, options = {}) {
   }
 
   sql`
-    INSERT INTO guard_decisions (id, org_id, agent_id, decision, reason, matched_policies, context, risk_score, action_type, created_at)
+    INSERT INTO guard_decisions (id, org_id, agent_id, agent_name, decision, reason, matched_policies, context, risk_score, action_type, created_at)
     VALUES (
       ${decisionId},
       ${orgId},
       ${context.agent_id || null},
+      ${context.agent_name || null},
       ${highestDecision},
       ${reasons.join('; ') || null},
       ${JSON.stringify(matchedPolicies)},
@@ -249,6 +250,7 @@ export async function evaluateGuard(orgId, context, sql, options = {}) {
       id: decisionId,
       org_id: orgId,
       agent_id: context.agent_id || null,
+      agent_name: context.agent_name || null,
       decision: highestDecision,
       reason: reasons.join('; ') || null,
       matched_policies: matchedPolicies,

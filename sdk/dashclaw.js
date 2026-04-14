@@ -25,8 +25,9 @@ class DashClaw {
    * @param {string} options.baseUrl - DashClaw base URL
    * @param {string} options.apiKey - API key for authentication
    * @param {string} options.agentId - Unique identifier for this agent
+   * @param {string} [options.agentName] - Human-readable label for this agent (stored in audit trail)
    */
-  constructor({ baseUrl, apiKey, agentId }) {
+  constructor({ baseUrl, apiKey, agentId, agentName }) {
     if (!baseUrl) throw new Error('baseUrl is required');
     if (!apiKey) throw new Error('apiKey is required');
     if (!agentId) throw new Error('agentId is required');
@@ -34,6 +35,7 @@ class DashClaw {
     this.baseUrl = baseUrl.replace(/\/$/, '');
     this.apiKey = apiKey;
     this.agentId = agentId;
+    this.agentName = agentName || null;
 
     this.execution = {
       capabilities: {
@@ -96,6 +98,8 @@ class DashClaw {
     return this._request('/api/guard', 'POST', {
       ...context,
       agent_id: context.agent_id || this.agentId,
+      // Include agent_name for audit attribution if not already provided by caller
+      ...(context.agent_name == null && this.agentName ? { agent_name: this.agentName } : {}),
     });
   }
 

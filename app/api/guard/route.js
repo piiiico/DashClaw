@@ -12,17 +12,61 @@ import { listGuardDecisions } from '../../lib/repositories/guard.repository.js';
 import { isSelfHostModeEnabled } from '../../lib/selfHost.js';
 
 /**
+ * Decode a JWT payload without verifying the signature.
+ * Phase 1: trust-on-assertion — the caller is already authenticated via API key.
+ * We extract agent_id (sub) and agent_name purely for attribution in the audit trail.
+ * Phase 2 will add JWKS verification on top.
+ *
+ * @param {string} authHeader - raw Authorization header value
+ * @returns {{ agent_id?: string, agent_name?: string }} extracted claims (empty if not a valid JWT)
+ */
+function extractAgentClaimsFromJwt(authHeader) {
+  if (!authHeader || !authHeader.startsWith('Bearer ')) return {};
+  try {
+    const token = authHeader.slice(7);
+    const parts = token.split('.');
+    if (parts.length !== 3) return {};
+    // Base64url decode the payload (no verification in Phase 1)
+    const payload = JSON.parse(
+      Buffer.from(parts[1].replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8')
+    );
+    const result = {};
+    if (typeof payload.sub === 'string' && payload.sub) result.agent_id = payload.sub;
+    if (typeof payload.agent_name === 'string' && payload.agent_name) result.agent_name = payload.agent_name;
+    return result;
+  } catch {
+    // Malformed JWT — ignore silently, fall through to body-provided values
+    return {};
+  }
+}
+
+/**
  * POST /api/guard — Evaluate guard policies for a proposed action.
  * Returns allow/warn/block/require_approval.
  *
- * Body: { action_type, risk_score?, agent_id?, systems_touched?, reversible?, declared_goal? }
+ * Body: { action_type, risk_score?, agent_id?, agent_name?, systems_touched?, reversible?, declared_goal? }
  * Query: ?include_signals=true (optional, adds live signal warnings)
+ *
+ * Agent identity resolution (Phase 1, trust-on-assertion):
+ *   1. JWT claims from Authorization: Bearer <token> (agent_id ← sub, agent_name ← agent_name)
+ *   2. Explicit body fields agent_id / agent_name (override JWT claims if provided)
+ * No signature verification in Phase 1 — the existing API-key boundary provides authentication.
  */
 export async function POST(request) {
   try {
     const orgId = getOrgId(request);
     const body = await request.json();
-    const { valid, data, errors } = validateGuardInput(body);
+
+    // Extract agent identity from JWT if present (Phase 1: no verification)
+    const jwtClaims = extractAgentClaimsFromJwt(request.headers.get('authorization'));
+
+    // Body-provided values take precedence over JWT claims
+    const enrichedBody = {
+      ...jwtClaims,
+      ...body,
+    };
+
+    const { valid, data, errors } = validateGuardInput(enrichedBody);
 
     if (!valid) {
       return NextResponse.json({ error: 'Validation failed', details: errors }, { status: 400 });

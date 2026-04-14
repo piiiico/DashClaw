@@ -207,6 +207,7 @@ const GUARD_INPUT_SCHEMA = {
   action:          { type: 'string', alias: 'action_type' }, // Alias for action_type
   risk_score:      { type: 'integer', min: 0, max: 100 },
   agent_id:        { type: 'string', maxLength: 128 },
+  agent_name:      { type: 'string', maxLength: 256 },
   systems_touched: { type: 'array', maxItems: 50 },
   reversible:      { type: 'boolean' },
   declared_goal:   { type: 'string', maxLength: 2000 },

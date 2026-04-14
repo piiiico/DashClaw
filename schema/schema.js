@@ -479,6 +479,7 @@ export const guardDecisions = pgTable('guard_decisions', {
   id: text('id').primaryKey(),
   orgId: text('org_id').notNull().references(() => organizations.id),
   agentId: text('agent_id'),
+  agentName: text('agent_name'),
   decision: text('decision').notNull(),
   reason: text('reason'),
   matchedPolicies: text('matched_policies'),
