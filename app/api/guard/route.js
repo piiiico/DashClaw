@@ -32,7 +32,9 @@ function extractAgentClaimsFromJwt(authHeader) {
     );
     const result = {};
     if (typeof payload.sub === 'string' && payload.sub) result.agent_id = payload.sub;
-    if (typeof payload.agent_name === 'string' && payload.agent_name) result.agent_name = payload.agent_name;
+    // AgentLair AATs use 'al_name'; generic JWTs may use 'agent_name' — support both
+    const agentName = payload.al_name || payload.agent_name;
+    if (typeof agentName === 'string' && agentName) result.agent_name = agentName;
     return result;
   } catch {
     // Malformed JWT — ignore silently, fall through to body-provided values
@@ -48,7 +50,7 @@ function extractAgentClaimsFromJwt(authHeader) {
  * Query: ?include_signals=true (optional, adds live signal warnings)
  *
  * Agent identity resolution (Phase 1, trust-on-assertion):
- *   1. JWT claims from Authorization: Bearer <token> (agent_id ← sub, agent_name ← agent_name)
+ *   1. JWT claims from Authorization: Bearer <token> (agent_id ← sub, agent_name ← al_name || agent_name)
  *   2. Explicit body fields agent_id / agent_name (override JWT claims if provided)
  * No signature verification in Phase 1 — the existing API-key boundary provides authentication.
  */

@@ -27,6 +27,9 @@ import { POST } from '@/api/guard/route.js';
 // JWT with sub=agt_test123 and agent_name=test-worker (signature is fake — Phase 1 doesn't verify)
 const TEST_JWT = 'eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZ3RfdGVzdDEyMyIsImFnZW50X25hbWUiOiJ0ZXN0LXdvcmtlciIsImlzcyI6Imh0dHBzOi8vYWdlbnRsYWlyLmRldiIsImV4cCI6OTk5OTk5OTk5OX0.fakesig';
 
+// AgentLair AAT with sub=acc_test123 and al_name=pico/test-worker (AgentLair-specific claim)
+const AGENTLAIR_AAT_JWT = 'eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJzdWIiOiAiYWNjX3Rlc3QxMjMiLCAiYWxfbmFtZSI6ICJwaWNvL3Rlc3Qtd29ya2VyIiwgImlzcyI6ICJodHRwczovL2FnZW50bGFpci5kZXYiLCAiZXhwIjogOTk5OTk5OTk5OX0.fakesig';
+
 describe('/api/guard — Phase 1 agent attribution', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -94,6 +97,26 @@ describe('/api/guard — Phase 1 agent attribution', () => {
 
     expect(mockValidateGuardInput).toHaveBeenCalledWith(
       expect.objectContaining({ agent_id: 'agt_explicit', agent_name: 'explicit-worker' })
+    );
+  });
+
+  it('extracts agent_name from AgentLair al_name claim (AAT format)', async () => {
+    mockValidateGuardInput.mockImplementation((body) => ({
+      valid: true,
+      data: body,
+      errors: [],
+    }));
+
+    await POST(makeRequest('http://localhost/api/guard', {
+      headers: {
+        'x-org-id': 'org_1',
+        'authorization': `Bearer ${AGENTLAIR_AAT_JWT}`,
+      },
+      body: { action_type: 'deploy' },
+    }));
+
+    expect(mockValidateGuardInput).toHaveBeenCalledWith(
+      expect.objectContaining({ agent_id: 'acc_test123', agent_name: 'pico/test-worker' })
     );
   });
 
