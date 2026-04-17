@@ -28,7 +28,7 @@ function extractAgentClaimsFromJwt(authHeader) {
     if (parts.length !== 3) return {};
     // Base64url decode the payload (no verification in Phase 1)
     const payload = JSON.parse(
-      Buffer.from(parts[1].replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8')
+      Buffer.from(parts[1], 'base64url').toString('utf8')
     );
     const result = {};
     if (typeof payload.sub === 'string' && payload.sub) result.agent_id = payload.sub;

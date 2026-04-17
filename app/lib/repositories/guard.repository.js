@@ -49,7 +49,7 @@ export async function listGuardDecisions(sql, orgId, { agentId, decision, limit 
 
     const where = conditions.join(' AND ');
     const query = `
-      SELECT id, org_id, agent_id, action_type, risk_score, decision, ${reasonCol}, created_at
+      SELECT id, org_id, agent_id, agent_name, action_type, risk_score, decision, ${reasonCol}, created_at
       FROM guard_decisions
       WHERE ${where}
       ORDER BY created_at DESC
