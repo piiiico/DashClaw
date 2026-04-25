@@ -165,7 +165,7 @@ verified against `sdk/dashclaw.js` on 2026-04-11):
 
 | Domain | Count | Representative methods |
 |:---|:---|:---|
-| Core Governance | 8 | `guard`, `createAction`, `updateOutcome`, `getAction`, `getPendingApprovals`, `approveAction`, `recordAssumption`, `waitForApproval` |
+| Core Governance | 8 | `guard`, `createAction`, `updateOutcome`, `getAction`, `getPendingApprovals`, `approveAction`, `recordAssumption`, `waitForApproval`. Phase 1 agent attribution: pass `agentName` in constructor (auto-included on `guard()`) or `agent_name` per-call. Phase 2 will add JWKS verification. |
 | Decision Integrity | 3 | `registerOpenLoop`, `resolveOpenLoop`, `getSignals` |
 | Operational | 2 | `heartbeat`, `reportConnections` |
 | Learning & Optimization | 4 | `getLearningVelocity`, `getLearningCurves`, `getLessons`, `renderPrompt` |

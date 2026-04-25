@@ -98,7 +98,7 @@ That is acceptable temporarily, but it should not define future product directio
 
 | Domain | Canonical Node | Legacy Node | Python | Status |
 |---|---|---|---|---|
-| Guard / actions / approvals | Yes | Yes | Yes | Stable, canonical in main SDK. Approvals use `POST /api/approvals/[actionId]` (shared by browser, CLI, `/approve` mobile PWA, SDK polling) |
+| Guard / actions / approvals | Yes | Yes | Yes | Stable, canonical in main SDK. Approvals use `POST /api/approvals/[actionId]` (shared by browser, CLI, `/approve` mobile PWA, SDK polling). Phase 1 agent attribution (`agent_id`, `agent_name`) supported in both SDKs — pass in constructor or per-call body. Phase 2 will add JWKS verification. |
 | Sessions / action graph | Yes | Partial overlap | Yes | Stable, canonical in main SDK |
 | Loops and assumptions | Yes | Yes | Yes | Canonical in main SDK |
 | Workflows | Yes | Historical overlap | Yes | Canonical in main SDK, with Python route-contract parity for template CRUD, launch, and execute. `POST /api/workflows/draft` NL-to-workflow endpoint also exposed |

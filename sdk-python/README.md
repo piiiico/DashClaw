@@ -26,15 +26,16 @@ The Python SDK is the full platform SDK (235 methods). The constructor accepts b
 
 ### v2-compatible constructor (recommended for new agents)
 
-These 3 parameters are the only ones available in the Node.js v2 SDK (`new DashClaw({ baseUrl, apiKey, agentId })`):
+These parameters are available in both the Node.js v2 SDK and the Python SDK:
 
 ```python
 from dashclaw import DashClaw
 
 claw = DashClaw(
-    base_url="http://localhost:3000",  # Required (v2)
-    api_key="your-api-key",            # Required (v2)
-    agent_id="my-python-agent",        # Required (v2)
+    base_url="http://localhost:3000",      # Required (v2)
+    api_key="your-api-key",                # Required (v2)
+    agent_id="my-python-agent",            # Required (v2)
+    agent_name="My Python Agent",          # Optional (v2) — stored in audit trail for attribution
 )
 ```
 
@@ -47,7 +48,7 @@ claw = DashClaw(
     base_url="http://localhost:3000",  # Required (v2)
     api_key="your-api-key",            # Required (v2)
     agent_id="my-python-agent",        # Required (v2)
-    agent_name="My Python Agent",      # v1 only
+    agent_name="My Python Agent",      # Optional (v2) — stored in audit trail
     auto_recommend="warn",             # v1 only: off | warn | enforce
     hitl_mode="wait",                  # v1 only: automatically wait for human approval
 )

@@ -32,7 +32,8 @@ import { DashClaw, GuardBlockedError, ApprovalDeniedError } from 'dashclaw';
 const claw = new DashClaw({
   baseUrl: process.env.DASHCLAW_BASE_URL,
   apiKey: process.env.DASHCLAW_API_KEY,
-  agentId: 'my-agent'
+  agentId: 'my-agent',
+  agentName: 'My Agent',  // optional — stored in audit trail for attribution
 });
 
 // 1. Ask permission
@@ -82,6 +83,7 @@ claw = DashClaw(
     base_url=os.environ["DASHCLAW_BASE_URL"],
     api_key=os.environ["DASHCLAW_API_KEY"],
     agent_id="my-agent",
+    agent_name="My Agent",  # optional — stored in audit trail for attribution
 )
 
 # 1. Ask permission
@@ -242,7 +244,7 @@ See:
 The v2 SDK exposes the stable governance runtime plus promoted execution domains in the canonical Node client:
 
 ### Core Runtime
-- `guard(context)` -- Policy evaluation ("Can I do X?"). Returns `risk_score` (server-computed) and `agent_risk_score` (raw agent value)
+- `guard(context)` -- Policy evaluation ("Can I do X?"). Returns `risk_score` (server-computed) and `agent_risk_score` (raw agent value). Automatically includes `agent_name` from the constructor if not overridden in the call context.
 - `createAction(action)` -- Lifecycle tracking ("I am doing X")
 - `updateOutcome(id, outcome)` -- Result recording ("X finished with Y")
 - `recordAssumption(assumption)` -- Integrity tracking ("I believe Z while doing X")
