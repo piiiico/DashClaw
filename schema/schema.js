@@ -480,6 +480,13 @@ export const guardDecisions = pgTable('guard_decisions', {
   orgId: text('org_id').notNull().references(() => organizations.id),
   agentId: text('agent_id'),
   agentName: text('agent_name'),
+  // Phase 2: JWKS verification status.
+  // verified       — JWT signature valid, sub used as agent_id
+  // unverified     — no JWT or issuer outage (fail-soft); body attribution only
+  // expired        — JWT signature valid but exp < now
+  // failed         — bad signature, malformed token, or aud mismatch
+  // unknown_issuer — iss not in DASHCLAW_ALLOWED_ISSUER (when configured)
+  verificationStatus: text('verification_status').default('unverified'),
   decision: text('decision').notNull(),
   reason: text('reason'),
   matchedPolicies: text('matched_policies'),
