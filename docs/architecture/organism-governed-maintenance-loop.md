@@ -88,8 +88,7 @@ Recommended cadence:
 - once daily
 - around 8:00 AM local time
 
-Recommended automation entrypoint:
-- `scripts/run-livingcode-daily.ps1`
+Automation: handled by the cloud weekly-digest routine (writes to `.organism/digests/`). The previous local Windows scheduled-task wrapper has been retired.
 
 ### Why `cycle` is excluded from unattended automation
 `cycle` is a higher-order orchestration path and should remain manual until the governance and executor boundaries are proven stable. For now, unattended automation should observe, plan, and review only.
