@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:0f2c77d2856357641da63b3d22458c4d6dca96d9",
+  "timestamp": "sha1:008734a10c8a46b36662a58d4ae3538a5f196db1",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -2572,6 +2572,9 @@
         "graphify-pilot/app/self-host/SetupTabs.js",
         "mcp-server/bin/dashclaw-mcp.js",
         "middleware.js",
+        "plugins/dashclaw/skills/dashclaw-platform-intelligence/scripts/bootstrap-agent-quick.mjs",
+        "plugins/dashclaw/skills/dashclaw-platform-intelligence/scripts/diagnose.mjs",
+        "plugins/dashclaw/skills/dashclaw-platform-intelligence/scripts/validate-integration.mjs",
         "public/downloads/dashclaw-platform-intelligence/scripts/bootstrap-agent-quick.mjs",
         "public/downloads/dashclaw-platform-intelligence/scripts/diagnose.mjs",
         "public/downloads/dashclaw-platform-intelligence/scripts/validate-integration.mjs",
@@ -2643,6 +2646,9 @@
         "graphify-pilot/app/self-host/SetupTabs.js",
         "graphify-pilot/app/settings/components/ConnectNextStepPanel.js",
         "packages/openclaw-plugin/src/index.ts",
+        "plugins/dashclaw/skills/dashclaw-platform-intelligence/scripts/bootstrap-agent-quick.mjs",
+        "plugins/dashclaw/skills/dashclaw-platform-intelligence/scripts/diagnose.mjs",
+        "plugins/dashclaw/skills/dashclaw-platform-intelligence/scripts/validate-integration.mjs",
         "public/downloads/dashclaw-platform-intelligence/scripts/bootstrap-agent-quick.mjs",
         "public/downloads/dashclaw-platform-intelligence/scripts/diagnose.mjs",
         "public/downloads/dashclaw-platform-intelligence/scripts/validate-integration.mjs",
@@ -2738,6 +2744,7 @@
       "name": "DASHCLAW_MODE",
       "required": false,
       "files": [
+        "__tests__/unit/guard-agent-attribution.test.js",
         "__tests__/unit/guard.route.test.js",
         "app/api/setup/ping/route.js",
         "app/lib/selfHost.js",
@@ -2805,6 +2812,7 @@
         "__tests__/unit/compliance-report.route.test.js",
         "__tests__/unit/cron-auth.test.js",
         "__tests__/unit/cron-routing-maintenance.route.test.js",
+        "__tests__/unit/guard-agent-attribution.test.js",
         "__tests__/unit/guard.route.test.js",
         "__tests__/unit/health-tables.test.js",
         "__tests__/unit/health.route.test.js",

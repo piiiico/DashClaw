@@ -14,15 +14,31 @@ function getCookieValue(cookieHeader, key) {
   return '';
 }
 
+function parseCookieHeader(cookieHeader) {
+  const cookies = {};
+  for (const part of String(cookieHeader || '').split(/;\s*/)) {
+    if (!part) continue;
+    const eqIdx = part.indexOf('=');
+    if (eqIdx === -1) continue;
+    const name = part.slice(0, eqIdx).trim();
+    if (name) cookies[name] = part.slice(eqIdx + 1);
+  }
+  return cookies;
+}
+
 async function getNextAuthViewer(cookieHeader, env) {
   if (!env.NEXTAUTH_SECRET) return null;
 
-  // getToken infers secureCookie from req.url / x-forwarded-proto; we pass a
-  // cookies-only shim (no URL), so it defaults to the non-secure cookie name
-  // and misses `__Secure-next-auth.session-token` on HTTPS. Try the secure
-  // name first (Vercel / any HTTPS deploy), then fall back to the plain name
-  // (local http dev) so we cover both without depending on NEXTAUTH_URL.
-  const req = { headers: { cookie: cookieHeader || '' } };
+  // next-auth v4 SessionStore reads cookies from `req.cookies` only — it does
+  // not parse `req.headers.cookie` as a fallback (see node_modules/next-auth/
+  // core/lib/cookie.js). A shim with headers-only leaves req.cookies undefined
+  // and getToken silently returns null even when the secret matches and the
+  // cookie is present. Parse the header into a plain object so SessionStore's
+  // `for (const name in _cookies)` branch picks up `__Secure-next-auth.session-
+  // token` (HTTPS) or `next-auth.session-token` (http dev). secureCookie is
+  // still passed explicitly because getToken can't infer it without req.url.
+  const cookies = parseCookieHeader(cookieHeader);
+  const req = { cookies, headers: { cookie: cookieHeader || '' } };
   for (const secureCookie of [true, false]) {
     try {
       const token = await getToken({
