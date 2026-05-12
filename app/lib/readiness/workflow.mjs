@@ -50,20 +50,20 @@ export function buildWorkflow(report) {
         : hasLiveProof
           ? 'Live SDK proof has been captured for this verify view.'
         : apiReady
-          ? 'Paste your API key above and click "Run test" to capture live proof.'
+          ? 'Open the Settings page and use the "Test your connection" panel — paste your API key and click "Run test" — to capture live proof.'
           : 'Core checks are in place, but you still need an API key for live validation.',
       proof: hasLiveProof
         ? report.sdk.evidenceSummary
         : !coreReady
         ? 'No live SDK proof collected yet.'
-        : 'Use the connection test above to prove authenticated API access.',
+        : 'Use the "Test your connection" panel on the Settings page to prove authenticated API access.',
       nextAction: !coreReady
         ? 'Complete the core verification step first.'
         : hasLiveProof
           ? 'Download the refreshed proof artifact or share the setup URL with the attached live proof token.'
         : apiReady
-          ? 'Use the "Run test" button at the top of this page to validate and capture proof automatically.'
-          : 'Generate an API key, then use the test button above to validate.',
+          ? 'On the Settings page, paste your API key into the "Test your connection" panel and click "Run test" to validate and capture proof.'
+          : 'Generate an API key on the API Keys page, then use the "Test your connection" panel on Settings to validate.',
     }),
     createWorkflowStep({
       id: 'proof_artifact',
@@ -192,7 +192,7 @@ NEXTAUTH_SECRET=$(openssl rand -base64 32)`,
         summary: hasLiveProof
           ? 'A successful live validation result is attached to this verify view.'
           : report.auth.hasAgentApiKey
-          ? 'Core verification passed. Use the "Run test" button at the top of this page to validate and capture proof.'
+          ? 'Core verification passed. On the Settings page, use the "Test your connection" panel to validate and capture proof.'
           : 'Core verification passed, but you still need an API key before validation can succeed.',
         details: hasLiveProof
           ? [
@@ -202,11 +202,11 @@ NEXTAUTH_SECRET=$(openssl rand -base64 32)`,
           : report.auth.hasAgentApiKey
           ? [
               'What this proves: real API ingress, authentication, and a live request path.',
-              'Next action: paste your API key in the test panel above and click "Run test".',
+              'Next action: open the Settings page, paste your API key into the "Test your connection" panel, and click "Run test".',
             ]
           : [
               'What is pending: live proof still depends on an API key.',
-              'Next action: generate an API key, then use the test button above to validate.',
+              'Next action: generate an API key on the API Keys page, then use the "Test your connection" panel on Settings to validate.',
             ],
       })
     );
@@ -219,7 +219,7 @@ NEXTAUTH_SECRET=$(openssl rand -base64 32)`,
         title: 'Instance verification looks strong',
         variant: 'info',
         summary: 'Core verification checks are passing and operator access looks ready.',
-        details: ['Next action: download the JSON proof artifact or use the "Run test" button above for additional live proof.'],
+        details: ['Next action: download the JSON proof artifact, or use the "Test your connection" panel on the Settings page for additional live proof.'],
       })
     );
   }

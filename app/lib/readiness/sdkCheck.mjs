@@ -211,7 +211,7 @@ export function buildSdkSection(host, report, liveProof) {
           : 'No live validation proof has been captured yet.',
         subDetail: hasLiveProof
           ? `${liveProof.summary.passed} passed, ${liveProof.summary.failed} failed, ${liveProof.summary.skipped} skipped.`
-          : 'Click "Run test" above with your API key to capture proof and upgrade to verified.',
+          : 'On the Settings page, paste your API key into the "Test your connection" panel and click "Run test" to capture proof and upgrade to verified.',
         nextAction: hasLiveProof
           ? 'Download the updated JSON proof artifact or share the setup URL that includes this live proof token.'
           : '',
