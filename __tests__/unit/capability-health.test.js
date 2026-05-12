@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getCapabilityHealthSummary } from '../../app/lib/capability-health.js';
 
 function makeSqlMock(responses) {
@@ -16,6 +16,18 @@ function makeSqlMock(responses) {
 }
 
 describe('getCapabilityHealthSummary', () => {
+  // Pin clock to one day after the fixture dates so the 30-day staleness
+  // threshold (capability-health.js:57) doesn't flip 'certified' to 'stale'
+  // when the suite runs more than a month after the test was authored.
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-04-08T00:00:00.000Z'));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('derives healthy status from successful recent invocations', async () => {
     const sql = makeSqlMock([
       [{
