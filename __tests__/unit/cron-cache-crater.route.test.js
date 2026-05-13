@@ -1,17 +1,30 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeRequest } from '../helpers.js';
 
-const { mockSql, mockTimingSafeCompare, mockDetectCacheCrater, mockInsertAlerts } = vi.hoisted(() => ({
+const {
+  mockSql,
+  mockTimingSafeCompare,
+  mockDetectCacheCrater,
+  mockInsertAlerts,
+  mockListProjectsWithSessions,
+  mockGetProjectTokenTotalsForRange,
+} = vi.hoisted(() => ({
   mockSql: Object.assign(vi.fn(async () => []), { query: vi.fn(async () => []) }),
   mockTimingSafeCompare: vi.fn(),
   mockDetectCacheCrater: vi.fn(),
   mockInsertAlerts: vi.fn(),
+  mockListProjectsWithSessions: vi.fn(),
+  mockGetProjectTokenTotalsForRange: vi.fn(),
 }));
 
 vi.mock('@/lib/db.js', () => ({ getSql: () => mockSql }));
 vi.mock('@/lib/timing-safe.js', () => ({ timingSafeCompare: mockTimingSafeCompare }));
 vi.mock('@/lib/claude-code/alerts.js', () => ({ detectCacheCrater: mockDetectCacheCrater }));
-vi.mock('@/lib/repositories/code-sessions.repository.js', () => ({ insertAlerts: mockInsertAlerts }));
+vi.mock('@/lib/repositories/code-sessions.repository.js', () => ({
+  insertAlerts: mockInsertAlerts,
+  listProjectsWithSessions: mockListProjectsWithSessions,
+  getProjectTokenTotalsForRange: mockGetProjectTokenTotalsForRange,
+}));
 
 const { GET } = await import('@/api/cron/code-session-cache-crater/route.js');
 
@@ -20,6 +33,8 @@ beforeEach(() => {
   mockTimingSafeCompare.mockReset();
   mockDetectCacheCrater.mockReset();
   mockInsertAlerts.mockReset();
+  mockListProjectsWithSessions.mockReset();
+  mockGetProjectTokenTotalsForRange.mockReset();
   mockInsertAlerts.mockResolvedValue(1);
   process.env.CRON_SECRET = 'secret-test-value';
 });
@@ -41,15 +56,13 @@ describe('GET /api/cron/code-session-cache-crater', () => {
 
   it('iterates projects and inserts alerts when detectCacheCrater fires', async () => {
     mockTimingSafeCompare.mockReturnValue(true);
-    // Sequence: list projects -> thisWeek totals -> priorWeek totals
-    mockSql.mockImplementation(async () => {
-      // Use call count to differentiate.
-      const callIndex = mockSql.mock.calls.length;
-      if (callIndex === 1) return [{ project_id: 'cp_1', org_id: 'org_a', slug: 'demo' }];
-      if (callIndex === 2) return [{ input_tokens: 100, cache_read_tokens: 100, cache_creation_tokens: 100 }];
-      if (callIndex === 3) return [{ input_tokens: 100, cache_read_tokens: 9000, cache_creation_tokens: 100 }];
-      return [];
-    });
+    mockListProjectsWithSessions.mockResolvedValue([
+      { project_id: 'cp_1', org_id: 'org_a', slug: 'demo' },
+    ]);
+    // First call = this week, second = prior week.
+    mockGetProjectTokenTotalsForRange
+      .mockResolvedValueOnce({ input_tokens: 100, cache_read_tokens: 100, cache_creation_tokens: 100 })
+      .mockResolvedValueOnce({ input_tokens: 100, cache_read_tokens: 9000, cache_creation_tokens: 100 });
     mockDetectCacheCrater.mockReturnValue({
       kind: 'cache_crater', severity: 'warn',
       title: 'Cache hit rate dropped', body: 'details',
@@ -65,5 +78,6 @@ describe('GET /api/cron/code-session-cache-crater', () => {
     expect(json.alerts_inserted).toBe(1);
     expect(mockDetectCacheCrater).toHaveBeenCalledTimes(1);
     expect(mockInsertAlerts).toHaveBeenCalledTimes(1);
+    expect(mockGetProjectTokenTotalsForRange).toHaveBeenCalledTimes(2);
   });
 });
