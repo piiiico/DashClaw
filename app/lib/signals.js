@@ -32,6 +32,7 @@ export async function computeSignals(orgId, filterAgentId, sql) {
         AND risk_score >= 70
         AND (authorization_scope IS NULL OR authorization_scope = '')
         AND status = 'running'
+        AND outcome_status <> 'lost_confirmation'
         AND timestamp_start::timestamptz > NOW() - INTERVAL '24 hours'
       ORDER BY risk_score DESC
       LIMIT 10
@@ -89,6 +90,8 @@ export async function computeSignals(orgId, filterAgentId, sql) {
       WHERE status = 'running'
         AND org_id = ${orgId}
         AND timestamp_start::timestamptz < NOW() - INTERVAL '4 hours'
+        AND timestamp_start::timestamptz > NOW() - INTERVAL '24 hours'
+        AND outcome_status <> 'lost_confirmation'
         AND (action_type IS NULL OR action_type <> 'workflow_execute')
       ORDER BY timestamp_start ASC
       LIMIT 10
@@ -102,14 +105,16 @@ export async function computeSignals(orgId, filterAgentId, sql) {
         AND (status != 'offline' OR current_task_id IS NOT NULL)
       LIMIT 10
     `,
-    // Workflow executions stuck running for > 30 minutes
+    // Workflow executions stuck running for > 30 minutes (but not yet swept as lost)
     sql`
       SELECT action_id, agent_id, agent_name, declared_goal, timestamp_start, duration_ms, trigger
       FROM action_records
       WHERE status = 'running'
         AND org_id = ${orgId}
         AND action_type = 'workflow_execute'
+        AND outcome_status <> 'lost_confirmation'
         AND timestamp_start::timestamptz < NOW() - INTERVAL '30 minutes'
+        AND timestamp_start::timestamptz > NOW() - INTERVAL '24 hours'
       ORDER BY timestamp_start ASC
       LIMIT 10
     `,
