@@ -191,9 +191,6 @@ export default async function CodeSessionDetailPage({ params }) {
               </div>
             </div>
           </dl>
-          <div className="mt-4 border-t border-border pt-3">
-            <OptimalFilesPanel sessionId={sessionId} />
-          </div>
         </div>
 
         <div className="rounded-lg border border-border p-4 md:col-span-2">
@@ -261,6 +258,18 @@ export default async function CodeSessionDetailPage({ params }) {
             </ul>
           )}
         </div>
+      </section>
+
+      <section className="mb-8">
+        <header className="mb-4">
+          <h2 className="text-lg font-medium">Optimal Files</h2>
+          <p className="mt-1 text-sm text-tertiary">
+            DashClaw distills this session into a bundle — root <code className="font-mono text-secondary">CLAUDE.md</code>,
+            path-scoped rules, hook configs, skill packs, and a next-session recipe.
+            Select what to keep, then apply with the CLI.
+          </p>
+        </header>
+        <OptimalFilesPanel sessionId={sessionId} />
       </section>
 
       <section>
