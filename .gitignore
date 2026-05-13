@@ -7,6 +7,12 @@ out/
 build/
 dist/
 
+# Exception: the OpenClaw plugin ships compiled JS in its tarball,
+# and ClawHub's ClawScan verifies tarball contents against the source
+# commit — so the plugin's dist/ must live in git.
+!packages/openclaw-plugin/dist/
+!packages/openclaw-plugin/dist/**
+
 # Fuzz / test reports (schemathesis, playwright, etc.)
 .fuzz-report/
 .hypothesis/
