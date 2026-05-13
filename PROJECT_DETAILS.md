@@ -69,6 +69,7 @@ These 8 endpoints define the DashClaw category. They are mandatory for governanc
 | `/api/integrations/health` | Integration credential health status | On demand |
 | `/api/cron/signals` | Signal detection + notification pipeline | Every 5 min |
 | `/api/cron/integration-health` | Credential validation for all orgs | Every 6 hours |
+| `/api/cron/outcome-sweep` | Mark stale pending outcomes as `lost_confirmation`; emits `signal.detected` per swept row, fires webhooks. Per-org timeout via `DASHCLAW_OUTCOME_TIMEOUT_MINUTES` setting (default 15). | Daily on Vercel free tier; operators can run hourly externally |
 | `/api/pairings` | Agent identity pairing enrollment | On demand |
 | `/api/identities` | Approved agent identity management | On demand |
 | `/api/doctor` | Diagnostic health checks across DB, config, auth, deploy, SDK, governance | On demand |

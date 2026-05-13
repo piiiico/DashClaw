@@ -48,17 +48,17 @@ p.kicker{background:var(--accent-bg);border:1px solid var(--accent-border);borde
 p.kicker b{color:var(--accent-deep)}
 </style></head><body>
 <h1>DashClaw Livingcode Dashboard</h1>
-<div class="sig" id="sig">Shape signature: sha1:59d1c450f52b175ae20103c0447a08f60998da6e · signature-stable</div>
+<div class="sig" id="sig">Shape signature: sha1:02dfff0781049699630654be4ef73505cd84d6a4 · signature-stable</div>
 <div class="grid">
-      <div class="cell"><div class="n">182</div><div class="k">Active routes</div></div>
+      <div class="cell"><div class="n">183</div><div class="k">Active routes</div></div>
       <div class="cell"><div class="n">48</div><div class="k">Archived routes</div></div>
       <div class="cell"><div class="n">4</div><div class="k">Required env vars</div></div>
       <div class="cell"><div class="n">119</div><div class="k">Optional env vars</div></div>
       <div class="cell"><div class="n">73</div><div class="k">Tables</div></div>
       <div class="cell"><div class="n">15</div><div class="k">Events</div></div>
-      <div class="cell"><div class="n">9</div><div class="k">Signals</div></div>
+      <div class="cell"><div class="n">10</div><div class="k">Signals</div></div>
       <div class="cell"><div class="n">5</div><div class="k">Adapters</div></div>
-      <div class="cell"><div class="n">76</div><div class="k">Setting keys</div></div>
+      <div class="cell"><div class="n">77</div><div class="k">Setting keys</div></div>
 </div>
 
 <section><h2>Shape</h2><details><summary>Tables (73)</summary><table><thead><tr><th>Name</th><th>Domain</th></tr></thead><tbody>    <tr><td><code>action_embeddings</code></td><td class="sig">—</td></tr>
@@ -154,16 +154,17 @@ p.kicker b{color:var(--accent-deep)}
     <tr><td><code>linear</code></td><td class="sig">LINEAR_API_KEY</td></tr>
     <tr><td><code>org_id</code></td><td class="sig">DISCORD_WEBHOOK_URL</td></tr>
     <tr><td><code>slack</code></td><td class="sig">SLACK_BOT_TOKEN, SLACK_WEBHOOK_URL</td></tr></tbody></table></details>
-<details><summary>Signals (9)</summary><ul class="diff">    <li><code>autonomy_spike</code></li>
+<details><summary>Signals (10)</summary><ul class="diff">    <li><code>autonomy_spike</code></li>
     <li><code>branch_stale</code></li>
     <li><code>cost_exceeded</code></li>
     <li><code>green_insufficient</code></li>
     <li><code>integration_health_changed</code></li>
     <li><code>integration_mismatch</code></li>
+    <li><code>lost_confirmation</code></li>
     <li><code>mcp_degraded</code></li>
     <li><code>stale_action</code></li>
     <li><code>test</code></li></ul></details>
-<details><summary>Setting keys (76)</summary><table><thead><tr><th>Key</th><th>Section</th></tr></thead><tbody>    <tr><td><code>AIRTABLE_API_KEY</code></td><td class="sig">Productivity</td></tr>
+<details><summary>Setting keys (77)</summary><table><thead><tr><th>Key</th><th>Section</th></tr></thead><tbody>    <tr><td><code>AIRTABLE_API_KEY</code></td><td class="sig">Productivity</td></tr>
     <tr><td><code>AIRTABLE_BASE_ID</code></td><td class="sig">Productivity</td></tr>
     <tr><td><code>ANTHROPIC_API_KEY</code></td><td class="sig">AI Providers</td></tr>
     <tr><td><code>BRAVE_API_KEY</code></td><td class="sig">Social</td></tr>
@@ -177,6 +178,7 @@ p.kicker b{color:var(--accent-deep)}
     <tr><td><code>DASHCLAW_ALERTS_LINEAR</code></td><td class="sig">Native governance alert settings</td></tr>
     <tr><td><code>DASHCLAW_ALERTS_SLACK</code></td><td class="sig">Native governance alert settings</td></tr>
     <tr><td><code>DASHCLAW_ALERT_EMAIL</code></td><td class="sig">Native governance alert settings</td></tr>
+    <tr><td><code>DASHCLAW_OUTCOME_TIMEOUT_MINUTES</code></td><td class="sig">docs/architecture/durable-execution-finality.md.</td></tr>
     <tr><td><code>DATABASE_URL</code></td><td class="sig">Databases</td></tr>
     <tr><td><code>DISCORD_BOT_TOKEN</code></td><td class="sig">Communication</td></tr>
     <tr><td><code>DISCORD_CLIENT_ID</code></td><td class="sig">Communication</td></tr>
@@ -244,7 +246,8 @@ p.kicker b{color:var(--accent-deep)}
 <figure><figcaption>Required env vars over time <span class="sig">(4 → 4)</span></figcaption><svg width="320" height="48" viewBox="0 0 320 48"><polyline fill="none" stroke="var(--accent)" stroke-width="2" points="4.0,44.0 160.0,44.0 316.0,44.0"/></svg></figure>
 <figure><figcaption>Tables over time <span class="sig">(73 → 73)</span></figcaption><svg width="320" height="48" viewBox="0 0 320 48"><polyline fill="none" stroke="var(--accent)" stroke-width="2" points="4.0,44.0 160.0,44.0 316.0,44.0"/></svg></figure></section>
 
-<section><h2>Changed since last snapshot</h2><p class="kicker"><b>13</b> env_vars added, <b>7</b> routes added since last snapshot.</p><ul class="diff">    <li><code>added</code> <b>routes</b>: /api/actions/[actionId]/outcome <span class="sig">New route: GET, POST</span></li>
+<section><h2>Changed since last snapshot</h2><p class="kicker"><b>13</b> env_vars added, <b>8</b> routes added since last snapshot.</p><ul class="diff">    <li><code>added</code> <b>routes</b>: /api/actions/[actionId]/outcome <span class="sig">New route: GET, POST</span></li>
+    <li><code>added</code> <b>routes</b>: /api/cron/outcome-sweep <span class="sig">New route: GET</span></li>
     <li><code>added</code> <b>routes</b>: /api/discord/interactions <span class="sig">New route: POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/hosted/cleanup <span class="sig">New route: POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/hosted/workspaces <span class="sig">New route: GET, POST</span></li>
@@ -315,10 +318,11 @@ p.kicker b{color:var(--accent-deep)}
     <tr data-path="/api/compliance/schedules"><td><code>/api/compliance/schedules</code></td><td>GET, POST</td><td class="sig">app/api/compliance/schedules/route.js</td></tr>
     <tr data-path="/api/compliance/schedules/[scheduleId]"><td><code>/api/compliance/schedules/[scheduleId]</code></td><td>DELETE, PATCH</td><td class="sig">app/api/compliance/schedules/[scheduleId]/route.js</td></tr>
     <tr data-path="/api/compliance/trends"><td><code>/api/compliance/trends</code></td><td>GET</td><td class="sig">app/api/compliance/trends/route.js</td></tr></tbody></table></details>
-<details><summary>/cron/* (8)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/cron/integration-health"><td><code>/api/cron/integration-health</code></td><td>GET</td><td class="sig">app/api/cron/integration-health/route.js</td></tr>
+<details><summary>/cron/* (9)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/cron/integration-health"><td><code>/api/cron/integration-health</code></td><td>GET</td><td class="sig">app/api/cron/integration-health/route.js</td></tr>
     <tr data-path="/api/cron/learning-episodes-backfill"><td><code>/api/cron/learning-episodes-backfill</code></td><td>GET</td><td class="sig">app/api/cron/learning-episodes-backfill/route.js</td></tr>
     <tr data-path="/api/cron/learning-recommendations"><td><code>/api/cron/learning-recommendations</code></td><td>GET</td><td class="sig">app/api/cron/learning-recommendations/route.js</td></tr>
     <tr data-path="/api/cron/memory-maintenance"><td><code>/api/cron/memory-maintenance</code></td><td>GET</td><td class="sig">app/api/cron/memory-maintenance/route.js</td></tr>
+    <tr data-path="/api/cron/outcome-sweep"><td><code>/api/cron/outcome-sweep</code></td><td>GET</td><td class="sig">app/api/cron/outcome-sweep/route.js</td></tr>
     <tr data-path="/api/cron/policy-suggestions"><td><code>/api/cron/policy-suggestions</code></td><td>GET</td><td class="sig">app/api/cron/policy-suggestions/route.js</td></tr>
     <tr data-path="/api/cron/reset-meters"><td><code>/api/cron/reset-meters</code></td><td>GET</td><td class="sig">app/api/cron/reset-meters/route.js</td></tr>
     <tr data-path="/api/cron/routing-maintenance"><td><code>/api/cron/routing-maintenance</code></td><td>POST</td><td class="sig">app/api/cron/routing-maintenance/route.js</td></tr>

@@ -46,6 +46,10 @@ export const VALID_SETTING_KEYS = [
   // Predictive risk scoring
   'PREDICTIVE_RISK_ENABLED',
   'PREDICTIVE_RISK_THRESHOLD',
+  // Durable execution finality — minutes a pending outcome may live before the
+  // sweep marks it lost_confirmation. Default 15. See
+  // docs/architecture/durable-execution-finality.md.
+  'DASHCLAW_OUTCOME_TIMEOUT_MINUTES',
 ];
 
 export const VALID_CATEGORIES = ['integration', 'general', 'system'];

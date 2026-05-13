@@ -693,6 +693,8 @@ curl -X POST "$BASE_URL/api/actions/$ACTION_ID/outcome" \
 # 409 → { error: "outcome already set", current_status: "completed" }
 ```
 
+Pending outcomes that never get reported get swept to `lost_confirmation` by `/api/cron/outcome-sweep`. Vercel runs it daily on Hobby; the `lost_confirmation` event fires a `signal.detected` webhook so subscribers can see and recover. Per-org timeout (minutes) is configurable via the `DASHCLAW_OUTCOME_TIMEOUT_MINUTES` setting (default 15).
+
 ### Workflow Templates
 
 ```javascript

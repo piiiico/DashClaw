@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   getActionOutcome,
   setActionOutcome,
+  sweepLostOutcomesForOrg,
+  listOrgsWithStaleOutcomes,
 } from '../../app/lib/repositories/actions.repository.js';
 
 // Tagged-template SQL mock — each call shifts the next response off the queue.
@@ -156,5 +158,67 @@ describe('setActionOutcome', () => {
       (arg) => typeof arg === 'string' && arg.includes('"step":2'),
     );
     expect(jsonArg).toBeDefined();
+  });
+});
+
+describe('sweepLostOutcomesForOrg', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('returns swept rows from the atomic UPDATE', async () => {
+    const sql = makeSqlMock([[
+      {
+        action_id: 'act_1',
+        agent_id: 'deploy-bot',
+        agent_name: 'Deploy Agent',
+        action_type: 'deploy',
+        declared_goal: 'ship hotfix',
+        created_at: '2026-05-13T00:00:00Z',
+        outcome_at: '2026-05-13T00:30:00Z',
+      },
+    ]]);
+    const rows = await sweepLostOutcomesForOrg(sql, 'org_a', 15);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].action_id).toBe('act_1');
+    // Confirm the 15-minute timeout was interpolated as an arg.
+    const args = sql.mock.calls[0];
+    expect(args).toContain(15);
+  });
+
+  it('defaults invalid timeout to 15 minutes', async () => {
+    const sql = makeSqlMock([[]]);
+    await sweepLostOutcomesForOrg(sql, 'org_a', NaN);
+    const args = sql.mock.calls[0];
+    expect(args).toContain(15);
+  });
+
+  it('floors fractional timeout', async () => {
+    const sql = makeSqlMock([[]]);
+    await sweepLostOutcomesForOrg(sql, 'org_a', 30.9);
+    const args = sql.mock.calls[0];
+    expect(args).toContain(30);
+  });
+});
+
+describe('listOrgsWithStaleOutcomes', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('returns distinct org ids', async () => {
+    const sql = makeSqlMock([[{ org_id: 'org_a' }, { org_id: 'org_b' }]]);
+    const ids = await listOrgsWithStaleOutcomes(sql, 5);
+    expect(ids).toEqual(['org_a', 'org_b']);
+  });
+
+  it('clamps a negative lower bound to 1', async () => {
+    const sql = makeSqlMock([[]]);
+    await listOrgsWithStaleOutcomes(sql, -3);
+    const args = sql.mock.calls[0];
+    expect(args).toContain(1);
+  });
+
+  it('falls back to 5 when lower bound is 0 (treated as unset)', async () => {
+    const sql = makeSqlMock([[]]);
+    await listOrgsWithStaleOutcomes(sql, 0);
+    const args = sql.mock.calls[0];
+    expect(args).toContain(5);
   });
 });

@@ -4,6 +4,7 @@
   "buildCommand": "node scripts/auto-migrate.mjs && next build",
   "crons": [
     { "path": "/api/cron/reset-meters", "schedule": "0 0 1 * *" },
-    { "path": "/api/hosted/cleanup", "schedule": "0 3 * * *" }
+    { "path": "/api/hosted/cleanup", "schedule": "0 3 * * *" },
+    { "path": "/api/cron/outcome-sweep", "schedule": "0 2 * * *" }
   ]
 }

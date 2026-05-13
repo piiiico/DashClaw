@@ -559,6 +559,49 @@ export async function setActionOutcome(sql, orgId, actionId, payload) {
 }
 
 /**
+ * Mark all pending outcomes older than the timeout as lost_confirmation
+ * for a single org. Atomic UPDATE; returns the rows newly transitioned so
+ * the caller can fan out signal emissions and webhook deliveries.
+ *
+ * The sweep uses the same one-shot gate as setActionOutcome
+ * (`outcome_status = 'pending'`), so an agent report racing with the sweep
+ * cannot double-terminate.
+ */
+export async function sweepLostOutcomesForOrg(sql, orgId, timeoutMinutes) {
+  const minutes = Number.isFinite(timeoutMinutes) && timeoutMinutes > 0
+    ? Math.floor(timeoutMinutes)
+    : 15;
+  const rows = await sql`
+    UPDATE action_records
+    SET outcome_status  = 'lost_confirmation',
+        outcome_at      = NOW(),
+        outcome_summary = 'No outcome reported within timeout window',
+        updated_at      = CURRENT_TIMESTAMP
+    WHERE org_id = ${orgId}
+      AND outcome_status = 'pending'
+      AND created_at < NOW() - make_interval(mins => ${minutes})
+    RETURNING action_id, agent_id, agent_name, action_type, declared_goal, created_at, outcome_at
+  `;
+  return rows;
+}
+
+/**
+ * Return the distinct org_ids that have at least one pending outcome older
+ * than the lowest plausible timeout. Used by the sweep to avoid iterating
+ * orgs that cannot possibly have anything to mark.
+ */
+export async function listOrgsWithStaleOutcomes(sql, lowerBoundMinutes = 5) {
+  const minutes = Math.max(1, Math.floor(Number(lowerBoundMinutes) || 5));
+  const rows = await sql`
+    SELECT DISTINCT org_id
+    FROM action_records
+    WHERE outcome_status = 'pending'
+      AND created_at < NOW() - make_interval(mins => ${minutes})
+  `;
+  return rows.map((r) => r.org_id);
+}
+
+/**
  * Fetch all data required for an action trace (parent chain, assumptions, loops, related actions, sub-actions).
  */
 export async function getActionTraceData(sql, orgId, actionId) {

@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:59d1c450f52b175ae20103c0447a08f60998da6e",
+  "timestamp": "sha1:02dfff0781049699630654be4ef73505cd84d6a4",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -1041,6 +1041,15 @@
       "dynamic_params": [],
       "archived": false,
       "file_path": "app/api/cron/memory-maintenance/route.js"
+    },
+    {
+      "path": "/api/cron/outcome-sweep",
+      "methods": [
+        "GET"
+      ],
+      "dynamic_params": [],
+      "archived": false,
+      "file_path": "app/api/cron/outcome-sweep/route.js"
     },
     {
       "path": "/api/cron/policy-suggestions",
@@ -2481,6 +2490,7 @@
       "required": false,
       "files": [
         "__tests__/unit/cron-auth.test.js",
+        "__tests__/unit/cron-outcome-sweep.route.test.js",
         "__tests__/unit/cron-routing-maintenance.route.test.js",
         "__tests__/unit/hosted/check-hosted-ready.test.mjs",
         "__tests__/unit/hosted/workspace-admin.test.js",
@@ -2488,6 +2498,7 @@
         "app/api/cron/learning-episodes-backfill/route.js",
         "app/api/cron/learning-recommendations/route.js",
         "app/api/cron/memory-maintenance/route.js",
+        "app/api/cron/outcome-sweep/route.js",
         "app/api/cron/policy-suggestions/route.js",
         "app/api/cron/reset-meters/route.js",
         "app/api/cron/routing-maintenance/route.js",
@@ -2823,6 +2834,7 @@
         "__tests__/unit/compliance-map.route.test.js",
         "__tests__/unit/compliance-report.route.test.js",
         "__tests__/unit/cron-auth.test.js",
+        "__tests__/unit/cron-outcome-sweep.route.test.js",
         "__tests__/unit/cron-routing-maintenance.route.test.js",
         "__tests__/unit/guard-agent-attribution.test.js",
         "__tests__/unit/guard.route.test.js",
@@ -4422,6 +4434,10 @@
     {
       "name": "PREDICTIVE_RISK_THRESHOLD",
       "section": "Predictive risk scoring"
+    },
+    {
+      "name": "DASHCLAW_OUTCOME_TIMEOUT_MINUTES",
+      "section": "docs/architecture/durable-execution-finality.md."
     }
   ],
   "events": [
@@ -4527,6 +4543,7 @@
     "green_insufficient",
     "integration_health_changed",
     "integration_mismatch",
+    "lost_confirmation",
     "mcp_degraded",
     "stale_action",
     "test"
