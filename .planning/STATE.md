@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: "Completed 03-02 (deferred close): launch content drafts + blog page + Discord alert shipped (668c548d + 6eb67d00 + 8463abc8, 1799/5/0, +47 tests). Task 4 launch blitz deferred per resume-signal `defer launch` — upstream DOG-02 walkthrough recording deferred (Pitfall 1: HN URL-change after submit kills rank means homepage must be final before Show HN). DOG-04 partial-deferred. 6-location backfill checklist (was 5; +1 from app/blog/claude-code-beachhead/page.jsx:23 VIDEO_URL) closes CCI-01 + CCI-05 + DOG-02 + DOG-04 atomically next session."
-last_updated: "2026-04-23T02:03:52.000Z"
+status: verifying
+stopped_at: AgentLens absorption follow-ups closed + 413-on-large-files fix shipped (gzip+base64); Phase 3 still awaits operator launch event (2026-05-13)
+last_updated: "2026-05-13T21:50:00.000Z"
 last_activity: 2026-04-23
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 12
   completed_plans: 10
   percent: 83
@@ -101,8 +101,8 @@ None yet (`.planning/todos/pending/` not initialized).
 
 ## Session Continuity
 
-Last session: 2026-04-23T02:03:52.000Z
-Stopped at: Completed 03-02 (deferred close). Tasks 1-3 shipped (668c548d + 6eb67d00 + 8463abc8) — launch content drafts + blog page live + Discord new-connect alert wired. Task 4 launch blitz deferred per resume-signal `defer launch`. DOG-04 partial-deferred; closes after upstream DOG-02 walkthrough recording + 6-location atomic backfill commit + 2-hour same-day launch window. All four open gaps (CCI-01 + CCI-05 + DOG-02 + DOG-04) close in chained order from one future recording session.
-Resume file: None
+Last session: 2026-05-13T21:50:00.000Z
+Stopped at: AgentLens absorption follow-ups closed plus a 413-on-large-files fix shipped. Second `dashclaw code ingest` round surfaced 54 HTTP 413s on files between 3.2 MB and 13.7 MB — Vercel Hobby's 4.5 MB body limit plus ~30% JSON-array inflation. Shipped gzip+base64 ingest payloads (CLI compresses files >1 MB raw, server decompresses) in commits `302f835d` (route + CLI + tests) and `916a9485` (cron test mock follow-up). Suite: 2031 vitest pass / 0 fail / 5 skip; 13 CLI; lint + route-sql:check clean. Operator follow-ups: re-run ingest round 3 to clear the 54, then continue with the smoke list. Phase 3 launch blitz still blocked on DOG-02 walkthrough recording.
+Resume file: `.planning/.continue-here.md` (AgentLens follow-up checklist, refreshed)
 
 **Planned Phase:** 3 (Public Launch — phase awaiting launch event to fully close) — 2026-04-23T02:03:52.000Z
