@@ -10,11 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 DashClaw ships two independently versioned artifacts from this repo:
 
 - **Platform** — the Next.js app, API routes, dashboard, and supporting
-  libraries. Current: **2.13.3**. This is the version of the DashClaw instance
+  libraries. Current: **2.14.0**. This is the version of the DashClaw instance
   you deploy to Vercel. Governance features, UI changes, new API routes, and
   database migrations land on this track.
 - **SDK** — the `dashclaw` npm package published from `sdk/`. Current:
-  **2.11.1**. This is what agents install with `npm install dashclaw`. Entries
+  **2.12.0**. This is what agents install with `npm install dashclaw`. Entries
   on this track are prefixed `## SDK [x.y.z]` so they don't visually collide
   with platform entries.
 
@@ -26,6 +26,26 @@ Plugin and tooling entries (e.g. `@dashclaw/openclaw-plugin`, `@dashclaw/cli`)
 are prefixed with the package name.
 
 ## [Unreleased]
+
+_Nothing here yet. Next release will collect changes since 2.14.0._
+
+## SDK [2.12.0] - 2026-05-13 — Durable execution finality wrappers
+
+First SDK release that ships the durable-execution-finality client surface. Pairs with platform 2.14.0 below.
+
+### Added
+
+- **`reportActionOutcome(actionId, { status, summary?, error_message?, progress? })`** — record a terminal outcome via `POST /api/actions/:id/outcome`. One-shot at the repository layer; second call returns 409 with `current_status`. `status` must be `completed`, `partial`, or `failed`; `lost_confirmation` is reserved for the system sweep.
+- **`getActionOutcome(actionId)`** — read the current outcome state via `GET /api/actions/:id/outcome`. Returns `{ status, outcome_at, summary, error_message, progress, elapsed_ms }`. Call before retry to avoid double-execution.
+- **`reportActionSuccess(actionId, summary?)`**, **`reportActionFailure(actionId, errorMessage, summary?)`**, **`reportActionPartial(actionId, progress, summary?)`** — convenience wrappers for the three agent-reportable terminal states.
+- **`deriveIdempotencyKey(parts)`** — SHA-256 hex digest of intent fields. Order-independent. Pass the result as `idempotency_key` on `createAction` so a retried create returns the existing row instead of inserting a duplicate.
+- Equivalent Python SDK methods ship in the **`dashclaw`** PyPI package version `2.12.0` (snake_case: `report_action_outcome`, `get_action_outcome`, `report_action_success` / `failure` / `partial`, `derive_idempotency_key`).
+
+### Notes for SDK consumers
+
+The legacy `updateOutcome` PATCH flow still works and is now wired into the durable-finality contract on the server side (platform 2.14.0 below): if you call `updateOutcome(id, { status: 'completed' })` against a 2.14.0+ instance, the server implicitly sets `outcome_status` to match. New integrations should still prefer `reportActionOutcome` for retry-safe semantics, but legacy callers no longer trip the `lost_confirmation` sweep.
+
+## [2.14.0] - 2026-05-13 — Durable Execution Finality
 
 ### Added
 
@@ -40,6 +60,8 @@ are prefixed with the package name.
   - **Dashboard**: outcome filter on `/decisions`; new `OutcomeBadge` component (`pending` / `completed` / `partial` / `failed` / `lost` with token-driven semantic colors); terminal-state badge on each row when non-pending; Final Outcome badge plus summary/error line on the action detail page.
   - **Webhook event catalog**: new `lost_confirmation` event type (parallel to existing `cost_exceeded`, `stale_action`, etc.). Subscribers filter via `events: [...]` on the webhook config.
   - 28 new unit tests covering repo-layer CAS enforcement, route 409 / 404 / DLP handling, sweep auth and fan-out, SDK wrapper signatures, idempotency-key short-circuit (no-key → no lookup, hit → no downstream work, miss → normal path), and the helper hash properties (identical / differs-on-change / order-independent / type-validated).
+- **Sweep guard against false-positive `lost_confirmation`** (commit `1605ba33`): `/api/cron/outcome-sweep` now skips actions whose legacy `status` column is already terminal (`completed`, `failed`, `cancelled`, `blocked`). Without this guard, every existing integration that uses `updateOutcome` (OpenClaw plugin, Claude Code hooks, any SDK consumer calling `claw.updateOutcome`) would have its completed actions re-marked as `lost_confirmation` 15 minutes after creation — producing misleading signals, grey "Lost" badges on `/decisions`, and webhook noise. Genuinely orphan actions (status `null` / `running` / `pending` / `pending_approval`) still sweep as intended.
+- **Implicit durable-finality outcome on legacy PATCH** (commit `86af80a0`): `updateActionOutcome` atomically sets `outcome_status` when the caller transitions `status` to a terminal value AND `outcome_status` is still `pending`. Mapping: `completed` → `completed`; `failed` / `cancelled` / `blocked` → `failed`. Respects the one-shot rule, so an explicit `reportActionOutcome` call always wins. Legacy integrations now get first-class durable-finality semantics — agents calling `getActionOutcome` against a legacy-terminated action see the correct terminal state without code changes on the integration's side.
 
 ### Fixed
 
