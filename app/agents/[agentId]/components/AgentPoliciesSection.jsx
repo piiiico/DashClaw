@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Badge } from '../../../components/ui/Badge';
-import { Shield, Plus, X } from 'lucide-react';
+import { Shield, Plus, X, ToggleLeft, ToggleRight } from 'lucide-react';
 
 function parseAgentIds(policy) {
   if (!policy.agent_ids) return [];
@@ -70,13 +70,28 @@ export default function AgentPoliciesSection({ agentId, policies, allPolicies, o
     finally { setAssigning(false); }
   };
 
+  const handleToggleActive = async (policy) => {
+    setAssigning(true);
+    try {
+      const res = await fetch('/api/policies', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: policy.id, active: policy.active === 1 ? 0 : 1 }),
+      });
+      if (res.ok) onRefresh?.();
+    } catch { /* ignore */ }
+    finally { setAssigning(false); }
+  };
+
+  const activeCount = applicablePolicies.filter(p => p.active === 1).length;
+
   return (
     <div className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#111] px-5 py-4">
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Shield size={14} className="text-tertiary" />
           <span className="text-sm font-medium text-white">Policies</span>
-          <span className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] font-medium text-secondary">{applicablePolicies.length} active</span>
+          <span className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] font-medium text-secondary">{activeCount} of {applicablePolicies.length} active</span>
         </div>
         <button onClick={() => setShowPicker(!showPicker)} className="flex items-center gap-1 text-xs text-brand hover:text-brand/80">
           <Plus size={12} /> Manage
@@ -88,16 +103,27 @@ export default function AgentPoliciesSection({ agentId, policies, allPolicies, o
         <div className="space-y-2">
           {applicablePolicies.map(p => {
             const isGlobal = parseAgentIds(p).length === 0;
+            const isActive = p.active === 1;
             return (
-              <div key={p.id} className="flex items-center justify-between gap-3 rounded-lg bg-white/[0.02] px-3 py-2">
+              <div key={p.id} className={`flex items-center justify-between gap-3 rounded-lg bg-white/[0.02] px-3 py-2 ${isActive ? '' : 'opacity-60'}`}>
                 <div className="flex items-center gap-2 min-w-0">
                   <Badge size="xs">{p.policy_type || p.type}</Badge>
+                  <Badge variant={isActive ? 'success' : 'default'} size="xs">{isActive ? 'active' : 'inactive'}</Badge>
                   <span className="text-xs text-secondary truncate">{formatPolicyRules(p)}</span>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <Badge variant={isGlobal ? 'default' : 'brand'} size="xs">{isGlobal ? 'global' : 'agent'}</Badge>
+                  <button
+                    onClick={() => handleToggleActive(p)}
+                    disabled={assigning}
+                    className="text-tertiary hover:text-white disabled:opacity-50"
+                    aria-label={isActive ? `Deactivate ${p.name || p.policy_type}` : `Activate ${p.name || p.policy_type}`}
+                    title={isActive ? 'Deactivate policy (affects all agents)' : 'Activate policy (affects all agents)'}
+                  >
+                    {isActive ? <ToggleRight size={16} className="text-brand" /> : <ToggleLeft size={16} />}
+                  </button>
                   {!isGlobal && (
-                    <button onClick={() => handleUnassign(p)} disabled={assigning} className="text-tertiary hover:text-error disabled:opacity-50"><X size={12} /></button>
+                    <button onClick={() => handleUnassign(p)} disabled={assigning} className="text-tertiary hover:text-error disabled:opacity-50" aria-label={`Unassign ${p.name || p.policy_type} from this agent`}><X size={12} /></button>
                   )}
                 </div>
               </div>
