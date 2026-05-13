@@ -24,6 +24,7 @@ import {
   createActionRecord,
   createBlockedActionRecord,
   deleteActionsByIds,
+  getActionByIdempotencyKey,
   hasAgentAction,
   insertActionEmbedding,
   isFirstActionForOrg,
@@ -97,6 +98,22 @@ export async function POST(request) {
     const { valid, data, errors } = validateActionRecord(body);
     if (!valid) {
       return NextResponse.json({ error: 'Validation failed', details: errors }, { status: 400 });
+    }
+
+    // Idempotency short-circuit. If the caller supplied an idempotency_key and
+    // we already have a row for (org_id, idempotency_key), return that row
+    // instead of doing duplicate work. Safe because the unique index on
+    // action_records (org_id, idempotency_key) prevents a race-condition
+    // double-insert even if two requests hit this code path simultaneously
+    // — the second INSERT will fail and a retry resolves through this read.
+    if (data.idempotency_key) {
+      const existing = await getActionByIdempotencyKey(sql, orgId, data.idempotency_key);
+      if (existing) {
+        return NextResponse.json({
+          action: existing,
+          idempotent_replay: true,
+        });
+      }
     }
 
     // SECURITY: redact likely secrets before storing the action record.

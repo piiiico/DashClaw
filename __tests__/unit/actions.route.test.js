@@ -10,6 +10,7 @@ const {
   mockHasAgentAction,
   mockInsertActionEmbedding,
   mockDeleteActionsByIds,
+  mockGetActionByIdempotencyKey,
   mockEvaluateGuard,
   mockCheckQuotaFast,
   mockGetOrgPlan,
@@ -29,6 +30,7 @@ const {
   mockHasAgentAction: vi.fn(),
   mockInsertActionEmbedding: vi.fn(),
   mockDeleteActionsByIds: vi.fn(),
+  mockGetActionByIdempotencyKey: vi.fn(),
   mockEvaluateGuard: vi.fn(),
   mockCheckQuotaFast: vi.fn(),
   mockGetOrgPlan: vi.fn(),
@@ -57,6 +59,7 @@ vi.mock('@/lib/repositories/actions.repository.js', () => ({
   deleteActionsByIds: mockDeleteActionsByIds,
   hasAgentAction: mockHasAgentAction,
   insertActionEmbedding: mockInsertActionEmbedding,
+  getActionByIdempotencyKey: mockGetActionByIdempotencyKey,
 }));
 vi.mock('@/lib/guard.js', () => ({ evaluateGuard: mockEvaluateGuard }));
 vi.mock('@/lib/usage.js', () => ({
@@ -340,6 +343,75 @@ describe('/api/actions POST', () => {
     }));
 
     expect(res.status).toBe(500);
+  });
+
+  // --- Durable execution finality — Phase 6 idempotency ---
+
+  describe('idempotency_key short-circuit', () => {
+    it('returns the existing row when idempotency_key already exists for this org', async () => {
+      const existingRow = {
+        action_id: 'act_prev',
+        agent_id: 'agent_1',
+        action_type: 'build',
+        declared_goal: 'Build the project',
+        idempotency_key: 'k1',
+      };
+      mockValidateActionRecord.mockReturnValue({
+        valid: true,
+        data: { ...validBody, idempotency_key: 'k1' },
+        errors: [],
+      });
+      mockGetActionByIdempotencyKey.mockResolvedValue(existingRow);
+
+      const res = await POST(makeRequest('http://localhost/api/actions', {
+        headers: { 'x-org-id': 'org_1' },
+        body: { ...validBody, idempotency_key: 'k1' },
+      }));
+
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.idempotent_replay).toBe(true);
+      expect(data.action.action_id).toBe('act_prev');
+
+      // Critical: nothing downstream runs on a replay — no quota, no guard,
+      // no create, no signature verification.
+      expect(mockCheckQuotaFast).not.toHaveBeenCalled();
+      expect(mockEvaluateGuard).not.toHaveBeenCalled();
+      expect(mockCreateActionRecord).not.toHaveBeenCalled();
+    });
+
+    it('proceeds normally when idempotency_key is supplied but no prior row exists', async () => {
+      mockValidateActionRecord.mockReturnValue({
+        valid: true,
+        data: { ...validBody, idempotency_key: 'k_new' },
+        errors: [],
+      });
+      mockGetActionByIdempotencyKey.mockResolvedValue(null);
+
+      const res = await POST(makeRequest('http://localhost/api/actions', {
+        headers: { 'x-org-id': 'org_1' },
+        body: { ...validBody, idempotency_key: 'k_new' },
+      }));
+
+      expect(res.status).toBe(201);
+      expect(mockCreateActionRecord).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not call the idempotency lookup when no key is supplied', async () => {
+      mockValidateActionRecord.mockReturnValue({
+        valid: true,
+        data: { ...validBody },
+        errors: [],
+      });
+
+      const res = await POST(makeRequest('http://localhost/api/actions', {
+        headers: { 'x-org-id': 'org_1' },
+        body: validBody,
+      }));
+
+      expect(res.status).toBe(201);
+      expect(mockGetActionByIdempotencyKey).not.toHaveBeenCalled();
+    });
   });
 });
 

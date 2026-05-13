@@ -1151,6 +1151,18 @@ elif outcome["status"] == "partial":
 
 Pending outcomes that never get reported get swept to `lost_confirmation` by the `/api/cron/outcome-sweep` cron. The sweep fires a `signal.detected` webhook (event type `lost_confirmation`) for subscribers. Per-org timeout (minutes) is configurable via the `DASHCLAW_OUTCOME_TIMEOUT_MINUTES` setting (default 15). See `docs/architecture/durable-execution-finality.md`.
 
+**Idempotency keys.** Pass `idempotency_key` on `create_action` to make creates retry-safe. A second create with the same `(org_id, idempotency_key)` returns the original row with `idempotent_replay=True` instead of inserting a duplicate. Derive keys from intent (agent_id + action_type + scope + your own request id), not timestamps:
+
+```python
+key = DashClaw.derive_idempotency_key({
+    "agent_id": "deploy-bot",
+    "action_type": "deploy",
+    "scope": "prod-us-east",
+    "request_id": request_id,
+})
+claw.create_action(action_type="deploy", declared_goal="ship hotfix", idempotency_key=key)
+```
+
 ### Workflow Templates
 
 ```python

@@ -3,6 +3,8 @@
  * Focused governance runtime client for AI agents.
  */
 
+import { createHash } from 'crypto';
+
 class ApprovalDeniedError extends Error {
   constructor(message, decision) {
     super(message);
@@ -814,6 +816,32 @@ class DashClaw {
       progress,
       summary,
     });
+  }
+
+  /**
+   * Derive a stable idempotency key from the *intent* of an action so a
+   * retried `createAction` call returns the original row instead of creating
+   * a duplicate. Pass the same `parts` for the same logical action; vary at
+   * least one part for distinct actions.
+   *
+   * The hash function uses SHA-256 hex via Node's built-in crypto. In
+   * browser-only environments lacking `require`, callers should compute the
+   * key themselves and pass it directly to `createAction({ idempotency_key }).`
+   *
+   * @param {Object} parts — at minimum agent_id + action_type + a request
+   *   discriminator that uniquely identifies this attempt. Reusing the key
+   *   for a logically distinct action is the agent's bug, not DashClaw's.
+   * @returns {string} SHA-256 hex digest
+   */
+  deriveIdempotencyKey(parts) {
+    if (!parts || typeof parts !== 'object') {
+      throw new TypeError('deriveIdempotencyKey: parts must be an object');
+    }
+    const ordered = Object.keys(parts)
+      .sort()
+      .map((k) => `${k}=${parts[k] ?? ''}`)
+      .join('|');
+    return createHash('sha256').update(ordered).digest('hex');
   }
 
   // ---------------------------------------------------------------------------

@@ -1949,6 +1949,26 @@ class DashClaw:
             action_id, "partial", summary=summary, progress=progress
         )
 
+    @staticmethod
+    def derive_idempotency_key(parts):
+        """Derive a stable idempotency key from the intent of an action.
+
+        Pass the same ``parts`` dict for the same logical action; vary at
+        least one part for distinct actions. The returned SHA-256 hex digest
+        can be supplied to ``create_action(idempotency_key=...)`` so a retried
+        create returns the original row instead of inserting a duplicate.
+
+        Reusing the key for a logically distinct action is the agent's bug,
+        not DashClaw's — derive from intent (agent_id, action_type, scope,
+        request_id), never from time.
+        """
+        import hashlib
+
+        if not isinstance(parts, dict):
+            raise TypeError("derive_idempotency_key: parts must be a dict")
+        ordered = "|".join(f"{k}={parts.get(k) if parts.get(k) is not None else ''}" for k in sorted(parts))
+        return hashlib.sha256(ordered.encode("utf-8")).hexdigest()
+
     # --- Execution Studio: Workflow Templates -------------
 
     def list_workflow_templates(self, status=None, limit=50, offset=0):

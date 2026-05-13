@@ -229,6 +229,31 @@ class TestReportActionConvenienceWrappers(unittest.TestCase):
         )
 
 
+class TestDeriveIdempotencyKey(unittest.TestCase):
+    def test_returns_identical_hash_for_identical_inputs(self):
+        a = DashClaw.derive_idempotency_key({"agent_id": "a", "action_type": "deploy"})
+        b = DashClaw.derive_idempotency_key({"agent_id": "a", "action_type": "deploy"})
+        self.assertEqual(a, b)
+        self.assertEqual(len(a), 64)
+        self.assertTrue(all(c in "0123456789abcdef" for c in a))
+
+    def test_differs_when_input_changes(self):
+        a = DashClaw.derive_idempotency_key({"agent_id": "a", "action_type": "deploy"})
+        b = DashClaw.derive_idempotency_key({"agent_id": "a", "action_type": "plan"})
+        self.assertNotEqual(a, b)
+
+    def test_is_order_independent_across_key_insertion(self):
+        a = DashClaw.derive_idempotency_key({"x": 1, "y": 2})
+        b = DashClaw.derive_idempotency_key({"y": 2, "x": 1})
+        self.assertEqual(a, b)
+
+    def test_rejects_non_dict_input(self):
+        with self.assertRaises(TypeError):
+            DashClaw.derive_idempotency_key("foo")
+        with self.assertRaises(TypeError):
+            DashClaw.derive_idempotency_key(None)
+
+
 # ---------------------------------------------------------------------------
 # record_assumption
 # ---------------------------------------------------------------------------

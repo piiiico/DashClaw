@@ -212,6 +212,32 @@ describe('DashClaw v2 SDK', () => {
     });
   });
 
+  describe('deriveIdempotencyKey', () => {
+    it('returns identical hash for identical inputs', () => {
+      const k1 = claw.deriveIdempotencyKey({ agent_id: 'a', action_type: 'deploy', req: '123' });
+      const k2 = claw.deriveIdempotencyKey({ agent_id: 'a', action_type: 'deploy', req: '123' });
+      expect(k1).toBe(k2);
+      expect(k1).toMatch(/^[a-f0-9]{64}$/);
+    });
+
+    it('differs when any input changes', () => {
+      const a = claw.deriveIdempotencyKey({ agent_id: 'a', action_type: 'deploy' });
+      const b = claw.deriveIdempotencyKey({ agent_id: 'a', action_type: 'plan' });
+      expect(a).not.toBe(b);
+    });
+
+    it('is order-independent across key insertion order', () => {
+      const a = claw.deriveIdempotencyKey({ x: 1, y: 2 });
+      const b = claw.deriveIdempotencyKey({ y: 2, x: 1 });
+      expect(a).toBe(b);
+    });
+
+    it('throws when parts is not an object', () => {
+      expect(() => claw.deriveIdempotencyKey('foo')).toThrow(TypeError);
+      expect(() => claw.deriveIdempotencyKey(null)).toThrow(TypeError);
+    });
+  });
+
   // --- recordAssumption ---
 
   describe('recordAssumption', () => {

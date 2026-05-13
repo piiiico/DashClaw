@@ -56,6 +56,10 @@ const ACTION_RECORD_SCHEMA = {
   tokens_in:            { type: 'integer', min: 0 },
   tokens_out:           { type: 'integer', min: 0 },
   model:                { type: 'string', maxLength: 128 },
+  // Idempotency — agent-supplied key. If a row already exists for
+  // (org_id, idempotency_key), the create call returns that row instead
+  // of inserting a duplicate. See docs/architecture/durable-execution-finality.md.
+  idempotency_key:      { type: 'string', maxLength: 256 },
 };
 
 const OUTCOME_FIELDS = [

@@ -215,6 +215,21 @@ export async function isFirstActionForOrg(sql, orgId, excludingActionId) {
   return rows.length === 0;
 }
 
+/**
+ * Look up an existing action by idempotency key for this org.
+ * Returns the row if found, null otherwise. Used by POST /api/actions
+ * to short-circuit duplicate create calls.
+ */
+export async function getActionByIdempotencyKey(sql, orgId, idempotencyKey) {
+  if (!idempotencyKey) return null;
+  const rows = await sql`
+    SELECT * FROM action_records
+    WHERE org_id = ${orgId} AND idempotency_key = ${idempotencyKey}
+    LIMIT 1
+  `;
+  return rows[0] || null;
+}
+
 export async function createActionRecord(sql, payload) {
   const {
     orgId,
@@ -237,7 +252,7 @@ export async function createActionRecord(sql, payload) {
       output_summary, side_effects, artifacts_created, error_message,
       timestamp_start, timestamp_end, duration_ms, cost_estimate,
       tokens_in, tokens_out, model,
-      signature, verified
+      signature, verified, idempotency_key
     ) VALUES (
       ${orgId},
       ${action_id},
@@ -271,7 +286,8 @@ export async function createActionRecord(sql, payload) {
       ${data.tokens_out || 0},
       ${data.model || null},
       ${signature},
-      ${verified}
+      ${verified},
+      ${data.idempotency_key || null}
     )
     RETURNING *
   `;

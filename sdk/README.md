@@ -700,6 +700,18 @@ curl -X POST "$BASE_URL/api/actions/$ACTION_ID/outcome" \
 
 Pending outcomes that never get reported get swept to `lost_confirmation` by `/api/cron/outcome-sweep`. Vercel runs it daily on Hobby; the `lost_confirmation` event fires a `signal.detected` webhook so subscribers can see and recover. Per-org timeout (minutes) is configurable via the `DASHCLAW_OUTCOME_TIMEOUT_MINUTES` setting (default 15).
 
+**Idempotency keys.** Network errors on the *create* side of the create-then-execute flow used to leave duplicate `action_records` behind. Pass `idempotency_key` on `POST /api/actions` to make creates retry-safe — a second POST with the same `(org_id, idempotency_key)` returns the original row with `{ idempotent_replay: true }` instead of inserting a duplicate. Derive keys from intent, not timestamps:
+
+```javascript
+const idempotency_key = claw.deriveIdempotencyKey({
+  agent_id: 'deploy-bot',
+  action_type: 'deploy',
+  scope: 'prod-us-east',
+  request_id: requestId, // your own attempt discriminator
+});
+await claw.createAction({ /* ... */, idempotency_key });
+```
+
 ### Workflow Templates
 
 ```javascript
