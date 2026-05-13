@@ -754,6 +754,69 @@ class DashClaw {
   }
 
   // ---------------------------------------------------------------------------
+  // Durable execution finality — terminal outcome reporting
+  // See docs/architecture/durable-execution-finality.md
+  // ---------------------------------------------------------------------------
+
+  /**
+   * POST /api/actions/:id/outcome — Record the terminal outcome of an action.
+   *
+   * @param {string} actionId
+   * @param {Object} payload
+   * @param {'completed'|'partial'|'failed'} payload.status
+   * @param {string} [payload.summary]
+   * @param {string} [payload.error_message] — required when status=failed
+   * @param {Object} [payload.progress] — required when status=partial
+   * @returns {Promise<{ outcome: object, security: object }>}
+   * @throws on 409 when the outcome is already terminal — inspect the response
+   *   body for `current_status` before deciding what to do next.
+   */
+  async reportActionOutcome(actionId, payload) {
+    return this._request(`/api/actions/${actionId}/outcome`, 'POST', payload);
+  }
+
+  /**
+   * GET /api/actions/:id/outcome — Read the current outcome state of an action.
+   *
+   * Returns `{ action_id, status, outcome_at, summary, error_message, progress, elapsed_ms }`.
+   * Status is one of: pending, completed, partial, failed, lost_confirmation.
+   * Use this BEFORE retrying any approved action to avoid double-execution.
+   */
+  async getActionOutcome(actionId) {
+    return this._request(`/api/actions/${actionId}/outcome`, 'GET');
+  }
+
+  /**
+   * Convenience: report a successful terminal outcome.
+   */
+  async reportActionSuccess(actionId, summary) {
+    return this.reportActionOutcome(actionId, { status: 'completed', summary });
+  }
+
+  /**
+   * Convenience: report a failed terminal outcome. `error_message` is required.
+   */
+  async reportActionFailure(actionId, errorMessage, summary) {
+    return this.reportActionOutcome(actionId, {
+      status: 'failed',
+      error_message: errorMessage,
+      summary,
+    });
+  }
+
+  /**
+   * Convenience: report a partial outcome with progress state. Progress is
+   * required (an object describing where the agent stopped).
+   */
+  async reportActionPartial(actionId, progress, summary) {
+    return this.reportActionOutcome(actionId, {
+      status: 'partial',
+      progress,
+      summary,
+    });
+  }
+
+  // ---------------------------------------------------------------------------
   // Execution Studio — Workflow Templates
   // ---------------------------------------------------------------------------
 

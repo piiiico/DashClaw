@@ -651,7 +651,7 @@ const { rootActionId, nodes, edges } = await claw.getActionGraph(actionId);
 
 ### Action Outcome (durable execution finality)
 
-Every approved action carries a terminal outcome: `pending`, `completed`, `partial`, `failed`, or `lost_confirmation`. Agents call `reportOutcome` to record finality, and `getOutcome` before retry to avoid re-executing already-completed work. Outcomes are one-shot — once non-pending, they cannot be rewritten.
+Every approved action carries a terminal outcome: `pending`, `completed`, `partial`, `failed`, or `lost_confirmation`. Agents call `reportActionOutcome` to record finality, and `getActionOutcome` before retry to avoid re-executing already-completed work. Outcomes are one-shot — once non-pending, they cannot be rewritten.
 
 ```javascript
 // Report success
@@ -659,6 +659,11 @@ await claw.reportActionOutcome(actionId, {
   status: 'completed',
   summary: 'Deployed dashclaw 2.13.4 to production'
 });
+
+// Convenience wrappers
+await claw.reportActionSuccess(actionId, 'Deployed dashclaw 2.13.4');
+await claw.reportActionFailure(actionId, 'Downstream API returned 503');
+await claw.reportActionPartial(actionId, { step: 2, of: 5 });
 
 // Report failure (error_message required)
 await claw.reportActionOutcome(actionId, {

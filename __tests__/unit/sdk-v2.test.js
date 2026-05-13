@@ -151,6 +151,67 @@ describe('DashClaw v2 SDK', () => {
     });
   });
 
+  // --- durable execution finality (Phase 3 wrappers) ---
+
+  describe('reportActionOutcome', () => {
+    it('POSTs the payload verbatim to /api/actions/:id/outcome', async () => {
+      await claw.reportActionOutcome('act_1', {
+        status: 'completed',
+        summary: 'shipped',
+      });
+      const [url, opts] = fetch.mock.calls[0];
+      expect(url).toBe('http://localhost:3000/api/actions/act_1/outcome');
+      expect(opts.method).toBe('POST');
+      expect(JSON.parse(opts.body)).toEqual({ status: 'completed', summary: 'shipped' });
+    });
+
+    it('passes failure payloads through unchanged', async () => {
+      await claw.reportActionOutcome('act_1', {
+        status: 'failed',
+        error_message: 'API 503',
+      });
+      const body = JSON.parse(fetch.mock.calls[0][1].body);
+      expect(body).toEqual({ status: 'failed', error_message: 'API 503' });
+    });
+  });
+
+  describe('getActionOutcome', () => {
+    it('GETs /api/actions/:id/outcome', async () => {
+      await claw.getActionOutcome('act_1');
+      const [url, opts] = fetch.mock.calls[0];
+      expect(url).toBe('http://localhost:3000/api/actions/act_1/outcome');
+      expect(opts.method).toBe('GET');
+    });
+  });
+
+  describe('reportActionSuccess / Failure / Partial convenience wrappers', () => {
+    it('reportActionSuccess sends status=completed', async () => {
+      await claw.reportActionSuccess('act_1', 'shipped');
+      const body = JSON.parse(fetch.mock.calls[0][1].body);
+      expect(body).toEqual({ status: 'completed', summary: 'shipped' });
+    });
+
+    it('reportActionFailure sends status=failed with error_message', async () => {
+      await claw.reportActionFailure('act_1', 'boom', 'context');
+      const body = JSON.parse(fetch.mock.calls[0][1].body);
+      expect(body).toEqual({
+        status: 'failed',
+        error_message: 'boom',
+        summary: 'context',
+      });
+    });
+
+    it('reportActionPartial sends status=partial with progress', async () => {
+      await claw.reportActionPartial('act_1', { step: 2 }, 'halfway');
+      const body = JSON.parse(fetch.mock.calls[0][1].body);
+      expect(body).toEqual({
+        status: 'partial',
+        progress: { step: 2 },
+        summary: 'halfway',
+      });
+    });
+  });
+
   // --- recordAssumption ---
 
   describe('recordAssumption', () => {
