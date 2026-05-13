@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Badge } from '../../../components/ui/Badge';
 import { Shield, Plus, X } from 'lucide-react';
 
@@ -104,20 +105,29 @@ export default function AgentPoliciesSection({ agentId, policies, allPolicies, o
           })}
         </div>
       )}
-      {showPicker && unassignedPolicies.length > 0 && (
+      {showPicker && (
         <div className="mt-3 border-t border-white/[0.04] pt-3">
           <div className="text-[10px] uppercase tracking-widest text-tertiary mb-2">Assign policy</div>
-          <div className="space-y-1">
-            {unassignedPolicies.map(p => (
-              <button key={p.id} onClick={() => handleAssign(p)} disabled={assigning} className="w-full flex items-center justify-between gap-3 rounded-lg bg-white/[0.02] px-3 py-2 text-left hover:bg-white/[0.04] disabled:opacity-50">
-                <div className="flex items-center gap-2 min-w-0">
-                  <Badge size="xs">{p.policy_type || p.type}</Badge>
-                  <span className="text-xs text-secondary truncate">{formatPolicyRules(p)}</span>
-                </div>
-                <Plus size={12} className="text-brand shrink-0" />
-              </button>
-            ))}
-          </div>
+          {unassignedPolicies.length > 0 ? (
+            <div className="space-y-1">
+              {unassignedPolicies.map(p => (
+                <button key={p.id} onClick={() => handleAssign(p)} disabled={assigning} className="w-full flex items-center justify-between gap-3 rounded-lg bg-white/[0.02] px-3 py-2 text-left hover:bg-white/[0.04] disabled:opacity-50">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Badge size="xs">{p.policy_type || p.type}</Badge>
+                    <span className="text-xs text-secondary truncate">{formatPolicyRules(p)}</span>
+                  </div>
+                  <Plus size={12} className="text-brand shrink-0" />
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-lg bg-white/[0.02] px-3 py-3 text-xs text-tertiary">
+              No agent-scoped policies available to assign. Global policies (shown above) already apply to every agent.{' '}
+              <Link href="/policies" className="text-brand hover:underline">
+                Create or edit policies →
+              </Link>
+            </div>
+          )}
         </div>
       )}
     </div>
