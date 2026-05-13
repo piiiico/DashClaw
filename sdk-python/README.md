@@ -1124,6 +1124,33 @@ graph = claw.get_action_graph(action_id)
 # graph["edges"] — parent_child | related | assumption_of | loop_from
 ```
 
+### Action Outcome (durable execution finality)
+
+Every approved action carries a terminal outcome: `pending`, `completed`, `partial`, `failed`, or `lost_confirmation`. Agents call `report_action_outcome` to record finality, and `get_action_outcome` before retry to avoid re-executing already-completed work. Outcomes are one-shot — once non-pending, they cannot be rewritten.
+
+```python
+# Report success
+claw.report_action_outcome(action_id, "completed", summary="Deployed dashclaw 2.13.4")
+
+# Convenience wrappers
+claw.report_action_success(action_id, summary="Deployed dashclaw 2.13.4")
+claw.report_action_failure(action_id, error_message="Downstream API returned 503")
+claw.report_action_partial(action_id, progress={"step": 2, "of": 5})
+
+# Retry-safe poll before re-trying any approved action
+outcome = claw.get_action_outcome(action_id)
+if outcome["status"] == "pending":
+    pass  # still in flight, WAIT
+elif outcome["status"] == "completed":
+    pass  # already executed, SKIP
+elif outcome["status"] in ("failed", "lost_confirmation"):
+    pass  # safe to RETRY
+elif outcome["status"] == "partial":
+    pass  # clean up then retry
+```
+
+Pending outcomes that never get reported get swept to `lost_confirmation` by the `/api/cron/outcome-sweep` cron. The sweep fires a `signal.detected` webhook (event type `lost_confirmation`) for subscribers. Per-org timeout (minutes) is configurable via the `DASHCLAW_OUTCOME_TIMEOUT_MINUTES` setting (default 15). See `docs/architecture/durable-execution-finality.md`.
+
 ### Workflow Templates
 
 ```python

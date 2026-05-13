@@ -163,6 +163,73 @@ class TestUpdateOutcome(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
+# Durable execution finality — Phase 4 wrappers
+# ---------------------------------------------------------------------------
+
+class TestReportActionOutcome(unittest.TestCase):
+    def test_posts_completed_to_outcome_route(self):
+        client = RecordingDashClaw()
+        client.report_action_outcome("act_1", "completed", summary="shipped")
+        call = client.calls[-1]
+        self.assertEqual(call["method"], "POST")
+        self.assertEqual(call["path"], "/api/actions/act_1/outcome")
+        self.assertEqual(call["body"], {"status": "completed", "summary": "shipped"})
+
+    def test_posts_failed_with_error_message(self):
+        client = RecordingDashClaw()
+        client.report_action_outcome("act_1", "failed", error_message="boom")
+        body = client.calls[-1]["body"]
+        self.assertEqual(body, {"status": "failed", "error_message": "boom"})
+
+    def test_posts_partial_with_progress(self):
+        client = RecordingDashClaw()
+        client.report_action_outcome("act_1", "partial", progress={"step": 2})
+        body = client.calls[-1]["body"]
+        self.assertEqual(body, {"status": "partial", "progress": {"step": 2}})
+
+    def test_omits_optional_fields_when_not_provided(self):
+        client = RecordingDashClaw()
+        client.report_action_outcome("act_1", "completed")
+        body = client.calls[-1]["body"]
+        self.assertEqual(body, {"status": "completed"})
+
+
+class TestGetActionOutcome(unittest.TestCase):
+    def test_gets_outcome_route(self):
+        client = RecordingDashClaw()
+        client.get_action_outcome("act_1")
+        call = client.calls[-1]
+        self.assertEqual(call["method"], "GET")
+        self.assertEqual(call["path"], "/api/actions/act_1/outcome")
+
+
+class TestReportActionConvenienceWrappers(unittest.TestCase):
+    def test_report_action_success(self):
+        client = RecordingDashClaw()
+        client.report_action_success("act_1", summary="shipped")
+        body = client.calls[-1]["body"]
+        self.assertEqual(body, {"status": "completed", "summary": "shipped"})
+
+    def test_report_action_failure_requires_error_message(self):
+        client = RecordingDashClaw()
+        client.report_action_failure("act_1", "boom", summary="context")
+        body = client.calls[-1]["body"]
+        self.assertEqual(
+            body,
+            {"status": "failed", "summary": "context", "error_message": "boom"},
+        )
+
+    def test_report_action_partial_requires_progress(self):
+        client = RecordingDashClaw()
+        client.report_action_partial("act_1", {"step": 2}, summary="halfway")
+        body = client.calls[-1]["body"]
+        self.assertEqual(
+            body,
+            {"status": "partial", "summary": "halfway", "progress": {"step": 2}},
+        )
+
+
+# ---------------------------------------------------------------------------
 # record_assumption
 # ---------------------------------------------------------------------------
 

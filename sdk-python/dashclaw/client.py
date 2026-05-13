@@ -1901,6 +1901,54 @@ class DashClaw:
         """Read-only execution graph (nodes + edges) for an action."""
         return self._request(f"/api/actions/{action_id}/graph", "GET")
 
+    # --- Durable execution finality -----------------------
+    # See docs/architecture/durable-execution-finality.md
+
+    def report_action_outcome(self, action_id, status, summary=None, error_message=None, progress=None):
+        """Record the terminal outcome of an approved action.
+
+        Status must be one of ``completed``, ``partial``, or ``failed``.
+        ``error_message`` is required when ``status='failed'``.
+        ``progress`` (dict) is required when ``status='partial'``.
+
+        Raises a 409 error (DashClawError with .status == 409) if the outcome
+        is already set — inspect the response body for ``current_status``.
+        """
+        payload = {"status": status}
+        if summary is not None:
+            payload["summary"] = summary
+        if error_message is not None:
+            payload["error_message"] = error_message
+        if progress is not None:
+            payload["progress"] = progress
+        return self._request(f"/api/actions/{action_id}/outcome", "POST", json=payload)
+
+    def get_action_outcome(self, action_id):
+        """Read the current outcome state of an action.
+
+        Returns a dict with ``status`` (one of pending, completed, partial,
+        failed, lost_confirmation), ``outcome_at``, ``summary``,
+        ``error_message``, ``progress``, ``elapsed_ms``. Call before retry
+        to avoid re-executing already-completed actions.
+        """
+        return self._request(f"/api/actions/{action_id}/outcome", "GET")
+
+    def report_action_success(self, action_id, summary=None):
+        """Convenience: report a successful terminal outcome."""
+        return self.report_action_outcome(action_id, "completed", summary=summary)
+
+    def report_action_failure(self, action_id, error_message, summary=None):
+        """Convenience: report a failed terminal outcome. ``error_message`` required."""
+        return self.report_action_outcome(
+            action_id, "failed", summary=summary, error_message=error_message
+        )
+
+    def report_action_partial(self, action_id, progress, summary=None):
+        """Convenience: report a partial outcome. ``progress`` (dict) required."""
+        return self.report_action_outcome(
+            action_id, "partial", summary=summary, progress=progress
+        )
+
     # --- Execution Studio: Workflow Templates -------------
 
     def list_workflow_templates(self, status=None, limit=50, offset=0):
