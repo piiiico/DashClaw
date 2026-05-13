@@ -15,7 +15,9 @@ export default defineConfig({
     // those test files are gradually migrated to vi.stubEnv.
     unstubEnvs: true,
     // Exclude Playwright specs (tests/) — they use @playwright/test, not vitest.
-    // Also skip the Playwright defaults and Vitest's own build outputs.
+    // Also skip the Playwright defaults, Vitest's own build outputs, and the
+    // CLI's node:test suite under cli/test/ (run separately by `npm test -w
+    // @dashclaw/cli` or `cli && npm test`).
     exclude: [
       '**/node_modules/**',
       '**/dist/**',
@@ -23,6 +25,7 @@ export default defineConfig({
       '**/tests/**',
       '**/playwright-report/**',
       '**/test-results/**',
+      'cli/test/**',
     ],
   },
   resolve: {

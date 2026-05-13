@@ -27,6 +27,23 @@ are prefixed with the package name.
 
 ## [Unreleased]
 
+### AgentLens absorption — Phase 4: local CLI (Path B)
+
+Backfill path for sessions that pre-date the hook install, or that come from un-hooked Claude Code runs. Sibling package; no workspaces; treats `dashclaw` as an installed peer per the existing CLI design.
+
+- **`dashclaw code` subcommand group** in `cli/bin/dashclaw.js`:
+  - `dashclaw code ingest [--dry-run] [--projects-dir <path>]` — Path B JSONL backfill. Walks `~/.claude/projects` (or the platform-appropriate default, overridable via `CLAUDE_PROJECTS_DIR` or `--projects-dir`), stream-reads each `.jsonl` line-by-line, and POSTs to `/api/code-sessions/ingest-jsonl` with `source_host: 'jsonl'`. Slug = parent directory basename per addendum #3. Files larger than 50 MB are skipped with a stderr warning (chunked POST is out of scope). **Never** logs raw line content — per-file log line is just `{file, posted_lines, status, reason}`.
+  - `dashclaw code memo --project=<slug> [--save]` — fetch and print the latest weekly memo. `--save` writes to `./memos/<weekTag>-<slug>.md`.
+  - `dashclaw code apply <manifestId> --dest=<dir> [--yes] [--allow-redactions] [--overwrite]` — Phase 6 wire-up. Disk-side implementation lives in `cli/lib/code/apply.js`; the manifest API route arrives in Phase 6, at which point this command becomes end-to-end usable.
+- **CLI never imports `app/lib/claude-code/*`** per A6. The vendored copy of the markdown merge helpers and the `_ensureInsideProject` path-traversal guard lives in `cli/lib/code/vendored.js` with a header comment pointing at the canonical sources.
+- **`scripts/sync-cli-vendored-code.mjs`** — operator-run drift check. Each canonical source declares which symbols the vendored copy is required to expose (including the `absolutize` -> `_ensureInsideProject` rename); the script exits non-zero when any required symbol is missing. Auto-editing is intentionally out of scope to avoid silent overwrites of the renamed export.
+- **`cli/package.json`** gets a `"test": "node --test test/**/*.test.js"` script; runs the new `node:test` suite under `cli/test/code/`. Vitest now excludes `cli/test/**` so the two runners don't trip over each other.
+- **Tests**:
+  - `cli/test/code/ingest.test.js` — env-var resolution; payload shape (slug, source_host, ISO mtime, raw-string jsonl_lines); dry-run reporting; live mode with a `node:http` stub server; `skipped_unchanged` passthrough from the server; HTTP error → per-file `error` record (no thrown exception); empty directory handled gracefully.
+  - `cli/test/code/memo.test.js` — most-recent memo selection; `--save` writes to `./memos/`; empty list handled; HTTP error throws with code.
+  - `cli/test/fixtures/claude-projects/` — 2 projects, 3 sessions, one with a repeated-Read pattern that exercises the parser end-to-end through the stub server.
+- 12 new CLI tests passing. Vitest full suite 2022 passing (unchanged). `npm run lint` clean.
+
 ### AgentLens absorption — Phase 3: Stop-hook code-session reporter (Path A)
 
 Opt-in path that lets the existing DashClaw governance hook stack also feed `code_sessions`. Telemetry stays primary; this is additive.

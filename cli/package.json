@@ -8,6 +8,9 @@
   },
   "files": ["bin/", "lib/", "README.md"],
   "engines": { "node": ">=18.0.0" },
+  "scripts": {
+    "test": "node --test test/**/*.test.js"
+  },
   "dependencies": {
     "dashclaw": "^2.2.1"
   },

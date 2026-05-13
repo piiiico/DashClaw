@@ -9,6 +9,9 @@ import {
 } from '../lib/render.js';
 import { runDoctor as runDoctorCommand } from '../lib/doctor.js';
 import { resolveConfig, clearConfigFile, configPath } from '../lib/config.js';
+import { runIngest, defaultClaudeProjectsDir } from '../lib/code/ingest.js';
+import { runMemo } from '../lib/code/memo.js';
+import { runApply } from '../lib/code/apply.js';
 
 process.on('unhandledRejection', (reason) => {
   console.error('Unhandled Rejection:', reason);
@@ -51,6 +54,15 @@ ${bold('Usage:')}
     --json                               Output as JSON (for CI/scripts)
     --no-fix                             Diagnose only, skip auto-fixes
     --category <list>                    Filter checks (e.g., database,config)
+  dashclaw code ingest [--dry-run]       Backfill Claude Code transcripts from ~/.claude/projects
+    --projects-dir <path>                Override the default scan directory
+  dashclaw code memo --project=<slug>    Print the latest weekly memo for a project
+    --save                               Also write to ./memos/<weekTag>-<slug>.md
+  dashclaw code apply <manifestId>       Apply an Optimal Files manifest (Phase 6+ feature)
+    --dest=<dir>                         Target project directory (required)
+    --yes                                Overwrite existing files when manifest says so
+    --allow-redactions                   Write files that contain redacted secret patterns
+    --overwrite                          Clobber existing .NEW side-by-side files
   dashclaw logout                        Remove saved config (~/.dashclaw/config.json)
   dashclaw help                          Show this help
 
@@ -329,9 +341,99 @@ async function cmdApprovals() {
   });
 }
 
+// -- code subcommand group ---------------------------------------------------
+
+async function cmdCodeIngest() {
+  const dryRun = args.includes('--dry-run');
+  const projectsDir = getFlag('--projects-dir') || defaultClaudeProjectsDir();
+  console.log(`Scanning ${projectsDir} ...`);
+  const results = await runIngest({
+    baseUrl,
+    apiKey,
+    projectsDir,
+    dryRun,
+  });
+  if (!results.length) return;
+  let ingested = 0;
+  let skipped = 0;
+  let errors = 0;
+  for (const r of results) {
+    if (r.status === 'ingested') ingested++;
+    else if (r.status === 'skipped_unchanged' || r.status === 'skipped' || r.status === 'dry_run') skipped++;
+    else if (r.status === 'error') errors++;
+  }
+  console.log();
+  console.log(`Done. Ingested: ${ingested}  Skipped: ${skipped}  Errors: ${errors}`);
+  if (errors > 0) process.exit(2);
+}
+
+async function cmdCodeMemo() {
+  const project = getFlag('--project');
+  const save = args.includes('--save');
+  if (!project) {
+    console.error('Error: --project=<slug-or-id> is required.');
+    process.exit(1);
+  }
+  await runMemo({ baseUrl, apiKey, project, save });
+}
+
+async function cmdCodeApply() {
+  const manifestId = args[2];
+  const dest = getFlag('--dest');
+  const yes = args.includes('--yes');
+  const allowRedactions = args.includes('--allow-redactions');
+  const overwrite = args.includes('--overwrite');
+  if (!manifestId) {
+    console.error('Error: usage — dashclaw code apply <manifestId> --dest=<dir> [--yes] [--allow-redactions] [--overwrite]');
+    process.exit(1);
+  }
+  if (!dest) {
+    console.error('Error: --dest=<dir> is required.');
+    process.exit(1);
+  }
+  try {
+    const results = await runApply({
+      baseUrl,
+      apiKey,
+      manifestId,
+      dest,
+      yes,
+      allowRedactions,
+      allowOverwriteSideBySide: overwrite,
+    });
+    const summary = results.reduce((acc, r) => {
+      acc[r.status] = (acc[r.status] || 0) + 1;
+      return acc;
+    }, {});
+    console.log();
+    console.log('Apply summary:', JSON.stringify(summary));
+  } catch (err) {
+    console.error('Error: ' + err.message);
+    process.exit(1);
+  }
+}
+
+async function cmdCode() {
+  const sub = args[1];
+  switch (sub) {
+    case 'ingest':
+      return cmdCodeIngest();
+    case 'memo':
+      return cmdCodeMemo();
+    case 'apply':
+      return cmdCodeApply();
+    default:
+      console.error(`Unknown subcommand: dashclaw code ${sub || '(missing)'}\n` +
+                    'Try: dashclaw code ingest [--dry-run]\n' +
+                    '     dashclaw code memo --project=<slug> [--save]\n' +
+                    '     dashclaw code apply <manifestId> --dest=<dir> [--yes]');
+      process.exit(1);
+  }
+}
+
 // -- Router -------------------------------------------------------------------
 
-const COMMANDS_NEEDING_CONFIG = new Set(['approvals', 'approve', 'deny', 'doctor']);
+const COMMANDS_NEEDING_CONFIG = new Set(['approvals', 'approve', 'deny', 'doctor', 'code']);
 
 async function main() {
   if (COMMANDS_NEEDING_CONFIG.has(command)) {
@@ -361,6 +463,9 @@ async function main() {
       break;
     case 'logout':
       await cmdLogout();
+      break;
+    case 'code':
+      await cmdCode();
       break;
     case 'help':
     case '--help':
