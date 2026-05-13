@@ -46,8 +46,8 @@
     ]
   },
   "summary": {
-    "total_routes": 228,
-    "stable_routes": 41,
+    "total_routes": 229,
+    "stable_routes": 42,
     "beta_routes": 20,
     "experimental_routes": 167
   },
@@ -603,6 +603,16 @@
       "maturity": "stable",
       "matched_prefix": "/api/actions",
       "file": "app/api/actions/[actionId]/messages/route.js"
+    },
+    {
+      "path": "/api/actions/{actionId}/outcome",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "maturity": "stable",
+      "matched_prefix": "/api/actions",
+      "file": "app/api/actions/[actionId]/outcome/route.js"
     },
     {
       "path": "/api/actions/{actionId}/trace",

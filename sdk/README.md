@@ -649,6 +649,50 @@ const { rootActionId, nodes, edges } = await claw.getActionGraph(actionId);
 // edges: parent_child | related | assumption_of | loop_from
 ```
 
+### Action Outcome (durable execution finality)
+
+Every approved action carries a terminal outcome: `pending`, `completed`, `partial`, `failed`, or `lost_confirmation`. Agents call `reportOutcome` to record finality, and `getOutcome` before retry to avoid re-executing already-completed work. Outcomes are one-shot — once non-pending, they cannot be rewritten.
+
+```javascript
+// Report success
+await claw.reportActionOutcome(actionId, {
+  status: 'completed',
+  summary: 'Deployed dashclaw 2.13.4 to production'
+});
+
+// Report failure (error_message required)
+await claw.reportActionOutcome(actionId, {
+  status: 'failed',
+  error_message: 'Downstream API returned 503'
+});
+
+// Report partial progress (progress object required)
+await claw.reportActionOutcome(actionId, {
+  status: 'partial',
+  progress: { step: 2, of: 5 }
+});
+
+// Retry-safe poll before re-trying any approved action
+const outcome = await claw.getActionOutcome(actionId);
+switch (outcome.status) {
+  case 'pending':            /* still in flight, WAIT */ break;
+  case 'completed':          /* already executed, SKIP */ break;
+  case 'failed':             /* safe to RETRY */ break;
+  case 'lost_confirmation':  /* sweep gave up, safe to RETRY */ break;
+  case 'partial':            /* clean up then retry */ break;
+}
+```
+
+HTTP surface (when the SDK isn't available):
+
+```bash
+curl -X POST "$BASE_URL/api/actions/$ACTION_ID/outcome" \
+  -H "x-api-key: $API_KEY" -H "Content-Type: application/json" \
+  -d '{"status":"completed","summary":"shipped"}'
+# 200 → { outcome: { ... } }
+# 409 → { error: "outcome already set", current_status: "completed" }
+```
+
 ### Workflow Templates
 
 ```javascript

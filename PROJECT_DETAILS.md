@@ -95,6 +95,7 @@ Modular intelligence features that consume runtime data.
 | Route | Purpose |
 |:---|:---|
 | `GET /api/actions/:actionId/graph` | Read-only execution graph (nodes + edges) for a governed action, reusing existing trace data plus correlated assumptions and open loops. Powers the Graph tab on decision replay. |
+| `POST/GET /api/actions/:actionId/outcome` | Durable execution finality — five-state terminal outcome (`pending` → `completed` / `partial` / `failed` / `lost_confirmation`). One-shot transition guarded at the repository layer. Closes the audit gap between "what was approved" and "what actually completed." See `docs/architecture/durable-execution-finality.md`. |
 | `GET/POST /api/workflows/templates` | List or create reusable workflow templates. |
 | `GET/PATCH /api/workflows/templates/:templateId` | Fetch or update a template; `PATCH` bumps version on step changes. |
 | `POST /api/workflows/templates/:templateId/duplicate` | Clone a template as a new draft. |

@@ -105,9 +105,22 @@ export const actionRecords = pgTable('action_records', {
   verified: boolean('verified').default(false),
   approvedBy: text('approved_by'),
   approvedAt: timestamp('approved_at'),
+  // Durable execution finality — terminal outcome reported by the agent or
+  // inferred by the cron sweep. See docs/architecture/durable-execution-finality.md.
+  outcomeStatus: text('outcome_status').default('pending').notNull(),
+  outcomeAt: timestamp('outcome_at', { withTimezone: true }),
+  outcomeSummary: text('outcome_summary'),
+  outcomeError: text('outcome_error'),
+  outcomeProgress: jsonb('outcome_progress'),
+  idempotencyKey: text('idempotency_key'),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
-});
+}, (table) => ({
+  outcomeStatusCheck: check(
+    'action_records_outcome_status_check',
+    sql`${table.outcomeStatus} IN ('pending', 'completed', 'partial', 'failed', 'lost_confirmation')`,
+  ),
+}));
 
 export const openLoops = pgTable('open_loops', {
   id: serial('id').primaryKey(),

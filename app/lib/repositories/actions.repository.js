@@ -444,6 +444,121 @@ export async function updateActionOutcome(sql, orgId, actionId, outcome, options
 }
 
 /**
+ * Read the durable-execution-finality outcome state of an action.
+ * See docs/architecture/durable-execution-finality.md.
+ *
+ * Returns null when the action does not exist in this org. Returns the full
+ * outcome shape (with derived elapsed_ms) when found, regardless of whether
+ * the outcome is still pending.
+ */
+export async function getActionOutcome(sql, orgId, actionId) {
+  const rows = await sql`
+    SELECT
+      action_id,
+      outcome_status,
+      outcome_at,
+      outcome_summary,
+      outcome_error,
+      outcome_progress,
+      created_at,
+      EXTRACT(EPOCH FROM (COALESCE(outcome_at, NOW()) - created_at)) * 1000 AS elapsed_ms
+    FROM action_records
+    WHERE action_id = ${actionId} AND org_id = ${orgId}
+    LIMIT 1
+  `;
+  if (rows.length === 0) return null;
+  const row = rows[0];
+  return {
+    action_id: row.action_id,
+    status: row.outcome_status,
+    outcome_at: row.outcome_at,
+    summary: row.outcome_summary,
+    error_message: row.outcome_error,
+    progress: row.outcome_progress,
+    elapsed_ms: row.elapsed_ms != null ? Math.round(Number(row.elapsed_ms)) : null,
+  };
+}
+
+/**
+ * Atomically transition an action's outcome from `pending` to a terminal state.
+ *
+ * Returns one of:
+ *   { ok: true, outcome }              — transition succeeded; outcome is the
+ *                                         post-update shape (same format as
+ *                                         getActionOutcome).
+ *   { ok: false, reason: 'not_found' } — action does not exist in this org.
+ *   { ok: false, reason: 'conflict',
+ *     current_status }                  — action exists but outcome is already
+ *                                         terminal. current_status carries the
+ *                                         existing terminal state so the route
+ *                                         can return 409 with detail.
+ *
+ * One-shot semantics live in the WHERE clause — `outcome_status = 'pending'`
+ * gates the UPDATE so two concurrent reporters race deterministically: the
+ * first wins, the second gets `conflict`. The system-sweep path that sets
+ * `lost_confirmation` uses the same gate, so an agent report and a sweep
+ * cannot both terminate the same row.
+ */
+export async function setActionOutcome(sql, orgId, actionId, payload) {
+  const { status, summary = null, error_message = null, progress = null } = payload;
+
+  const allowed = new Set(['completed', 'partial', 'failed', 'lost_confirmation']);
+  if (!allowed.has(status)) {
+    return { ok: false, reason: 'invalid_status' };
+  }
+
+  const progressJson = progress != null ? JSON.stringify(progress) : null;
+
+  const updated = await sql`
+    UPDATE action_records
+    SET outcome_status   = ${status},
+        outcome_at       = NOW(),
+        outcome_summary  = ${summary},
+        outcome_error    = ${error_message},
+        outcome_progress = ${progressJson}::jsonb,
+        updated_at       = CURRENT_TIMESTAMP
+    WHERE action_id = ${actionId}
+      AND org_id    = ${orgId}
+      AND outcome_status = 'pending'
+    RETURNING
+      action_id,
+      outcome_status,
+      outcome_at,
+      outcome_summary,
+      outcome_error,
+      outcome_progress,
+      created_at,
+      EXTRACT(EPOCH FROM (outcome_at - created_at)) * 1000 AS elapsed_ms
+  `;
+
+  if (updated.length > 0) {
+    const row = updated[0];
+    return {
+      ok: true,
+      outcome: {
+        action_id: row.action_id,
+        status: row.outcome_status,
+        outcome_at: row.outcome_at,
+        summary: row.outcome_summary,
+        error_message: row.outcome_error,
+        progress: row.outcome_progress,
+        elapsed_ms: row.elapsed_ms != null ? Math.round(Number(row.elapsed_ms)) : null,
+      },
+    };
+  }
+
+  // Gate failed. Distinguish "not found" from "already terminal" with a
+  // single follow-up read scoped to this org.
+  const current = await sql`
+    SELECT outcome_status FROM action_records
+    WHERE action_id = ${actionId} AND org_id = ${orgId}
+    LIMIT 1
+  `;
+  if (current.length === 0) return { ok: false, reason: 'not_found' };
+  return { ok: false, reason: 'conflict', current_status: current[0].outcome_status };
+}
+
+/**
  * Fetch all data required for an action trace (parent chain, assumptions, loops, related actions, sub-actions).
  */
 export async function getActionTraceData(sql, orgId, actionId) {

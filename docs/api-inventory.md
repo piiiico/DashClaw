@@ -13,8 +13,8 @@ doc-type: architecture
 
 ## Summary
 
-- Total routes: `228`
-- Stable routes: `41`
+- Total routes: `229`
+- Stable routes: `42`
 - Beta routes: `20`
 - Experimental routes: `167`
 
@@ -79,6 +79,7 @@ doc-type: architecture
 | `/api/actions/{actionId}/artifacts` | `GET` | `stable` | `/api/actions` | `app/api/actions/[actionId]/artifacts/route.js` |
 | `/api/actions/{actionId}/graph` | `GET` | `stable` | `/api/actions` | `app/api/actions/[actionId]/graph/route.js` |
 | `/api/actions/{actionId}/messages` | `GET` | `stable` | `/api/actions` | `app/api/actions/[actionId]/messages/route.js` |
+| `/api/actions/{actionId}/outcome` | `GET, POST` | `stable` | `/api/actions` | `app/api/actions/[actionId]/outcome/route.js` |
 | `/api/actions/{actionId}/trace` | `GET` | `stable` | `/api/actions` | `app/api/actions/[actionId]/trace/route.js` |
 | `/api/activity` | `GET` | `beta` | `/api/activity` | `app/api/activity/route.js` |
 | `/api/agents` | `GET` | `experimental` | `/api/agents` | `app/api/agents/route.js` |

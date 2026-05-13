@@ -143,6 +143,7 @@ const navItems = [
   { href: '#revokeIdentity', label: 'revokeIdentity', indent: true },
   { href: '#execution-studio', label: 'Execution Studio (HTTP)' },
   { href: '#execution-graph', label: 'Execution Graph', indent: true },
+  { href: '#action-outcome', label: 'Action Outcome', indent: true },
   { href: '#workflow-templates', label: 'Workflow Templates', indent: true },
   { href: '#model-strategies-http', label: 'Model Strategies', indent: true },
   { href: '#knowledge-collections', label: 'Knowledge Collections', indent: true },
@@ -1284,6 +1285,49 @@ const { identities } = await claw.getIdentities();`}
 const { rootActionId, nodes, edges } = await res.json();
 // node ids: action:<id>, assumption:<id>, loop:<id>
 // edge types: parent_child | related | assumption_of | loop_from`}
+                  </CodeBlock>
+                }
+              />
+            </div>
+
+            {/* Action Outcome (durable execution finality) */}
+            <div id="action-outcome" className="scroll-mt-20 pt-10">
+              <h3 className="text-lg font-semibold text-text-primary mb-2 font-mono">Action Outcome</h3>
+              <p className="text-xs text-text-tertiary mb-4">Five-state terminal outcome on every action — closes the audit-trail gap between &quot;what was approved&quot; and &quot;what actually completed.&quot; See <a href="https://github.com/ucsandman/DashClaw/blob/main/docs/architecture/durable-execution-finality.md" className="text-brand underline">durable-execution-finality.md</a>.</p>
+
+              <MethodEntry
+                id="reportActionOutcome"
+                signature="POST /api/actions/:actionId/outcome"
+                description="Record the terminal outcome of an approved action. One-shot: the first successful POST wins, subsequent POSTs return 409 with the current state. status must be one of completed | partial | failed. error_message is required when status=failed; progress (object) is required when status=partial. lost_confirmation is reserved for the system sweep."
+                returns="{ outcome: { action_id, status, outcome_at, summary, error_message, progress, elapsed_ms }, security: { clean, findings_count } }"
+                example={
+                  <CodeBlock title="Report success">
+{`await fetch(\`\${baseUrl}/api/actions/\${actionId}/outcome\`, {
+  method: 'POST',
+  headers: { 'x-api-key': apiKey, 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    status: 'completed',
+    summary: 'Deployed dashclaw 2.13.4 to production'
+  })
+});`}
+                  </CodeBlock>
+                }
+              />
+
+              <MethodEntry
+                id="getActionOutcome"
+                signature="GET /api/actions/:actionId/outcome"
+                description="Read the current outcome state. Returns the full outcome shape including elapsed_ms (outcome_at − created_at, or now − created_at while still pending). Agents call this before retrying to avoid re-executing already-completed actions."
+                returns="{ action_id, status, outcome_at, summary, error_message, progress, elapsed_ms }"
+                example={
+                  <CodeBlock title="Retry-safe poll">
+{`const outcome = await fetch(
+  \`\${baseUrl}/api/actions/\${actionId}/outcome\`,
+  { headers: { 'x-api-key': apiKey } }
+).then(r => r.json());
+
+// completed → SKIP, failed | lost_confirmation → RETRY,
+// pending → WAIT, partial → CLEANUP_THEN_RETRY`}
                   </CodeBlock>
                 }
               />

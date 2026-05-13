@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:9426742ade0ffed623d0167a06cf2e1995b3beab",
+  "timestamp": "sha1:59d1c450f52b175ae20103c0447a08f60998da6e",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -544,6 +544,18 @@
       ],
       "archived": false,
       "file_path": "app/api/actions/[actionId]/messages/route.js"
+    },
+    {
+      "path": "/api/actions/[actionId]/outcome",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "dynamic_params": [
+        "actionId"
+      ],
+      "archived": false,
+      "file_path": "app/api/actions/[actionId]/outcome/route.js"
     },
     {
       "path": "/api/actions/[actionId]/trace",
@@ -2572,6 +2584,9 @@
         "graphify-pilot/app/self-host/SetupTabs.js",
         "mcp-server/bin/dashclaw-mcp.js",
         "middleware.js",
+        "plugins/dashclaw/skills/dashclaw-platform-intelligence/scripts/bootstrap-agent-quick.mjs",
+        "plugins/dashclaw/skills/dashclaw-platform-intelligence/scripts/diagnose.mjs",
+        "plugins/dashclaw/skills/dashclaw-platform-intelligence/scripts/validate-integration.mjs",
         "public/downloads/dashclaw-platform-intelligence/scripts/bootstrap-agent-quick.mjs",
         "public/downloads/dashclaw-platform-intelligence/scripts/diagnose.mjs",
         "public/downloads/dashclaw-platform-intelligence/scripts/validate-integration.mjs",
@@ -2643,6 +2658,9 @@
         "graphify-pilot/app/self-host/SetupTabs.js",
         "graphify-pilot/app/settings/components/ConnectNextStepPanel.js",
         "packages/openclaw-plugin/src/index.ts",
+        "plugins/dashclaw/skills/dashclaw-platform-intelligence/scripts/bootstrap-agent-quick.mjs",
+        "plugins/dashclaw/skills/dashclaw-platform-intelligence/scripts/diagnose.mjs",
+        "plugins/dashclaw/skills/dashclaw-platform-intelligence/scripts/validate-integration.mjs",
         "public/downloads/dashclaw-platform-intelligence/scripts/bootstrap-agent-quick.mjs",
         "public/downloads/dashclaw-platform-intelligence/scripts/diagnose.mjs",
         "public/downloads/dashclaw-platform-intelligence/scripts/validate-integration.mjs",
