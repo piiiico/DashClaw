@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:c5fc3c84f103e491c946afe576e14d96a1a6ddb1",
+  "timestamp": "sha1:f32568b0fb5826bf510e0a902d68608d2b58051e",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -2616,7 +2616,6 @@
         "plugins/dashclaw/skills/dashclaw-platform-intelligence/scripts/bootstrap-agent-quick.mjs",
         "plugins/dashclaw/skills/dashclaw-platform-intelligence/scripts/diagnose.mjs",
         "plugins/dashclaw/skills/dashclaw-platform-intelligence/scripts/validate-integration.mjs",
-        "public/downloads/dashclaw-platform-intelligence/scripts/bootstrap-agent-quick.mjs",
         "public/downloads/dashclaw-platform-intelligence/scripts/diagnose.mjs",
         "public/downloads/dashclaw-platform-intelligence/scripts/validate-integration.mjs",
         "scripts/auto-migrate.mjs",
@@ -2690,7 +2689,6 @@
         "plugins/dashclaw/skills/dashclaw-platform-intelligence/scripts/bootstrap-agent-quick.mjs",
         "plugins/dashclaw/skills/dashclaw-platform-intelligence/scripts/diagnose.mjs",
         "plugins/dashclaw/skills/dashclaw-platform-intelligence/scripts/validate-integration.mjs",
-        "public/downloads/dashclaw-platform-intelligence/scripts/bootstrap-agent-quick.mjs",
         "public/downloads/dashclaw-platform-intelligence/scripts/diagnose.mjs",
         "public/downloads/dashclaw-platform-intelligence/scripts/validate-integration.mjs",
         "scripts/demo-agent.mjs",
