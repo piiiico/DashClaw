@@ -59,18 +59,20 @@ function StepSection({ number, title, summary, children }) {
 }
 
 /**
- * GuideClient — Shared client component for framework integration guide pages.
+ * GuideClient: shared client component for framework integration guide pages.
  *
  * Renders a full guide layout: hero, numbered steps with optional code cards,
- * proof moment section, and governance-as-code (guardrails.yml) section.
+ * proof moment section, and governance as code (guardrails.yml) section.
  *
  * @param {object} props
- * @param {string} props.frameworkName — e.g. "Claude Code"
- * @param {string} [props.frameworkIcon] — emoji or short string for visual accent
+ * @param {string} props.frameworkName e.g. "Claude Code"
+ * @param {string} [props.frameworkIcon] Emoji or short string for visual accent
  * @param {Array<{number: number, title: string, summary: string, codeTitle?: string, codeBody?: string, note?: string}>} props.steps
- * @param {string} props.proofMoment — Text describing what success looks like at /decisions
- * @param {string} props.guardrailsYaml — YAML string for the governance-as-code section
- * @param {string} props.baseUrl — Live host URL injected by the server component
+ * @param {string} props.proofMoment Text describing what success looks like at /decisions
+ * @param {string} props.guardrailsYaml YAML string for the governance as code section
+ * @param {string} props.baseUrl Live host URL injected by the server component
+ * @param {string} [props.eyebrow] Optional eyebrow text (default "Integration Guide")
+ * @param {React.ReactNode} [props.subhead] Optional subhead override; defaults to the framework integration template
  */
 export default function GuideClient({
   frameworkName,
@@ -79,6 +81,8 @@ export default function GuideClient({
   proofMoment,
   guardrailsYaml,
   baseUrl,
+  eyebrow = 'Integration Guide',
+  subhead,
 }) {
   return (
     <div className="space-y-6">
@@ -89,13 +93,17 @@ export default function GuideClient({
             {frameworkIcon}
           </p>
         )}
-        <p className="mt-2 text-xs uppercase tracking-[0.32em] text-brand">Integration Guide</p>
+        <p className="mt-2 text-xs uppercase tracking-[0.32em] text-brand">{eyebrow}</p>
         <h1 className="mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl">
           {frameworkName}
         </h1>
         <p className="mt-3 max-w-3xl text-sm text-secondary">
-          Connect {frameworkName} to DashClaw and get your first governed action into{' '}
-          <span className="text-secondary">/decisions</span> in under 20 minutes.
+          {subhead ?? (
+            <>
+              Connect {frameworkName} to DashClaw and get your first governed action into{' '}
+              <span className="text-secondary">/decisions</span> in under 20 minutes.
+            </>
+          )}
         </p>
         {baseUrl && (
           <p className="mt-2 text-xs text-tertiary">

@@ -306,11 +306,16 @@ dashclaw approvals`}</CodeBlock>
                   Phone first via DM. Inline Approve and Deny buttons in a registered user DM. Fire and forget; action creation succeeds even if Discord is unreachable.
                 </p>
                 <div className="mt-auto">
-                  <CodeBlock>{`DISCORD_BOT_TOKEN=<token>
-DISCORD_APPROVER_USER_ID=<user-id>
-DISCORD_APPROVER_ORG_ID=<org-id>`}</CodeBlock>
-                  <Link href="/self-host#approve-from-anywhere" className="mt-3 inline-flex items-center gap-1.5 text-xs text-brand hover:text-brand-hover transition-colors font-medium">
-                    Discord bot setup guide <ArrowRight size={12} aria-hidden="true" />
+                  <CodeBlock>{`DISCORD_BOT_TOKEN=<bot-token>
+DISCORD_APPROVER_USER_ID=<your-discord-user-id>
+DISCORD_APPROVER_ORG_ID=<your-org-id>
+DISCORD_PUBLIC_KEY=<discord-app-public-key>`}</CodeBlock>
+                  <p className="mt-3 text-[11px] text-text-tertiary leading-relaxed">
+                    Also set the Interactions Endpoint URL in the Discord Developer Portal to{' '}
+                    <code className="font-mono text-text-secondary">https://&lt;your-instance&gt;/api/discord/interactions</code>.
+                  </p>
+                  <Link href="/guides/discord-approvals" className="mt-3 inline-flex items-center gap-1.5 text-xs text-brand hover:text-brand-hover transition-colors font-medium">
+                    Discord approvals guide <ArrowRight size={12} aria-hidden="true" />
                   </Link>
                 </div>
               </div>
