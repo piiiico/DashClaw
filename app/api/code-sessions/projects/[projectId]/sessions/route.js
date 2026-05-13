@@ -2,9 +2,9 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 import { NextResponse } from 'next/server';
-import { getSql } from '../../../../lib/db.js';
-import { getOrgId } from '../../../../lib/org.js';
-import { listSessions } from '../../../../lib/repositories/code-sessions.repository.js';
+import { getSql } from '../../../../../lib/db.js';
+import { getOrgId } from '../../../../../lib/org.js';
+import { listSessions } from '../../../../../lib/repositories/code-sessions.repository.js';
 
 export async function GET(request, { params }) {
   const { projectId } = await params;
