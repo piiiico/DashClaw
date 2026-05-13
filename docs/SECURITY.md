@@ -2,6 +2,26 @@
 
 This is the operator-facing security guide for DashClaw (self-host and cloud). It documents the security model, key controls, and how to run audits.
 
+## 2026-05-13 Durable Execution Finality (v2.13.3+)
+
+The five-state outcome machine and idempotency-key surface shipped in commits `25599c35` through `5407b6ca` add three security-relevant guarantees. Full design context: [`docs/architecture/durable-execution-finality.md`](./architecture/durable-execution-finality.md).
+
+### One-shot CAS at the repository layer
+
+`setActionOutcome` (`app/lib/repositories/actions.repository.js`) gates the transition with `WHERE outcome_status = 'pending'` in the SQL itself, not just in route-level validation. Two concurrent reporters (or an agent racing against the cron sweep) cannot both terminate the same action; the second writer matches zero rows and the route returns `409 { error: "outcome already set", current_status }`. Outcomes are immutable once non-pending: a `completed` row cannot be retroactively rewritten as `failed`, even by an admin API key. Recovery for previously-partial actions is a new `action_records` row linked via `parent_action_id`, never a mutation of the original.
+
+### Idempotency keys close the duplicate-create gap
+
+`POST /api/actions` accepts an optional `idempotency_key` field. The lookup runs before quota, guard, signature verification, or insert; on `(org_id, idempotency_key)` hit the route returns the existing row with `{ idempotent_replay: true }` and zero downstream work. The unique `action_records_idempotency_idx ON (org_id, idempotency_key) WHERE idempotency_key IS NOT NULL` index prevents a race-condition double-insert even if two requests slip past the lookup window. Closes the previous failure mode where a transient network error on the create side left duplicate audit entries.
+
+### Outcome endpoint runs DLP redaction
+
+`POST /api/actions/[actionId]/outcome` runs `scanSensitiveData` on the `summary`, `error_message`, and `progress` fields before persistence, matching the pattern already enforced on action create and outcome PATCH. Progress payloads are capped at 8 KB to bound the storage and DLP-scan cost per call.
+
+### Cron sweep auth is consistent with existing pattern
+
+`/api/cron/outcome-sweep` is in `PUBLIC_ROUTES` (allowlisted from API-key auth) but rejects every request without a matching `Authorization: Bearer $CRON_SECRET` header. Same model as `/api/cron/signals` and `/api/cron/integration-health`. The sweep marks pending rows past their org's timeout (`DASHCLAW_OUTCOME_TIMEOUT_MINUTES` setting, default 15, clamped `[1, 1440]`) as `lost_confirmation` and emits a `signal.detected` event for downstream webhook subscribers.
+
 ## 2026-04-21 Parallel-Reviewer Round (v2.13.3)
 
 A five-agent parallel review targeting axes the earlier sweeps hadn't
@@ -327,7 +347,13 @@ DashClaw includes Data Loss Prevention (DLP) redaction to reduce the chance of s
 ### API Access Control (Default Deny)
 
 - All `/api/*` routes are protected by default in `middleware.js`.
-- Only a small allowlist of `PUBLIC_ROUTES` is unauthenticated (e.g., `/api/health`, `/api/setup/status`, `/api/setup/proof`, `/api/auth/*`, `/api/cron/*`, `/api/docs/raw`, `/api/prompts/*`).
+- Only a small allowlist of `PUBLIC_ROUTES` is unauthenticated. The current set (see `middleware.js`):
+  - `/api/health`, `/api/setup/status`, `/api/setup/ping`, `/api/setup/proof`, `/api/setup/migrate` (the last two each enforce additional gating in-handler — `live-proof` requires API auth; `migrate` is public before first-run init, then requires a Bearer match or admin role)
+  - `/api/auth/*` (NextAuth flows)
+  - `/api/cron/*` (`Authorization: Bearer $CRON_SECRET` required in every handler)
+  - `/api/docs/raw`, `/api/prompts/*` (read-only content endpoints; specific prompt-management routes like `/api/prompts/templates`, `/render`, `/runs`, `/stats` re-enforce auth in middleware before reaching the handler)
+  - `/api/telegram/webhook` and `/api/discord/interactions` (public-by-necessity inbound webhooks; each verifies its own signature inside the handler — Telegram via `X-Telegram-Bot-Api-Secret-Token` + chat-id allowlist, Discord via Ed25519 signature + user-id allowlist)
+  - `/api/monetization/verified-integrations-count` (public Pro-tier launch counter; reads `action_records` aggregate only)
 - `/setup` is the one intentional pre-auth page exception on the UI side. It is public so first-time operators can diagnose broken auth/setup states, but the page uses a public-safe projection that exposes verification status only, not secrets or raw configuration values.
 - `/api/setup/proof` follows the same projection model: anonymous callers receive a sanitized JSON proof artifact, while authenticated operators receive richer operational detail.
 - `/api/setup/live-proof` is not public. It stays behind normal API auth and only mints signed proof tokens from successful SDK validation summaries. The token contains sanitized verification metadata only and is designed to be safe to attach to `/setup?proof=...`.
@@ -350,8 +376,19 @@ This is compatible with any scheduler that can make HTTP requests (GitHub Action
 Example (bash):
 
 ```bash
+# Trigger any cron endpoint manually with the shared secret
 curl -fsS -H "Authorization: Bearer $CRON_SECRET" "https://YOUR_HOST/api/cron/signals"
+curl -fsS -H "Authorization: Bearer $CRON_SECRET" "https://YOUR_HOST/api/cron/outcome-sweep"
+curl -fsS -H "Authorization: Bearer $CRON_SECRET" "https://YOUR_HOST/api/cron/integration-health"
 ```
+
+Current cron endpoints (see `vercel.json` for the registered schedule on the hosted path):
+
+- `/api/cron/signals` — signal detection + notification pipeline
+- `/api/cron/integration-health` — credential validation
+- `/api/cron/reset-meters` — monthly meter rollover
+- `/api/cron/outcome-sweep` — mark stale `pending` outcomes as `lost_confirmation`
+- `/api/hosted/cleanup` — sweep expired trial workspaces (hosted operators only)
 
 ### CORS
 
@@ -418,11 +455,13 @@ DashClaw supports Vercel Web Analytics (`@vercel/analytics`), but it is intentio
   - [ ] `NEXTAUTH_SECRET`
   - [ ] `DASHCLAW_API_KEY` (required to enable `/api/*` in production)
   - [ ] `ENCRYPTION_KEY` (32 characters)
+  - [ ] `CRON_SECRET` (required for every `/api/cron/*` endpoint to function; without it, `signal.detected`, `lost_confirmation` sweeps, integration health checks, and meter resets cannot fire)
 - [ ] Set optional security env vars as needed:
   - [ ] `TRUST_PROXY=true` (only if you control a reverse proxy)
   - [ ] `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` (distributed rate limiting)
   - [ ] `WEBHOOK_ALLOWED_DOMAINS` (restrict outbound webhook targets)
   - [ ] `GUARD_WEBHOOK_SECRET` (sign guard webhooks)
+  - [ ] `DASHCLAW_OUTCOME_TIMEOUT_MINUTES` (per-org override for the durable-finality sweep; default 15, clamped `[1, 1440]`; this is a `settings`-table key, not an env var, but listed here so operators remember it exists)
   - [ ] `NEXT_PUBLIC_ENABLE_VERCEL_ANALYTICS=true` (non-Vercel opt-in)
 - [ ] Run the security scan: `node scripts/security-scan.js`
 

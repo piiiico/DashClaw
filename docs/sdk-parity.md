@@ -1,7 +1,7 @@
 ---
 source-of-truth: true
 owner: SDK Lead
-last-verified: 2026-04-13
+last-verified: 2026-05-13
 doc-type: architecture
 ---
 
@@ -49,6 +49,7 @@ The canonical Node SDK already includes the core runtime and a meaningful portio
 - loops, signals, learning, scoring,
 - messaging, handoffs, security scanning, feedback, threads, sync,
 - sessions and action graph,
+- durable execution finality (`reportActionOutcome`, `getActionOutcome`, convenience wrappers, `deriveIdempotencyKey`),
 - workflow templates,
 - model strategies,
 - knowledge collections,
@@ -117,7 +118,7 @@ That is acceptable temporarily, but it should not define future product directio
 | Prompt management (templates / versions / render) | Yes | Limited overlap | Yes | Canonical in main SDK |
 | Learning analytics (velocity / curves / lessons / maturity) | Yes | Limited overlap | Yes | Canonical in main SDK |
 | Security scanning (prompt injection / content) | Yes | Yes | Yes | Canonical in main SDK |
-| Feedback | Partial (via actions outcome) | Yes | Yes | Compatibility-heavy; low-priority canonical promotion |
+| Feedback (`/api/feedback`, rating + comment on completed actions) | Partial (`submitFeedback` only) | Yes | Yes | Compatibility-heavy; low-priority canonical promotion. Distinct from the durable-finality `outcome` row above, which is the terminal state of an action, not a rating. |
 | Drift detection | No canonical wrapper yet | Yes | Yes | Admin-heavy; future promotion candidate |
 | Pairing / identities | No canonical wrapper yet for full shape | Yes | Yes | Compatibility-heavy, future promotion candidate |
 | Routing | No canonical wrapper yet for full shape | Yes | Yes | Future promotion candidate |

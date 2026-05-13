@@ -48,10 +48,16 @@ export function serializeApiInventoryJson(inventory) {
 
 export function serializeApiInventoryMarkdown(inventory) {
   const lines = [];
+  // last-verified reflects the most recent regeneration date so the
+  // auto-generated artifact doesn't carry a permanently stale stamp.
+  // Override with process.env.API_INVENTORY_VERIFIED_DATE for deterministic
+  // builds (e.g. snapshot tests).
+  const verified = process.env.API_INVENTORY_VERIFIED_DATE
+    || new Date().toISOString().slice(0, 10);
   lines.push('---');
   lines.push('source-of-truth: false');
   lines.push('owner: API Governance Lead');
-  lines.push('last-verified: 2026-02-13');
+  lines.push(`last-verified: ${verified}`);
   lines.push('doc-type: architecture');
   lines.push('---');
   lines.push('');

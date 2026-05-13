@@ -27,9 +27,35 @@ are prefixed with the package name.
 
 ## [Unreleased]
 
+### Added
+
+- **Durable execution finality (issue #105, Phases 1–6, commits `25599c35` → `5407b6ca`)**: every approved action now carries a five-state terminal outcome (`pending` → `completed` / `partial` / `failed` / `lost_confirmation`). Closes the audit-trail gap between "what was approved" and "what actually completed." See [`docs/architecture/durable-execution-finality.md`](./docs/architecture/durable-execution-finality.md).
+  - **Schema** (`drizzle/0004_action_outcome_finality.sql`): six new columns on `action_records` (`outcome_status`, `outcome_at`, `outcome_summary`, `outcome_error`, `outcome_progress`, `idempotency_key`); CHECK constraint on the five terminal states; partial index on `pending` rows; conditional unique `(org_id, idempotency_key)` index. All `IF NOT EXISTS` / `IF NOT EXISTS`-guarded; `scripts/auto-migrate.mjs` applies idempotently.
+  - **API**: `POST /api/actions/[actionId]/outcome` (one-shot CAS at the repository layer; 409 on double-terminate; rejects `lost_confirmation` from agents; 8 KB cap on progress payload; DLP redaction on summary/error/progress). `GET /api/actions/[actionId]/outcome` (returns current state + derived `elapsed_ms` for retry-safe polling).
+  - **Cron sweep**: `/api/cron/outcome-sweep` (CRON_SECRET-gated, daily on Vercel Hobby, hourly externally if operators wire it up). Marks pending rows past their org's timeout as `lost_confirmation` and fires a `signal.detected` event of type `lost_confirmation` per swept row, with webhook delivery for subscribed orgs.
+  - **Per-org timeout**: `DASHCLAW_OUTCOME_TIMEOUT_MINUTES` setting (default 15, clamped `[1, 1440]` minutes). Allow-listed in `app/lib/repositories/settings.repository.js`.
+  - **Idempotency keys**: `POST /api/actions` accepts `idempotency_key`; on `(org_id, idempotency_key)` hit returns the existing row with `{ idempotent_replay: true }` and zero downstream work (no quota / guard / signature / insert). Unique DB index prevents race-condition duplicates.
+  - **Node SDK wrappers** (Phase 3, ship in next `dashclaw` npm release): `reportActionOutcome`, `getActionOutcome`, `reportActionSuccess` / `Failure` / `Partial`, `deriveIdempotencyKey`.
+  - **Python SDK wrappers** (Phase 4, ship in next `dashclaw` PyPI release): `report_action_outcome`, `get_action_outcome`, `report_action_success` / `failure` / `partial`, `derive_idempotency_key`.
+  - **Dashboard**: outcome filter on `/decisions`; new `OutcomeBadge` component (`pending` / `completed` / `partial` / `failed` / `lost` with token-driven semantic colors); terminal-state badge on each row when non-pending; Final Outcome badge plus summary/error line on the action detail page.
+  - **Webhook event catalog**: new `lost_confirmation` event type (parallel to existing `cost_exceeded`, `stale_action`, etc.). Subscribers filter via `events: [...]` on the webhook config.
+  - 28 new unit tests covering repo-layer CAS enforcement, route 409 / 404 / DLP handling, sweep auth and fan-out, SDK wrapper signatures, idempotency-key short-circuit (no-key → no lookup, hit → no downstream work, miss → normal path), and the helper hash properties (identical / differs-on-change / order-independent / type-validated).
+
 ### Fixed
 
 - **BUG-04 (Hook audit-trail gap on guard outage)**: `dashclaw_pretool.py` no longer silently exits 0 when `/api/guard` is unreachable. In enforce mode (default), the hook now blocks the tool (exit 2). In observe mode, it proceeds but logs the action to `~/.dashclaw/orphan-actions.jsonl` so the audit record is recoverable on guard recovery. New env var `DASHCLAW_GUARD_UNAVAILABLE_POLICY=block|warn|allow` (default `block`) governs enforce-mode behavior. Structurally same failure class as BUG-02 — both are silent governance without audit.
+- **Docker build for `better-sqlite3@12.10.0`** (commit `0f07fc50`): `node:20-alpine` deps stage now installs `python3 make g++` so node-gyp can compile native modules when no prebuilt musl/x64 binary is published upstream. Unblocks the GHCR demo image workflow that broke after dependabot PR #114 bumped `better-sqlite3` from 12.9.0 to 12.10.0.
+- **API inventory `last-verified` stamp** (`scripts/generate-api-inventory.mjs`): the frontmatter date is no longer hardcoded. It now reflects the actual regeneration date, with an `API_INVENTORY_VERIFIED_DATE` env override for deterministic CI/snapshot builds. Previous behavior left every regen with a permanently stale `2026-02-13` stamp.
+
+### Docs
+
+- **README repositioning** (commit `8bb3c7f8`): hero rewritten as "Govern AI agents before they act." Claude Code reframed from product identity to one of six integration paths (MCP server, SDK, Claude Code hooks, OpenClaw plugin, direct REST + webhooks, platform-intelligence skill). New "What DashClaw does" + "Durable execution finality (v2.13.3)" + "Safety and governance model" + "Approvals beyond the dashboard" sections. Net diff: 184 insertions / 310 deletions (tighter doc).
+- **`QUICK-START.md`**: Option A / Option B split; full required-env list for the Vercel deploy path (matches the deploy-button URL); switched to `npm run setup` over `node scripts/setup.mjs` for consistency; added a retry-safe-outcomes callout box pointing at `reportActionOutcome` and the finality spec; added Python SDK reference to Essential Docs.
+- **`sdk/README.md`**: Claude Code Hooks section now describes all three hooks (`dashclaw_pretool.py`, `dashclaw_posttool.py`, `dashclaw_stop.py`) plus the `dashclaw_agent_intel/` tool-classification module; recommends `npm run hooks:install` over manual `cp`. New "Durable Execution Finality" subsection in Core Runtime inventory listing the six new methods. Plus the existing detailed "Action Outcome" code-block subsection in Execution Studio.
+- **`docs/architecture/durable-execution-finality.md`**: full design spec including five-state machine, retry semantics, sweep architecture, failure modes, and open questions. Cron-cadence prose accurately documents the daily-on-Hobby + hourly-externally tradeoff.
+- **`docs/sdk-parity.md`**: new "Action outcome (durable execution finality)" row showing full Node + Python parity. Date stamp bumped. Canonical Node Surface bullet list updated to mention the new methods.
+- **`PROJECT_DETAILS.md`**: Core Runtime route table now lists `POST/GET /api/actions/:actionId/outcome` and `/api/cron/outcome-sweep` with the honest "Daily on Vercel free tier; operators can run hourly externally" cadence note.
+- **`public/downloads/dashclaw-platform-intelligence/references/api-surface.md`** (shipped skill bundle): new Action Recording row + "Durable execution finality (v2.13.3+)" prose block. Auto-mirrored to `.claude/skills/...` via `npm run livingcode:refresh`.
 
 ## [2.13.3] - 2026-04-21 — Parallel-Reviewer Round
 

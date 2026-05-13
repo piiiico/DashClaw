@@ -334,9 +334,8 @@ DashClaw is free during the launch ramp. The Pro tier unlocks when our Claude Co
 - [API inventory](./docs/api-inventory.md): full route list with maturity tier.
 - [Durable execution finality spec](./docs/architecture/durable-execution-finality.md): five-state machine, sweep, idempotency.
 - [Architecture map](./PROJECT_DETAILS.md): system boundaries and SDK surface inventory.
-- [Roadmap](./ROADMAP.md): shipped, in progress, exploring.
 - [Changelog](./CHANGELOG.md): release history.
-- [Security policy](./SECURITY.md): coordinated disclosure.
+- [Security guide](./docs/SECURITY.md): operator-facing security model, controls, and coordinated disclosure.
 
 ---
 

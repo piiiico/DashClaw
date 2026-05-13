@@ -1,6 +1,6 @@
 ---
 owner: Ops
-last-verified: 2026-04-20
+last-verified: 2026-05-13
 doc-type: runbook
 ---
 
@@ -21,7 +21,7 @@ The current repo already includes the main hosted-mode code paths:
 - `app/api/hosted/workspaces/route.js` for trial provisioning
 - `app/api/hosted/workspaces/[workspaceId]/route.js` for admin inspection and deletion
 - `app/api/hosted/cleanup/route.js` for trial cleanup
-- `app/connect/HostedProvisionSection.js` and `app/connect/HostedProvisionClient.jsx` for the hosted mint UI
+- `app/connect/HostedProvisionSection.jsx` and `app/connect/HostedProvisionClient.jsx` for the hosted mint UI
 - `scripts/check-hosted-ready.mjs` for pre-deploy readiness checks
 - `scripts/smoke-hosted.mjs` for post-deploy smoke testing
 - `migrations/2026-04-18-hosted-trial-columns.sql` for hosted trial columns and index
@@ -249,4 +249,4 @@ Before calling the hosted deployment ready, verify all of this:
 
 ---
 
-Runbook last verified: 2026-04-20
+Runbook last verified: 2026-05-13

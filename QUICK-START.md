@@ -18,7 +18,10 @@ npx dashclaw-demo
 
 ---
 
-## Step 1: Deploy DashClaw (Full Local Environment)
+## Step 1: Deploy DashClaw
+
+### Option A: Local (full environment)
+
 1. **Clone the repo**:
    ```bash
    git clone https://github.com/ucsandman/DashClaw.git
@@ -27,17 +30,28 @@ npx dashclaw-demo
 2. **Run the setup**:
    ```bash
    npm install
-   node scripts/setup.mjs
+   npm run setup
    ```
+   `npm run setup` is interactive. It provisions a local DB if you don't already have one, generates `NEXTAUTH_SECRET` and `ENCRYPTION_KEY`, mints a workspace API key into `.env.local`, and applies migrations.
 3. **Start the server**:
    ```bash
    npm run dev
    ```
 
-### Option B: Cloud (Vercel + Neon)
-1. Fork this repository.
-2. Deploy to Vercel and connect a [Neon Postgres](https://neon.tech) database.
-3. Set your `DATABASE_URL` and `NEXTAUTH_SECRET`.
+### Option B: Cloud (Vercel + Neon, $0 to deploy)
+
+1. Fork this repository, or use the one-click deploy button in [`README.md`](./README.md#deploy).
+2. Connect a [Neon Postgres](https://neon.tech) database when Vercel prompts for the integration.
+3. Set the required env vars in the Vercel dashboard. See [`.env.example`](./.env.example) for the full annotated list. The required set is:
+   - `DATABASE_URL` (auto-populated when you add Neon)
+   - `DASHCLAW_API_KEY` (any `oc_live_...` string you generate; will be wired to `org_default`)
+   - `ENCRYPTION_KEY` (32 random chars: `openssl rand -hex 16`)
+   - `NEXTAUTH_SECRET` (32 random chars: `openssl rand -base64 32`)
+   - `NEXTAUTH_URL` (your deployed URL, e.g. `https://my-dashclaw.vercel.app`)
+   - `CRON_SECRET` (any 64 random hex chars: `openssl rand -hex 32`)
+   - `DASHCLAW_LOCAL_ADMIN_PASSWORD` (so you can sign in without configuring OAuth first)
+
+   The schema migration runs as part of the build (`scripts/auto-migrate.mjs`), so there is no manual migration step.
 
 ---
 
@@ -58,14 +72,14 @@ Run the canonical starter to record a real governed action.
    npm install
    cp .env.example .env
    ```
-   Edit `.env` and set `DASHCLAW_API_KEY` to the key from your instance (found in `.env.local` after `node scripts/setup.mjs`, or generate a new one at `/api-keys`). `OPENAI_API_KEY` is optional — the agent falls back to a simulated deployment response when it is unset.
+   Edit `.env` and set `DASHCLAW_API_KEY` to the key from your instance (found in `.env.local` after `npm run setup`, or generate a new one at `/api-keys`). `OPENAI_API_KEY` is optional; the agent falls back to a simulated deployment response when it is unset.
 3. **Run it**:
    ```bash
    node index.js
    ```
-**Result:** The agent runs the full 4-step governance loop — `guard` → `createAction` → `recordAssumption` → `updateOutcome`. Open [Mission Control](http://localhost:3000/mission-control) and watch the Operations Feed light up with the new action, then click through to the Decision Replay to inspect the recorded evidence.
+**Result:** The agent runs the full 4-step governance loop (`guard` → `createAction` → `recordAssumption` → `updateOutcome`). Open [Mission Control](http://localhost:3000/mission-control) and watch the Operations Feed light up with the new action, then click through to the Decision Replay to inspect the recorded evidence.
 
-> **See the approval gate fire:** A fresh instance has no policies, so `guard` returns `allow` by default. To see DashClaw pause a risky action for human review, run `node scripts/seed-demo-capabilities.mjs` from the repo root first — the seeded `require_approval` policy will hold the agent at the deploy step until you approve it at [`/approvals`](http://localhost:3000/approvals).
+> **See the approval gate fire:** A fresh instance has no policies, so `guard` returns `allow` by default. To see DashClaw pause a risky action for human review, run `node scripts/seed-demo-capabilities.mjs` from the repo root first. The seeded `require_approval` policy will hold the agent at the deploy step until you approve it at [`/approvals`](http://localhost:3000/approvals).
 
 ---
 
@@ -77,7 +91,7 @@ Open `http://localhost:3000/connect`. This page provides the **Golden Path** for
 2. **Record** &rarr; `claw.createAction()` logs the start of the action. The
    server may gate it here with `action.status === 'pending_approval'`.
 3. **Wait (optional)** &rarr; If the action is `pending_approval`, call
-   `claw.waitForApproval(action_id)` using **the `action_id` from step 2** —
+   `claw.waitForApproval(action_id)` using **the `action_id` from step 2**,
    not the one from step 1. This is where the mobile PWA queue, the CLI
    approval channel, and the dashboard approvals feed unblock your agent.
 4. **Verify** &rarr; `claw.recordAssumption()` tracks reasoning basis.
@@ -86,12 +100,22 @@ Open `http://localhost:3000/connect`. This page provides the **Golden Path** for
 Full canonical HITL flow (including the `action_id` pitfall to avoid) is
 documented in [`sdk/README.md` → Human-in-the-Loop (HITL) Approval Flow](./sdk/README.md#human-in-the-loop-hitl-approval-flow).
 
+> **Retry-safe outcomes (v2.13.3+):** For long-running or retried actions, prefer
+> `claw.reportActionOutcome(action_id, { status: 'completed', summary })` over
+> `claw.updateOutcome()`. The new `/api/actions/:id/outcome` endpoint is one-shot
+> (409 on double-terminate), records `pending` / `completed` / `partial` / `failed` /
+> `lost_confirmation`, and is the surface to poll with `getActionOutcome()` before
+> a retry to avoid double-execution. Full spec:
+> [`docs/architecture/durable-execution-finality.md`](./docs/architecture/durable-execution-finality.md).
+
 ---
 
 ## Essential Docs for Developers
-- **v2 SDK Reference**: `sdk/README.md`
-- **Minimal Runtime API**: `docs/architecture/runtime-api.md`
-- **API Inventory**: `docs/api-inventory.md`
+- **Node SDK Reference**: [`sdk/README.md`](./sdk/README.md)
+- **Python SDK Reference**: [`sdk-python/README.md`](./sdk-python/README.md)
+- **Minimal Runtime API**: [`docs/architecture/runtime-api.md`](./docs/architecture/runtime-api.md)
+- **API Inventory**: [`docs/api-inventory.md`](./docs/api-inventory.md)
+- **Durable Execution Finality**: [`docs/architecture/durable-execution-finality.md`](./docs/architecture/durable-execution-finality.md)
 
 ## Category Enforcement
 DashClaw is infrastructure, not a platform. To prevent "platform creep," we enforce a strict **Governance Boundary** in CI. All new API routes must live in `app/api/_archive/` unless they are core governance primitives.

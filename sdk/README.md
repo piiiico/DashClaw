@@ -253,12 +253,22 @@ The v2 SDK exposes the stable governance runtime plus promoted execution domains
 
 ### Core Runtime
 - `guard(context)` -- Policy evaluation ("Can I do X?"). Returns `risk_score` (server-computed) and `agent_risk_score` (raw agent value). Automatically includes `agent_name` from the constructor if not overridden in the call context.
-- `createAction(action)` -- Lifecycle tracking ("I am doing X")
+- `createAction(action)` -- Lifecycle tracking ("I am doing X"). Accepts optional `idempotency_key`; on collision returns the existing row with `{ idempotent_replay: true }` instead of inserting a duplicate.
 - `updateOutcome(id, outcome)` -- Result recording ("X finished with Y"). `outcome` accepts `status`, `output_summary`, `side_effects`, `artifacts_created`, `error_message`, `duration_ms`, `tokens_in`, `tokens_out`, `model`, `cost_estimate`. When `tokens_in` / `tokens_out` are reported without an explicit `cost_estimate`, the server derives cost from `model` using the configured pricing table.
 - `recordAssumption(assumption)` -- Integrity tracking ("I believe Z while doing X")
 - `waitForApproval(id)` -- Real-time SSE listener for human-in-the-loop approvals (automatic polling fallback)
 - `approveAction(id, decision, reasoning?)` -- Submit approval decisions from code
 - `getPendingApprovals()` -- List actions awaiting human review
+
+### Durable Execution Finality (v2.13.3+)
+Terminal outcome reporting that is one-shot, retry-safe, and immutable once non-pending. Separate from `updateOutcome`, which remains the lifecycle-PATCH path. Full spec: [`docs/architecture/durable-execution-finality.md`](../docs/architecture/durable-execution-finality.md). Detailed examples in the [Action Outcome](#action-outcome-durable-execution-finality) subsection of Execution Studio below.
+
+- `reportActionOutcome(id, { status, summary?, error_message?, progress? })` -- Record the terminal outcome. `status` must be `completed`, `partial`, or `failed`; `lost_confirmation` is reserved for the system sweep. First call wins; subsequent POSTs return 409 with `current_status`.
+- `getActionOutcome(id)` -- Read the current outcome state. Returns `status` (one of `pending` / `completed` / `partial` / `failed` / `lost_confirmation`), `outcome_at`, `summary`, `error_message`, `progress`, `elapsed_ms`. Poll this before retrying any approved action.
+- `reportActionSuccess(id, summary?)` -- Convenience wrapper for `completed`.
+- `reportActionFailure(id, errorMessage, summary?)` -- Convenience wrapper for `failed`. `error_message` is required.
+- `reportActionPartial(id, progress, summary?)` -- Convenience wrapper for `partial`. `progress` (object) is required.
+- `deriveIdempotencyKey(parts)` -- SHA-256 hex digest of intent-fields for the `idempotency_key` field on `createAction`. Order-independent. Derive from intent (agent, action_type, scope, request_id), not timestamps.
 
 ### Decision Integrity
 - `registerOpenLoop(actionId, type, desc)` -- Register unresolved dependencies.
@@ -596,15 +606,21 @@ For Anthropic Managed Agents or Claude Code sessions, the `@dashclaw/governance`
 
 ## Claude Code Hooks
 
-Govern Claude Code tool calls without any SDK instrumentation. Copy two files from the `hooks/` directory in the repo into your `.claude/hooks/` folder:
+Govern Claude Code tool calls without any SDK instrumentation. One command from anywhere DashClaw is cloned:
 
 ```bash
-# In your project directory
-cp path/to/DashClaw/hooks/dashclaw_pretool.py .claude/hooks/
-cp path/to/DashClaw/hooks/dashclaw_posttool.py .claude/hooks/
+# From a DashClaw checkout
+npm run hooks:install
+
+# From any other project, pointing at a DashClaw checkout
+node /path/to/DashClaw/scripts/install-hooks.mjs --target=.
 ```
 
-Then merge the hooks block from `hooks/settings.json` into your `.claude/settings.json`. Set `DASHCLAW_BASE_URL`, `DASHCLAW_API_KEY`, and optionally `DASHCLAW_HOOK_MODE=enforce`.
+This installs three hooks (`dashclaw_pretool.py`, `dashclaw_posttool.py`, `dashclaw_stop.py`) plus the bundled `dashclaw_agent_intel/` tool-classification module into `.claude/hooks/`, then merges the `PreToolUse`, `PostToolUse`, and `Stop` blocks into `.claude/settings.json`. Idempotent: re-run after `git pull` to upgrade.
+
+The Stop hook captures per-turn LLM token usage from the session transcript and PATCHes it onto the action records the pretool opened during the turn, so cost analytics light up without per-agent instrumentation.
+
+Set `DASHCLAW_BASE_URL`, `DASHCLAW_API_KEY`, and optionally `DASHCLAW_HOOK_MODE=enforce`. Full guide and per-hook details in [`hooks/README.md`](../hooks/README.md).
 
 ---
 
