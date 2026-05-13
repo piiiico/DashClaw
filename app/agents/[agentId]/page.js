@@ -20,7 +20,6 @@ export default function AgentProfilePage() {
 
   const [profile, setProfile] = useState(null);
   const [policies, setPolicies] = useState([]);
-  const [allPolicies, setAllPolicies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -29,10 +28,9 @@ export default function AgentProfilePage() {
       setLoading(true);
       setError(null);
 
-      const [profileRes, agentPoliciesRes, allPoliciesRes] = await Promise.all([
+      const [profileRes, agentPoliciesRes] = await Promise.all([
         fetch(`/api/agents/${encodeURIComponent(decodedAgentId)}/profile`),
         fetch(`/api/policies?agent_id=${encodeURIComponent(decodedAgentId)}`),
-        fetch('/api/policies'),
       ]);
 
       if (!profileRes.ok) {
@@ -46,10 +44,6 @@ export default function AgentProfilePage() {
       if (agentPoliciesRes.ok) {
         const pData = await agentPoliciesRes.json();
         setPolicies(pData.policies || []);
-      }
-      if (allPoliciesRes.ok) {
-        const aData = await allPoliciesRes.json();
-        setAllPolicies(aData.policies || []);
       }
     } catch (err) {
       setError(err.message);
@@ -137,7 +131,6 @@ export default function AgentProfilePage() {
         <AgentPoliciesSection
           agentId={decodedAgentId}
           policies={policies}
-          allPolicies={allPolicies}
           onRefresh={fetchProfile}
         />
       </div>
