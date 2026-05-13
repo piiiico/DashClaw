@@ -16,7 +16,7 @@ import { ProofPanel } from './components/ProofPanel.js';
 import { ApiKeyReveal } from './components/ApiKeyReveal.js';
 import ModelPricingPanel from './components/ModelPricingPanel.js';
 import AgentIdentityPanel from './components/AgentIdentityPanel';
-import WorkspaceIdentityPanel from './components/WorkspaceIdentityPanel.js';
+import CopyableValueRow from './components/CopyableValueRow.js';
 import PageLayout from '../components/PageLayout';
 import { LogIn } from 'lucide-react';
 
@@ -69,29 +69,18 @@ export default async function SettingsPage({ searchParams }) {
     ? `/api/setup/proof?proof=${encodeURIComponent(liveProofToken)}&download=1`
     : '/api/setup/proof?download=1';
 
-  // Workspace identity for the right-column panel. x-org-id and x-user-id
-  // are injected by middleware after auth. Operators need these values
-  // for integration setup (Discord, Telegram, webhooks) and there is no
-  // other place in the dashboard that surfaces them today.
-  const workspaceOrgId = headerStore.get('x-org-id') || '';
-  const workspaceUserId = headerStore.get('x-user-id') || '';
-  let workspaceOrg = null;
-  if (viewer.isAuthenticated && workspaceOrgId) {
-    try {
-      const sql = getSql();
-      const rows = await sql`
-        SELECT id, name, slug, plan
-        FROM organizations
-        WHERE id = ${workspaceOrgId}
-        LIMIT 1
-      `;
-      if (rows.length > 0) {
-        workspaceOrg = rows[0];
-      }
-    } catch (err) {
-      console.warn('[settings] Failed to load workspace org context:', err?.message || err);
-    }
-  }
+  // Workspace identity for the Environment panel. Middleware injects
+  // x-org-id / x-user-id on /api/* routes only, so page routes have to
+  // read these from the auth session directly. The fallback for the
+  // local-admin user id matches the rule middleware applies when it
+  // mints the header value (see middleware.js: orgId / userId resolve).
+  const workspaceOrgId = viewer.isAuthenticated
+    ? (viewer.session?.orgId || 'org_default')
+    : '';
+  const workspaceUserId = viewer.isAuthenticated
+    ? (viewer.session?.userId
+        || (viewer.session?.sub === 'local-admin' ? 'usr_local_admin' : ''))
+    : '';
 
   const maskedApiKey = getMaskedApiKey(process.env);
   const protocol = host.startsWith('localhost') || host.startsWith('127.0.0.1') ? 'http' : 'https';
@@ -203,15 +192,6 @@ export default async function SettingsPage({ searchParams }) {
 
           {/* Right Column: Quick Access */}
           <div className="space-y-6">
-            {/* Workspace identity (org_id, user_id, etc. for integration setup) */}
-            <WorkspaceIdentityPanel
-              orgId={workspaceOrgId}
-              orgName={workspaceOrg?.name}
-              orgSlug={workspaceOrg?.slug}
-              orgPlan={workspaceOrg?.plan}
-              userId={workspaceUserId}
-            />
-
             {/* Quick Links */}
             <div className="rounded-xl border border-border bg-surface-secondary p-5">
               <div className="mb-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">
@@ -274,6 +254,16 @@ export default async function SettingsPage({ searchParams }) {
                     {host}
                   </div>
                 </div>
+                <CopyableValueRow
+                  label="Org ID"
+                  value={workspaceOrgId}
+                  fallback={viewer.isAuthenticated ? '(no org id on session)' : '(sign in to see your org id)'}
+                />
+                <CopyableValueRow
+                  label="Your user ID"
+                  value={workspaceUserId}
+                  fallback={viewer.isAuthenticated ? '(no user id on session)' : '(sign in to see your user id)'}
+                />
                 <ApiKeyReveal maskedApiKey={maskedApiKey} />
                 <div>
                   <div className="mb-1 text-[11px] font-medium text-tertiary">Runtime</div>
