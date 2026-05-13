@@ -81,19 +81,40 @@ export async function buildIngestPayload(filePath, { cwdOverride = null } = {}) 
   };
 }
 
-async function postIngest(baseUrl, apiKey, body, { fetchImpl = fetch } = {}) {
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function postIngest(baseUrl, apiKey, body, { fetchImpl = fetch, maxRetries = 4 } = {}) {
   const url = baseUrl.replace(/\/+$/, '') + '/api/code-sessions/ingest-jsonl';
-  const res = await fetchImpl(url, {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      'x-api-key': apiKey,
-    },
-    body: JSON.stringify(body),
-  });
-  let payload = null;
-  try { payload = await res.json(); } catch { /* keep payload null */ }
-  return { status: res.status, ok: res.ok, payload };
+  let lastStatus = 0;
+  let lastPayload = null;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    const res = await fetchImpl(url, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-api-key': apiKey,
+      },
+      body: JSON.stringify(body),
+    });
+    let payload = null;
+    try { payload = await res.json(); } catch { /* keep payload null */ }
+    if (res.ok) return { status: res.status, ok: true, payload };
+    lastStatus = res.status;
+    lastPayload = payload;
+    // Retry on 429 (rate limit) and 5xx with exponential backoff +
+    // honour Retry-After when the server provides it. Anything else is
+    // surfaced immediately.
+    const retryable = res.status === 429 || (res.status >= 500 && res.status < 600);
+    if (!retryable || attempt === maxRetries) break;
+    const retryAfter = Number(res.headers?.get?.('retry-after')) || 0;
+    const backoffMs = retryAfter > 0
+      ? Math.min(retryAfter * 1000, 30000)
+      : Math.min(1000 * 2 ** attempt, 16000);
+    await sleep(backoffMs);
+  }
+  return { status: lastStatus, ok: false, payload: lastPayload };
 }
 
 /**
@@ -152,6 +173,9 @@ export async function runIngest({
       logger.info(`  ${file} -> dry_run (${payload.lineCount} lines, slug=${payload.body.project.slug})`);
       continue;
     }
+    // Light throttle between live POSTs so a fresh-disk backfill of
+    // hundreds of files doesn't hammer Vercel's per-IP rate limit.
+    if (results.length > 0) await sleep(150);
     try {
       const { status, ok, payload: respBody } = await postIngest(baseUrl, apiKey, payload.body, { fetchImpl });
       if (!ok) {
