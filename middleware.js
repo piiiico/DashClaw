@@ -1060,13 +1060,26 @@ export async function middleware(request) {
     }
 
     // All other matched page routes — require session
-    if (!token) {
-      const localSession = await getLocalAdminSession(request);
-      if (!localSession) {
+    let session = token;
+    if (!session) {
+      session = await getLocalAdminSession(request);
+      if (!session) {
         return NextResponse.redirect(new URL('/login', request.url));
       }
     }
-    return NextResponse.next();
+
+    // Forward org context to the page's server component via request headers,
+    // so `headers().get('x-org-id')` returns the authenticated org instead of
+    // falling back to 'org_default'. Strip any inbound values first to prevent
+    // spoofing — only this middleware should set these.
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.delete('x-org-id');
+    requestHeaders.delete('x-org-role');
+    requestHeaders.delete('x-user-id');
+    requestHeaders.set('x-org-id', session.orgId || 'org_default');
+    requestHeaders.set('x-org-role', session.role || 'member');
+    requestHeaders.set('x-user-id', session.userId || (session.sub === 'local-admin' ? 'usr_local_admin' : session.sub || ''));
+    return NextResponse.next({ request: { headers: requestHeaders } });
   }
 
   // Handle CORS preflight
@@ -1116,13 +1129,23 @@ export async function middleware(request) {
 
   // SECURITY: Reject oversized request bodies to prevent DoS.
   // Applies to all write methods (POST, PUT, PATCH) on API routes.
-  const MAX_BODY_BYTES = 2 * 1024 * 1024; // 2 MB
+  //
+  // The default 2 MB cap is enough for every governance API. Code-session
+  // JSONL backfill is the one exception: real Claude Code transcripts compress
+  // ~2x (less repetitive than typical JSON since they include tool outputs and
+  // code), so a 10 MB raw file ends up ~3 MB gzipped + base64. Raise the cap
+  // for that endpoint to just under Vercel's 4.5 MB edge limit so legitimately
+  // big sessions can still come through. Anything bigger requires chunked POST.
+  const DEFAULT_MAX_BODY_BYTES = 2 * 1024 * 1024;
+  const INGEST_MAX_BODY_BYTES = 4_400_000; // 4.4 MB, sits just under Vercel's 4.5 MB ceiling
+  const isLargeIngestRoute = pathname === '/api/code-sessions/ingest-jsonl';
+  const maxBodyBytes = isLargeIngestRoute ? INGEST_MAX_BODY_BYTES : DEFAULT_MAX_BODY_BYTES;
   const writeMethod = ['POST', 'PUT', 'PATCH'].includes(request.method);
   if (writeMethod) {
     const contentLength = parseInt(request.headers.get('content-length') || '0', 10);
-    if (contentLength > MAX_BODY_BYTES) {
+    if (contentLength > maxBodyBytes) {
       return NextResponse.json(
-        { error: 'Request body too large', maxBytes: MAX_BODY_BYTES },
+        { error: 'Request body too large', maxBytes: maxBodyBytes },
         { status: 413 }
       );
     }
