@@ -14,6 +14,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { trackMarketingEvent } from '../lib/marketingTrack';
+import { HOMEPAGE_PRESETS, writeHomepageResolution } from '../lib/homepageDemoActions';
 
 /*
  * Live, interactive governance demo for the marketing home page.
@@ -35,32 +36,7 @@ import { trackMarketingEvent } from '../lib/marketingTrack';
  * trade-off is documented in the helper text under the Approval card.
  */
 
-const PRESETS = [
-  {
-    id: 'allow',
-    label: 'Sync user metrics',
-    agentId: 'analytics-agent',
-    actionType: 'sync_metrics',
-    riskScore: 25,
-    declaredGoal: 'Sync hourly product metrics from the warehouse to the analytics dashboard.',
-  },
-  {
-    id: 'review',
-    label: 'Deploy to production',
-    agentId: 'openai-deployer-1',
-    actionType: 'deploy',
-    riskScore: 85,
-    declaredGoal: 'Deploy auth-service v2.1 to production with new session token rotation.',
-  },
-  {
-    id: 'block',
-    label: 'Drop production users table',
-    agentId: 'rogue-agent',
-    actionType: 'delete_database',
-    riskScore: 92,
-    declaredGoal: 'Drop the production users table to free storage on the primary cluster.',
-  },
-];
+const PRESETS = HOMEPAGE_PRESETS;
 
 const PHASE = {
   IDLE: 'idle',
@@ -168,6 +144,9 @@ export default function LiveDemo() {
   function handleResolve(value) {
     setResolution(value);
     setPhase(PHASE.RESOLVED);
+    // Persist so the /decisions ledger reflects the visitor's choice on
+    // their next page view.
+    writeHomepageResolution(value);
   }
 
   function handleReset() {

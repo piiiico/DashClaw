@@ -8,6 +8,11 @@ import { Badge } from '../components/ui/Badge';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Skeleton } from '../components/ui/Skeleton';
 import { getAgentColor } from '../lib/colors';
+import { isDemoMode } from '../lib/isDemoMode';
+import {
+  getHomepageDemoActions,
+  readHomepageResolution,
+} from '../lib/homepageDemoActions';
 import { formatCost, formatTokens } from '../lib/formatCost';
 import { useAgentFilter } from '../lib/AgentFilterContext';
 import { useEffectiveRole } from '../hooks/useEffectiveRole';
@@ -100,9 +105,25 @@ export default function DecisionsLedger() {
       if (!res.ok) throw new Error('Failed to fetch');
       const data = await res.json();
       const actionsList = data.actions || [];
-      setActions(actionsList);
+
+      // In demo mode (dashclaw.io), prepend the three homepage demo
+      // scenarios so visitors see the exact actions they evaluated on
+      // the home page as the first entries. The Deploy to production
+      // entry reflects the visitor's local Approve / Deny click.
+      let displayed = actionsList;
+      let displayedTotal = data.total || 0;
+      if (isDemoMode() && page === 0) {
+        const resolution = readHomepageResolution();
+        const homepageActions = getHomepageDemoActions(resolution);
+        const existingIds = new Set(actionsList.map((a) => a.action_id));
+        const fresh = homepageActions.filter((a) => !existingIds.has(a.action_id));
+        displayed = [...homepageActions, ...actionsList.filter((a) => !homepageActions.some((h) => h.action_id === a.action_id))];
+        displayedTotal = displayedTotal + fresh.length;
+      }
+
+      setActions(displayed);
       setStats(data.stats || {});
-      setTotal(data.total || 0);
+      setTotal(displayedTotal);
       setLastUpdated(new Date().toLocaleTimeString());
     } catch (error) {
       console.error('Failed to fetch actions:', error);
