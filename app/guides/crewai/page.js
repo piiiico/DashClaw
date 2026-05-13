@@ -172,7 +172,7 @@ python main.py`,
 
           <GuideClient
             frameworkName="CrewAI"
-            frameworkIcon="🤖"
+            frameworkIcon="👥"
             steps={steps}
             proofMoment={proofMoment}
             guardrailsYaml={guardrailsYaml}

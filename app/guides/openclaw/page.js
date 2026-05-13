@@ -151,7 +151,7 @@ DASHCLAW_AGENT_ID=my-openclaw-agent`,
 
           <GuideClient
             frameworkName="OpenClaw"
-            frameworkIcon="🦅"
+            frameworkIcon="🦞"
             steps={steps}
             proofMoment={proofMoment}
             guardrailsYaml={guardrailsYaml}
