@@ -1083,3 +1083,137 @@ export const sessionEvents = pgTable('session_events', {
   detail: text('detail'),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
 });
+
+// --- Code Sessions (AgentLens absorption — Phase 2) ---
+// Distinct from agent_sessions (live agent state) and session_events
+// (event log on agent_sessions). These tables hold ingested Claude Code
+// JSONL transcripts: live (source='hook', via the Stop hook reporter in
+// Phase 3) or retroactive (source='jsonl', via the local CLI in Phase 4).
+// Both paths use the same POST /api/code-sessions/ingest-jsonl endpoint.
+
+export const codeProjects = pgTable('code_projects', {
+  id: text('id').primaryKey(), // cp_ prefix
+  orgId: text('org_id').notNull().references(() => organizations.id),
+  slug: text('slug').notNull(),
+  cwd: text('cwd'),
+  sourceHost: text('source_host'), // 'hook' or 'jsonl' — whichever first created it
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+}, (table) => ({
+  orgSlugUnique: uniqueIndex('code_projects_org_slug_unique').on(table.orgId, table.slug),
+}));
+
+export const codeSessions = pgTable('code_sessions', {
+  id: text('id').primaryKey(), // cs_ prefix
+  orgId: text('org_id').notNull().references(() => organizations.id),
+  projectId: text('project_id').notNull().references(() => codeProjects.id),
+  sessionUuid: text('session_uuid').notNull(), // Claude Code session ID from JSONL
+  source: text('source').notNull(), // 'hook' | 'jsonl'
+  sourceFile: text('source_file'),
+  sourceMtime: text('source_mtime'),
+  startedAt: text('started_at'),
+  endedAt: text('ended_at'),
+  messageCount: integer('message_count').notNull().default(0),
+  modelPrimary: text('model_primary'),
+  inputTokens: integer('input_tokens').notNull().default(0),
+  outputTokens: integer('output_tokens').notNull().default(0),
+  cacheReadTokens: integer('cache_read_tokens').notNull().default(0),
+  cacheCreationTokens: integer('cache_creation_tokens').notNull().default(0),
+  costUsd: numeric('cost_usd').notNull().default('0'),
+  cacheSavingsUsd: numeric('cache_savings_usd').notNull().default('0'),
+  stuckLoops: integer('stuck_loops').notNull().default(0),
+  modelRequests: integer('model_requests').notNull().default(0),
+  jsonlRecords: integer('jsonl_records').notNull().default(0),
+  duplicateFragmentsSkipped: integer('duplicate_fragments_skipped').notNull().default(0),
+  naiveInputTokens: integer('naive_input_tokens').notNull().default(0),
+  naiveOutputTokens: integer('naive_output_tokens').notNull().default(0),
+  naiveCacheReadTokens: integer('naive_cache_read_tokens').notNull().default(0),
+  naiveCacheCreationTokens: integer('naive_cache_creation_tokens').notNull().default(0),
+  naiveCostUsd: numeric('naive_cost_usd').notNull().default('0'),
+  parserVersion: integer('parser_version').notNull().default(2),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+}, (table) => ({
+  orgUuidUnique: uniqueIndex('code_sessions_org_uuid_unique').on(table.orgId, table.sessionUuid),
+  sourceCheck: check('code_sessions_source_check', sql`${table.source} IN ('hook', 'jsonl')`),
+}));
+
+export const codeSessionMessages = pgTable('code_session_messages', {
+  id: serial('id').primaryKey(),
+  sessionId: text('session_id').notNull().references(() => codeSessions.id, { onDelete: 'cascade' }),
+  uuid: text('uuid'),
+  role: text('role'),
+  model: text('model'),
+  timestamp: text('timestamp'),
+  inputTokens: integer('input_tokens'),
+  outputTokens: integer('output_tokens'),
+  cacheReadTokens: integer('cache_read_tokens'),
+  cacheCreationTokens: integer('cache_creation_tokens'),
+  costUsd: numeric('cost_usd'),
+  textPreview: text('text_preview'),
+  requestId: text('request_id'),
+  messageId: text('message_id'),
+});
+
+export const codeSessionToolUses = pgTable('code_session_tool_uses', {
+  id: serial('id').primaryKey(),
+  sessionId: text('session_id').notNull().references(() => codeSessions.id, { onDelete: 'cascade' }),
+  messageId: integer('message_id').references(() => codeSessionMessages.id, { onDelete: 'set null' }),
+  actionId: text('action_id').references(() => actionRecords.actionId, { onDelete: 'set null' }),
+  name: text('name').notNull(),
+  target: text('target'),
+  timestamp: text('timestamp'),
+  durationMs: integer('duration_ms'),
+  toolUseId: text('tool_use_id'),
+  requestId: text('request_id'),
+  sourceLine: integer('source_line'),
+});
+
+export const codeSessionSignals = pgTable('code_session_signals', {
+  id: serial('id').primaryKey(),
+  sessionId: text('session_id').notNull().references(() => codeSessions.id, { onDelete: 'cascade' }),
+  kind: text('kind').notNull(), // optimizer rule id (e.g. MODEL_DOWNSHIFT) or 'repeated_run'
+  confidence: text('confidence'),
+  savingsUsd: numeric('savings_usd'),
+  payload: jsonb('payload'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+});
+
+export const codeSessionAlerts = pgTable('code_session_alerts', {
+  id: serial('id').primaryKey(),
+  orgId: text('org_id').notNull().references(() => organizations.id),
+  projectId: text('project_id').references(() => codeProjects.id, { onDelete: 'cascade' }),
+  sessionId: text('session_id').references(() => codeSessions.id, { onDelete: 'cascade' }),
+  kind: text('kind').notNull(), // cost_anomaly | cache_crater | stuck_loop_streak | multi_project_usage
+  severity: text('severity').notNull().default('info'),
+  scope: text('scope').notNull().default('session'),
+  title: text('title').notNull(),
+  body: text('body'),
+  readAt: timestamp('read_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+});
+// Note: the NULL-safe dedup unique index code_session_alerts_dedup is
+// declared manually in the migration SQL because drizzle-kit doesn't emit
+// COALESCE expressions for partial unique indexes.
+
+export const codeSessionMemos = pgTable('code_session_memos', {
+  id: serial('id').primaryKey(),
+  orgId: text('org_id').notNull().references(() => organizations.id),
+  projectId: text('project_id').notNull().references(() => codeProjects.id, { onDelete: 'cascade' }),
+  isoWeekTag: text('iso_week_tag').notNull(),
+  bodyMd: text('body_md'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+}, (table) => ({
+  orgProjectWeekUnique: uniqueIndex('code_session_memos_org_project_week_unique')
+    .on(table.orgId, table.projectId, table.isoWeekTag),
+}));
+
+export const codeOptimalFileManifests = pgTable('code_optimal_file_manifests', {
+  id: text('id').primaryKey(), // cofm_ prefix
+  orgId: text('org_id').notNull().references(() => organizations.id),
+  sessionId: text('session_id').notNull().references(() => codeSessions.id, { onDelete: 'cascade' }),
+  projectCwd: text('project_cwd').notNull(),
+  plan: jsonb('plan').notNull(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+});

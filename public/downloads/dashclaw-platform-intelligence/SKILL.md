@@ -5,7 +5,7 @@ description: DashClaw platform expert for integration, troubleshooting, and gove
 
 # DashClaw Platform Intelligence
 
-**Shape snapshot:** `sha1:f32568b0fb5826bf510e0a902d68608d2b58051e`
+**Shape snapshot:** `sha1:929c1337ddc74037c74d6e98ea47acc969635f9e`
 **This file is auto-generated.** Do not edit by hand — regenerate with:
 
 ```bash
@@ -29,9 +29,9 @@ If the snapshot below disagrees with a live query, **trust the live query**.
 
 ## At a Glance
 
-- **184** active API routes across **49** categories
+- **191** active API routes across **50** categories
 - **4** required + **120** optional environment variables
-- **73** database tables
+- **81** database tables
 
 ## API Surface
 
@@ -103,6 +103,16 @@ If the snapshot below disagrees with a live query, **trust the live query**.
 - `POST` `/api/capabilities/[capabilityId]/invoke`
 - `POST` `/api/capabilities/[capabilityId]/test`
 - `GET` `/api/capabilities/health`
+
+### `code-sessions`
+
+- `GET` `/api/code-sessions/alerts`
+- `POST` `/api/code-sessions/alerts/read-all`
+- `POST` `/api/code-sessions/ingest-jsonl`
+- `GET` `/api/code-sessions/projects`
+- `GET` `/api/code-sessions/projects/[projectId]/sessions`
+- `GET` `/api/code-sessions/sessions/[sessionId]`
+- `GET` `/api/code-sessions/sessions/[sessionId]/insights`
 
 ### `compliance`
 
@@ -502,7 +512,7 @@ These have fallbacks or only activate specific features.
 
 ## Database Tables
 
-All 73 tables defined in `schema/schema.js` (Drizzle ORM):
+All 81 tables defined in `schema/schema.js` (Drizzle ORM):
 
 - `action_embeddings`
 - `action_records`
@@ -517,6 +527,14 @@ All 73 tables defined in `schema/schema.js` (Drizzle ORM):
 - `api_keys`
 - `assumptions`
 - `calendar_events`
+- `code_optimal_file_manifests`
+- `code_projects`
+- `code_session_alerts`
+- `code_session_memos`
+- `code_session_messages`
+- `code_session_signals`
+- `code_session_tool_uses`
+- `code_sessions`
 - `compliance_snapshots`
 - `contacts`
 - `content`

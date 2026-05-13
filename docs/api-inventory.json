@@ -46,10 +46,10 @@
     ]
   },
   "summary": {
-    "total_routes": 231,
+    "total_routes": 238,
     "stable_routes": 42,
     "beta_routes": 21,
-    "experimental_routes": 168
+    "experimental_routes": 175
   },
   "routes": [
     {
@@ -875,6 +875,69 @@
       "maturity": "experimental",
       "matched_prefix": "(default)",
       "file": "app/api/capabilities/[capabilityId]/test/route.js"
+    },
+    {
+      "path": "/api/code-sessions/alerts",
+      "methods": [
+        "GET"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/code-sessions/alerts/route.js"
+    },
+    {
+      "path": "/api/code-sessions/alerts/read-all",
+      "methods": [
+        "POST"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/code-sessions/alerts/read-all/route.js"
+    },
+    {
+      "path": "/api/code-sessions/ingest-jsonl",
+      "methods": [
+        "POST"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/code-sessions/ingest-jsonl/route.js"
+    },
+    {
+      "path": "/api/code-sessions/projects",
+      "methods": [
+        "GET"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/code-sessions/projects/route.js"
+    },
+    {
+      "path": "/api/code-sessions/projects/{projectId}/sessions",
+      "methods": [
+        "GET"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/code-sessions/projects/[projectId]/sessions/route.js"
+    },
+    {
+      "path": "/api/code-sessions/sessions/{sessionId}",
+      "methods": [
+        "GET"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/code-sessions/sessions/[sessionId]/route.js"
+    },
+    {
+      "path": "/api/code-sessions/sessions/{sessionId}/insights",
+      "methods": [
+        "GET"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/code-sessions/sessions/[sessionId]/insights/route.js"
     },
     {
       "path": "/api/compliance/evidence",

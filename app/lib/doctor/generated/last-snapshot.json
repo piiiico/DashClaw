@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:f32568b0fb5826bf510e0a902d68608d2b58051e",
+  "timestamp": "sha1:929c1337ddc74037c74d6e98ea47acc969635f9e",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -896,6 +896,75 @@
       "dynamic_params": [],
       "archived": false,
       "file_path": "app/api/capabilities/health/route.js"
+    },
+    {
+      "path": "/api/code-sessions/alerts",
+      "methods": [
+        "GET"
+      ],
+      "dynamic_params": [],
+      "archived": false,
+      "file_path": "app/api/code-sessions/alerts/route.js"
+    },
+    {
+      "path": "/api/code-sessions/alerts/read-all",
+      "methods": [
+        "POST"
+      ],
+      "dynamic_params": [],
+      "archived": false,
+      "file_path": "app/api/code-sessions/alerts/read-all/route.js"
+    },
+    {
+      "path": "/api/code-sessions/ingest-jsonl",
+      "methods": [
+        "POST"
+      ],
+      "dynamic_params": [],
+      "archived": false,
+      "file_path": "app/api/code-sessions/ingest-jsonl/route.js"
+    },
+    {
+      "path": "/api/code-sessions/projects",
+      "methods": [
+        "GET"
+      ],
+      "dynamic_params": [],
+      "archived": false,
+      "file_path": "app/api/code-sessions/projects/route.js"
+    },
+    {
+      "path": "/api/code-sessions/projects/[projectId]/sessions",
+      "methods": [
+        "GET"
+      ],
+      "dynamic_params": [
+        "projectId"
+      ],
+      "archived": false,
+      "file_path": "app/api/code-sessions/projects/[projectId]/sessions/route.js"
+    },
+    {
+      "path": "/api/code-sessions/sessions/[sessionId]",
+      "methods": [
+        "GET"
+      ],
+      "dynamic_params": [
+        "sessionId"
+      ],
+      "archived": false,
+      "file_path": "app/api/code-sessions/sessions/[sessionId]/route.js"
+    },
+    {
+      "path": "/api/code-sessions/sessions/[sessionId]/insights",
+      "methods": [
+        "GET"
+      ],
+      "dynamic_params": [
+        "sessionId"
+      ],
+      "archived": false,
+      "file_path": "app/api/code-sessions/sessions/[sessionId]/insights/route.js"
     },
     {
       "path": "/api/compliance/evidence",
@@ -3846,6 +3915,46 @@
     },
     {
       "name": "calendar_events",
+      "file_path": "schema/schema.js",
+      "domain": null
+    },
+    {
+      "name": "code_optimal_file_manifests",
+      "file_path": "schema/schema.js",
+      "domain": null
+    },
+    {
+      "name": "code_projects",
+      "file_path": "schema/schema.js",
+      "domain": null
+    },
+    {
+      "name": "code_session_alerts",
+      "file_path": "schema/schema.js",
+      "domain": null
+    },
+    {
+      "name": "code_session_memos",
+      "file_path": "schema/schema.js",
+      "domain": null
+    },
+    {
+      "name": "code_session_messages",
+      "file_path": "schema/schema.js",
+      "domain": null
+    },
+    {
+      "name": "code_session_signals",
+      "file_path": "schema/schema.js",
+      "domain": null
+    },
+    {
+      "name": "code_session_tool_uses",
+      "file_path": "schema/schema.js",
+      "domain": null
+    },
+    {
+      "name": "code_sessions",
       "file_path": "schema/schema.js",
       "domain": null
     },

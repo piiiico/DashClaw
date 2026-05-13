@@ -48,20 +48,20 @@ p.kicker{background:var(--accent-bg);border:1px solid var(--accent-border);borde
 p.kicker b{color:var(--accent-deep)}
 </style></head><body>
 <h1>DashClaw Livingcode Dashboard</h1>
-<div class="sig" id="sig">Shape signature: sha1:f32568b0fb5826bf510e0a902d68608d2b58051e · signature-stable</div>
+<div class="sig" id="sig">Shape signature: sha1:929c1337ddc74037c74d6e98ea47acc969635f9e · signature-stable</div>
 <div class="grid">
-      <div class="cell"><div class="n">184</div><div class="k">Active routes</div></div>
+      <div class="cell"><div class="n">191</div><div class="k">Active routes</div></div>
       <div class="cell"><div class="n">48</div><div class="k">Archived routes</div></div>
       <div class="cell"><div class="n">4</div><div class="k">Required env vars</div></div>
       <div class="cell"><div class="n">120</div><div class="k">Optional env vars</div></div>
-      <div class="cell"><div class="n">73</div><div class="k">Tables</div></div>
+      <div class="cell"><div class="n">81</div><div class="k">Tables</div></div>
       <div class="cell"><div class="n">15</div><div class="k">Events</div></div>
       <div class="cell"><div class="n">10</div><div class="k">Signals</div></div>
       <div class="cell"><div class="n">5</div><div class="k">Adapters</div></div>
       <div class="cell"><div class="n">77</div><div class="k">Setting keys</div></div>
 </div>
 
-<section><h2>Shape</h2><details><summary>Tables (73)</summary><table><thead><tr><th>Name</th><th>Domain</th></tr></thead><tbody>    <tr><td><code>action_embeddings</code></td><td class="sig">—</td></tr>
+<section><h2>Shape</h2><details><summary>Tables (81)</summary><table><thead><tr><th>Name</th><th>Domain</th></tr></thead><tbody>    <tr><td><code>action_embeddings</code></td><td class="sig">—</td></tr>
     <tr><td><code>action_records</code></td><td class="sig">governance</td></tr>
     <tr><td><code>activity_logs</code></td><td class="sig">—</td></tr>
     <tr><td><code>agent_connections</code></td><td class="sig">—</td></tr>
@@ -74,6 +74,14 @@ p.kicker b{color:var(--accent-deep)}
     <tr><td><code>api_keys</code></td><td class="sig">governance</td></tr>
     <tr><td><code>assumptions</code></td><td class="sig">—</td></tr>
     <tr><td><code>calendar_events</code></td><td class="sig">—</td></tr>
+    <tr><td><code>code_optimal_file_manifests</code></td><td class="sig">—</td></tr>
+    <tr><td><code>code_projects</code></td><td class="sig">—</td></tr>
+    <tr><td><code>code_session_alerts</code></td><td class="sig">—</td></tr>
+    <tr><td><code>code_session_memos</code></td><td class="sig">—</td></tr>
+    <tr><td><code>code_session_messages</code></td><td class="sig">—</td></tr>
+    <tr><td><code>code_session_signals</code></td><td class="sig">—</td></tr>
+    <tr><td><code>code_session_tool_uses</code></td><td class="sig">—</td></tr>
+    <tr><td><code>code_sessions</code></td><td class="sig">—</td></tr>
     <tr><td><code>compliance_snapshots</code></td><td class="sig">—</td></tr>
     <tr><td><code>contacts</code></td><td class="sig">—</td></tr>
     <tr><td><code>content</code></td><td class="sig">—</td></tr>
@@ -246,7 +254,14 @@ p.kicker b{color:var(--accent-deep)}
 <figure><figcaption>Required env vars over time <span class="sig">(4 → 4)</span></figcaption><svg width="320" height="48" viewBox="0 0 320 48"><polyline fill="none" stroke="var(--accent)" stroke-width="2" points="4.0,44.0 160.0,44.0 316.0,44.0"/></svg></figure>
 <figure><figcaption>Tables over time <span class="sig">(73 → 73)</span></figcaption><svg width="320" height="48" viewBox="0 0 320 48"><polyline fill="none" stroke="var(--accent)" stroke-width="2" points="4.0,44.0 160.0,44.0 316.0,44.0"/></svg></figure></section>
 
-<section><h2>Changed since last snapshot</h2><p class="kicker"><b>14</b> env_vars added, <b>9</b> routes added since last snapshot.</p><ul class="diff">    <li><code>added</code> <b>routes</b>: /api/actions/[actionId]/outcome <span class="sig">New route: GET, POST</span></li>
+<section><h2>Changed since last snapshot</h2><p class="kicker"><b>14</b> env_vars added, <b>16</b> routes added, <b>8</b> tables added since last snapshot.</p><ul class="diff">    <li><code>added</code> <b>routes</b>: /api/actions/[actionId]/outcome <span class="sig">New route: GET, POST</span></li>
+    <li><code>added</code> <b>routes</b>: /api/code-sessions/alerts <span class="sig">New route: GET</span></li>
+    <li><code>added</code> <b>routes</b>: /api/code-sessions/alerts/read-all <span class="sig">New route: POST</span></li>
+    <li><code>added</code> <b>routes</b>: /api/code-sessions/ingest-jsonl <span class="sig">New route: POST</span></li>
+    <li><code>added</code> <b>routes</b>: /api/code-sessions/projects <span class="sig">New route: GET</span></li>
+    <li><code>added</code> <b>routes</b>: /api/code-sessions/projects/[projectId]/sessions <span class="sig">New route: GET</span></li>
+    <li><code>added</code> <b>routes</b>: /api/code-sessions/sessions/[sessionId] <span class="sig">New route: GET</span></li>
+    <li><code>added</code> <b>routes</b>: /api/code-sessions/sessions/[sessionId]/insights <span class="sig">New route: GET</span></li>
     <li><code>added</code> <b>routes</b>: /api/cron/outcome-sweep <span class="sig">New route: GET</span></li>
     <li><code>added</code> <b>routes</b>: /api/discord/interactions <span class="sig">New route: POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/hosted/cleanup <span class="sig">New route: POST</span></li>
@@ -268,7 +283,15 @@ p.kicker b{color:var(--accent-deep)}
     <li><code>added</code> <b>env_vars</b>: INTEGRATION_DATABASE_URL <span class="sig">New env var (optional, undocumented)</span></li>
     <li><code>added</code> <b>env_vars</b>: NEXT_PUBLIC_TURNSTILE_SITE_KEY <span class="sig">New env var (optional, undocumented)</span></li>
     <li><code>added</code> <b>env_vars</b>: TEST_BASE_URL <span class="sig">New env var (optional, undocumented)</span></li>
-    <li><code>added</code> <b>env_vars</b>: X <span class="sig">New env var (optional, undocumented)</span></li></ul></section>
+    <li><code>added</code> <b>env_vars</b>: X <span class="sig">New env var (optional, undocumented)</span></li>
+    <li><code>added</code> <b>tables</b>: code_optimal_file_manifests <span class="sig">New table in schema</span></li>
+    <li><code>added</code> <b>tables</b>: code_projects <span class="sig">New table in schema</span></li>
+    <li><code>added</code> <b>tables</b>: code_session_alerts <span class="sig">New table in schema</span></li>
+    <li><code>added</code> <b>tables</b>: code_session_memos <span class="sig">New table in schema</span></li>
+    <li><code>added</code> <b>tables</b>: code_session_messages <span class="sig">New table in schema</span></li>
+    <li><code>added</code> <b>tables</b>: code_session_signals <span class="sig">New table in schema</span></li>
+    <li><code>added</code> <b>tables</b>: code_session_tool_uses <span class="sig">New table in schema</span></li>
+    <li><code>added</code> <b>tables</b>: code_sessions <span class="sig">New table in schema</span></li></ul></section>
 
 <section class="routes"><h2>Active routes</h2><input id="route-filter" type="search" placeholder="Filter routes…" oninput="var q=this.value.toLowerCase();document.querySelectorAll('section.routes tr[data-path]').forEach(function(r){r.style.display=r.dataset.path.toLowerCase().includes(q)?'':'none';});document.querySelectorAll('section.routes details').forEach(function(d){var visible=d.querySelectorAll("tr[data-path]:not([style*='none'])").length;d.style.display=visible||!q?'':'none';if(q)d.open=true;});"><details><summary>/actions/* (11)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/actions"><td><code>/api/actions</code></td><td>DELETE, GET, POST</td><td class="sig">app/api/actions/route.js</td></tr>
     <tr data-path="/api/actions/[actionId]"><td><code>/api/actions/[actionId]</code></td><td>GET, PATCH</td><td class="sig">app/api/actions/[actionId]/route.js</td></tr>
@@ -309,6 +332,13 @@ p.kicker b{color:var(--accent-deep)}
     <tr data-path="/api/capabilities/[capabilityId]/invoke"><td><code>/api/capabilities/[capabilityId]/invoke</code></td><td>POST</td><td class="sig">app/api/capabilities/[capabilityId]/invoke/route.js</td></tr>
     <tr data-path="/api/capabilities/[capabilityId]/test"><td><code>/api/capabilities/[capabilityId]/test</code></td><td>POST</td><td class="sig">app/api/capabilities/[capabilityId]/test/route.js</td></tr>
     <tr data-path="/api/capabilities/health"><td><code>/api/capabilities/health</code></td><td>GET</td><td class="sig">app/api/capabilities/health/route.js</td></tr></tbody></table></details>
+<details><summary>/code-sessions/* (7)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/code-sessions/alerts"><td><code>/api/code-sessions/alerts</code></td><td>GET</td><td class="sig">app/api/code-sessions/alerts/route.js</td></tr>
+    <tr data-path="/api/code-sessions/alerts/read-all"><td><code>/api/code-sessions/alerts/read-all</code></td><td>POST</td><td class="sig">app/api/code-sessions/alerts/read-all/route.js</td></tr>
+    <tr data-path="/api/code-sessions/ingest-jsonl"><td><code>/api/code-sessions/ingest-jsonl</code></td><td>POST</td><td class="sig">app/api/code-sessions/ingest-jsonl/route.js</td></tr>
+    <tr data-path="/api/code-sessions/projects"><td><code>/api/code-sessions/projects</code></td><td>GET</td><td class="sig">app/api/code-sessions/projects/route.js</td></tr>
+    <tr data-path="/api/code-sessions/projects/[projectId]/sessions"><td><code>/api/code-sessions/projects/[projectId]/sessions</code></td><td>GET</td><td class="sig">app/api/code-sessions/projects/[projectId]/sessions/route.js</td></tr>
+    <tr data-path="/api/code-sessions/sessions/[sessionId]"><td><code>/api/code-sessions/sessions/[sessionId]</code></td><td>GET</td><td class="sig">app/api/code-sessions/sessions/[sessionId]/route.js</td></tr>
+    <tr data-path="/api/code-sessions/sessions/[sessionId]/insights"><td><code>/api/code-sessions/sessions/[sessionId]/insights</code></td><td>GET</td><td class="sig">app/api/code-sessions/sessions/[sessionId]/insights/route.js</td></tr></tbody></table></details>
 <details><summary>/compliance/* (11)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/compliance/evidence"><td><code>/api/compliance/evidence</code></td><td>GET</td><td class="sig">app/api/compliance/evidence/route.js</td></tr>
     <tr data-path="/api/compliance/exports"><td><code>/api/compliance/exports</code></td><td>GET, POST</td><td class="sig">app/api/compliance/exports/route.js</td></tr>
     <tr data-path="/api/compliance/exports/[exportId]"><td><code>/api/compliance/exports/[exportId]</code></td><td>DELETE, GET</td><td class="sig">app/api/compliance/exports/[exportId]/route.js</td></tr>

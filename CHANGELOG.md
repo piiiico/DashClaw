@@ -27,6 +27,31 @@ are prefixed with the package name.
 
 ## [Unreleased]
 
+### AgentLens absorption — Phase 2: schema + repository + ingest endpoint + pricing extension
+
+Schema, repository, REST surface, and cache-aware billing extension.
+
+- **Schema** — 8 new tables in `schema/schema.js` and a hand-written `drizzle/0006_code_sessions.sql` migration:
+  - `code_projects(id, org_id, slug, cwd, source_host, timestamps)` with `UNIQUE(org_id, slug)`.
+  - `code_sessions(id, org_id, project_id, session_uuid, source, source_file, source_mtime, started_at, ended_at, message_count, model_primary, raw token totals incl. cache_read/cache_creation, cost_usd, cache_savings_usd, model_requests, jsonl_records, duplicate_fragments_skipped, naive_* mirrors, parser_version, timestamps)` with `UNIQUE(org_id, session_uuid)` and `CHECK source IN ('hook','jsonl')`.
+  - `code_session_messages(serial id, session_id FK→code_sessions ON DELETE CASCADE, role, model, timestamp, token columns, request_id, message_id, text_preview)`.
+  - `code_session_tool_uses(serial id, session_id FK, message_id FK→code_session_messages ON DELETE SET NULL, action_id FK→action_records.action_id ON DELETE SET NULL, name, target, tool_use_id, request_id, source_line)`.
+  - `code_session_signals(serial id, session_id FK, kind, confidence, savings_usd, payload jsonb)`.
+  - `code_session_alerts(serial id, org_id, project_id?, session_id?, kind, severity, scope, title, body, read_at)` + the manually-written **NULL-safe dedup unique index** `code_session_alerts_dedup` on `(org_id, kind, COALESCE(project_id,''), COALESCE(session_id,''))`. Named explicitly so the alerts upsert path can target it via `ON CONFLICT ON CONSTRAINT`.
+  - `code_session_memos(serial id, org_id, project_id, iso_week_tag, body_md)` with `UNIQUE(org_id, project_id, iso_week_tag)`.
+  - `code_optimal_file_manifests(id, org_id, session_id, project_cwd, plan jsonb, expires_at, created_at)`.
+- **`app/lib/billing.js`** — `DEFAULT_PRICING` entries gained optional `cache_write` / `cache_read` rates for `opus-4-7` (18.75 / 1.50), `sonnet-4-6` (3.75 / 0.30), and `haiku-4-5` (1.25 / 0.10) per the AgentLens 4-column table. `estimateCost` gained an optional 5th `extras` argument carrying `{ cache_creation_tokens, cache_read_tokens }`; legacy 4-arg behavior is **bit-for-bit identical** (verified by an exhaustive parity test in `__tests__/unit/billing-cache.test.js`). Unknown models still return `0` with the one-time warn — extras ignored.
+- **`app/lib/repositories/code-sessions.repository.js`** — full read/write surface on tagged-template SQL. `upsertSessionWithChildren` implements the non-atomic AgentLens semantics: freshness check → upsert parent → delete child rows → row-by-row insert of messages (capturing `RETURNING id`) → row-by-row insert of tool_uses (translating `messageIndex` to the new message FK and stamping `action_id` from `toolUseActionMap`). Source comment documents the non-atomic property and points at the Phase 9 repair script for crash recovery.
+- **API routes** under `app/api/code-sessions/`:
+  - `POST /api/code-sessions/ingest-jsonl` — single entry point for Path A (hook) and Path B (CLI). Validates `body.project.source_host` (`'hook'|'jsonl'`), derives `slug` from `cwd` basename when missing, runs the canonical JS parser on `body.jsonl_lines`, returns 400 `mismatched_session_uuid` when `body.session_uuid` disagrees with the parser, and refuses payloads above 200k lines.
+  - `GET /api/code-sessions/projects` — list with session count + rollup totals.
+  - `GET /api/code-sessions/projects/[projectId]/sessions` — paginated session list.
+  - `GET /api/code-sessions/sessions/[sessionId]` — session + messages + tool_uses.
+  - `GET /api/code-sessions/sessions/[sessionId]/insights` — tool events + repeated-runs + stored signals. Phase 5 will populate the signals.
+  - `GET /api/code-sessions/alerts?onlyUnread=1&limit=50` + `POST /api/code-sessions/alerts/read-all`.
+- **Tests** — 26 new ones across `__tests__/integration/code-sessions/` (route shape, slug derivation, mismatched-uuid 400, org isolation, parser_skipped counting, skip semantics passthrough), `__tests__/unit/code-sessions/repository-upsert.test.js` (exact statement order against `createSqlMock`, messageIndex→message_id translation, action_id stamping, idempotency short-circuit, missing-sessionUuid early return), and `__tests__/unit/billing-cache.test.js` (5-arg/legacy parity, cache pricing on the three Anthropic models, custom pricing with cache columns).
+- **Migration runner** — `npm run db:migrate` will pick up `drizzle/0006_code_sessions.sql` automatically via `scripts/auto-migrate.mjs`. Wes runs this against his local Postgres.
+
 ### AgentLens absorption — Phase 1: pure module port
 
 Ported the AgentLens (`C:\Projects\RevenueGoalExperiment-V3`) algorithmic core into DashClaw as `app/lib/claude-code/`. All modules are ESM, dependency-injected, and free of DB / HTTP / fs side-effects (except `optimal-files/apply.js` which holds the CLI-only disk writes). 149 new vitest tests pass under `__tests__/unit/claude-code/`, comfortably above the ≥140 floor stated in the phase exit gate.

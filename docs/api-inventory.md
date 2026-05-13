@@ -13,10 +13,10 @@ doc-type: architecture
 
 ## Summary
 
-- Total routes: `231`
+- Total routes: `238`
 - Stable routes: `42`
 - Beta routes: `21`
-- Experimental routes: `168`
+- Experimental routes: `175`
 
 ## Routes
 
@@ -108,6 +108,13 @@ doc-type: architecture
 | `/api/capabilities/{capabilityId}/history` | `GET` | `experimental` | `(default)` | `app/api/capabilities/[capabilityId]/history/route.js` |
 | `/api/capabilities/{capabilityId}/invoke` | `POST` | `experimental` | `(default)` | `app/api/capabilities/[capabilityId]/invoke/route.js` |
 | `/api/capabilities/{capabilityId}/test` | `POST` | `experimental` | `(default)` | `app/api/capabilities/[capabilityId]/test/route.js` |
+| `/api/code-sessions/alerts` | `GET` | `experimental` | `(default)` | `app/api/code-sessions/alerts/route.js` |
+| `/api/code-sessions/alerts/read-all` | `POST` | `experimental` | `(default)` | `app/api/code-sessions/alerts/read-all/route.js` |
+| `/api/code-sessions/ingest-jsonl` | `POST` | `experimental` | `(default)` | `app/api/code-sessions/ingest-jsonl/route.js` |
+| `/api/code-sessions/projects` | `GET` | `experimental` | `(default)` | `app/api/code-sessions/projects/route.js` |
+| `/api/code-sessions/projects/{projectId}/sessions` | `GET` | `experimental` | `(default)` | `app/api/code-sessions/projects/[projectId]/sessions/route.js` |
+| `/api/code-sessions/sessions/{sessionId}` | `GET` | `experimental` | `(default)` | `app/api/code-sessions/sessions/[sessionId]/route.js` |
+| `/api/code-sessions/sessions/{sessionId}/insights` | `GET` | `experimental` | `(default)` | `app/api/code-sessions/sessions/[sessionId]/insights/route.js` |
 | `/api/compliance/evidence` | `GET` | `experimental` | `(default)` | `app/api/compliance/evidence/route.js` |
 | `/api/compliance/exports` | `GET, POST` | `experimental` | `(default)` | `app/api/compliance/exports/route.js` |
 | `/api/compliance/exports/{exportId}` | `DELETE, GET` | `experimental` | `(default)` | `app/api/compliance/exports/[exportId]/route.js` |
