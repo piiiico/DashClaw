@@ -122,6 +122,7 @@ export default function LandingPage() {
               'Python SDK',
               'REST API',
               'CLI',
+              'Discord Approvals',
               'Telegram Approvals',
             ].map((surface, idx, arr) => (
               <span key={surface} className="inline-flex items-center gap-3">
@@ -594,8 +595,8 @@ if (decision === "allow") {
               {
                 icon: MessageSquare,
                 title: 'Approval Surfaces',
-                description: 'Approvers resolve pending actions wherever they already work, against the same governance endpoint.',
-                items: ['Dashboard inbox at /approvals', 'CLI with dashclaw approve and approvals', 'Mobile PWA at /approve', 'Telegram inline Approve and Reject buttons', 'Claude Code lifecycle hooks'],
+                description: 'Approvers resolve pending actions wherever they already work, against the same governance endpoint. Claude Code lifecycle hooks add an inline prompt path for terminal workflows.',
+                items: ['Dashboard inbox at /approvals', 'CLI with dashclaw approve and approvals', 'Mobile PWA at /approve', 'Discord DM with inline Approve and Deny buttons', 'Telegram inline Approve and Reject buttons'],
               },
             ].map((capability) => {
               const Icon = capability.icon;

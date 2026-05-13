@@ -1,55 +1,38 @@
 import { describe, expect, it, vi } from 'vitest';
 import { renderToString } from 'react-dom/server';
 
-vi.mock('next/headers', () => ({
-  headers: async () => ({
-    get: (name) => (name === 'host' ? 'dashclaw.example.com' : null),
-  }),
-}));
-
-// Stub JSX-in-.js children + the client component. We care about the page-level
-// structure (single-page runbook, no wizard markers, HostedProvision preserved,
-// three runbook elements present).
+// The /connect page is now a framework-agnostic runbook. The previous
+// HostedProvisionSection (inline workspace-token UX) was removed when
+// the hosted-trial pathway was deprecated; assertions about that
+// section are gone with it.
 vi.mock('@/components/PublicNavbar', () => ({ default: () => null }));
 vi.mock('@/components/PublicFooter', () => ({ default: () => null }));
 
-// Force hostedMode TRUE so HostedProvisionSection renders (D-15: inline token UX).
-vi.mock('@/lib/hosted/publicConfig.js', () => ({
-  publicHostedConfig: () => ({ hostedMode: true, turnstileSiteKey: null }),
-}));
-vi.mock('@/connect/HostedProvisionClient', () => ({
-  default: () => null,
-}));
-
 import ConnectPage from '@/connect/page.jsx';
 
-async function renderPage() {
-  const element = await ConnectPage();
+function renderPage() {
+  const element = ConnectPage();
   return renderToString(element);
 }
 
-describe('/connect single-page runbook — DOG-03 D-15', () => {
-  it('does NOT contain multi-step wizard markers', async () => {
-    const html = await renderPage();
+describe('/connect runbook', () => {
+  it('does NOT contain multi-step wizard markers', () => {
+    const html = renderPage();
     // "Step 1 of N" / "Step 2 of N" wizard framing
     expect(html).not.toMatch(/step\s*\d+\s*of\s*\d+/i);
-    // Explicit "Golden path" header was the wizard's banner — D-15 removes it
+    // The old "Golden path" wizard banner must not return
     expect(html).not.toMatch(/Golden path/i);
   });
 
-  it('preserves HostedProvisionSection — inline workspace-token UX (D-15)', async () => {
-    const html = await renderPage();
-    // HostedProvisionSection heading text is stable
-    expect(html).toMatch(/Pick your stack|pre-configured workspace/i);
-  });
-
-  it('contains all three runbook elements — install, workspace token, Discord', async () => {
-    const html = await renderPage();
-    // 1. Install command surface
-    expect(html).toMatch(/npm install|npm run hooks:install/i);
-    // 2. Workspace token / API key surface
-    expect(html).toMatch(/DASHCLAW_API_KEY|workspace token|workspace api key/i);
-    // 3. Discord approval configuration
-    expect(html).toMatch(/discord/i);
+  it('exposes the four canonical runbook surfaces: install command, API key env var, an approval surface, and a Verify command', () => {
+    const html = renderPage();
+    // 1. SDK or hooks install command is present somewhere on the page
+    expect(html).toMatch(/npm install|pip install|cp hooks/i);
+    // 2. The DASHCLAW_API_KEY env var name is the canonical token reference
+    expect(html).toMatch(/DASHCLAW_API_KEY/);
+    // 3. At least one approval surface (Discord, Telegram, Mobile PWA, CLI, Dashboard) is mentioned
+    expect(html).toMatch(/discord|telegram|mobile pwa|approvals/i);
+    // 4. The verify command is present
+    expect(html).toMatch(/dashclaw doctor/);
   });
 });

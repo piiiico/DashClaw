@@ -1,265 +1,424 @@
-import { headers } from 'next/headers';
 import Link from 'next/link';
-import { ChevronRight } from 'lucide-react';
+import {
+  ChevronRight,
+  ShieldCheck,
+  KeyRound,
+  Package,
+  Plug,
+  Terminal,
+  Smartphone,
+  MessageSquare,
+  Send,
+  Bot,
+  Code,
+  ArrowRight,
+} from 'lucide-react';
 
 import PublicNavbar from '../components/PublicNavbar';
 import PublicFooter from '../components/PublicFooter';
-import HostedProvisionSection from './HostedProvisionSection';
 
-export const dynamic = 'force-dynamic';
+/*
+ * Framework agnostic /connect runbook.
+ *
+ * This page assumes the visitor already has a running DashClaw instance
+ * (or links them back to /self-host if they do not). The single job of
+ * this page is to get an agent talking to that instance with an
+ * approval surface configured.
+ *
+ * Structure:
+ *   1. Get your API key            (env exports)
+ *   2. Pick an integration surface (4 cards: SDK, MCP, Claude Code Hooks, OpenClaw)
+ *   3. Pick an approval surface    (5 cards: Dashboard default, CLI, Mobile PWA, Discord, Telegram)
+ *   4. Verify                       (1 consolidated Verify section)
+ *   Framework guides                (5 cards: Claude Code, OpenAI Agents SDK, LangGraph, CrewAI, OpenClaw)
+ */
 
 export const metadata = {
-  title: 'Connect Claude Code in 5 minutes - DashClaw',
+  title: 'Connect an agent to DashClaw',
   description:
-    'Single-page copy-paste runbook. Install the hook, paste your workspace token, configure Discord for phone approvals. 5 minutes end-to-end.',
+    'Point any agent at your running DashClaw instance. Pick an integration surface, configure approvals, verify with one command.',
+  openGraph: {
+    title: 'Connect an agent to DashClaw',
+    description:
+      'Point any agent at your running DashClaw instance. Pick an integration surface, configure approvals, verify with one command.',
+  },
 };
 
-export default async function ConnectPage() {
-  const headerStore = await headers();
-  const host = headerStore.get('host') || 'localhost:3000';
-  const baseUrl = host === 'dashclaw.io' ? 'https://my-dashclaw.vercel.app' : `https://${host}`;
+function StepHeader({ n, children }) {
+  return (
+    <div className="flex items-center gap-3 mb-3">
+      <span className="w-7 h-7 rounded-full bg-brand-subtle border border-border-active text-brand text-xs font-bold flex items-center justify-center">
+        {n}
+      </span>
+      <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-text-primary">
+        {children}
+      </h2>
+    </div>
+  );
+}
 
+function CodeBlock({ children }) {
+  return (
+    <pre className="overflow-x-auto rounded-xl border border-border bg-surface-primary p-4 text-xs leading-relaxed text-text-secondary font-mono">
+      {children}
+    </pre>
+  );
+}
+
+function Eyebrow({ children }) {
+  return (
+    <p className="text-[11px] font-mono uppercase tracking-[0.2em] text-text-tertiary mb-3">
+      {children}
+    </p>
+  );
+}
+
+export default function ConnectPage() {
   return (
     <div className="min-h-screen bg-surface-primary text-text-primary">
       <PublicNavbar />
 
       <main className="px-6 pb-20 pt-28">
         <div className="mx-auto max-w-5xl">
-          <div className="mb-8 flex items-center gap-2 text-sm text-text-tertiary">
+          {/* Breadcrumb */}
+          <nav aria-label="Breadcrumb" className="mb-8 flex items-center gap-2 text-sm text-text-tertiary">
             <Link href="/" className="transition-colors hover:text-text-secondary">
               Home
             </Link>
-            <ChevronRight size={14} />
-            <span className="text-text-secondary">Connect Claude Code</span>
-          </div>
+            <ChevronRight size={14} aria-hidden="true" />
+            <span className="text-text-secondary">Connect an Agent</span>
+          </nav>
 
+          {/* Hero */}
           <header className="mb-10">
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-text-primary">
-              Connect Claude Code in 5 minutes.
+            <Eyebrow>Connect an agent</Eyebrow>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-tight text-text-primary">
+              Point your agent at your running DashClaw instance.
             </h1>
-            <p className="mt-3 text-base text-text-secondary max-w-2xl">
-              Top-to-bottom runbook. Copy one command, paste one workspace token, configure Discord for phone approvals. Done.
+            <p className="mt-5 text-lg text-text-secondary max-w-2xl leading-relaxed">
+              Pick an integration surface, configure an approval surface, verify with one command. Works with any agent framework that can call an HTTP API or an SDK.
+            </p>
+
+            {/* Prerequisite band */}
+            <div className="mt-8 rounded-2xl border border-border-active bg-brand-subtle/40 p-5">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-brand-subtle border border-border-active flex items-center justify-center shrink-0">
+                    <ShieldCheck size={18} className="text-brand" aria-hidden="true" />
+                  </div>
+                  <p className="text-sm text-text-secondary leading-relaxed">
+                    <span className="font-semibold text-text-primary">Before you start, you need a running DashClaw instance.</span>{' '}
+                    If you do not have one yet, stand it up first. Takes about 10 minutes on Vercel and Neon free tiers.
+                  </p>
+                </div>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0">
+                  <Link
+                    href="/self-host"
+                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-brand text-white text-sm font-bold hover:bg-brand-hover transition-colors"
+                  >
+                    Self host the runtime <ArrowRight size={14} aria-hidden="true" />
+                  </Link>
+                  <Link
+                    href="/#live-demo"
+                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-surface-secondary border border-border text-text-secondary text-sm font-medium hover:border-border-hover hover:text-text-primary transition-colors"
+                  >
+                    Explore the live demo <ArrowRight size={14} aria-hidden="true" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            <p className="mt-5 text-sm text-text-tertiary italic max-w-2xl">
+              First connection takes 5 to 15 minutes depending on the integration surface you pick.
             </p>
           </header>
 
-          <HostedProvisionSection />
-
-          {/* Linear runbook — D-15 single-page, no multi-step wizard. */}
-          <section className="mt-10 space-y-6">
-            <article className="rounded-2xl border border-border bg-surface-secondary p-6 sm:p-8">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-text-tertiary">Runbook</p>
-              <h2 className="mt-3 text-2xl font-semibold tracking-tight text-text-primary">1. Install the Claude Code hooks</h2>
-              <p className="mt-2 text-sm text-text-secondary">
-                Clone the repo and run the installer. One command copies the PreToolUse, PostToolUse, and Stop hooks into <code className="rounded border border-border bg-surface-elevated px-1 py-0.5 font-mono text-[12px] text-text-secondary">.claude/hooks/</code> and merges settings.
-              </p>
-              <pre className="mt-4 overflow-x-auto rounded-xl border border-border bg-surface-primary p-4 text-xs leading-relaxed text-text-secondary">{`git clone https://github.com/ucsandman/DashClaw
-cd DashClaw
-npm install
-npm run hooks:install`}</pre>
-            </article>
-
-            <article className="rounded-2xl border border-border bg-surface-secondary p-6 sm:p-8">
-              <h2 className="mt-0 text-2xl font-semibold tracking-tight text-text-primary">2. Paste your workspace token</h2>
-              <p className="mt-2 text-sm text-text-secondary">
-                Generate a workspace token above (hosted trial) or from your self-hosted instance settings. Export it alongside your instance URL:
-              </p>
-              <pre className="mt-4 overflow-x-auto rounded-xl border border-border bg-surface-primary p-4 text-xs leading-relaxed text-text-secondary">{`export DASHCLAW_BASE_URL=${baseUrl}
-export DASHCLAW_API_KEY=dc_live_...`}</pre>
-              <p className="mt-3 text-xs text-text-tertiary">
-                Never use https://dashclaw.io as the agent base URL — point at your own instance.
-              </p>
-            </article>
-
-            <article className="rounded-2xl border border-border bg-surface-secondary p-6 sm:p-8">
-              <h2 className="mt-0 text-2xl font-semibold tracking-tight text-text-primary">3. Configure Discord for phone approvals</h2>
-              <p className="mt-2 text-sm text-text-secondary">
-                When Claude Code tries something risky, DashClaw pauses and sends a Discord DM with Approve / Reject buttons. Three env vars unlock the phone loop:
-              </p>
-              <pre className="mt-4 overflow-x-auto rounded-xl border border-border bg-surface-primary p-4 text-xs leading-relaxed text-text-secondary">{`DISCORD_BOT_TOKEN=<token>
-DISCORD_APPROVER_USER_ID=<your-discord-user-id>
-DISCORD_APPROVER_ORG_ID=<your-org-id>`}</pre>
-              <p className="mt-3 text-sm text-text-secondary">
-                Full bot-setup steps live in the{' '}
-                <Link href="/guides/claude-code" className="text-brand hover:text-brand-hover">
-                  Claude Code integration guide
-                </Link>
-                . Takes about 10 minutes end-to-end, one time.
-              </p>
-            </article>
-
-            <article className="rounded-2xl border border-border bg-surface-secondary p-6 sm:p-8">
-              <h2 className="mt-0 text-2xl font-semibold tracking-tight text-text-primary">Verify</h2>
-              <p className="mt-2 text-sm text-text-secondary">
-                Run <code className="rounded border border-border bg-surface-elevated px-1 py-0.5 font-mono text-[12px] text-text-primary">dashclaw doctor</code> from any terminal. Exit 0 = healthy. Ask Claude Code to run something risky (<code className="rounded border border-border bg-surface-elevated px-1 py-0.5 font-mono text-[12px] text-text-primary">rm -rf test/</code>) — you should receive a Discord DM within ~1 second.
-              </p>
-              <pre className="mt-4 overflow-x-auto rounded-xl border border-border bg-surface-primary p-4 text-xs leading-relaxed text-text-secondary">{`npm install -g @dashclaw/cli
-dashclaw doctor`}</pre>
-            </article>
+          {/* Step 1: API key */}
+          <section className="mt-10 rounded-2xl border border-border bg-surface-secondary p-6 sm:p-8">
+            <StepHeader n={1}>Get your API key</StepHeader>
+            <p className="text-sm text-text-secondary max-w-2xl leading-relaxed">
+              From your DashClaw instance settings, copy your API key. It starts with{' '}
+              <code className="rounded border border-border bg-surface-primary px-1 py-0.5 font-mono text-[12px] text-text-secondary">oc_live_</code>{' '}
+              for self hosted instances. Export it alongside your instance URL:
+            </p>
+            <div className="mt-4">
+              <CodeBlock>{`export DASHCLAW_BASE_URL=https://your-instance.vercel.app
+export DASHCLAW_API_KEY=oc_live_...`}</CodeBlock>
+            </div>
+            <p className="mt-4 text-xs text-text-tertiary leading-relaxed max-w-2xl">
+              Never use{' '}
+              <code className="rounded border border-border bg-surface-primary px-1 py-0.5 font-mono text-[11px] text-text-secondary">https://dashclaw.io</code>{' '}
+              as your agent base URL. Point at your own instance. The dashclaw.io deployment runs in demo mode and rejects writes.
+            </p>
           </section>
 
-          {/* MCP Server — Zero Code Path */}
-          <section className="mt-12 rounded-3xl border border-border bg-surface-secondary p-6 sm:p-8">
-            <div className="flex items-center gap-3">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-text-tertiary">Fastest path</p>
-              <span className="rounded-full border border-brand/20 bg-brand/10 px-2.5 py-0.5 text-[11px] font-medium text-brand">
-                Under 2 minutes
-              </span>
-            </div>
-            <h2 className="mt-3 text-2xl font-semibold tracking-tight text-text-primary">
-              MCP Server <span className="font-normal text-text-tertiary">(zero code)</span>
-            </h2>
-            <p className="mt-2 text-sm text-text-secondary">
-              Connect any MCP-compatible client — Claude Code, Claude Desktop, or Claude Managed Agents — to DashClaw governance with one config line. No SDK, no hooks, no code changes.
+          {/* Step 2: Integration surface */}
+          <section className="mt-6 rounded-2xl border border-border bg-surface-secondary p-6 sm:p-8">
+            <StepHeader n={2}>Pick an integration surface</StepHeader>
+            <p className="text-sm text-text-secondary max-w-2xl leading-relaxed">
+              Four ways to plug an agent into DashClaw. Pick one. All four hit the same governance loop on the same instance, so you can switch later without changing anything else.
             </p>
 
-            <div className="mt-6 space-y-4">
-              {/* Claude Code / Claude Desktop */}
-              <div className="rounded-2xl border border-border bg-surface-tertiary p-5">
-                <h3 className="text-sm font-semibold text-text-primary">Claude Code / Claude Desktop</h3>
-                <p className="mt-1 text-xs text-text-tertiary">
-                  Add to your <code className="rounded border border-border bg-surface-elevated px-1 py-0.5 font-mono text-[11px] text-text-secondary">claude_desktop_config.json</code> or Claude Code settings:
+            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+              {/* SDK */}
+              <div className="rounded-xl border border-border bg-surface-tertiary p-5 flex flex-col">
+                <div className="flex items-center gap-2 mb-3">
+                  <Package size={16} className="text-brand" aria-hidden="true" />
+                  <h3 className="text-base font-semibold text-text-primary">SDK</h3>
+                </div>
+                <p className="text-sm text-text-secondary leading-relaxed mb-4">
+                  Node.js or Python. Wrap risky actions in <code className="font-mono text-text-primary">claw.guard()</code> and you are done.
                 </p>
-                <pre className="mt-3 overflow-x-auto rounded-xl border border-border bg-surface-primary p-4 text-xs leading-relaxed text-text-secondary">{`{
-  "mcpServers": {
-    "dashclaw": {
-      "command": "npx",
-      "args": ["@dashclaw/mcp-server"],
-      "env": {
-        "DASHCLAW_URL": "https://your-dashclaw.vercel.app",
-        "DASHCLAW_API_KEY": "oc_live_..."
-      }
-    }
-  }
-}`}</pre>
-              </div>
+                <div className="mt-auto">
+                  <CodeBlock>{`# Node
+npm install dashclaw
 
-              {/* Claude Managed Agents */}
-              <div className="rounded-2xl border border-border bg-surface-tertiary p-5">
-                <h3 className="text-sm font-semibold text-text-primary">Claude Managed Agents</h3>
-                <p className="mt-1 text-xs text-text-tertiary">Pass DashClaw as an MCP server when creating your agent:</p>
-                <pre className="mt-3 overflow-x-auto rounded-xl border border-border bg-surface-primary p-4 text-xs leading-relaxed text-text-secondary">{`agent = client.beta.agents.create(
-    name="Governed Agent",
-    model="claude-sonnet-4-6",
-    tools=[{"type": "agent_toolset_20260401"}],
-    mcp_servers=[{
-        "type": "url",
-        "url": "https://your-dashclaw.vercel.app/api/mcp",
-        "headers": {"x-api-key": "oc_live_..."},
-        "name": "dashclaw"
-    }],
-)`}</pre>
-              </div>
-            </div>
-
-            {/* What you get */}
-            <div className="mt-4 rounded-2xl border border-border bg-surface-tertiary p-5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-text-tertiary">What you get</p>
-              <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                  <p className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.1em] text-text-secondary">8 Governance Tools</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {['guard', 'record', 'invoke', 'capabilities_list', 'policies_list', 'wait_for_approval', 'session_start', 'session_end'].map((tool) => (
-                      <span key={tool} className="rounded-md border border-border bg-surface-tertiary px-2 py-0.5 font-mono text-[11px] text-text-secondary">{tool}</span>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <p className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.1em] text-text-secondary">4 Resources</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {['policies', 'capabilities', 'agent history', 'status'].map((res) => (
-                      <span key={res} className="rounded-md border border-border bg-surface-tertiary px-2 py-0.5 font-mono text-[11px] text-text-secondary">{res}</span>
-                    ))}
-                  </div>
+# Python
+pip install dashclaw`}</CodeBlock>
+                  <Link href="/docs" className="mt-3 inline-flex items-center gap-1.5 text-xs text-brand hover:text-brand-hover transition-colors font-medium">
+                    Full SDK docs <ArrowRight size={12} aria-hidden="true" />
+                  </Link>
                 </div>
               </div>
-            </div>
-          </section>
 
-          {/* Verify with Doctor */}
-          <section className="mt-6 rounded-3xl border border-border bg-surface-secondary p-6 sm:p-8">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-text-tertiary">Verify</p>
-            <h2 className="mt-3 text-2xl font-semibold tracking-tight text-text-primary">Confirm your instance is healthy</h2>
-            <p className="mt-2 text-sm text-text-secondary">
-              Once the agent is connected, run <code className="rounded border border-border bg-surface-elevated px-1 py-0.5 font-mono text-[12px] text-text-primary">dashclaw doctor</code> from any terminal. It checks database, configuration, auth, deployment, SDK reachability, governance staleness, and shape drift — and auto-fixes safe issues.
-            </p>
-            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl border border-border bg-surface-tertiary p-5">
-                <h3 className="text-sm font-semibold text-text-primary">From any terminal</h3>
-                <p className="mt-1 text-xs text-text-tertiary">Diagnoses and applies safe fixes via your instance&rsquo;s API.</p>
-                <pre className="mt-3 overflow-x-auto rounded-xl border border-border bg-surface-primary p-4 text-xs leading-relaxed text-text-secondary">{`npm install -g @dashclaw/cli
-dashclaw doctor`}</pre>
+              {/* MCP Server */}
+              <div className="rounded-xl border border-border bg-surface-tertiary p-5 flex flex-col">
+                <div className="flex items-center gap-2 mb-3">
+                  <Plug size={16} className="text-brand" aria-hidden="true" />
+                  <h3 className="text-base font-semibold text-text-primary">MCP Server</h3>
+                </div>
+                <p className="text-sm text-text-secondary leading-relaxed mb-4">
+                  Zero code. Any MCP compatible client (Claude Code, Claude Desktop, Claude Managed Agents) gets governance through one config block.
+                </p>
+                <div className="mt-auto">
+                  <CodeBlock>{`npx @dashclaw/mcp-server \\
+  --url $DASHCLAW_BASE_URL \\
+  --key $DASHCLAW_API_KEY`}</CodeBlock>
+                  <Link href="/docs#mcp-server" className="mt-3 inline-flex items-center gap-1.5 text-xs text-brand hover:text-brand-hover transition-colors font-medium">
+                    MCP server docs <ArrowRight size={12} aria-hidden="true" />
+                  </Link>
+                </div>
               </div>
-              <div className="rounded-2xl border border-border bg-surface-tertiary p-5">
-                <h3 className="text-sm font-semibold text-text-primary">Self-host operator</h3>
-                <p className="mt-1 text-xs text-text-tertiary">Adds filesystem-level fixes (env writes, migrations, default-policy seed). Backs up <code className="font-mono text-text-secondary">.env</code> before any write.</p>
-                <pre className="mt-3 overflow-x-auto rounded-xl border border-border bg-surface-primary p-4 text-xs leading-relaxed text-text-secondary">{`npm run doctor`}</pre>
-              </div>
-            </div>
-            <p className="mt-3 text-[11px] text-text-tertiary">
-              Exit codes: <code className="font-mono text-text-secondary">0</code> healthy, <code className="font-mono text-text-secondary">1</code> warnings or unreachable. Add <code className="font-mono text-text-secondary">--json</code> for CI.
-            </p>
-          </section>
 
-          {/* Approval channels */}
-          <section className="mt-6 rounded-3xl border border-border bg-surface-secondary p-6 sm:p-8">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-text-tertiary">Resolve approvals</p>
-            <h2 className="mt-3 text-2xl font-semibold tracking-tight text-text-primary">Where humans unblock the agent</h2>
-            <p className="mt-2 text-sm text-text-secondary">
-              When your agent calls <code className="rounded border border-border bg-surface-elevated px-1 py-0.5 font-mono text-[12px] text-text-primary">waitForApproval</code>, any of the four surfaces below can resolve the action. They all hit the same <code className="font-mono text-text-secondary">/api/approvals/:id</code> endpoint and sync over SSE within ~1 second.
-            </p>
+              {/* Claude Code Hooks */}
+              <div className="rounded-xl border border-border bg-surface-tertiary p-5 flex flex-col">
+                <div className="flex items-center gap-2 mb-3">
+                  <Code size={16} className="text-brand" aria-hidden="true" />
+                  <h3 className="text-base font-semibold text-text-primary">Claude Code Hooks</h3>
+                </div>
+                <p className="text-sm text-text-secondary leading-relaxed mb-4">
+                  Two Python files dropped into{' '}
+                  <code className="font-mono text-text-primary">.claude/hooks/</code>. Governs Bash, Edit, Write, and MultiEdit tool calls. Safe to ship even without DashClaw configured.
+                </p>
+                <div className="mt-auto">
+                  <CodeBlock>{`cp hooks/dashclaw_*.py .claude/hooks/`}</CodeBlock>
+                  <Link href="/guides/claude-code" className="mt-3 inline-flex items-center gap-1.5 text-xs text-brand hover:text-brand-hover transition-colors font-medium">
+                    Claude Code guide <ArrowRight size={12} aria-hidden="true" />
+                  </Link>
+                </div>
+              </div>
 
-            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl border border-border bg-surface-tertiary p-5">
-                <h3 className="text-sm font-semibold text-text-primary">Dashboard <span className="font-normal text-text-tertiary">— always on</span></h3>
-                <p className="mt-1 text-xs text-text-tertiary">Interactive queue with triggering policy, risk score, and replay link.</p>
-                <pre className="mt-3 overflow-x-auto rounded-xl border border-border bg-surface-primary p-4 text-xs leading-relaxed text-text-secondary">{`https://<your-instance>/approvals`}</pre>
-              </div>
-              <div className="rounded-2xl border border-border bg-surface-tertiary p-5">
-                <h3 className="text-sm font-semibold text-text-primary">CLI <span className="font-normal text-text-tertiary">— for terminal-first devs</span></h3>
-                <p className="mt-1 text-xs text-text-tertiary">Interactive inbox or targeted approve / deny by action ID.</p>
-                <pre className="mt-3 overflow-x-auto rounded-xl border border-border bg-surface-primary p-4 text-xs leading-relaxed text-text-secondary">{`npm install -g @dashclaw/cli
-dashclaw approvals`}</pre>
-              </div>
-              <div className="rounded-2xl border border-border bg-surface-tertiary p-5">
-                <h3 className="text-sm font-semibold text-text-primary">Mobile PWA <span className="font-normal text-text-tertiary">— on-call</span></h3>
-                <p className="mt-1 text-xs text-text-tertiary">Add <code className="font-mono text-text-secondary">/approve</code> to your home screen. One-tap Allow / Deny from the phone.</p>
-                <pre className="mt-3 overflow-x-auto rounded-xl border border-border bg-surface-primary p-4 text-xs leading-relaxed text-text-secondary">{`https://<your-instance>/approve`}</pre>
-              </div>
-              <div className="rounded-2xl border border-border bg-surface-tertiary p-5">
-                <h3 className="text-sm font-semibold text-text-primary">Discord bot <span className="font-normal text-text-tertiary">— phone-first</span></h3>
-                <p className="mt-1 text-xs text-text-tertiary">Inline Approve / Deny buttons DM&rsquo;d to the registered user. Fire-and-forget — action creation succeeds even if Discord is unreachable.</p>
-                <pre className="mt-3 overflow-x-auto rounded-xl border border-border bg-surface-primary p-4 text-xs leading-relaxed text-text-secondary">{`DISCORD_BOT_TOKEN=<token>
-DISCORD_APPROVER_USER_ID=<user-id>`}</pre>
-              </div>
-              <div className="rounded-2xl border border-border bg-surface-tertiary p-5">
-                <h3 className="text-sm font-semibold text-text-primary">Telegram bot <span className="font-normal text-text-tertiary">— optional</span></h3>
-                <p className="mt-1 text-xs text-text-tertiary">Inline Approve / Reject buttons pushed to an admin chat. Warn-logs and moves on if Telegram is unreachable.</p>
-                <pre className="mt-3 overflow-x-auto rounded-xl border border-border bg-surface-primary p-4 text-xs leading-relaxed text-text-secondary">{`npm run telegram:setup`}</pre>
+              {/* OpenClaw Plugin */}
+              <div className="rounded-xl border border-border bg-surface-tertiary p-5 flex flex-col">
+                <div className="flex items-center gap-2 mb-3">
+                  <Bot size={16} className="text-brand" aria-hidden="true" />
+                  <h3 className="text-base font-semibold text-text-primary">OpenClaw Plugin</h3>
+                </div>
+                <p className="text-sm text-text-secondary leading-relaxed mb-4">
+                  Framework native plugin for OpenClaw agents. Intercepts PreToolUse and PostToolUse, runs guard, records the outcome, and waits for approval automatically.
+                </p>
+                <div className="mt-auto">
+                  <CodeBlock>{`npm install @dashclaw/openclaw-plugin`}</CodeBlock>
+                  <Link href="/docs#openclaw-plugin" className="mt-3 inline-flex items-center gap-1.5 text-xs text-brand hover:text-brand-hover transition-colors font-medium">
+                    OpenClaw plugin docs <ArrowRight size={12} aria-hidden="true" />
+                  </Link>
+                </div>
               </div>
             </div>
           </section>
 
-          {/* Framework Guides */}
-          <section className="mt-6 rounded-3xl border border-border bg-surface-secondary p-6 sm:p-8">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-text-tertiary">Framework guides</p>
-            <h2 className="mt-3 text-2xl font-semibold tracking-tight text-text-primary">Connect your framework</h2>
-            <p className="mt-2 text-sm text-text-secondary">Step-by-step guides for popular agent frameworks. Each takes under 20 minutes.</p>
+          {/* Step 3: Approval surface */}
+          <section className="mt-6 rounded-2xl border border-border bg-surface-secondary p-6 sm:p-8">
+            <StepHeader n={3}>Pick an approval surface</StepHeader>
+            <p className="text-sm text-text-secondary max-w-2xl leading-relaxed">
+              When guard returns{' '}
+              <code className="font-mono text-text-primary">require_approval</code>, the action pauses until a human resolves it. Pick where humans should see and resolve those approvals. Dashboard is on by default. The other four are optional and additive.
+            </p>
 
-            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {/* Dashboard (default) */}
+              <div className="rounded-xl border border-border-active bg-brand-subtle/20 p-5 flex flex-col">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck size={16} className="text-brand" aria-hidden="true" />
+                    <h3 className="text-base font-semibold text-text-primary">Dashboard</h3>
+                  </div>
+                  <span className="rounded-md border border-border-active bg-brand-subtle px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand">
+                    Default
+                  </span>
+                </div>
+                <p className="text-sm text-text-secondary leading-relaxed mb-4">
+                  Always on. Interactive queue with triggering policy, risk score, and replay link.
+                </p>
+                <div className="mt-auto">
+                  <CodeBlock>{`https://<your-instance>/approvals`}</CodeBlock>
+                </div>
+              </div>
+
+              {/* CLI */}
+              <div className="rounded-xl border border-border bg-surface-tertiary p-5 flex flex-col">
+                <div className="flex items-center gap-2 mb-3">
+                  <Terminal size={16} className="text-brand" aria-hidden="true" />
+                  <h3 className="text-base font-semibold text-text-primary">CLI</h3>
+                </div>
+                <p className="text-sm text-text-secondary leading-relaxed mb-4">
+                  For terminal first developers.{' '}
+                  <code className="font-mono text-text-primary">dashclaw approve</code> and{' '}
+                  <code className="font-mono text-text-primary">dashclaw deny</code> against the same governance endpoint.
+                </p>
+                <div className="mt-auto">
+                  <CodeBlock>{`npm install -g @dashclaw/cli
+dashclaw approvals`}</CodeBlock>
+                </div>
+              </div>
+
+              {/* Mobile PWA */}
+              <div className="rounded-xl border border-border bg-surface-tertiary p-5 flex flex-col">
+                <div className="flex items-center gap-2 mb-3">
+                  <Smartphone size={16} className="text-brand" aria-hidden="true" />
+                  <h3 className="text-base font-semibold text-text-primary">Mobile PWA</h3>
+                </div>
+                <p className="text-sm text-text-secondary leading-relaxed mb-4">
+                  Add <code className="font-mono text-text-primary">/approve</code> to your home screen on iOS or Android. One tap Allow or Deny from the phone. SSE driven, updates within about one second.
+                </p>
+                <div className="mt-auto">
+                  <CodeBlock>{`https://<your-instance>/approve`}</CodeBlock>
+                </div>
+              </div>
+
+              {/* Discord */}
+              <div className="rounded-xl border border-border bg-surface-tertiary p-5 flex flex-col">
+                <div className="flex items-center gap-2 mb-3">
+                  <MessageSquare size={16} className="text-brand" aria-hidden="true" />
+                  <h3 className="text-base font-semibold text-text-primary">Discord bot</h3>
+                </div>
+                <p className="text-sm text-text-secondary leading-relaxed mb-4">
+                  Phone first via DM. Inline Approve and Deny buttons in a registered user DM. Fire and forget; action creation succeeds even if Discord is unreachable.
+                </p>
+                <div className="mt-auto">
+                  <CodeBlock>{`DISCORD_BOT_TOKEN=<token>
+DISCORD_APPROVER_USER_ID=<user-id>
+DISCORD_APPROVER_ORG_ID=<org-id>`}</CodeBlock>
+                  <Link href="/self-host#approve-from-anywhere" className="mt-3 inline-flex items-center gap-1.5 text-xs text-brand hover:text-brand-hover transition-colors font-medium">
+                    Discord bot setup guide <ArrowRight size={12} aria-hidden="true" />
+                  </Link>
+                </div>
+              </div>
+
+              {/* Telegram */}
+              <div className="rounded-xl border border-border bg-surface-tertiary p-5 flex flex-col">
+                <div className="flex items-center gap-2 mb-3">
+                  <Send size={16} className="text-brand" aria-hidden="true" />
+                  <h3 className="text-base font-semibold text-text-primary">Telegram bot</h3>
+                </div>
+                <p className="text-sm text-text-secondary leading-relaxed mb-4">
+                  Inline Approve and Deny buttons pushed to an admin chat. Warns and moves on if Telegram is unreachable.
+                </p>
+                <div className="mt-auto">
+                  <CodeBlock>{`npm run telegram:setup`}</CodeBlock>
+                  <Link href="/self-host#approve-from-anywhere" className="mt-3 inline-flex items-center gap-1.5 text-xs text-brand hover:text-brand-hover transition-colors font-medium">
+                    Telegram setup guide <ArrowRight size={12} aria-hidden="true" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Step 4: Verify */}
+          <section className="mt-6 rounded-2xl border border-border bg-surface-secondary p-6 sm:p-8">
+            <StepHeader n={4}>Verify</StepHeader>
+            <p className="text-sm text-text-secondary max-w-2xl leading-relaxed">
+              Run{' '}
+              <code className="font-mono text-text-primary">dashclaw doctor</code>{' '}
+              from any terminal. Exit 0 means the instance is healthy and your SDK or surface is reachable. Then have your agent attempt a low risk action and watch it land in the dashboard inbox.
+            </p>
+
+            <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="rounded-xl border border-border bg-surface-tertiary p-5">
+                <div className="text-[10px] font-mono uppercase tracking-[0.18em] text-text-tertiary mb-2">From any terminal</div>
+                <h3 className="text-sm font-semibold text-text-primary mb-2">dashclaw doctor</h3>
+                <p className="text-xs text-text-secondary leading-relaxed mb-3">
+                  Diagnoses database, configuration, auth, deployment, SDK reachability, governance staleness, and shape drift. Auto fixes safe issues.
+                </p>
+                <CodeBlock>{`npm install -g @dashclaw/cli
+dashclaw doctor`}</CodeBlock>
+              </div>
+              <div className="rounded-xl border border-border bg-surface-tertiary p-5">
+                <div className="text-[10px] font-mono uppercase tracking-[0.18em] text-text-tertiary mb-2">Self host operator</div>
+                <h3 className="text-sm font-semibold text-text-primary mb-2">npm run doctor</h3>
+                <p className="text-xs text-text-secondary leading-relaxed mb-3">
+                  Adds filesystem level fixes (env writes, migrations, default policy seed). Backs up{' '}
+                  <code className="font-mono text-text-primary">.env</code>{' '}
+                  before any write.
+                </p>
+                <CodeBlock>{`npm run doctor`}</CodeBlock>
+              </div>
+            </div>
+
+            <p className="mt-4 text-[11px] text-text-tertiary leading-relaxed">
+              Exit codes: <code className="font-mono text-text-secondary">0</code> healthy,{' '}
+              <code className="font-mono text-text-secondary">1</code> warnings or unreachable. Add{' '}
+              <code className="font-mono text-text-secondary">--json</code> for CI integration.
+            </p>
+          </section>
+
+          {/* Framework guides */}
+          <section className="mt-10 rounded-2xl border border-border bg-surface-secondary p-6 sm:p-8">
+            <Eyebrow>Framework guides</Eyebrow>
+            <h2 className="text-2xl font-semibold tracking-tight text-text-primary">
+              Step by step walkthroughs for popular frameworks
+            </h2>
+            <p className="mt-3 text-sm text-text-secondary max-w-2xl leading-relaxed">
+              Deeper walkthroughs once you have picked a surface in Step 2. Each takes 10 to 20 minutes end to end.
+            </p>
+
+            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {[
-                { href: '/guides/claude-code', title: 'Claude Code', desc: 'Govern Bash, Edit, Write, and MultiEdit tool calls via PreToolUse hooks. Zero SDK code required.' },
-                { href: '/guides/openai-agents-sdk', title: 'OpenAI Agents SDK', desc: 'Add guard-record-outcome governance to your OpenAI agent tools with the Node.js SDK.' },
-                { href: '/guides/langgraph', title: 'LangGraph', desc: 'Add a governance node to your LangGraph StateGraph with the Python SDK. Includes runnable example.' },
-                { href: '/guides/crewai', title: 'CrewAI', desc: 'Govern CrewAI tool calls using the @tool decorator pattern with the Python SDK. Includes runnable example.' },
-                { href: '/docs#openclaw-plugin', title: 'OpenClaw', desc: 'Framework-native plugin: intercepts PreToolUse / PostToolUse and calls guard, record, and waitForApproval automatically.' },
+                {
+                  href: '/guides/claude-code',
+                  title: 'Claude Code',
+                  desc: 'Govern Bash, Edit, Write, and MultiEdit tool calls via PreToolUse hooks. Zero SDK code required.',
+                },
+                {
+                  href: '/guides/openai-agents-sdk',
+                  title: 'OpenAI Agents SDK',
+                  desc: 'Add guard, record, and outcome governance to your OpenAI agent tools with the Node.js SDK.',
+                },
+                {
+                  href: '/guides/langgraph',
+                  title: 'LangGraph',
+                  desc: 'Add a governance node to your LangGraph StateGraph with the Python SDK. Includes a runnable example.',
+                },
+                {
+                  href: '/guides/crewai',
+                  title: 'CrewAI',
+                  desc: 'Govern CrewAI tool calls using the @tool decorator pattern with the Python SDK. Includes a runnable example.',
+                },
+                {
+                  href: '/docs#openclaw-plugin',
+                  title: 'OpenClaw',
+                  desc: 'Framework native plugin. Intercepts PreToolUse and PostToolUse and calls guard, record, and waitForApproval automatically.',
+                },
               ].map((g) => (
                 <Link
                   key={g.href}
                   href={g.href}
-                  className="group rounded-2xl border border-border bg-surface-tertiary p-5 transition-colors hover:border-border-active"
+                  className="group rounded-xl border border-border bg-surface-tertiary p-5 transition-colors hover:border-border-active"
                 >
-                  <h3 className="text-base font-semibold text-text-primary transition-colors group-hover:text-brand">{g.title}</h3>
-                  <p className="mt-1 text-sm text-text-secondary">{g.desc}</p>
+                  <h3 className="text-base font-semibold text-text-primary transition-colors group-hover:text-brand">
+                    {g.title}
+                  </h3>
+                  <p className="mt-2 text-sm text-text-secondary leading-relaxed">{g.desc}</p>
                 </Link>
               ))}
             </div>
@@ -271,4 +430,3 @@ DISCORD_APPROVER_USER_ID=<user-id>`}</pre>
     </div>
   );
 }
-
