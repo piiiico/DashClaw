@@ -46,10 +46,10 @@
     ]
   },
   "summary": {
-    "total_routes": 238,
+    "total_routes": 240,
     "stable_routes": 42,
-    "beta_routes": 21,
-    "experimental_routes": 175
+    "beta_routes": 22,
+    "experimental_routes": 176
   },
   "routes": [
     {
@@ -1043,6 +1043,15 @@
       "file": "app/api/compliance/trends/route.js"
     },
     {
+      "path": "/api/cron/code-session-cache-crater",
+      "methods": [
+        "GET"
+      ],
+      "maturity": "beta",
+      "matched_prefix": "/api/cron",
+      "file": "app/api/cron/code-session-cache-crater/route.js"
+    },
+    {
       "path": "/api/cron/integration-health",
       "methods": [
         "GET"
@@ -1475,6 +1484,15 @@
       "maturity": "experimental",
       "matched_prefix": "/api/learning",
       "file": "app/api/learning/analytics/velocity/route.js"
+    },
+    {
+      "path": "/api/learning/code-signals",
+      "methods": [
+        "GET"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "/api/learning",
+      "file": "app/api/learning/code-signals/route.js"
     },
     {
       "path": "/api/learning/lessons",

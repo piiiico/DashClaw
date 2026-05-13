@@ -48,9 +48,9 @@ p.kicker{background:var(--accent-bg);border:1px solid var(--accent-border);borde
 p.kicker b{color:var(--accent-deep)}
 </style></head><body>
 <h1>DashClaw Livingcode Dashboard</h1>
-<div class="sig" id="sig">Shape signature: sha1:929c1337ddc74037c74d6e98ea47acc969635f9e · signature-stable</div>
+<div class="sig" id="sig">Shape signature: sha1:cf86a23055c9e6b4a2390660c99ce1c652348558 · signature-stable</div>
 <div class="grid">
-      <div class="cell"><div class="n">191</div><div class="k">Active routes</div></div>
+      <div class="cell"><div class="n">193</div><div class="k">Active routes</div></div>
       <div class="cell"><div class="n">48</div><div class="k">Archived routes</div></div>
       <div class="cell"><div class="n">4</div><div class="k">Required env vars</div></div>
       <div class="cell"><div class="n">120</div><div class="k">Optional env vars</div></div>
@@ -254,7 +254,7 @@ p.kicker b{color:var(--accent-deep)}
 <figure><figcaption>Required env vars over time <span class="sig">(4 → 4)</span></figcaption><svg width="320" height="48" viewBox="0 0 320 48"><polyline fill="none" stroke="var(--accent)" stroke-width="2" points="4.0,44.0 160.0,44.0 316.0,44.0"/></svg></figure>
 <figure><figcaption>Tables over time <span class="sig">(73 → 73)</span></figcaption><svg width="320" height="48" viewBox="0 0 320 48"><polyline fill="none" stroke="var(--accent)" stroke-width="2" points="4.0,44.0 160.0,44.0 316.0,44.0"/></svg></figure></section>
 
-<section><h2>Changed since last snapshot</h2><p class="kicker"><b>14</b> env_vars added, <b>16</b> routes added, <b>8</b> tables added since last snapshot.</p><ul class="diff">    <li><code>added</code> <b>routes</b>: /api/actions/[actionId]/outcome <span class="sig">New route: GET, POST</span></li>
+<section><h2>Changed since last snapshot</h2><p class="kicker"><b>14</b> env_vars added, <b>18</b> routes added, <b>8</b> tables added since last snapshot.</p><ul class="diff">    <li><code>added</code> <b>routes</b>: /api/actions/[actionId]/outcome <span class="sig">New route: GET, POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/code-sessions/alerts <span class="sig">New route: GET</span></li>
     <li><code>added</code> <b>routes</b>: /api/code-sessions/alerts/read-all <span class="sig">New route: POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/code-sessions/ingest-jsonl <span class="sig">New route: POST</span></li>
@@ -262,11 +262,13 @@ p.kicker b{color:var(--accent-deep)}
     <li><code>added</code> <b>routes</b>: /api/code-sessions/projects/[projectId]/sessions <span class="sig">New route: GET</span></li>
     <li><code>added</code> <b>routes</b>: /api/code-sessions/sessions/[sessionId] <span class="sig">New route: GET</span></li>
     <li><code>added</code> <b>routes</b>: /api/code-sessions/sessions/[sessionId]/insights <span class="sig">New route: GET</span></li>
+    <li><code>added</code> <b>routes</b>: /api/cron/code-session-cache-crater <span class="sig">New route: GET</span></li>
     <li><code>added</code> <b>routes</b>: /api/cron/outcome-sweep <span class="sig">New route: GET</span></li>
     <li><code>added</code> <b>routes</b>: /api/discord/interactions <span class="sig">New route: POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/hosted/cleanup <span class="sig">New route: POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/hosted/workspaces <span class="sig">New route: GET, POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/hosted/workspaces/[workspaceId] <span class="sig">New route: DELETE, GET</span></li>
+    <li><code>added</code> <b>routes</b>: /api/learning/code-signals <span class="sig">New route: GET</span></li>
     <li><code>added</code> <b>routes</b>: /api/marketing/event <span class="sig">New route: POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/monetization/verified-integrations-count <span class="sig">New route: GET</span></li>
     <li><code>added</code> <b>routes</b>: /api/session/effective <span class="sig">New route: GET</span></li>
@@ -350,7 +352,8 @@ p.kicker b{color:var(--accent-deep)}
     <tr data-path="/api/compliance/schedules"><td><code>/api/compliance/schedules</code></td><td>GET, POST</td><td class="sig">app/api/compliance/schedules/route.js</td></tr>
     <tr data-path="/api/compliance/schedules/[scheduleId]"><td><code>/api/compliance/schedules/[scheduleId]</code></td><td>DELETE, PATCH</td><td class="sig">app/api/compliance/schedules/[scheduleId]/route.js</td></tr>
     <tr data-path="/api/compliance/trends"><td><code>/api/compliance/trends</code></td><td>GET</td><td class="sig">app/api/compliance/trends/route.js</td></tr></tbody></table></details>
-<details><summary>/cron/* (9)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/cron/integration-health"><td><code>/api/cron/integration-health</code></td><td>GET</td><td class="sig">app/api/cron/integration-health/route.js</td></tr>
+<details><summary>/cron/* (10)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/cron/code-session-cache-crater"><td><code>/api/cron/code-session-cache-crater</code></td><td>GET</td><td class="sig">app/api/cron/code-session-cache-crater/route.js</td></tr>
+    <tr data-path="/api/cron/integration-health"><td><code>/api/cron/integration-health</code></td><td>GET</td><td class="sig">app/api/cron/integration-health/route.js</td></tr>
     <tr data-path="/api/cron/learning-episodes-backfill"><td><code>/api/cron/learning-episodes-backfill</code></td><td>GET</td><td class="sig">app/api/cron/learning-episodes-backfill/route.js</td></tr>
     <tr data-path="/api/cron/learning-recommendations"><td><code>/api/cron/learning-recommendations</code></td><td>GET</td><td class="sig">app/api/cron/learning-recommendations/route.js</td></tr>
     <tr data-path="/api/cron/memory-maintenance"><td><code>/api/cron/memory-maintenance</code></td><td>GET</td><td class="sig">app/api/cron/memory-maintenance/route.js</td></tr>
@@ -391,11 +394,12 @@ p.kicker b{color:var(--accent-deep)}
     <tr data-path="/api/knowledge/collections/[collectionId]/items"><td><code>/api/knowledge/collections/[collectionId]/items</code></td><td>GET, POST</td><td class="sig">app/api/knowledge/collections/[collectionId]/items/route.js</td></tr>
     <tr data-path="/api/knowledge/collections/[collectionId]/search"><td><code>/api/knowledge/collections/[collectionId]/search</code></td><td>POST</td><td class="sig">app/api/knowledge/collections/[collectionId]/search/route.js</td></tr>
     <tr data-path="/api/knowledge/collections/[collectionId]/sync"><td><code>/api/knowledge/collections/[collectionId]/sync</code></td><td>POST</td><td class="sig">app/api/knowledge/collections/[collectionId]/sync/route.js</td></tr></tbody></table></details>
-<details><summary>/learning/* (11)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/learning"><td><code>/api/learning</code></td><td>GET, POST</td><td class="sig">app/api/learning/route.js</td></tr>
+<details><summary>/learning/* (12)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/learning"><td><code>/api/learning</code></td><td>GET, POST</td><td class="sig">app/api/learning/route.js</td></tr>
     <tr data-path="/api/learning/analytics/curves"><td><code>/api/learning/analytics/curves</code></td><td>GET, POST</td><td class="sig">app/api/learning/analytics/curves/route.js</td></tr>
     <tr data-path="/api/learning/analytics/maturity"><td><code>/api/learning/analytics/maturity</code></td><td>GET</td><td class="sig">app/api/learning/analytics/maturity/route.js</td></tr>
     <tr data-path="/api/learning/analytics/summary"><td><code>/api/learning/analytics/summary</code></td><td>GET</td><td class="sig">app/api/learning/analytics/summary/route.js</td></tr>
     <tr data-path="/api/learning/analytics/velocity"><td><code>/api/learning/analytics/velocity</code></td><td>GET, POST</td><td class="sig">app/api/learning/analytics/velocity/route.js</td></tr>
+    <tr data-path="/api/learning/code-signals"><td><code>/api/learning/code-signals</code></td><td>GET</td><td class="sig">app/api/learning/code-signals/route.js</td></tr>
     <tr data-path="/api/learning/lessons"><td><code>/api/learning/lessons</code></td><td>GET</td><td class="sig">app/api/learning/lessons/route.js</td></tr>
     <tr data-path="/api/learning/recommendations"><td><code>/api/learning/recommendations</code></td><td>GET, POST</td><td class="sig">app/api/learning/recommendations/route.js</td></tr>
     <tr data-path="/api/learning/recommendations/[recommendationId]"><td><code>/api/learning/recommendations/[recommendationId]</code></td><td>PATCH</td><td class="sig">app/api/learning/recommendations/[recommendationId]/route.js</td></tr>

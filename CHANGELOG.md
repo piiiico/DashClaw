@@ -27,6 +27,18 @@ are prefixed with the package name.
 
 ## [Unreleased]
 
+### AgentLens absorption — Phase 5: Code Sessions UI, signals/alerts wiring, weekly cron, learning bridge
+
+- **Ingest now computes signals + alerts** in the same request. After `upsertSessionWithChildren` returns a non-skipped result, the route runs `detectRepeatedRuns` + the 7-rule optimizer, calls `replaceSignalsForSession`, then runs `detectForSession` (cost anomaly, stuck-loop streak, multi-project usage) and `insertAlerts` with the `code_session_alerts_dedup` ON-CONFLICT target. Wrapped in try/catch so a signals failure can't block ingest.
+- **`/api/cron/code-session-cache-crater`** — Vercel cron at Monday 03:00 UTC. Auth = `Authorization: Bearer ${CRON_SECRET}` via `timingSafeCompare` (same shape as `/api/cron/outcome-sweep`). Iterates code_projects, sums this-week vs prior-week usage, runs `detectCacheCrater`, inserts alerts with `scope: 'project'`. Schedule added to `vercel.json` crons array.
+- **`/api/learning/code-signals?period=7d|30d|90d`** — aggregates optimizer findings by `kind` for the last N days. Returns `{period, days, findings: [{kind, occurrence_count, session_count, total_savings_usd}]}`. Does **not** write to `learning_recommendations` (per A11-style read-only bridge contract).
+- **UI under `app/code-sessions/`**:
+  - `page.js` — projects table with session count + total cost + last-activity timestamp; empty-state copy points the user at the hook flag and the CLI.
+  - `[projectId]/page.js` — per-project sessions list with source badge.
+  - `[projectId]/[sessionId]/page.js` — three-panel session detail: Summary (with the **A10 Mission Control reconciliation tile** — shows the raw-cache cost side-by-side with the folded-cache Mission Control attribution), Signals, Timeline (messages + inline tool calls, with a "governed" badge linking to `/replay/<action_id>` when present).
+- **Sidebar entry** under "Observe", between Security and Analytics, using the Terminal icon. Unread alert count is fetched and surfaced at the top of the projects page.
+- **Tests** — `__tests__/unit/cron-cache-crater.route.test.js` covers the auth gate (503 / 401), the project iteration, and the alert insertion. Existing ingest tests still pass (the signals/alerts step is best-effort and doesn't change the existing response surface). Vitest full suite: 2025 passing (+3 from Phase 4). `npm run lint` clean.
+
 ### AgentLens absorption — Phase 4: local CLI (Path B)
 
 Backfill path for sessions that pre-date the hook install, or that come from un-hooked Claude Code runs. Sibling package; no workspaces; treats `dashclaw` as an installed peer per the existing CLI design.

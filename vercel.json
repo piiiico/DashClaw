@@ -5,6 +5,7 @@
   "crons": [
     { "path": "/api/cron/reset-meters", "schedule": "0 0 1 * *" },
     { "path": "/api/hosted/cleanup", "schedule": "0 3 * * *" },
-    { "path": "/api/cron/outcome-sweep", "schedule": "0 2 * * *" }
+    { "path": "/api/cron/outcome-sweep", "schedule": "0 2 * * *" },
+    { "path": "/api/cron/code-session-cache-crater", "schedule": "0 3 * * 1" }
   ]
 }

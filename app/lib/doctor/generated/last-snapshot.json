@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:929c1337ddc74037c74d6e98ea47acc969635f9e",
+  "timestamp": "sha1:cf86a23055c9e6b4a2390660c99ce1c652348558",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -1076,6 +1076,15 @@
       "file_path": "app/api/compliance/trends/route.js"
     },
     {
+      "path": "/api/cron/code-session-cache-crater",
+      "methods": [
+        "GET"
+      ],
+      "dynamic_params": [],
+      "archived": false,
+      "file_path": "app/api/cron/code-session-cache-crater/route.js"
+    },
+    {
       "path": "/api/cron/integration-health",
       "methods": [
         "GET"
@@ -1526,6 +1535,15 @@
       "dynamic_params": [],
       "archived": false,
       "file_path": "app/api/learning/analytics/velocity/route.js"
+    },
+    {
+      "path": "/api/learning/code-signals",
+      "methods": [
+        "GET"
+      ],
+      "dynamic_params": [],
+      "archived": false,
+      "file_path": "app/api/learning/code-signals/route.js"
     },
     {
       "path": "/api/learning/lessons",
@@ -2576,10 +2594,12 @@
       "required": false,
       "files": [
         "__tests__/unit/cron-auth.test.js",
+        "__tests__/unit/cron-cache-crater.route.test.js",
         "__tests__/unit/cron-outcome-sweep.route.test.js",
         "__tests__/unit/cron-routing-maintenance.route.test.js",
         "__tests__/unit/hosted/check-hosted-ready.test.mjs",
         "__tests__/unit/hosted/workspace-admin.test.js",
+        "app/api/cron/code-session-cache-crater/route.js",
         "app/api/cron/integration-health/route.js",
         "app/api/cron/learning-episodes-backfill/route.js",
         "app/api/cron/learning-recommendations/route.js",

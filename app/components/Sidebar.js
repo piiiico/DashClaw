@@ -29,6 +29,7 @@ const navGroups = [
     label: 'Observe',
     items: [
       { href: '/security', icon: ShieldAlert, label: 'Security' },
+      { href: '/code-sessions', icon: Terminal, label: 'Code Sessions' },
       { href: '/analytics', icon: TrendingUp, label: 'Analytics' },
       { href: '/activity', icon: Activity, label: 'Activity' },
       { href: '/compliance/exports', icon: Download, label: 'Compliance' },
