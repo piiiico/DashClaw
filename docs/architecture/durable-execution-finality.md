@@ -128,7 +128,7 @@ Response:
 
 ### Cron sweep
 
-A new endpoint `/api/cron/outcome-sweep` runs hourly via the existing Vercel cron mechanism (self-host operators register it manually):
+A new endpoint `/api/cron/outcome-sweep` runs **daily** via the existing Vercel cron mechanism on the Hobby (free) tier. Operators who want a tighter loop can register hourly cadence externally (GitHub Actions, system cron) hitting the same endpoint with `Authorization: Bearer $CRON_SECRET` — or, on Vercel Pro, change `vercel.json` to `0 * * * *`. Daily is a conscious tradeoff to stay $0 to deploy; the per-row gate still enforces idempotency, so a slower sweep does not weaken correctness, it only delays surfacing of `lost_confirmation` for stale rows.
 
 ```sql
 UPDATE action_records
@@ -142,7 +142,7 @@ RETURNING id, org_id;
 
 For each newly-marked row, the sweep emits a `signal.detected` realtime event of type `lost_confirmation`. Operators see it surface in `/mission-control` and `/operations` immediately, and webhook subscribers receive a payload.
 
-Default timeout: **15 minutes** post-creation. Per-org override via `outcome_timeout_minutes` in `settings`.
+Default timeout: **15 minutes** post-creation. Per-org override via the `DASHCLAW_OUTCOME_TIMEOUT_MINUTES` key in `settings` (allow-listed in `app/lib/repositories/settings.repository.js`). The cron clamps the resolved value to `[1, 1440]` minutes.
 
 ### Retry semantics
 
@@ -266,8 +266,8 @@ Five PRs, sequenced so each lands independently shippable.
 2. **Default outcome timeout: 15min, 30min, 1hr?**
    Most agent actions complete in seconds. 15 min default gives generous slack for slow downstream calls. Self-host operators override per-org. **Lean: 15min default.**
 
-3. **Sweep frequency: hourly vs every 5 min?**
-   Hourly is fine if timeout is 15min — the sweep needs to be more frequent than the dashboard's escalation thresholds, not the timeout itself. Matches existing cron cadence (`/api/cron/integration-health`, `/api/cron/signals`, etc.). **Lean: hourly.**
+3. **Sweep frequency: daily, hourly, or every 5 min?**
+   Shipped: **daily** on Vercel Hobby (no Pro upcharge for higher cadence). Operators on Pro can flip `vercel.json` to `0 * * * *` for hourly. External operators (GitHub Actions, system cron) can hit the endpoint at any cadence with `Authorization: Bearer $CRON_SECRET`. The default 15-minute timeout still controls how *fresh* a row must be to remain pending — the sweep cadence only controls how long after that timeout the dashboard surfaces `lost_confirmation`.
 
 4. **Should `lost_confirmation` trigger a webhook delivery by default?**
    Yes — it's an operational signal exactly analogous to `stale_action` (which exists today). Subscribers can opt out via `events: [...]` filtering. **Lean: yes, ship in Phase 2.**
