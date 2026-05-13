@@ -112,7 +112,48 @@ describe('actions repository contract', () => {
     expect(result).toEqual({ action_id: 'action_1', status: 'completed' });
     expect(sql.queryCalls).toHaveLength(1);
     expect(sql.queryCalls[0].text).toContain('UPDATE action_records SET');
+    // Param shape is unchanged — the implicit-outcome CASE expressions
+    // re-use the existing status param ($1) and do not add new bindings.
     expect(sql.queryCalls[0].params).toEqual(['completed', 42, 'action_1', 'org_1']);
+  });
+
+  it('updateActionOutcome implicitly sets outcome_status when status terminates (legacy PATCH path)', async () => {
+    const sql = createSqlMock({
+      taggedResponses: [[{ action_id: 'action_1' }]],
+      queryResponses: [[{ action_id: 'action_1', status: 'completed', outcome_status: 'completed' }]],
+    });
+
+    await actionsRepository.updateActionOutcome(sql, 'org_1', 'action_1', {
+      status: 'completed',
+    });
+
+    const queryText = sql.queryCalls[0].text;
+    // The compat-path SQL must wire outcome_status + outcome_at via CASE
+    // expressions that re-use the status param. The CASE preserves the
+    // one-shot rule by gating on outcome_status = 'pending'.
+    expect(queryText).toMatch(/outcome_status\s*=\s*CASE/);
+    expect(queryText).toMatch(/outcome_at\s*=\s*CASE/);
+    expect(queryText).toMatch(/outcome_status\s*=\s*'pending'/);
+    expect(queryText).toContain("'completed'");
+    expect(queryText).toContain("'failed'");
+    expect(queryText).toContain("'cancelled'");
+    expect(queryText).toContain("'blocked'");
+  });
+
+  it('updateActionOutcome skips outcome implicit-set when status not provided', async () => {
+    const sql = createSqlMock({
+      taggedResponses: [[{ action_id: 'action_1' }]],
+      queryResponses: [[{ action_id: 'action_1' }]],
+    });
+
+    await actionsRepository.updateActionOutcome(sql, 'org_1', 'action_1', {
+      duration_ms: 100,
+    });
+
+    const queryText = sql.queryCalls[0].text;
+    // No status update -> no outcome_status CASE clause emitted.
+    expect(queryText).not.toMatch(/outcome_status\s*=\s*CASE/);
+    expect(queryText).not.toMatch(/outcome_at\s*=\s*CASE/);
   });
 });
 

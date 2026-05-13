@@ -430,6 +430,31 @@ export async function updateActionOutcome(sql, orgId, actionId, outcome, options
   if (typeof sql.query === 'function' && Array.isArray(sql.queryCalls)) {
     const setClauses = fields.map((f, i) => `${f} = $${i + 1}`);
     const values = fields.map(f => data[f]);
+    // Implicit durable-finality outcome: when the legacy PATCH transitions
+    // `status` to a terminal value AND outcome_status is still pending,
+    // set outcome_status to the matching terminal state. Maps:
+    //   completed -> completed
+    //   failed | cancelled | blocked -> failed
+    // Respects the one-shot rule via `outcome_status = 'pending'` guard,
+    // so a real reportActionOutcome call cannot be overwritten. Re-uses the
+    // existing status param so no new query params are introduced.
+    const statusIndex = fields.indexOf('status');
+    if (statusIndex !== -1) {
+      const statusParam = `$${statusIndex + 1}`;
+      setClauses.push(
+        `outcome_status = CASE
+          WHEN outcome_status = 'pending' AND ${statusParam} = 'completed' THEN 'completed'
+          WHEN outcome_status = 'pending' AND ${statusParam} IN ('failed', 'cancelled', 'blocked') THEN 'failed'
+          ELSE outcome_status
+        END`
+      );
+      setClauses.push(
+        `outcome_at = CASE
+          WHEN outcome_status = 'pending' AND ${statusParam} IN ('completed', 'failed', 'cancelled', 'blocked') THEN NOW()
+          ELSE outcome_at
+        END`
+      );
+    }
     const baseWhere = `WHERE action_id = $${fields.length + 1} AND org_id = $${fields.length + 2}`;
     const gateWhere = gateStatus ? ` AND status = $${fields.length + 3}` : '';
     const query = `UPDATE action_records SET ${setClauses.join(', ')}, updated_at = CURRENT_TIMESTAMP ${baseWhere}${gateWhere} RETURNING *`;
@@ -447,6 +472,15 @@ export async function updateActionOutcome(sql, orgId, actionId, outcome, options
   // The final WHERE predicate is a no-op when `gate` is null, and an exact
   // match otherwise — atomic compare-and-set on the status column.
   const includeErrorMessage = fields.includes('error_message');
+  // Implicit durable-finality outcome on legacy PATCH. When the caller
+  // transitions `status` to a terminal value, we also set `outcome_status`
+  // to the matching terminal state, but only if outcome_status is still
+  // 'pending' (one-shot rule preserves explicit reportActionOutcome calls).
+  // Mapping: completed -> completed; failed | cancelled | blocked -> failed.
+  // `newStatus` is null when the caller did not pass a status field, in
+  // which case every CASE branch fails the `${newStatus} = 'x'` comparison
+  // (NULL = literal is NULL, not TRUE) and the ELSE preserves the column.
+  const newStatus = fields.includes('status') ? data.status : null;
   const updated = await sql`
     UPDATE action_records SET
       status            = COALESCE(${fields.includes('status') ? data.status : null}, status),
@@ -460,6 +494,15 @@ export async function updateActionOutcome(sql, orgId, actionId, outcome, options
       tokens_in         = COALESCE(${fields.includes('tokens_in') ? data.tokens_in : null}, tokens_in),
       tokens_out        = COALESCE(${fields.includes('tokens_out') ? data.tokens_out : null}, tokens_out),
       model             = COALESCE(${fields.includes('model') ? data.model : null}, model),
+      outcome_status    = CASE
+        WHEN outcome_status = 'pending' AND ${newStatus} = 'completed' THEN 'completed'
+        WHEN outcome_status = 'pending' AND ${newStatus} IN ('failed', 'cancelled', 'blocked') THEN 'failed'
+        ELSE outcome_status
+      END,
+      outcome_at        = CASE
+        WHEN outcome_status = 'pending' AND ${newStatus} IN ('completed', 'failed', 'cancelled', 'blocked') THEN NOW()
+        ELSE outcome_at
+      END,
       updated_at        = CURRENT_TIMESTAMP
     WHERE action_id = ${actionId} AND org_id = ${orgId}
       AND (${gate}::text IS NULL OR status = ${gate})

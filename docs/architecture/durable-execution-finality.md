@@ -143,6 +143,21 @@ RETURNING id, org_id;
 
 The legacy-status guard on the last `WHERE` line matters. Existing integrations (the OpenClaw plugin's `after_tool_call`, the Claude Code `dashclaw_posttool.py` hook, every SDK consumer using `claw.updateOutcome(...)`) terminate actions by setting the lifecycle `status` column directly. They predate the durable-finality surface, so they leave `outcome_status='pending'` even when the action genuinely completed. Without the guard, every such action would re-sweep as `lost_confirmation` 15 minutes later, generating misleading signals and badges. The guard treats a terminal `status` as proof that the outcome was implicitly confirmed via the legacy path. Genuinely orphan actions (status `null`, `running`, `pending`, or `pending_approval`) still sweep as intended.
 
+### Implicit outcome on legacy PATCH
+
+`updateActionOutcome` (the repository function backing `PATCH /api/actions/:id`) also implicitly sets `outcome_status` when the caller transitions `status` to a terminal value AND `outcome_status` is still `pending`:
+
+| Legacy `status` transition | Implicit `outcome_status` |
+|---|---|
+| `running` → `completed` | `completed` |
+| `running` → `failed` | `failed` |
+| `running` → `cancelled` | `failed` |
+| `running` → `blocked` | `failed` |
+
+The one-shot rule still applies: `outcome_status='pending'` gates the implicit set, so a successful `reportActionOutcome` call always wins over a later PATCH. Together with the sweep guard, this means legacy integrations get first-class durable-finality semantics for free — their PATCH terminations populate `outcome_status` automatically, the sweep skips them anyway, and an upstream retry-safe agent calling `getActionOutcome` sees the correct terminal state without code changes on the integration's side.
+
+`cancelled` and `blocked` map to `failed` because both represent "the action did not successfully complete" from a retry-safety perspective. An agent re-trying after one of these states needs the same answer it would get for `failed`: yes, safe to retry; no, do not assume the underlying side effect happened.
+
 For each newly-marked row, the sweep emits a `signal.detected` realtime event of type `lost_confirmation`. Operators see it surface in `/mission-control` and `/operations` immediately, and webhook subscribers receive a payload.
 
 Default timeout: **15 minutes** post-creation. Per-org override via the `DASHCLAW_OUTCOME_TIMEOUT_MINUTES` key in `settings` (allow-listed in `app/lib/repositories/settings.repository.js`). The cron clamps the resolved value to `[1, 1440]` minutes.
