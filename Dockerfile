@@ -1,6 +1,8 @@
 # Stage 1: Dependencies
 FROM node:20-alpine AS deps
-RUN apk add --no-cache libc6-compat
+# python3 + make + g++ let node-gyp build native modules (better-sqlite3 etc.)
+# when no prebuilt musl/x64 binary is published for the installed version.
+RUN apk add --no-cache libc6-compat python3 make g++
 WORKDIR /app
 
 COPY package.json package-lock.json ./
