@@ -142,6 +142,21 @@ export default async function CodeSessionDetailPage({ params }) {
             <div><dt className="inline text-tertiary">Model: </dt><dd className="inline">{session.model_primary || '—'}</dd></div>
             <div><dt className="inline text-tertiary">Messages: </dt><dd className="inline tabular-nums">{session.message_count}</dd></div>
             <div><dt className="inline text-tertiary">Source: </dt><dd className="inline">{session.source}</dd></div>
+            {session.started_at && (
+              <div>
+                <dt className="inline text-tertiary">Started: </dt>
+                <dd className="inline">{new Date(session.started_at).toLocaleString()}</dd>
+                {session.ended_at && (() => {
+                  const ms = new Date(session.ended_at).getTime() - new Date(session.started_at).getTime();
+                  if (ms <= 0) return null;
+                  const mins = Math.round(ms / 60000);
+                  const dur = mins < 60
+                    ? `${mins}m`
+                    : `${Math.floor(mins / 60)}h ${mins % 60}m`;
+                  return <span className="ml-2 text-tertiary">({dur})</span>;
+                })()}
+              </div>
+            )}
             <div className="border-t border-border pt-2 mt-2">
               <div className="font-medium">Cost reconciliation</div>
               <div className="text-xs text-tertiary mt-1">
@@ -165,6 +180,15 @@ export default async function CodeSessionDetailPage({ params }) {
             <div className={cacheLow ? 'text-orange-400' : ''}>
               Cache hit rate: <strong className="tabular-nums">{(cacheHit * 100).toFixed(1)}%</strong>
               {cacheLow && ' (below 30% floor)'}
+            </div>
+            <div className="border-t border-border pt-2 mt-2">
+              <div className="text-xs font-medium text-tertiary">Tokens</div>
+              <div className="mt-1 grid grid-cols-2 gap-x-3 gap-y-0.5 text-xs tabular-nums">
+                <div><span className="text-tertiary">input: </span>{(session.input_tokens || 0).toLocaleString()}</div>
+                <div><span className="text-tertiary">output: </span>{(session.output_tokens || 0).toLocaleString()}</div>
+                <div><span className="text-tertiary">cache write: </span>{(session.cache_creation_tokens || 0).toLocaleString()}</div>
+                <div><span className="text-tertiary">cache read: </span>{(session.cache_read_tokens || 0).toLocaleString()}</div>
+              </div>
             </div>
           </dl>
           <div className="mt-4 border-t border-border pt-3">
