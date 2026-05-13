@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { ArrowRight } from 'lucide-react';
 
 const GROUP_META = {
   recommended_now: {
@@ -206,54 +207,82 @@ export default function OptimalFilesPanel({ sessionId }) {
 
   if (phase === 'idle') {
     return (
-      <button
-        onClick={loadPreview}
-        className="inline-flex items-center gap-2 rounded-md border border-border bg-surface-secondary/40 px-4 py-2 text-sm font-medium text-primary transition-colors hover:border-border-hover hover:bg-surface-secondary"
-      >
-        Generate Optimal Files
-      </button>
+      <div className="rounded-lg border border-border bg-surface-secondary/30 p-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="max-w-xl space-y-1">
+            <h3 className="text-base font-semibold text-primary">Optimal Files</h3>
+            <p className="text-sm text-tertiary">
+              Distill this session into a CLAUDE.md, path-scoped rules, hook
+              configs, and skill packs. Preview and pick what you want before
+              any disk write.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={loadPreview}
+            className="inline-flex shrink-0 items-center gap-2 rounded-md bg-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-orange-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary"
+          >
+            Generate
+            <ArrowRight className="h-4 w-4" aria-hidden />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  function PanelShell({ subtitle, children, trailing }) {
+    return (
+      <div className="rounded-lg border border-border bg-surface-secondary/30 p-5">
+        <header className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h3 className="text-base font-semibold text-primary">Optimal Files</h3>
+            {subtitle && <p className="mt-0.5 text-sm text-tertiary">{subtitle}</p>}
+          </div>
+          {trailing}
+        </header>
+        {children}
+      </div>
     );
   }
 
   if (phase === 'loading') {
     return (
-      <p className="text-sm text-tertiary" aria-live="polite">
-        Analyzing session and assembling bundle…
-      </p>
+      <PanelShell subtitle="Analyzing session and assembling bundle…">
+        <p className="text-sm text-tertiary" aria-live="polite">
+          This usually takes a couple of seconds.
+        </p>
+      </PanelShell>
     );
   }
 
   if (phase === 'error') {
     return (
-      <div className="rounded-md border border-status-error/30 bg-status-error/5 p-4 text-sm">
-        <p className="font-medium text-status-error">Generation failed</p>
-        <p className="mt-1 text-tertiary">{error}</p>
+      <PanelShell subtitle="Bundle generation failed.">
+        <div className="rounded-md border border-status-error/30 bg-status-error/5 p-3 text-sm text-status-error">
+          {error}
+        </div>
         <button
           onClick={() => setPhase('idle')}
           className="mt-3 rounded-md border border-border px-3 py-1.5 text-xs text-secondary hover:bg-surface-secondary"
         >
           Try again
         </button>
-      </div>
+      </PanelShell>
     );
   }
 
   if (phase === 'done' && manifest) {
     return (
-      <div className="space-y-3">
-        <div className="rounded-md border border-status-success/30 bg-status-success/5 p-4 text-sm">
-          <p className="font-medium text-status-success">Manifest ready</p>
-          <p className="mt-1 text-xs text-tertiary">
-            Expires {new Date(manifest.expires_at).toLocaleString()} · run the
-            command below locally. The CLI re-runs the secret scan before
-            writing and offers three-way merge for files that already exist on
-            disk.
-          </p>
-        </div>
+      <PanelShell subtitle="Manifest ready. Run the command below locally.">
         <pre className="overflow-x-auto rounded-md border border-border bg-bg-primary p-3 font-mono text-xs text-primary">
 {manifest.apply_command}
         </pre>
-      </div>
+        <p className="mt-3 text-xs text-tertiary">
+          Expires {new Date(manifest.expires_at).toLocaleString()}. The CLI
+          re-runs the secret scan before writing and offers three-way merge for
+          files that already exist on disk.
+        </p>
+      </PanelShell>
     );
   }
 
@@ -283,18 +312,20 @@ export default function OptimalFilesPanel({ sessionId }) {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between text-xs">
-        <p className="text-tertiary">
-          {bundle.length} suggestion{bundle.length === 1 ? '' : 's'} ·{' '}
-          <span className="text-secondary">{acceptedCount} ready for manifest</span>
-        </p>
-        <div className="flex gap-3 text-tertiary">
+    <PanelShell
+      subtitle="Review and select what to keep. Disabled rows are preview-only placeholders."
+      trailing={
+        <div className="flex gap-3 text-xs text-tertiary">
           <button onClick={() => setAll(true)} className="hover:text-primary">select all</button>
           <span aria-hidden>·</span>
           <button onClick={() => setAll(false)} className="hover:text-primary">clear</button>
         </div>
-      </div>
+      }
+    >
+      <p className="mb-3 text-xs text-tertiary">
+        {bundle.length} suggestion{bundle.length === 1 ? '' : 's'} ·{' '}
+        <span className="text-secondary">{acceptedCount} ready for manifest</span>
+      </p>
 
       <div className="space-y-5">
         {orderedGroups.map(([group, items]) => {
@@ -326,18 +357,19 @@ export default function OptimalFilesPanel({ sessionId }) {
         })}
       </div>
 
-      <div className="flex items-center gap-3 border-t border-border pt-4">
+      <div className="mt-5 flex items-center gap-3 border-t border-border pt-4">
         <button
           disabled={phase === 'saving' || acceptedCount === 0}
           onClick={createManifest}
-          className="inline-flex items-center gap-2 rounded-md border border-orange-500/40 bg-orange-500/10 px-4 py-2 text-sm font-medium text-orange-300 transition-colors hover:bg-orange-500/15 disabled:cursor-not-allowed disabled:border-border disabled:bg-transparent disabled:text-tertiary"
+          className="inline-flex items-center gap-2 rounded-md bg-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-orange-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary disabled:cursor-not-allowed disabled:bg-surface-tertiary disabled:text-tertiary disabled:shadow-none"
         >
           {phase === 'saving' ? 'Creating manifest…' : `Create manifest · ${acceptedCount}`}
+          {phase !== 'saving' && acceptedCount > 0 && <ArrowRight className="h-4 w-4" aria-hidden />}
         </button>
         <p className="text-xs text-tertiary">
-          Server will validate every path against the same allowlist before saving.
+          Server validates every path against the allowlist before saving.
         </p>
       </div>
-    </div>
+    </PanelShell>
   );
 }
