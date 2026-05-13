@@ -11,6 +11,6 @@ describe('loadContracts', () => {
     expect(contracts.setup['runtime-env-prerequisites'].owner).toBe('app/lib/setup/runtime-env-prerequisites.mjs');
     expect(contracts.setup['runtime-prerequisites'].owner).toBe('app/lib/setup/runtime-prerequisites.mjs');
     expect(contracts.setup['runtime-migration'].owner).toBe('app/api/setup/migrate/route.js');
-    expect(contracts.sdk['release-plan'].node.current_version).toBe('2.11.1');
+    expect(contracts.sdk['release-plan'].node.current_version).toBe('2.12.0');
   });
 });
