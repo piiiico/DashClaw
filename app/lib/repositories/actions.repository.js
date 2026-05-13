@@ -66,9 +66,12 @@ export async function listActions(sql, orgId, filters = {}) {
     exclude_status,
     action_type,
     risk_min,
+    outcome_status,
     limit = 50,
     offset = 0,
   } = filters;
+  const VALID_OUTCOMES = new Set(['pending', 'completed', 'partial', 'failed', 'lost_confirmation']);
+  const outcomeFilter = VALID_OUTCOMES.has(outcome_status) ? outcome_status : null;
 
   const parsedRiskMin = risk_min != null ? parseInt(risk_min, 10) : null;
   const parsedLimit = Math.min(parseInt(limit, 10) || 50, 200);
@@ -98,8 +101,12 @@ export async function listActions(sql, orgId, filters = {}) {
       conditions.push(`risk_score >= $${params.push(parsedRiskMin)}`);
     }
 
+    if (outcomeFilter) {
+      conditions.push(`outcome_status = $${params.push(outcomeFilter)}`);
+    }
+
     const where = `WHERE ${conditions.join(' AND ')}`;
-    const listCols = 'action_id, agent_id, agent_name, swarm_id, action_type, declared_goal, reasoning, authorization_scope, systems_touched, status, reversible, risk_score, confidence, output_summary, error_message, side_effects, artifacts_created, duration_ms, cost_estimate, timestamp_start, timestamp_end, created_at, verified, approved_by, approved_at';
+    const listCols = 'action_id, agent_id, agent_name, swarm_id, action_type, declared_goal, reasoning, authorization_scope, systems_touched, status, reversible, risk_score, confidence, output_summary, error_message, side_effects, artifacts_created, duration_ms, cost_estimate, timestamp_start, timestamp_end, created_at, verified, approved_by, approved_at, outcome_status, outcome_at, outcome_summary, outcome_error';
     const query = `SELECT ${listCols} FROM action_records ${where} ORDER BY timestamp_start DESC LIMIT $${params.push(parsedLimit)} OFFSET $${params.push(parsedOffset)}`;
     const countQuery = `SELECT COUNT(*) as total FROM action_records ${where}`;
     const statsQuery = `
@@ -131,7 +138,7 @@ export async function listActions(sql, orgId, filters = {}) {
   const [actions, countResult, stats] = await Promise.all([
     sql`
       SELECT
-        action_id, agent_id, agent_name, swarm_id, action_type, declared_goal, reasoning, authorization_scope, systems_touched, status, reversible, risk_score, confidence, output_summary, error_message, side_effects, artifacts_created, duration_ms, cost_estimate, timestamp_start, timestamp_end, created_at, verified, approved_by, approved_at
+        action_id, agent_id, agent_name, swarm_id, action_type, declared_goal, reasoning, authorization_scope, systems_touched, status, reversible, risk_score, confidence, output_summary, error_message, side_effects, artifacts_created, duration_ms, cost_estimate, timestamp_start, timestamp_end, created_at, verified, approved_by, approved_at, outcome_status, outcome_at, outcome_summary, outcome_error
       FROM action_records
       WHERE org_id = ${orgId}
         ${agent_id ? sql`AND agent_id = ${agent_id}` : sql``}
@@ -140,6 +147,7 @@ export async function listActions(sql, orgId, filters = {}) {
         ${exclude_status && !status ? sql`AND status != ${exclude_status}` : sql``}
         ${action_type ? sql`AND action_type = ${action_type}` : sql``}
         ${parsedRiskMin != null ? sql`AND risk_score >= ${parsedRiskMin}` : sql``}
+        ${outcomeFilter ? sql`AND outcome_status = ${outcomeFilter}` : sql``}
       ORDER BY timestamp_start DESC
       LIMIT ${parsedLimit}
       OFFSET ${parsedOffset}
@@ -154,6 +162,7 @@ export async function listActions(sql, orgId, filters = {}) {
         ${exclude_status && !status ? sql`AND status != ${exclude_status}` : sql``}
         ${action_type ? sql`AND action_type = ${action_type}` : sql``}
         ${parsedRiskMin != null ? sql`AND risk_score >= ${parsedRiskMin}` : sql``}
+        ${outcomeFilter ? sql`AND outcome_status = ${outcomeFilter}` : sql``}
     `,
     sql`
       SELECT

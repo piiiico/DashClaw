@@ -61,6 +61,7 @@ export async function GET(request) {
     const exclude_status = searchParams.get('exclude_status') || undefined;
     const action_type = searchParams.get('action_type') || undefined;
     const risk_min = searchParams.get('risk_min') || undefined;
+    const outcome_status = searchParams.get('outcome_status') || undefined;
     const limit = Math.min(parseInt(searchParams.get('limit') || '50', 10), 200);
     const offset = parseInt(searchParams.get('offset') || '0', 10);
 
@@ -71,6 +72,7 @@ export async function GET(request) {
       exclude_status,
       action_type,
       risk_min,
+      outcome_status,
       limit,
       offset,
     });

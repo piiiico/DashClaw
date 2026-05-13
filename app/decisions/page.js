@@ -12,6 +12,7 @@ import { formatCost, formatTokens } from '../lib/formatCost';
 import { useAgentFilter } from '../lib/AgentFilterContext';
 import { useEffectiveRole } from '../hooks/useEffectiveRole';
 import MessageTrail from '../components/MessageTrail';
+import { OutcomeBadge } from '../components/OutcomeBadge';
 import { parseJsonArray } from '../lib/parseJson';
 import {
   Zap, Hammer, Rocket, FileText, Briefcase, Shield, MessageSquare,
@@ -71,6 +72,7 @@ export default function DecisionsLedger() {
   const [filterAgent, setFilterAgent] = useState('');
   const [filterType, setFilterType] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
+  const [filterOutcome, setFilterOutcome] = useState('');
   const [filterRiskMin, setFilterRiskMin] = useState('1');
   const [hideRoutine, setHideRoutine] = useState(true);
   const [page, setPage] = useState(0);
@@ -88,6 +90,7 @@ export default function DecisionsLedger() {
       if (filterAgent) params.set('agent_id', filterAgent);
       if (filterType) params.set('action_type', filterType);
       if (filterStatus) params.set('status', filterStatus);
+      if (filterOutcome) params.set('outcome_status', filterOutcome);
       if (hideRoutine && !filterStatus) params.set('exclude_status', 'running');
       if (filterRiskMin) params.set('risk_min', filterRiskMin);
       params.set('limit', pageSize.toString());
@@ -106,7 +109,7 @@ export default function DecisionsLedger() {
     } finally {
       setLoading(false);
     }
-  }, [filterAgent, filterType, filterStatus, filterRiskMin, hideRoutine, page]);
+  }, [filterAgent, filterType, filterStatus, filterOutcome, filterRiskMin, hideRoutine, page]);
 
   useEffect(() => {
     setLoading(true);
@@ -345,6 +348,14 @@ export default function DecisionsLedger() {
               <option value="">All statuses</option>
               {['running','completed','failed','cancelled','pending','blocked'].map(s => <option key={s} value={s}>{s}</option>)}
             </select>
+            <select value={filterOutcome} onChange={(e) => { setFilterOutcome(e.target.value); setPage(0); }} className={`${selectClass} md:flex-1`}>
+              <option value="">All outcomes</option>
+              <option value="pending">Pending outcome</option>
+              <option value="completed">Completed</option>
+              <option value="partial">Partial</option>
+              <option value="failed">Failed</option>
+              <option value="lost_confirmation">Lost confirmation</option>
+            </select>
             <select value={filterRiskMin} onChange={(e) => { setFilterRiskMin(e.target.value); setPage(0); }} className={`${selectClass} md:flex-1`}>
               <option value="">Any risk</option>
               <option value="1">Governed (1+)</option>
@@ -501,6 +512,9 @@ export default function DecisionsLedger() {
                                 {action.status}
                               </span>
                             </div>
+                            {action.outcome_status && action.outcome_status !== 'pending' && (
+                              <OutcomeBadge status={action.outcome_status} />
+                            )}
                             {action.cost_estimate > 0 && (
                               <div className="flex flex-col items-end">
                                 <span className="font-mono text-[11px] tabular-nums text-secondary">

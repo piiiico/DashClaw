@@ -13,6 +13,7 @@ import {
 import PageLayout from '../../components/PageLayout';
 import { Card, CardHeader, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
+import { OutcomeBadge } from '../../components/OutcomeBadge';
 import AssumptionGraph from '../../components/AssumptionGraph';
 import ExecutionGraph from '../../components/ExecutionGraph';
 import { TimelineMessage } from '../../components/MessageTrail';
@@ -721,8 +722,20 @@ export default function DecisionReplayPage() {
                           <span className={`text-lg font-bold tracking-tight ${getStatusVariant(action.status) === 'success' ? 'text-success' : 'text-error'}`}>
                             {action.status.toUpperCase()}
                           </span>
+                          {action.outcome_status && (
+                            <OutcomeBadge status={action.outcome_status} size="sm" />
+                          )}
                           {action.duration_ms && <span className="text-xs text-tertiary">in {(action.duration_ms / 1000).toFixed(2)}s</span>}
                         </div>
+                        {(action.outcome_summary || action.outcome_error) && (
+                          <div className="mt-2 text-xs text-tertiary">
+                            {action.outcome_status === 'failed' && action.outcome_error
+                              ? `Reported failure: ${action.outcome_error}`
+                              : action.outcome_status === 'lost_confirmation'
+                                ? 'No outcome reported within timeout window (system sweep)'
+                                : action.outcome_summary}
+                          </div>
+                        )}
                         {action.output_summary && (
                           <div className="mt-2 text-sm text-secondary bg-surface-tertiary p-3 rounded-lg border border-white/5">
                             {action.output_summary}
