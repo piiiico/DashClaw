@@ -46,10 +46,10 @@
     ]
   },
   "summary": {
-    "total_routes": 244,
+    "total_routes": 249,
     "stable_routes": 42,
-    "beta_routes": 22,
-    "experimental_routes": 180
+    "beta_routes": 23,
+    "experimental_routes": 184
   },
   "routes": [
     {
@@ -913,6 +913,24 @@
       "file": "app/api/code-sessions/manifests/[manifestId]/route.js"
     },
     {
+      "path": "/api/code-sessions/memos",
+      "methods": [
+        "GET"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/code-sessions/memos/route.js"
+    },
+    {
+      "path": "/api/code-sessions/memos/regenerate",
+      "methods": [
+        "POST"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/code-sessions/memos/regenerate/route.js"
+    },
+    {
       "path": "/api/code-sessions/projects",
       "methods": [
         "GET"
@@ -938,6 +956,15 @@
       "maturity": "experimental",
       "matched_prefix": "(default)",
       "file": "app/api/code-sessions/sessions/[sessionId]/route.js"
+    },
+    {
+      "path": "/api/code-sessions/sessions/{sessionId}/autopsy",
+      "methods": [
+        "GET"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/code-sessions/sessions/[sessionId]/autopsy/route.js"
     },
     {
       "path": "/api/code-sessions/sessions/{sessionId}/insights",
@@ -974,6 +1001,15 @@
       "maturity": "experimental",
       "matched_prefix": "(default)",
       "file": "app/api/code-sessions/sessions/[sessionId]/optimal-files/preview/route.js"
+    },
+    {
+      "path": "/api/code-sessions/subagent-roi",
+      "methods": [
+        "GET"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/code-sessions/subagent-roi/route.js"
     },
     {
       "path": "/api/compliance/evidence",
@@ -1086,6 +1122,15 @@
       "maturity": "beta",
       "matched_prefix": "/api/cron",
       "file": "app/api/cron/code-session-cache-crater/route.js"
+    },
+    {
+      "path": "/api/cron/code-session-weekly-memo",
+      "methods": [
+        "GET"
+      ],
+      "maturity": "beta",
+      "matched_prefix": "/api/cron",
+      "file": "app/api/cron/code-session-weekly-memo/route.js"
     },
     {
       "path": "/api/cron/integration-health",

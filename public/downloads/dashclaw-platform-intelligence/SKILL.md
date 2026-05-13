@@ -5,7 +5,7 @@ description: DashClaw platform expert for integration, troubleshooting, and gove
 
 # DashClaw Platform Intelligence
 
-**Shape snapshot:** `sha1:51629cfd649474eb9eae2e65302136bc2dbfc0eb`
+**Shape snapshot:** `sha1:dd3115270dce2a582476fc4ef83945099dba4567`
 **This file is auto-generated.** Do not edit by hand — regenerate with:
 
 ```bash
@@ -29,7 +29,7 @@ If the snapshot below disagrees with a live query, **trust the live query**.
 
 ## At a Glance
 
-- **197** active API routes across **50** categories
+- **202** active API routes across **50** categories
 - **4** required + **120** optional environment variables
 - **81** database tables
 
@@ -110,13 +110,17 @@ If the snapshot below disagrees with a live query, **trust the live query**.
 - `POST` `/api/code-sessions/alerts/read-all`
 - `POST` `/api/code-sessions/ingest-jsonl`
 - `GET` `/api/code-sessions/manifests/[manifestId]`
+- `GET` `/api/code-sessions/memos`
+- `POST` `/api/code-sessions/memos/regenerate`
 - `GET` `/api/code-sessions/projects`
 - `GET` `/api/code-sessions/projects/[projectId]/sessions`
 - `GET` `/api/code-sessions/sessions/[sessionId]`
+- `GET` `/api/code-sessions/sessions/[sessionId]/autopsy`
 - `GET` `/api/code-sessions/sessions/[sessionId]/insights`
 - `POST` `/api/code-sessions/sessions/[sessionId]/optimal-files/manifest`
 - `POST` `/api/code-sessions/sessions/[sessionId]/optimal-files/merge-preview`
 - `POST` `/api/code-sessions/sessions/[sessionId]/optimal-files/preview`
+- `GET` `/api/code-sessions/subagent-roi`
 
 ### `compliance`
 
@@ -135,6 +139,7 @@ If the snapshot below disagrees with a live query, **trust the live query**.
 ### `cron`
 
 - `GET` `/api/cron/code-session-cache-crater`
+- `GET` `/api/cron/code-session-weekly-memo`
 - `GET` `/api/cron/integration-health`
 - `GET` `/api/cron/learning-episodes-backfill`
 - `GET` `/api/cron/learning-recommendations`

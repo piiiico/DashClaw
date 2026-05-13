@@ -13,10 +13,10 @@ doc-type: architecture
 
 ## Summary
 
-- Total routes: `244`
+- Total routes: `249`
 - Stable routes: `42`
-- Beta routes: `22`
-- Experimental routes: `180`
+- Beta routes: `23`
+- Experimental routes: `184`
 
 ## Routes
 
@@ -112,13 +112,17 @@ doc-type: architecture
 | `/api/code-sessions/alerts/read-all` | `POST` | `experimental` | `(default)` | `app/api/code-sessions/alerts/read-all/route.js` |
 | `/api/code-sessions/ingest-jsonl` | `POST` | `experimental` | `(default)` | `app/api/code-sessions/ingest-jsonl/route.js` |
 | `/api/code-sessions/manifests/{manifestId}` | `GET` | `experimental` | `(default)` | `app/api/code-sessions/manifests/[manifestId]/route.js` |
+| `/api/code-sessions/memos` | `GET` | `experimental` | `(default)` | `app/api/code-sessions/memos/route.js` |
+| `/api/code-sessions/memos/regenerate` | `POST` | `experimental` | `(default)` | `app/api/code-sessions/memos/regenerate/route.js` |
 | `/api/code-sessions/projects` | `GET` | `experimental` | `(default)` | `app/api/code-sessions/projects/route.js` |
 | `/api/code-sessions/projects/{projectId}/sessions` | `GET` | `experimental` | `(default)` | `app/api/code-sessions/projects/[projectId]/sessions/route.js` |
 | `/api/code-sessions/sessions/{sessionId}` | `GET` | `experimental` | `(default)` | `app/api/code-sessions/sessions/[sessionId]/route.js` |
+| `/api/code-sessions/sessions/{sessionId}/autopsy` | `GET` | `experimental` | `(default)` | `app/api/code-sessions/sessions/[sessionId]/autopsy/route.js` |
 | `/api/code-sessions/sessions/{sessionId}/insights` | `GET` | `experimental` | `(default)` | `app/api/code-sessions/sessions/[sessionId]/insights/route.js` |
 | `/api/code-sessions/sessions/{sessionId}/optimal-files/manifest` | `POST` | `experimental` | `(default)` | `app/api/code-sessions/sessions/[sessionId]/optimal-files/manifest/route.js` |
 | `/api/code-sessions/sessions/{sessionId}/optimal-files/merge-preview` | `POST` | `experimental` | `(default)` | `app/api/code-sessions/sessions/[sessionId]/optimal-files/merge-preview/route.js` |
 | `/api/code-sessions/sessions/{sessionId}/optimal-files/preview` | `POST` | `experimental` | `(default)` | `app/api/code-sessions/sessions/[sessionId]/optimal-files/preview/route.js` |
+| `/api/code-sessions/subagent-roi` | `GET` | `experimental` | `(default)` | `app/api/code-sessions/subagent-roi/route.js` |
 | `/api/compliance/evidence` | `GET` | `experimental` | `(default)` | `app/api/compliance/evidence/route.js` |
 | `/api/compliance/exports` | `GET, POST` | `experimental` | `(default)` | `app/api/compliance/exports/route.js` |
 | `/api/compliance/exports/{exportId}` | `DELETE, GET` | `experimental` | `(default)` | `app/api/compliance/exports/[exportId]/route.js` |
@@ -131,6 +135,7 @@ doc-type: architecture
 | `/api/compliance/schedules/{scheduleId}` | `DELETE, PATCH` | `experimental` | `(default)` | `app/api/compliance/schedules/[scheduleId]/route.js` |
 | `/api/compliance/trends` | `GET` | `experimental` | `(default)` | `app/api/compliance/trends/route.js` |
 | `/api/cron/code-session-cache-crater` | `GET` | `beta` | `/api/cron` | `app/api/cron/code-session-cache-crater/route.js` |
+| `/api/cron/code-session-weekly-memo` | `GET` | `beta` | `/api/cron` | `app/api/cron/code-session-weekly-memo/route.js` |
 | `/api/cron/integration-health` | `GET` | `beta` | `/api/cron` | `app/api/cron/integration-health/route.js` |
 | `/api/cron/learning-episodes-backfill` | `GET` | `beta` | `/api/cron` | `app/api/cron/learning-episodes-backfill/route.js` |
 | `/api/cron/learning-recommendations` | `GET` | `beta` | `/api/cron` | `app/api/cron/learning-recommendations/route.js` |

@@ -27,6 +27,22 @@ are prefixed with the package name.
 
 ## [Unreleased]
 
+### AgentLens absorption — Phases 6-9 (final batch)
+
+- **Phase 6 — Optimal Files routes + MCP tools.** `POST .../sessions/[id]/optimal-files/{preview,manifest,merge-preview}`, `GET /api/code-sessions/manifests/[id]` (24h TTL). Manifest endpoint validates paths against an allowlist (`CLAUDE.md`, `.claude/agentlens/`, `.claude/rules/`, `.claude/hooks/`, `.claude/skills/`) and refuses traversal. Two new MCP tools: `dashclaw_optimal_files_preview`, `dashclaw_optimal_files_manifest`. Tool-count expectations in `mcp-tools.test.js` and `mcp-route.test.js` bumped from 8 to 10.
+- **Phase 7 — /goal autopsy, Subagent ROI, weekly memo.** `GET /api/code-sessions/sessions/[id]/autopsy` (uses `buildAutopsy` with messages + tool_uses + repeated-run detection). `GET /api/code-sessions/subagent-roi[?project_id=...]` prefers `action_records` chains when present (higher fidelity than JSONL re-derivation) and falls back to `code_session_tool_uses`. `GET /api/code-sessions/memos?project=<slug-or-id>` + `POST /api/code-sessions/memos/regenerate`. **Vercel cron `/api/cron/code-session-weekly-memo`** (Mondays 04:00 UTC) iterates code_projects with sessions in the trailing 7 days, saves one memo per (org, project, iso_week_tag) via the partial unique index on `code_session_memos`.
+- **Phase 8 — MCP resources + archive + plugin notes.** `mcp-server/lib/resources.js` adds `dashclaw://code-sessions/projects` and `dashclaw://code-sessions/sessions/{session_id}`, both calling the existing REST routes via the bound client. Resource-count expectation bumped from 4 to 6. `__tests__/unit/mcp-server-code-sessions.test.js` smoke-tests presence + non-trivial descriptions for the new entries. AgentLens repo gets `C:\Projects\RevenueGoalExperiment-V3\ARCHIVED.md` pointing at this absorption (no deletions). DashClaw memory note + `CLAUDE.md` should also be updated by the operator after Wes runs the live smoke gate.
+- **Phase 9 — operator scripts.** `scripts/repair-code-sessions.mjs` finds orphan `code_sessions` rows (no children) and re-ingests when `source='jsonl'` and the original JSONL still exists on disk; dry-run by default, `--apply` to write. `scripts/backfill-code-session-cache-cost.mjs` re-prices historical sessions through the new 5-arg `estimateCost` with cache extras; opt-in, dry-run by default, logs every change. Neither script modifies `action_records`.
+
+### Verification gates (status at end of autonomous run)
+
+- `npm test` — **2028 passing**, 5 skipped (pre-existing). Suite went from 1996 pre-Phase-1 to 2028 here, adding ~32 distinct route/repository/cron tests on top of the 149 new `claude-code/` algorithmic tests (counted under Phase 1).
+- `npm run lint` — clean.
+- Hook fail-silent regression — `hooks/tests/test_stop_fail_silent.py` covers `DASHCLAW_BASE_URL=""` + `DASHCLAW_CODE_SESSIONS_ENABLED=1` (Phase 3). Full Python hook suite **276 passing**.
+- Pricing parity — `__tests__/unit/billing-cache.test.js` proves the 4-arg legacy `estimateCost` is bit-for-bit identical to the 5-arg call with `extras=null` on every `DEFAULT_PRICING` entry.
+- `npm run db:migrate` against a fresh local Postgres — operator-run; the migration is `drizzle/0006_code_sessions.sql` per the corrected Phase 2 numbering. The pre-commit hook regenerates derivative artifacts on every commit; nothing else needs to run.
+- Mission Control regression check, manual smoke list, real-session Wes-runs — all deferred to operator runs per the goal's hard rules ("Wes runs the live smoke gate himself"; no deployments or live ingestion from the autonomous build).
+
 ### AgentLens absorption — Phase 5: Code Sessions UI, signals/alerts wiring, weekly cron, learning bridge
 
 - **Ingest now computes signals + alerts** in the same request. After `upsertSessionWithChildren` returns a non-skipped result, the route runs `detectRepeatedRuns` + the 7-rule optimizer, calls `replaceSignalsForSession`, then runs `detectForSession` (cost anomaly, stuck-loop streak, multi-project usage) and `insertAlerts` with the `code_session_alerts_dedup` ON-CONFLICT target. Wrapped in try/catch so a signals failure can't block ingest.
