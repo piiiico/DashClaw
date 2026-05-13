@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:cf86a23055c9e6b4a2390660c99ce1c652348558",
+  "timestamp": "sha1:51629cfd649474eb9eae2e65302136bc2dbfc0eb",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -925,6 +925,17 @@
       "file_path": "app/api/code-sessions/ingest-jsonl/route.js"
     },
     {
+      "path": "/api/code-sessions/manifests/[manifestId]",
+      "methods": [
+        "GET"
+      ],
+      "dynamic_params": [
+        "manifestId"
+      ],
+      "archived": false,
+      "file_path": "app/api/code-sessions/manifests/[manifestId]/route.js"
+    },
+    {
       "path": "/api/code-sessions/projects",
       "methods": [
         "GET"
@@ -965,6 +976,39 @@
       ],
       "archived": false,
       "file_path": "app/api/code-sessions/sessions/[sessionId]/insights/route.js"
+    },
+    {
+      "path": "/api/code-sessions/sessions/[sessionId]/optimal-files/manifest",
+      "methods": [
+        "POST"
+      ],
+      "dynamic_params": [
+        "sessionId"
+      ],
+      "archived": false,
+      "file_path": "app/api/code-sessions/sessions/[sessionId]/optimal-files/manifest/route.js"
+    },
+    {
+      "path": "/api/code-sessions/sessions/[sessionId]/optimal-files/merge-preview",
+      "methods": [
+        "POST"
+      ],
+      "dynamic_params": [
+        "sessionId"
+      ],
+      "archived": false,
+      "file_path": "app/api/code-sessions/sessions/[sessionId]/optimal-files/merge-preview/route.js"
+    },
+    {
+      "path": "/api/code-sessions/sessions/[sessionId]/optimal-files/preview",
+      "methods": [
+        "POST"
+      ],
+      "dynamic_params": [
+        "sessionId"
+      ],
+      "archived": false,
+      "file_path": "app/api/code-sessions/sessions/[sessionId]/optimal-files/preview/route.js"
     },
     {
       "path": "/api/compliance/evidence",

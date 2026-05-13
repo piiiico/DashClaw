@@ -5,7 +5,7 @@ description: DashClaw platform expert for integration, troubleshooting, and gove
 
 # DashClaw Platform Intelligence
 
-**Shape snapshot:** `sha1:cf86a23055c9e6b4a2390660c99ce1c652348558`
+**Shape snapshot:** `sha1:51629cfd649474eb9eae2e65302136bc2dbfc0eb`
 **This file is auto-generated.** Do not edit by hand — regenerate with:
 
 ```bash
@@ -29,7 +29,7 @@ If the snapshot below disagrees with a live query, **trust the live query**.
 
 ## At a Glance
 
-- **193** active API routes across **50** categories
+- **197** active API routes across **50** categories
 - **4** required + **120** optional environment variables
 - **81** database tables
 
@@ -109,10 +109,14 @@ If the snapshot below disagrees with a live query, **trust the live query**.
 - `GET` `/api/code-sessions/alerts`
 - `POST` `/api/code-sessions/alerts/read-all`
 - `POST` `/api/code-sessions/ingest-jsonl`
+- `GET` `/api/code-sessions/manifests/[manifestId]`
 - `GET` `/api/code-sessions/projects`
 - `GET` `/api/code-sessions/projects/[projectId]/sessions`
 - `GET` `/api/code-sessions/sessions/[sessionId]`
 - `GET` `/api/code-sessions/sessions/[sessionId]/insights`
+- `POST` `/api/code-sessions/sessions/[sessionId]/optimal-files/manifest`
+- `POST` `/api/code-sessions/sessions/[sessionId]/optimal-files/merge-preview`
+- `POST` `/api/code-sessions/sessions/[sessionId]/optimal-files/preview`
 
 ### `compliance`
 

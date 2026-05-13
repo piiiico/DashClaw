@@ -13,10 +13,10 @@ doc-type: architecture
 
 ## Summary
 
-- Total routes: `240`
+- Total routes: `244`
 - Stable routes: `42`
 - Beta routes: `22`
-- Experimental routes: `176`
+- Experimental routes: `180`
 
 ## Routes
 
@@ -111,10 +111,14 @@ doc-type: architecture
 | `/api/code-sessions/alerts` | `GET` | `experimental` | `(default)` | `app/api/code-sessions/alerts/route.js` |
 | `/api/code-sessions/alerts/read-all` | `POST` | `experimental` | `(default)` | `app/api/code-sessions/alerts/read-all/route.js` |
 | `/api/code-sessions/ingest-jsonl` | `POST` | `experimental` | `(default)` | `app/api/code-sessions/ingest-jsonl/route.js` |
+| `/api/code-sessions/manifests/{manifestId}` | `GET` | `experimental` | `(default)` | `app/api/code-sessions/manifests/[manifestId]/route.js` |
 | `/api/code-sessions/projects` | `GET` | `experimental` | `(default)` | `app/api/code-sessions/projects/route.js` |
 | `/api/code-sessions/projects/{projectId}/sessions` | `GET` | `experimental` | `(default)` | `app/api/code-sessions/projects/[projectId]/sessions/route.js` |
 | `/api/code-sessions/sessions/{sessionId}` | `GET` | `experimental` | `(default)` | `app/api/code-sessions/sessions/[sessionId]/route.js` |
 | `/api/code-sessions/sessions/{sessionId}/insights` | `GET` | `experimental` | `(default)` | `app/api/code-sessions/sessions/[sessionId]/insights/route.js` |
+| `/api/code-sessions/sessions/{sessionId}/optimal-files/manifest` | `POST` | `experimental` | `(default)` | `app/api/code-sessions/sessions/[sessionId]/optimal-files/manifest/route.js` |
+| `/api/code-sessions/sessions/{sessionId}/optimal-files/merge-preview` | `POST` | `experimental` | `(default)` | `app/api/code-sessions/sessions/[sessionId]/optimal-files/merge-preview/route.js` |
+| `/api/code-sessions/sessions/{sessionId}/optimal-files/preview` | `POST` | `experimental` | `(default)` | `app/api/code-sessions/sessions/[sessionId]/optimal-files/preview/route.js` |
 | `/api/compliance/evidence` | `GET` | `experimental` | `(default)` | `app/api/compliance/evidence/route.js` |
 | `/api/compliance/exports` | `GET, POST` | `experimental` | `(default)` | `app/api/compliance/exports/route.js` |
 | `/api/compliance/exports/{exportId}` | `DELETE, GET` | `experimental` | `(default)` | `app/api/compliance/exports/[exportId]/route.js` |

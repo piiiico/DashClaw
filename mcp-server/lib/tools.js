@@ -159,6 +159,36 @@ export const TOOL_DEFINITIONS = [
       required: ['session_id', 'status'],
     },
   },
+  // --- Code Sessions: Optimal Files (Phase 6) ------------------------------
+  {
+    name: 'dashclaw_optimal_files_preview',
+    description:
+      'Preview the Optimal Files bundle DashClaw Code Sessions would generate for a given session. Returns the per-file plan with confidence, secret-scan, and overwrite-risk flags. Read-only — does NOT write to disk; pair with dashclaw_optimal_files_manifest to persist a chosen subset.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        session_id: { type: 'string', description: 'Code session id (cs_*) from /api/code-sessions/sessions/...' },
+      },
+      required: ['session_id'],
+    },
+  },
+  {
+    name: 'dashclaw_optimal_files_manifest',
+    description:
+      'Persist a write plan for selected Optimal Files entries. Returns { manifest_id, expires_at, apply_command }. The local CLI invokes `dashclaw code apply <manifest_id>` to apply the plan to disk. Manifest expires after 24h.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        session_id: { type: 'string', description: 'Code session id (cs_*)' },
+        selections: {
+          type: 'array',
+          description: 'Subset of paths from the preview to write. Each item: { path, mode?: "skip"|"side_by_side"|"merge"|"overwrite", overwrite?, acceptedHeadings?, acceptedBullets? }',
+          items: { type: 'object' },
+        },
+      },
+      required: ['session_id', 'selections'],
+    },
+  },
 ];
 
 /**
@@ -171,6 +201,17 @@ export function createToolHandlers(client) {
   const agentId = (input) => input.agent_id || client.agentId;
 
   return {
+    async dashclaw_optimal_files_preview(input) {
+      const result = await client.post(`/api/code-sessions/sessions/${encodeURIComponent(input.session_id)}/optimal-files/preview`, {}, { timeout: 20000 });
+      return JSON.stringify(result);
+    },
+
+    async dashclaw_optimal_files_manifest(input) {
+      const result = await client.post(`/api/code-sessions/sessions/${encodeURIComponent(input.session_id)}/optimal-files/manifest`,
+        { selections: input.selections || [] }, { timeout: 20000 });
+      return JSON.stringify(result);
+    },
+
     async dashclaw_guard(input) {
       const result = await client.post('/api/guard', {
         action_type: input.action_type,

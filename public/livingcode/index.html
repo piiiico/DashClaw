@@ -48,9 +48,9 @@ p.kicker{background:var(--accent-bg);border:1px solid var(--accent-border);borde
 p.kicker b{color:var(--accent-deep)}
 </style></head><body>
 <h1>DashClaw Livingcode Dashboard</h1>
-<div class="sig" id="sig">Shape signature: sha1:cf86a23055c9e6b4a2390660c99ce1c652348558 · signature-stable</div>
+<div class="sig" id="sig">Shape signature: sha1:51629cfd649474eb9eae2e65302136bc2dbfc0eb · signature-stable</div>
 <div class="grid">
-      <div class="cell"><div class="n">193</div><div class="k">Active routes</div></div>
+      <div class="cell"><div class="n">197</div><div class="k">Active routes</div></div>
       <div class="cell"><div class="n">48</div><div class="k">Archived routes</div></div>
       <div class="cell"><div class="n">4</div><div class="k">Required env vars</div></div>
       <div class="cell"><div class="n">120</div><div class="k">Optional env vars</div></div>
@@ -254,14 +254,18 @@ p.kicker b{color:var(--accent-deep)}
 <figure><figcaption>Required env vars over time <span class="sig">(4 → 4)</span></figcaption><svg width="320" height="48" viewBox="0 0 320 48"><polyline fill="none" stroke="var(--accent)" stroke-width="2" points="4.0,44.0 160.0,44.0 316.0,44.0"/></svg></figure>
 <figure><figcaption>Tables over time <span class="sig">(73 → 73)</span></figcaption><svg width="320" height="48" viewBox="0 0 320 48"><polyline fill="none" stroke="var(--accent)" stroke-width="2" points="4.0,44.0 160.0,44.0 316.0,44.0"/></svg></figure></section>
 
-<section><h2>Changed since last snapshot</h2><p class="kicker"><b>14</b> env_vars added, <b>18</b> routes added, <b>8</b> tables added since last snapshot.</p><ul class="diff">    <li><code>added</code> <b>routes</b>: /api/actions/[actionId]/outcome <span class="sig">New route: GET, POST</span></li>
+<section><h2>Changed since last snapshot</h2><p class="kicker"><b>14</b> env_vars added, <b>22</b> routes added, <b>8</b> tables added since last snapshot.</p><ul class="diff">    <li><code>added</code> <b>routes</b>: /api/actions/[actionId]/outcome <span class="sig">New route: GET, POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/code-sessions/alerts <span class="sig">New route: GET</span></li>
     <li><code>added</code> <b>routes</b>: /api/code-sessions/alerts/read-all <span class="sig">New route: POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/code-sessions/ingest-jsonl <span class="sig">New route: POST</span></li>
+    <li><code>added</code> <b>routes</b>: /api/code-sessions/manifests/[manifestId] <span class="sig">New route: GET</span></li>
     <li><code>added</code> <b>routes</b>: /api/code-sessions/projects <span class="sig">New route: GET</span></li>
     <li><code>added</code> <b>routes</b>: /api/code-sessions/projects/[projectId]/sessions <span class="sig">New route: GET</span></li>
     <li><code>added</code> <b>routes</b>: /api/code-sessions/sessions/[sessionId] <span class="sig">New route: GET</span></li>
     <li><code>added</code> <b>routes</b>: /api/code-sessions/sessions/[sessionId]/insights <span class="sig">New route: GET</span></li>
+    <li><code>added</code> <b>routes</b>: /api/code-sessions/sessions/[sessionId]/optimal-files/manifest <span class="sig">New route: POST</span></li>
+    <li><code>added</code> <b>routes</b>: /api/code-sessions/sessions/[sessionId]/optimal-files/merge-preview <span class="sig">New route: POST</span></li>
+    <li><code>added</code> <b>routes</b>: /api/code-sessions/sessions/[sessionId]/optimal-files/preview <span class="sig">New route: POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/cron/code-session-cache-crater <span class="sig">New route: GET</span></li>
     <li><code>added</code> <b>routes</b>: /api/cron/outcome-sweep <span class="sig">New route: GET</span></li>
     <li><code>added</code> <b>routes</b>: /api/discord/interactions <span class="sig">New route: POST</span></li>
@@ -334,13 +338,17 @@ p.kicker b{color:var(--accent-deep)}
     <tr data-path="/api/capabilities/[capabilityId]/invoke"><td><code>/api/capabilities/[capabilityId]/invoke</code></td><td>POST</td><td class="sig">app/api/capabilities/[capabilityId]/invoke/route.js</td></tr>
     <tr data-path="/api/capabilities/[capabilityId]/test"><td><code>/api/capabilities/[capabilityId]/test</code></td><td>POST</td><td class="sig">app/api/capabilities/[capabilityId]/test/route.js</td></tr>
     <tr data-path="/api/capabilities/health"><td><code>/api/capabilities/health</code></td><td>GET</td><td class="sig">app/api/capabilities/health/route.js</td></tr></tbody></table></details>
-<details><summary>/code-sessions/* (7)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/code-sessions/alerts"><td><code>/api/code-sessions/alerts</code></td><td>GET</td><td class="sig">app/api/code-sessions/alerts/route.js</td></tr>
+<details><summary>/code-sessions/* (11)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/code-sessions/alerts"><td><code>/api/code-sessions/alerts</code></td><td>GET</td><td class="sig">app/api/code-sessions/alerts/route.js</td></tr>
     <tr data-path="/api/code-sessions/alerts/read-all"><td><code>/api/code-sessions/alerts/read-all</code></td><td>POST</td><td class="sig">app/api/code-sessions/alerts/read-all/route.js</td></tr>
     <tr data-path="/api/code-sessions/ingest-jsonl"><td><code>/api/code-sessions/ingest-jsonl</code></td><td>POST</td><td class="sig">app/api/code-sessions/ingest-jsonl/route.js</td></tr>
+    <tr data-path="/api/code-sessions/manifests/[manifestId]"><td><code>/api/code-sessions/manifests/[manifestId]</code></td><td>GET</td><td class="sig">app/api/code-sessions/manifests/[manifestId]/route.js</td></tr>
     <tr data-path="/api/code-sessions/projects"><td><code>/api/code-sessions/projects</code></td><td>GET</td><td class="sig">app/api/code-sessions/projects/route.js</td></tr>
     <tr data-path="/api/code-sessions/projects/[projectId]/sessions"><td><code>/api/code-sessions/projects/[projectId]/sessions</code></td><td>GET</td><td class="sig">app/api/code-sessions/projects/[projectId]/sessions/route.js</td></tr>
     <tr data-path="/api/code-sessions/sessions/[sessionId]"><td><code>/api/code-sessions/sessions/[sessionId]</code></td><td>GET</td><td class="sig">app/api/code-sessions/sessions/[sessionId]/route.js</td></tr>
-    <tr data-path="/api/code-sessions/sessions/[sessionId]/insights"><td><code>/api/code-sessions/sessions/[sessionId]/insights</code></td><td>GET</td><td class="sig">app/api/code-sessions/sessions/[sessionId]/insights/route.js</td></tr></tbody></table></details>
+    <tr data-path="/api/code-sessions/sessions/[sessionId]/insights"><td><code>/api/code-sessions/sessions/[sessionId]/insights</code></td><td>GET</td><td class="sig">app/api/code-sessions/sessions/[sessionId]/insights/route.js</td></tr>
+    <tr data-path="/api/code-sessions/sessions/[sessionId]/optimal-files/manifest"><td><code>/api/code-sessions/sessions/[sessionId]/optimal-files/manifest</code></td><td>POST</td><td class="sig">app/api/code-sessions/sessions/[sessionId]/optimal-files/manifest/route.js</td></tr>
+    <tr data-path="/api/code-sessions/sessions/[sessionId]/optimal-files/merge-preview"><td><code>/api/code-sessions/sessions/[sessionId]/optimal-files/merge-preview</code></td><td>POST</td><td class="sig">app/api/code-sessions/sessions/[sessionId]/optimal-files/merge-preview/route.js</td></tr>
+    <tr data-path="/api/code-sessions/sessions/[sessionId]/optimal-files/preview"><td><code>/api/code-sessions/sessions/[sessionId]/optimal-files/preview</code></td><td>POST</td><td class="sig">app/api/code-sessions/sessions/[sessionId]/optimal-files/preview/route.js</td></tr></tbody></table></details>
 <details><summary>/compliance/* (11)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/compliance/evidence"><td><code>/api/compliance/evidence</code></td><td>GET</td><td class="sig">app/api/compliance/evidence/route.js</td></tr>
     <tr data-path="/api/compliance/exports"><td><code>/api/compliance/exports</code></td><td>GET, POST</td><td class="sig">app/api/compliance/exports/route.js</td></tr>
     <tr data-path="/api/compliance/exports/[exportId]"><td><code>/api/compliance/exports/[exportId]</code></td><td>DELETE, GET</td><td class="sig">app/api/compliance/exports/[exportId]/route.js</td></tr>
