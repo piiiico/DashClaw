@@ -3,8 +3,11 @@
 // goal, the CLI does NOT parse — the server runs the canonical parser.
 //
 // Stream-reads files line-by-line so a 30 MB transcript doesn't have to fit
-// in memory all at once. Skips files larger than 50 MB with a stderr warning
-// (chunked POST is out of scope for this phase).
+// in memory all at once. Files larger than COMPRESS_THRESHOLD raw are sent
+// as gzip+base64 (`compressed_jsonl`) instead of a JSON-array
+// (`jsonl_lines`) to fit Vercel's 4.5 MB per-request body limit. Files
+// above MAX_FILE_BYTES are still skipped — gzip can't rescue arbitrarily
+// large inputs.
 //
 // Logs per file: { file, posted_lines, status, reason }. NEVER logs raw line
 // content — that would leak the user's transcripts through CI logs.
@@ -12,9 +15,18 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import readline from 'node:readline';
+import zlib from 'node:zlib';
 import { homedir } from 'node:os';
 
-const MAX_FILE_BYTES = 50 * 1024 * 1024;
+// Absolute ceiling. Vercel Hobby's 4.5 MB body limit is the binding
+// constraint; even at 5× JSONL gzip ratios (typical for highly repetitive
+// `role`/`content` keys), 30 MB raw stays under the limit after
+// base64-inflation. Files larger than this are skipped with `too_large`.
+const MAX_FILE_BYTES = 30 * 1024 * 1024;
+// Files larger than this are compressed before POST. Below this size the
+// JSON-array path is small enough to fit comfortably and avoids the gzip
+// CPU cost for the hot path of small per-session deltas.
+const COMPRESS_THRESHOLD = 1 * 1024 * 1024;
 
 export function defaultClaudeProjectsDir(env = process.env) {
   if (env.CLAUDE_PROJECTS_DIR) return env.CLAUDE_PROJECTS_DIR;
@@ -63,21 +75,39 @@ export async function buildIngestPayload(filePath, { cwdOverride = null } = {}) 
   const parent = path.dirname(filePath);
   const slug = path.basename(parent);
   const lines = await readLines(filePath);
-  return {
-    body: {
-      project: {
-        slug,
-        cwd: cwdOverride,
-        source_host: 'jsonl',
-      },
-      session_uuid: null,
-      source_file: filePath,
-      source_mtime: stat.mtime.toISOString(),
-      jsonl_lines: lines,
-      tool_use_action_map: {},
+
+  const base = {
+    project: {
+      slug,
+      cwd: cwdOverride,
+      source_host: 'jsonl',
     },
+    session_uuid: null,
+    source_file: filePath,
+    source_mtime: stat.mtime.toISOString(),
+    tool_use_action_map: {},
+  };
+
+  // Compress large files to fit Vercel's per-request body limit. JSONL is
+  // highly repetitive (`role`, `content`, `message`, `usage` keys repeat
+  // across every record) and compresses ~5× in practice, which is more than
+  // enough headroom up to the MAX_FILE_BYTES ceiling.
+  let body;
+  let compressed = false;
+  if (stat.size > COMPRESS_THRESHOLD) {
+    const raw = lines.join('\n');
+    const gz = zlib.gzipSync(raw);
+    body = { ...base, compressed_jsonl: gz.toString('base64') };
+    compressed = true;
+  } else {
+    body = { ...base, jsonl_lines: lines };
+  }
+
+  return {
+    body,
     sizeBytes: stat.size,
     lineCount: lines.length,
+    compressed,
   };
 }
 

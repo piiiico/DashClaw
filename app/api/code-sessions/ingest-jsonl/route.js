@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 export const maxDuration = 60;
 
+import zlib from 'node:zlib';
 import { NextResponse } from 'next/server';
 import { getSql } from '../../../lib/db.js';
 import { getOrgId } from '../../../lib/org.js';
@@ -19,6 +20,11 @@ import {
 } from '../../../lib/repositories/code-sessions.repository.js';
 
 const MAX_LINES = 200_000;
+// Cap decompressed payload at 50 MB. Vercel's per-IP body limit is 4.5 MB on
+// Hobby; clients gzip+base64 large JSONL to fit. A 50 MB decompressed ceiling
+// bounds the zip-bomb risk while still covering every JSONL we've seen in the
+// wild (largest observed: 13.7 MB raw → ~2 MB gzipped).
+const MAX_DECOMPRESSED_BYTES = 50 * 1024 * 1024;
 
 function deriveSlugFromCwd(cwd) {
   if (!cwd) return 'unknown';
@@ -41,10 +47,32 @@ export async function POST(request) {
     return NextResponse.json({ error: 'invalid_source_host', reason: 'must be "hook" or "jsonl"' }, { status: 400 });
   }
 
-  const lines = Array.isArray(body?.jsonl_lines) ? body.jsonl_lines : null;
-  if (!lines) {
+  let lines = Array.isArray(body?.jsonl_lines) ? body.jsonl_lines : null;
+  const compressed = typeof body?.compressed_jsonl === 'string' ? body.compressed_jsonl : null;
+
+  if (!lines && !compressed) {
     return NextResponse.json({ error: 'missing_jsonl_lines' }, { status: 400 });
   }
+
+  if (!lines && compressed) {
+    let decompressed;
+    try {
+      decompressed = zlib.gunzipSync(Buffer.from(compressed, 'base64'));
+    } catch (err) {
+      return NextResponse.json(
+        { error: 'compressed_jsonl_decode_failed', reason: err.message },
+        { status: 400 },
+      );
+    }
+    if (decompressed.length > MAX_DECOMPRESSED_BYTES) {
+      return NextResponse.json(
+        { error: 'compressed_jsonl_too_large_after_decode', max_bytes: MAX_DECOMPRESSED_BYTES },
+        { status: 413 },
+      );
+    }
+    lines = decompressed.toString('utf8').split('\n').filter(l => l.length > 0);
+  }
+
   if (lines.length > MAX_LINES) {
     return NextResponse.json({ error: 'jsonl_lines_too_large', max: MAX_LINES }, { status: 413 });
   }

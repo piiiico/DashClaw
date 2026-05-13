@@ -1,3 +1,4 @@
+import zlib from 'node:zlib';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeRequest } from '../../helpers.js';
 
@@ -186,5 +187,49 @@ describe('POST /api/code-sessions/ingest-jsonl', () => {
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json.parser.parser_skipped).toBe(1);
+  });
+
+  describe('compressed_jsonl path', () => {
+    it('decompresses gzip+base64 input and runs the same code path as jsonl_lines', async () => {
+      const raw = [jsonlRecord(), jsonlRecord({ uuid: 'u2', messageId: 'M2', requestId: 'R2' })].join('\n');
+      const compressed_jsonl = zlib.gzipSync(raw).toString('base64');
+      const res = await POST(fixtureRequest({
+        project: { slug: 'demo', cwd: 'C:/Projects/Demo', source_host: 'jsonl' },
+        source_file: '/tmp/demo.jsonl',
+        source_mtime: '2026-05-13T12:00:00Z',
+        compressed_jsonl,
+        tool_use_action_map: {},
+      }));
+      expect(res.status).toBe(200);
+      expect(mockUpsertSessionWithChildren).toHaveBeenCalledTimes(1);
+      const [, , parsed] = mockUpsertSessionWithChildren.mock.calls[0];
+      expect(parsed.sessionUuid).toBe('sess-abc');
+      // Both records made it through decompression and parsing.
+      expect(parsed.messageCount).toBeGreaterThanOrEqual(1);
+    });
+
+    it('rejects malformed base64 / non-gzip content with 400 compressed_jsonl_decode_failed', async () => {
+      const res = await POST(fixtureRequest({
+        project: { slug: 'demo', source_host: 'jsonl' },
+        compressed_jsonl: 'not-actually-gzip-data-base64-decodes-to-garbage',
+      }));
+      expect(res.status).toBe(400);
+      const json = await res.json();
+      expect(json.error).toBe('compressed_jsonl_decode_failed');
+    });
+
+    it('rejects decompressed payloads over MAX_DECOMPRESSED_BYTES with 413', async () => {
+      // Zero-filled buffers compress to ~kilobytes regardless of size, so we
+      // can build a gzip bomb cheaply: 51 MB of zeros gzips to ~50 KB.
+      const big = Buffer.alloc(51 * 1024 * 1024, 0);
+      const compressed_jsonl = zlib.gzipSync(big).toString('base64');
+      const res = await POST(fixtureRequest({
+        project: { slug: 'demo', source_host: 'jsonl' },
+        compressed_jsonl,
+      }));
+      expect(res.status).toBe(413);
+      const json = await res.json();
+      expect(json.error).toBe('compressed_jsonl_too_large_after_decode');
+    });
   });
 });

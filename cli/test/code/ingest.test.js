@@ -1,7 +1,10 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import http from 'node:http';
+import os from 'node:os';
 import path from 'node:path';
+import zlib from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { runIngest, buildIngestPayload, defaultClaudeProjectsDir } from '../../lib/code/ingest.js';
 
@@ -63,6 +66,51 @@ describe('cli code ingest — buildIngestPayload', () => {
     assert.equal(typeof payload.body.jsonl_lines[0], 'string');
     assert.ok(payload.body.jsonl_lines.length >= 1);
     assert.deepEqual(payload.body.tool_use_action_map, {});
+    assert.equal(payload.compressed, false);
+  });
+
+  it('switches to compressed_jsonl (gzip+base64) for files over the threshold and round-trips', async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dashclaw-ingest-test-'));
+    const projectDir = path.join(tmpDir, 'big-project');
+    fs.mkdirSync(projectDir);
+    const file = path.join(projectDir, 'session-big.jsonl');
+    try {
+      // Synthesize >1 MB of valid JSONL lines. Each line is ~150 bytes; ~10k
+      // lines comfortably crosses the COMPRESS_THRESHOLD without taking long
+      // to write or compress.
+      const lines = [];
+      for (let i = 0; i < 10000; i++) {
+        lines.push(JSON.stringify({
+          type: 'user',
+          uuid: `u-${i}`,
+          timestamp: '2026-05-13T12:00:00Z',
+          message: { role: 'user', content: `line ${i} padding xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx` },
+        }));
+      }
+      fs.writeFileSync(file, lines.join('\n'), 'utf8');
+      const stat = fs.statSync(file);
+      assert.ok(stat.size > 1024 * 1024, `expected file > 1 MB, got ${stat.size}`);
+
+      const payload = await buildIngestPayload(file);
+
+      assert.equal(payload.compressed, true);
+      assert.equal(payload.body.project.slug, 'big-project');
+      assert.equal(payload.body.jsonl_lines, undefined, 'jsonl_lines should not be set on compressed path');
+      assert.equal(typeof payload.body.compressed_jsonl, 'string');
+      // Sanity: base64-encoded gzip of repetitive JSONL is dramatically
+      // smaller than the raw file.
+      assert.ok(payload.body.compressed_jsonl.length < stat.size,
+        `compressed payload (${payload.body.compressed_jsonl.length}) should be < raw size (${stat.size})`);
+
+      // Round-trip: decompress and verify we get the original lines back.
+      const decoded = zlib.gunzipSync(Buffer.from(payload.body.compressed_jsonl, 'base64')).toString('utf8');
+      const roundTripped = decoded.split('\n').filter(l => l.length > 0);
+      assert.equal(roundTripped.length, lines.length);
+      assert.equal(roundTripped[0], lines[0]);
+      assert.equal(roundTripped[roundTripped.length - 1], lines[lines.length - 1]);
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
   });
 });
 
