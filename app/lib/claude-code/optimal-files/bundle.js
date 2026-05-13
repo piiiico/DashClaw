@@ -116,7 +116,14 @@ function groupBundle(files) {
 // flag the entry.
 export function absolutize(projectCwd, relPath) {
   if (!projectCwd || !relPath) return null;
-  if (path.isAbsolute(relPath)) return null; // bundle paths must be relative
+  // bundle paths must be relative. Check BOTH posix and win32 absolute
+  // semantics — node:path is OS-specific, so on Linux CI a string like
+  // 'C:\\Windows\\System32' is not flagged by path.isAbsolute and would
+  // otherwise be naively joined into the project tree. The bundle is
+  // produced on Linux (Vercel) but applied on Windows, so a malicious
+  // manifest with a drive-rooted or UNC path must be rejected here even
+  // when the runtime is POSIX.
+  if (path.isAbsolute(relPath) || path.win32.isAbsolute(relPath)) return null;
   const candidate = path.normalize(path.join(projectCwd, relPath));
   const cwdNorm = path.normalize(projectCwd);
   const ci = process.platform === 'win32';
