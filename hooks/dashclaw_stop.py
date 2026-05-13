@@ -90,6 +90,10 @@ AGENT_ID = os.environ.get("DASHCLAW_AGENT_ID") or "claude-code"
 # analytics instead of just in the orphan-tokens drift log. Default off to
 # avoid ledger inflation for users who only want tool-call governance.
 TRACK_TEXT_TURNS = (os.environ.get("DASHCLAW_TRACK_TEXT_TURNS") or "").strip() in ("1", "true", "yes")
+# Opt-in (Phase 3 — AgentLens absorption): when set, ship the turn's JSONL
+# slice to POST /api/code-sessions/ingest-jsonl after the existing PATCH
+# loop. Fail-silent: any error inside the reporter is logged and swallowed.
+CODE_SESSIONS_ENABLED = (os.environ.get("DASHCLAW_CODE_SESSIONS_ENABLED") or "").strip().lower() in ("1", "true", "yes")
 
 # Session IDs come from untrusted stdin. Before we use one as a temp-file
 # suffix, replace anything outside this whitelist so a crafted session_id
@@ -464,6 +468,23 @@ def main():
     tokens_in, tokens_out, model, new_cursor = _collect_turn_usage(entries, last_uuid)
 
     _apply(action_ids, tokens_in, tokens_out, model, session_id)
+
+    if CODE_SESSIONS_ENABLED:
+        try:
+            from dashclaw_code_session_reporter import report_turn
+            report_turn(
+                base_url=BASE_URL,
+                api_key=API_KEY,
+                agent_id=AGENT_ID,
+                session_id=session_id,
+                transcript_path=transcript_path,
+                entries=entries,
+                previous_cursor=last_uuid,
+                new_cursor=new_cursor,
+            )
+        except Exception as e:
+            _log_hook_error("code_session_reporter -> " + type(e).__name__ + ": " + str(e))
+
     _write_cursor(session_id, new_cursor)
     _clear_turn_actions(session_id)
     sys.exit(0)

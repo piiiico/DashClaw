@@ -27,6 +27,18 @@ are prefixed with the package name.
 
 ## [Unreleased]
 
+### AgentLens absorption — Phase 3: Stop-hook code-session reporter (Path A)
+
+Opt-in path that lets the existing DashClaw governance hook stack also feed `code_sessions`. Telemetry stays primary; this is additive.
+
+- **`hooks/dashclaw_code_session_reporter.py`** — new module imported lazily by `dashclaw_stop.py`. Gated by `DASHCLAW_CODE_SESSIONS_ENABLED` (accepts `1`/`true`/`yes`). Re-reads raw lines from the transcript (the parsed `entries` list isn't enough — the server needs bytes), slices since the previous cursor, looks up each new tool_use's `id` against a per-session map, and POSTs to `/api/code-sessions/ingest-jsonl` with `source_host: "hook"` and `project.slug = basename(dirname(transcript_path))` per addendum #3.
+- **`hooks/dashclaw_pretool.py`** — `write_action_id` now also appends `<tool_use_id>\\t<action_id>` to `<tempdir>/dashclaw_session_tool_map_<session_id>`. Necessary because the existing per-tool_use temp file is cleaned up by PostToolUse before Stop fires, so there's no other persistent record of the mapping at end-of-turn. Six call sites pick up the new behavior automatically (no per-call-site change).
+- **`hooks/dashclaw_stop.py`** — adds the `CODE_SESSIONS_ENABLED` constant and the post-`_apply`/pre-`_write_cursor` invocation. The body is wrapped in a try/except that logs to `dashclaw_hook_errors.log` and swallows; the fail-silent contract is preserved.
+- **`hooks/tests/test_code_session_reporter.py`** — `unittest` integration test that stands up a `http.server.HTTPServer` on a random port, pre-seeds the session tool-map log, runs Stop as a subprocess, and asserts: ingest is POSTed exactly once; body shape matches A6; slug is the parent-directory basename; `tool_use_action_map` carries the pre-seeded `tu_42 -> ar_governed_1`; jsonl_lines are raw strings. Plus a "no POST when flag disabled" case and an idempotency case (second run with unchanged transcript posts zero times).
+- **`hooks/tests/test_stop_fail_silent.py`** — regression test for the contract Wes called out in the goal hard-rules. Asserts that with `DASHCLAW_BASE_URL=""` + `DASHCLAW_CODE_SESSIONS_ENABLED=1` the Stop hook exits 0 with no stderr Traceback. Adds a second case for `BASE_URL="http://127.0.0.1:1"` (closed port) to cover the unreachable-server path.
+- Five new Python tests; full suite 276 passing (was 271).
+- Vitest: full suite 2022 passing — no regressions. `npm run lint` clean.
+
 ### AgentLens absorption — Phase 2: schema + repository + ingest endpoint + pricing extension
 
 Schema, repository, REST surface, and cache-aware billing extension.
