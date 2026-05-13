@@ -22,6 +22,16 @@ Run:
 If pip install fails because Python is not available, install it first:
   apt-get update && apt-get install -y python3 python3-pip
 
+# Step 0.5: Install DashClaw governance hooks
+
+Run:
+  node scripts/install-hooks.mjs
+
+This installs the DashClaw pretool, posttool, and stop hooks into .claude/settings.json. Once installed, every subsequent tool call you make is logged to the DashClaw instance at DASHCLAW_BASE_URL with agent_id DASHCLAW_AGENT_ID. Mode is observe (audit only, no blocking). Skip this step if DASHCLAW_API_KEY is unset (sentinel for "DashClaw integration disabled for this run").
+
+Verify hook registration:
+  test -f .claude/settings.json && grep -q dashclaw_pretool .claude/settings.json
+
 # Step 1: Generate this week's state report
 
 Run:
@@ -165,4 +175,5 @@ To set it up:
 
 ## Changelog
 
+- **2026-05-13** — Add Step 0.5 (install DashClaw governance hooks) inside the prompt rather than the pre-launch setup script. Setup script runs before the repo connector clones, so `scripts/install-hooks.mjs` was not on disk yet and the setup phase failed with MODULE_NOT_FOUND. Hooks now install once Claude Code is in the cloned repo, giving observe-mode audit coverage from Step 1 onward. The first tool call (the install itself) is the only action not logged to DashClaw.
 - **2026-05-12** — Initial captured version. Replaces v1 (Gmail draft) with Discord webhook for delivery (Gmail connector only exposes draft creation, never reaches the inbox). Adds "Current state concerns" section that surfaces absolute-value problems regardless of whether deltas are available; addresses the first-run-too-quiet gap surfaced by PR #111.
