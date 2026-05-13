@@ -229,8 +229,8 @@ pip install dashclaw`}</CodeBlock>
                 </p>
                 <div className="mt-auto">
                   <CodeBlock>{`npm install @dashclaw/openclaw-plugin`}</CodeBlock>
-                  <Link href="/docs#openclaw-plugin" className="mt-3 inline-flex items-center gap-1.5 text-xs text-brand hover:text-brand-hover transition-colors font-medium">
-                    OpenClaw plugin docs <ArrowRight size={12} aria-hidden="true" />
+                  <Link href="/guides/openclaw" className="mt-3 inline-flex items-center gap-1.5 text-xs text-brand hover:text-brand-hover transition-colors font-medium">
+                    OpenClaw plugin guide <ArrowRight size={12} aria-hidden="true" />
                   </Link>
                 </div>
               </div>
@@ -405,7 +405,7 @@ dashclaw doctor`}</CodeBlock>
                   desc: 'Govern CrewAI tool calls using the @tool decorator pattern with the Python SDK. Includes a runnable example.',
                 },
                 {
-                  href: '/docs#openclaw-plugin',
+                  href: '/guides/openclaw',
                   title: 'OpenClaw',
                   desc: 'Framework native plugin. Intercepts PreToolUse and PostToolUse and calls guard, record, and waitForApproval automatically.',
                 },
