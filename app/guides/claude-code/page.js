@@ -133,7 +133,7 @@ cp -r hooks/dashclaw_agent_intel .claude/hooks/`,
       summary: 'Claude Code reads these from the shell or a .env file in the project root.',
       codeTitle: '.env',
       codeBody: `DASHCLAW_BASE_URL=${baseUrl}
-DASHCLAW_API_KEY=<your-workspace-api-key>
+DASHCLAW_API_KEY=oc_live_...
 DASHCLAW_HOOK_MODE=enforce`,
     },
     {

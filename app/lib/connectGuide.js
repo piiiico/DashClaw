@@ -60,7 +60,7 @@ export function getConnectGuideContent({ host = '' } = {}) {
       node: {
         label: 'Node',
         installCommand: 'npm install dashclaw',
-        envBlock: `DASHCLAW_API_KEY=<your-workspace-api-key>
+        envBlock: `DASHCLAW_API_KEY=oc_live_...
 DASHCLAW_BASE_URL=${baseUrl}`,
         starterSnippet: getNodeStarterSnippet(),
         optionalPairingSnippet: `const privateJwk = JSON.parse(process.env.AGENT_PRIVATE_KEY_JWK);
@@ -78,7 +78,7 @@ await claw.waitForPairing(pairing.id);`,
       python: {
         label: 'Python',
         installCommand: 'pip install dashclaw',
-        envBlock: `DASHCLAW_API_KEY=<your-workspace-api-key>
+        envBlock: `DASHCLAW_API_KEY=oc_live_...
 DASHCLAW_BASE_URL=${baseUrl}`,
         starterSnippet: getPythonStarterSnippet(),
         optionalPairingSnippet: `private_jwk = {

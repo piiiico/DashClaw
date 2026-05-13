@@ -111,7 +111,7 @@ pip install dashclaw==2.6.0 crewai==1.11.0 python-dotenv`,
         'Create a .env file with your DashClaw connection details. No LLM API key required for the example.',
       codeTitle: '.env',
       codeBody: `DASHCLAW_BASE_URL=${baseUrl}
-DASHCLAW_API_KEY=<your-workspace-api-key>`,
+DASHCLAW_API_KEY=oc_live_...`,
     },
     {
       number: 4,

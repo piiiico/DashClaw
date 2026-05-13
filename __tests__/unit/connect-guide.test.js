@@ -8,7 +8,7 @@ describe('connect guide content', () => {
 
     expect(content.baseUrl).toBe('https://dashclaw.example.com');
     expect(content.languages.node.envBlock).toContain('DASHCLAW_BASE_URL=https://dashclaw.example.com');
-    expect(content.languages.node.envBlock).toContain('DASHCLAW_API_KEY=<your-workspace-api-key>');
+    expect(content.languages.node.envBlock).toContain('DASHCLAW_API_KEY=oc_live_...');
     expect(content.languages.node.starterSnippet).toContain('await claw.guard');
     expect(content.languages.node.validatorCommand).toContain('node ./dashclaw-platform-intelligence/scripts/validate-integration.mjs');
     expect(content.languages.node.validatorCommand).toContain('--capture-setup-proof');

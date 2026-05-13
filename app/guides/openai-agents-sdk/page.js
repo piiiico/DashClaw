@@ -103,7 +103,7 @@ policies:
       summary: 'Create a .env file in your agent project root.',
       codeTitle: '.env',
       codeBody: `DASHCLAW_BASE_URL=${baseUrl}
-DASHCLAW_API_KEY=<your-workspace-api-key>`,
+DASHCLAW_API_KEY=oc_live_...`,
     },
     {
       number: 4,

@@ -111,7 +111,7 @@ pip install dashclaw==2.6.0 langgraph==1.1.3 langchain-core==1.2.21 python-doten
         'Create a .env file with your DashClaw connection details. No LLM API key required for the example.',
       codeTitle: '.env',
       codeBody: `DASHCLAW_BASE_URL=${baseUrl}
-DASHCLAW_API_KEY=<your-workspace-api-key>`,
+DASHCLAW_API_KEY=oc_live_...`,
     },
     {
       number: 4,

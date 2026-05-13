@@ -113,8 +113,8 @@ policies:
       number: 4,
       title: 'Get your DashClaw Org ID',
       summary:
-        'There is no UI surface for the org ID yet (tracked gap). For now, run this query in the Neon SQL Editor and copy the id value for your organization. It looks like org_01j... or similar. This is DISCORD_APPROVER_ORG_ID. If you see multiple rows, pick the one whose name matches what you log into the dashboard as; the others are likely test orgs.',
-      codeTitle: 'Neon SQL Editor',
+        'Open your DashClaw dashboard at /settings and find Org ID in the Environment block on the Setup tab. Copy the value (it looks like org_01j... or similar); this is DISCORD_APPROVER_ORG_ID. If you do not have dashboard access yet, the same value lives in the organizations table; run the query below in the Neon SQL Editor and copy the id column for your organization. If multiple rows come back, pick the one whose name matches what you log into the dashboard as.',
+      codeTitle: 'Neon SQL Editor (fallback only)',
       codeBody: orgQuery,
     },
     {
