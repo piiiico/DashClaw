@@ -1,84 +1,59 @@
 <div align="center">
-  <img src="public/images/logo-circular.png" alt="DashClaw" width="240" />
+  <img src="public/images/logo-circular.png" alt="DashClaw" width="220" />
+
   <h1>DashClaw</h1>
-  <p><strong>Govern Claude Code in 5 minutes.</strong></p>
-  <p>Install the hook. Connect Discord. Approve risky tool calls from your phone.<br />
-  Built so your coding agent can never surprise you with a destructive action.</p>
 
-  <a href="<SCREENCAST_URL>"><img src="public/images/demo-gif2.gif" alt="DashClaw governing Claude Code — click to watch the 3-minute walkthrough" width="1000" /></a>
-
-  <p><strong>3-step install</strong></p>
-  <pre><code>npm install
-npm run hooks:install
-# Connect Discord (see guide)
-</code></pre>
+  <p><strong>Govern AI agents before they act.</strong></p>
 
   <p>
-    <a href="https://dashclaw.io/guides/claude-code">Claude Code integration guide &rarr;</a>
-    &nbsp;·&nbsp;
-    <a href="<SCREENCAST_URL>">Watch the 3-min walkthrough &rarr;</a>
+    DashClaw is the governance layer for AI agents that touch real systems.
+    It sits between agents and the world, evaluates policy on every risky action,
+    routes human approval where it is required, records verifiable evidence,
+    and tracks terminal outcomes so a retried agent never silently double-executes.
+  </p>
+
+  <p><sub>Works with MCP runtimes (Claude Code, Claude Desktop, Claude Managed Agents, any MCP host), agent frameworks (LangChain, LangGraph, CrewAI, AutoGen, OpenAI Agents SDK), coding agents (Claude Code, Codex, Gemini CLI), the OpenClaw plugin, and any custom agent over the REST API.</sub></p>
+
+  <p>
+    <a href="#deploy"><img alt="Deploy" src="https://img.shields.io/badge/Deploy-Vercel%20%2B%20Neon-orange?style=flat-square" /></a>
+    <a href="#10-second-demo"><img alt="Try the demo" src="https://img.shields.io/badge/Demo-npx%20dashclaw--demo-blue?style=flat-square" /></a>
+    <a href="#choose-your-integration-path"><img alt="Connect an agent" src="https://img.shields.io/badge/Connect-MCP%20%7C%20SDK%20%7C%20Hooks-zinc?style=flat-square" /></a>
+  </p>
+
+  <p>
+    <a href="https://dashclaw.io"><img src="https://img.shields.io/badge/website-dashclaw.io-orange?style=flat-square" alt="Website" /></a>
+    <a href="https://dashclaw.io/docs"><img src="https://img.shields.io/badge/docs-SDK%20%26%20API-blue?style=flat-square" alt="Docs" /></a>
+    <a href="https://github.com/ucsandman/DashClaw/stargazers"><img src="https://img.shields.io/github/stars/ucsandman/DashClaw?style=flat-square&color=yellow" alt="GitHub stars" /></a>
+    <a href="https://github.com/ucsandman/DashClaw/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License" /></a>
+    <a href="https://www.npmjs.com/package/dashclaw"><img src="https://img.shields.io/npm/v/dashclaw?style=flat-square&color=orange" alt="npm" /></a>
+    <a href="https://pypi.org/project/dashclaw/"><img src="https://img.shields.io/pypi/v/dashclaw?style=flat-square&color=orange" alt="PyPI" /></a>
   </p>
 </div>
 
-<hr />
-
-<div align="center">
-  <p><sub>Prefer a 10-second zero-setup taste? Try the Decision Replay demo:</sub></p>
-  <pre><code>npx dashclaw-demo</code></pre>
-  <p><sub>No setup. Opens Decision Replay automatically.</sub></p>
-
-<br />
-<p><strong>Works with:</strong></p>
-<p>LangChain · CrewAI · OpenAI · Anthropic · AutoGen · Claude Code · Claude Managed Agents · Codex · Gemini CLI · Custom agents</p>
-  <br />
-  <p>Intercept decisions. Enforce policies. Record evidence.</p>
-  <br />
-  <p><strong>Agent &rarr; DashClaw &rarr; External Systems</strong></p>
-  <p>DashClaw sits between your agents and your external systems. It evaluates policies before an agent action executes and records verifiable evidence of every decision.</p>
-  <br />
-  <p><a href="https://dashclaw.io/demo">View Live Demo</a></p>
-
-  <a href="https://dashclaw.io"><img src="https://img.shields.io/badge/website-dashclaw.io-orange?style=flat-square" alt="Website" /></a>
-  <a href="https://dashclaw.io/docs"><img src="https://img.shields.io/badge/docs-SDK%20%26%20API-blue?style=flat-square" alt="Docs" /></a>
-  <a href="https://github.com/ucsandman/DashClaw/stargazers"><img src="https://img.shields.io/github/stars/ucsandman/DashClaw?style=flat-square&color=yellow" alt="GitHub stars" /></a>
-  <a href="https://github.com/ucsandman/DashClaw/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License" /></a>
-  <a href="https://www.npmjs.com/package/dashclaw"><img src="https://img.shields.io/npm/v/dashclaw?style=flat-square&color=orange" alt="npm" /></a>
-  <a href="https://pypi.org/project/dashclaw/"><img src="https://img.shields.io/pypi/v/dashclaw?style=flat-square&color=orange" alt="PyPI" /></a>
-
-</div>
-
 <br />
 
-## Deploy
+## What DashClaw does
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fucsandman%2FDashClaw&env=DATABASE_URL,DASHCLAW_API_KEY,ENCRYPTION_KEY,NEXTAUTH_SECRET,NEXTAUTH_URL,CRON_SECRET,DASHCLAW_LOCAL_ADMIN_PASSWORD&envDescription=Required%20DashClaw%20configuration.%20See%20.env.example%20for%20details.&envLink=https%3A%2F%2Fgithub.com%2Fucsandman%2FDashClaw%2Fblob%2Fmain%2F.env.example&project-name=my-dashclaw&repository-name=my-dashclaw&products=%5B%7B%22type%22%3A%22integration%22%2C%22integrationSlug%22%3A%22neon%22%2C%22productSlug%22%3A%22neon%22%2C%22protocol%22%3A%22storage%22%7D%5D&skippable-integrations=1)
+| | |
+|---|---|
+| **Intercept** | Risky agent actions are evaluated before they execute. Block, warn, or hold for approval, by policy. |
+| **Enforce** | Declarative policies (risk thresholds, deploy gates, capability access rules, semantic checks) run on every action. |
+| **Approve** | Pending approvals route to a dashboard queue, the CLI inbox, a mobile PWA, Telegram, or Discord, with one-tap allow or deny. |
+| **Record** | Every action becomes a replayable decision record: declared goal, reasoning, risk score, matched policies, assumptions, evidence. |
+| **Finalize** | Terminal outcomes are one-shot and durable. Lost confirmations are swept and surfaced, so retries do not double-execute. |
+| **Govern external systems** | The capability registry wraps real HTTP APIs with per-agent access rules, rate limits, and audit. Workflows compose these into multi-step governed runs. |
 
-**$0 to deploy** — Vercel free tier + Neon free tier. Click the button, add the Neon integration when prompted, fill in the environment variables, and you're live. Database schema is created automatically during the build — no manual migration step required.
+---
 
-### After deploy
+## Choose your integration path
 
-1. **Open your app** — Visit `https://your-app.vercel.app` and sign in.
-2. **Copy the snippet** — Mission Control shows a ready-to-run code example with your base URL pre-filled and your API key one click away.
-3. **Run it** — `node --env-file=.env demo.js` and watch governance happen.
+DashClaw meets agents where they already are. Pick the path closest to how your agent already runs.
 
-#### Optional
+### 1. MCP server (zero code)
 
-- **Live decision stream** — Create a free [Upstash Redis](https://upstash.com) instance and add `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` in Vercel env vars. Without this, Mission Control uses in-memory events (fine for getting started, but won't persist across serverless invocations).
-- **Hosted trial mode** — If you want DashClaw to mint hosted trial workspaces from `/connect`, follow [`docs/hosted-deployment-runbook.md`](./docs/hosted-deployment-runbook.md). That path needs extra env vars, Turnstile, cleanup secrets, and operator-managed infrastructure.
+For Claude Code, Claude Desktop, Claude Managed Agents, and any MCP-capable host. The [`@dashclaw/mcp-server`](./mcp-server) package exposes 8 governance tools and 4 resources.
 
-## Free while we grow
-
-DashClaw is free while we grow. Pro tier launches when we hit **50 verified Claude Code integrations in the wild** — measured by a public SQL query over `action_records` where `agent_id ILIKE 'claude-code%'`, excluding internal orgs, with a 90-day recency window. We'll track progress publicly at [dashclaw.io/pricing](https://dashclaw.io/pricing). The runtime — hook, policy pack, Discord approvals, audit ledger, semantic guard — stays free forever for solo devs.
-
-## Connect Your Agent
-
-**Five ways to get governed — pick what fits your workflow:**
-
-### Option 1: MCP Server (zero code)
-
-For Claude Code, Claude Desktop, and Claude Managed Agents. The `@dashclaw/mcp-server` package gives your agent 8 governance tools and 4 resources over MCP — no SDK integration needed.
-
-**Claude Code / Claude Desktop (stdio):**
+**Stdio (Claude Code, Claude Desktop):**
 
 ```json
 {
@@ -95,9 +70,7 @@ For Claude Code, Claude Desktop, and Claude Managed Agents. The `@dashclaw/mcp-s
 }
 ```
 
-**Claude Managed Agents (Streamable HTTP):**
-
-DashClaw exposes a built-in MCP endpoint at `/api/mcp` — no npm package needed:
+**Streamable HTTP (Claude Managed Agents):** every DashClaw instance also serves MCP at `/api/mcp`, no npm package required.
 
 ```python
 agent = client.beta.agents.create(
@@ -113,28 +86,20 @@ agent = client.beta.agents.create(
 )
 ```
 
-Optionally attach the **governance skill** to teach the agent the full governance protocol (risk thresholds, decision handling, session lifecycle). See [Governance Skill](#governance-skill) below.
+### 2. SDK (Node and Python, full control)
 
-### Option 2: Install the skill (30 seconds)
-
-Give your AI agent the `dashclaw-platform-intelligence` skill and it instruments itself — no code changes, no manual wiring. The agent registers with DashClaw, sets up guard checks, records decisions, and starts tracking assumptions automatically.
+For custom agents and frameworks where you want explicit control over what gets governed.
 
 ```bash
-# Download the skill into your agent's skill directory
-cp -r public/downloads/dashclaw-platform-intelligence .claude/skills/
+npm install dashclaw     # Node 18+
+pip install dashclaw     # Python 3.7+
 ```
 
-Set two environment variables and your agent is governed on its next run:
-```bash
-export DASHCLAW_BASE_URL=https://your-dashclaw-instance.com
-export DASHCLAW_API_KEY=your_api_key
-```
+The 4-step governance loop is in the [Quick start](#quick-start) below. Framework guides (OpenAI Agents SDK, LangGraph, CrewAI) are at [`/connect`](https://dashclaw.io/connect) on your own instance.
 
-### Option 3: Drop in Claude Code hooks (zero-code)
+### 3. Claude Code hooks (coding-agent governance)
 
-Govern 40+ tool types with semantic classification — every Bash, Edit, Write, MultiEdit, and more — no SDK instrumentation needed. The bundled `dashclaw_agent_intel` module handles tool classification, risk scoring, and signal extraction automatically. The `Stop` hook captures LLM token usage from the session transcript and PATCHes it onto the action records, so cost analytics light up without any per-agent instrumentation.
-
-One-command install (from this repo's root):
+If your governed agent is a coding agent, the hook path gives you 40+ tool types (Bash, Edit, Write, MultiEdit, ...) governed automatically, with semantic classification, risk scoring, and per-turn token capture. No SDK calls in your code.
 
 ```bash
 npm run hooks:install
@@ -142,333 +107,242 @@ npm run hooks:install
 node /path/to/DashClaw/scripts/install-hooks.mjs --target=.
 ```
 
-This copies `dashclaw_pretool.py`, `dashclaw_posttool.py`, `dashclaw_stop.py`, and the `dashclaw_agent_intel/` module into `.claude/hooks/`, then merges the matching `PreToolUse` / `PostToolUse` / `Stop` blocks into `.claude/settings.json`. Idempotent — re-run after `git pull` to upgrade.
+Set `DASHCLAW_BASE_URL`, `DASHCLAW_API_KEY`, and optionally `DASHCLAW_HOOK_MODE=enforce`. Full details in [`hooks/README.md`](hooks/README.md).
 
-Set `DASHCLAW_BASE_URL`, `DASHCLAW_API_KEY`, and (optionally) `DASHCLAW_HOOK_MODE=enforce`. Every tool call becomes a governed, replayable decision record. See [hooks/README.md](hooks/README.md) for the full guide and [docs/ANALYTICS-ROLLOUT.md](docs/ANALYTICS-ROLLOUT.md) for the token-capture data flow.
+### 4. OpenClaw plugin
 
-### Option 4: Use the SDK (full control)
-
-For custom agents where you want precise control over what gets governed:
-
-```bash
-npm install dashclaw    # Node.js
-pip install dashclaw    # Python
-```
-
-The 4-step governance loop — Guard, Record, Verify, Outcome — is covered in the [Quickstart](#quickstart) below.
-
-For framework-specific step-by-step guides (Claude Code, OpenAI Agents SDK, LangGraph, CrewAI), visit [`/connect`](https://dashclaw.io/connect) on your DashClaw instance.
-
-### Option 5: OpenClaw plugin (framework-native)
-
-For agents built on the [OpenClaw](https://github.com/openclaw) framework, `@dashclaw/openclaw-plugin` wires governance directly into the lifecycle:
+For agents built on [OpenClaw](https://github.com/openclaw), [`@dashclaw/openclaw-plugin`](./packages/openclaw-plugin) wires governance into the lifecycle directly.
 
 ```bash
 npm install @dashclaw/openclaw-plugin
 ```
 
-It intercepts `PreToolUse` / `PostToolUse`, calls `guard` / `record` / `waitForApproval` automatically, and ships a `HOOK.md` pack the `openclaw` CLI installs. Tool-classification vocabulary aligns with DashClaw guard action types so policies behave consistently whether the call came from a plugin, a hook, or a direct SDK call. See [`packages/openclaw-plugin/README.md`](./packages/openclaw-plugin/README.md).
+It intercepts tool-use, calls guard/record/waitForApproval, and ships a `HOOK.md` the `openclaw` CLI installs. Tool-classification vocabulary aligns with DashClaw guard action types so policies behave consistently across plugin, hook, and SDK paths.
 
----
+### 5. Direct REST API and webhooks
 
-## What is DashClaw?
+Every governance primitive is reachable as HTTP. The OpenAPI spec for the stable contract lives at [`docs/openapi/critical-stable.openapi.json`](./docs/openapi/critical-stable.openapi.json). The full route inventory is at [`docs/api-inventory.md`](./docs/api-inventory.md). Webhooks for `signal.detected`, `decision.created`, `action.created`, `lost_confirmation`, and the rest of the event catalog are configurable per org.
 
-DashClaw is not observability. It is **control before execution**.
+### 6. Platform-intelligence skill (optional add-on)
 
-AI agents generate actions from goals and context. They do not follow deterministic code paths. Therefore debugging alone is insufficient. **Agents require governance.**
-
-DashClaw provides decision infrastructure to:
-* Intercept risky agent actions before execution.
-* Enforce policy checks (risk thresholds, approval requirements, action blocks).
-* Require human approval (HITL) for sensitive operations.
-* Record verifiable decision evidence for compliance and audit.
-* Govern external API calls through the capability registry.
-* Run multi-step workflows with governance at every step.
-
----
-
-## MCP Server
-
-The [`@dashclaw/mcp-server`](./mcp-server) package exposes DashClaw governance over Model Context Protocol.
-
-**8 tools:**
-
-| Tool | Purpose |
-|---|---|
-| `dashclaw_guard` | Evaluate policies before risky actions |
-| `dashclaw_record` | Log actions to audit trail |
-| `dashclaw_invoke` | Execute governed capabilities |
-| `dashclaw_capabilities_list` | Discover available APIs |
-| `dashclaw_policies_list` | See active governance policies |
-| `dashclaw_wait_for_approval` | Wait for human approval |
-| `dashclaw_session_start` | Register agent session |
-| `dashclaw_session_end` | Close agent session |
-
-**4 resources:**
-
-| URI | Description |
-|---|---|
-| `dashclaw://policies` | Active policy set |
-| `dashclaw://capabilities` | Available capabilities and health |
-| `dashclaw://agent/{agent_id}/history` | Recent action history |
-| `dashclaw://status` | Instance health and metrics |
-
-**Dual transport:** `stdio` for local agents (Claude Code, Claude Desktop) via the npm package; Streamable HTTP at `/api/mcp` for remote agents (Managed Agents, custom).
-
-### Governance Skill
-
-The `dashclaw-governance` skill teaches agents the governance protocol via progressive disclosure — risk assessment thresholds, guard decision handling, session lifecycle, and capability invocation. Pair it with the MCP server for best results:
+The [`dashclaw-platform-intelligence`](./public/downloads/dashclaw-platform-intelligence/) bundle teaches an AI agent the DashClaw API surface, env var contract, and troubleshooting playbook through progressive disclosure. Drop it into `.claude/skills/` or upload it to a Managed Agent and the agent self-instruments.
 
 ```bash
-# Upload the governance skill (returns a skill ID for use with Managed Agents)
-node scripts/upload-skill.mjs
+cp -r public/downloads/dashclaw-platform-intelligence .claude/skills/
 ```
-
-The skill is at [`public/downloads/dashclaw-governance/`](./public/downloads/dashclaw-governance/).
 
 ---
 
-## Platform Overview
+## Quick start
+
+### 10-second demo
+
+```bash
+npx dashclaw-demo
+```
+
+Spins up a local demo runtime, fires a simulated high-risk deployment, lets DashClaw block it, and opens Decision Replay in your browser. No setup, no accounts.
+
+### Real agent in 8 minutes (SDK path)
+
+```bash
+npm install dashclaw   # or: pip install dashclaw
+```
+
+```javascript
+import { DashClaw, GuardBlockedError, ApprovalDeniedError } from 'dashclaw';
+
+const claw = new DashClaw({
+  baseUrl: process.env.DASHCLAW_BASE_URL,
+  apiKey: process.env.DASHCLAW_API_KEY,
+  agentId: 'my-agent',
+});
+
+// 1. Guard
+const decision = await claw.guard({ action_type: 'deploy', risk_score: 80 });
+
+// 2. Record
+const action = await claw.createAction({
+  action_type: 'deploy',
+  declared_goal: 'Ship release 2.13.4 to production',
+});
+
+// 3. Verify reasoning basis
+await claw.recordAssumption({
+  action_id: action.action_id,
+  assumption: 'Tests passed on the candidate commit',
+});
+
+// 4. Outcome (durable, retry-safe)
+try {
+  // ...do the real work...
+  await claw.reportActionSuccess(action.action_id, 'Deployed 2.13.4');
+} catch (err) {
+  await claw.reportActionFailure(action.action_id, err.message);
+}
+```
+
+Python uses the same shape with `snake_case`. Full reference: [`sdk/README.md`](./sdk/README.md). Step-by-step walkthrough: [`QUICK-START.md`](./QUICK-START.md).
+
+---
+
+## Deploy
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fucsandman%2FDashClaw&env=DATABASE_URL,DASHCLAW_API_KEY,ENCRYPTION_KEY,NEXTAUTH_SECRET,NEXTAUTH_URL,CRON_SECRET,DASHCLAW_LOCAL_ADMIN_PASSWORD&envDescription=Required%20DashClaw%20configuration.%20See%20.env.example%20for%20details.&envLink=https%3A%2F%2Fgithub.com%2Fucsandman%2FDashClaw%2Fblob%2Fmain%2F.env.example&project-name=my-dashclaw&repository-name=my-dashclaw&products=%5B%7B%22type%22%3A%22integration%22%2C%22integrationSlug%22%3A%22neon%22%2C%22productSlug%22%3A%22neon%22%2C%22protocol%22%3A%22storage%22%7D%5D&skippable-integrations=1)
+
+**$0 to deploy.** Vercel free tier plus Neon free tier. Click the button, add the Neon integration when prompted, fill in the env vars listed in [`.env.example`](./.env.example). The schema migration runs as part of the build, so there is no manual migration step.
+
+### After deploy
+
+1. **Open the app** at `https://your-app.vercel.app` and sign in.
+2. **Copy the integration snippet** from Mission Control. It pre-fills your base URL and gives you a one-click API key.
+3. **Run it.** `node --env-file=.env demo.js` from any client environment and watch the governed action land in your decisions ledger.
+
+### Optional
+
+- **Live decision stream.** Add [Upstash Redis](https://upstash.com) credentials (`UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`) to get cross-instance event replay. Without it, Mission Control uses in-memory events, which is fine for getting started but does not persist across serverless invocations.
+- **Hosted trial mode.** If you want DashClaw itself to mint trial workspaces (operator deployments only), follow [`docs/hosted-deployment-runbook.md`](./docs/hosted-deployment-runbook.md). That path needs Turnstile, cleanup secrets, and an operator-managed cron.
+- **Self-host without Vercel.** A Dockerfile and standalone `next start` path are available; see [`Dockerfile`](./Dockerfile). The schema migration in `scripts/auto-migrate.mjs` is idempotent and safe to re-run.
+
+---
+
+## Durable execution finality (v2.13.3)
+
+Approved actions now carry a terminal outcome separate from their lifecycle status. Five states, one-shot transitions, repository-level enforcement:
+
+| State | Meaning |
+|---|---|
+| `pending` | Approved, no outcome reported yet. |
+| `completed` | Finished successfully. Set by the agent. |
+| `partial` | Started but did not finish. Set by the agent with a progress payload. |
+| `failed` | Attempted and errored. Set by the agent with an error message. |
+| `lost_confirmation` | Timeout exceeded without a report. Set by the cron sweep. |
+
+```javascript
+// Retry-safe poll before re-trying any approved action
+const outcome = await claw.getActionOutcome(actionId);
+switch (outcome.status) {
+  case 'pending':           /* still in flight, wait */ break;
+  case 'completed':         /* already executed, skip */ break;
+  case 'failed':            /* safe to retry */ break;
+  case 'lost_confirmation': /* sweep gave up, safe to retry */ break;
+  case 'partial':           /* clean up then retry */ break;
+}
+
+// Make the create itself retry-safe
+const key = claw.deriveIdempotencyKey({
+  agent_id: 'deploy-bot', action_type: 'deploy', scope: 'prod-us-east', request_id,
+});
+await claw.createAction({ /* ... */, idempotency_key: key });
+```
+
+`POST /api/actions/[actionId]/outcome` is one-shot: the first call wins, every subsequent POST returns 409 with `current_status`. A daily Vercel cron (hourly externally on Pro or via GitHub Actions) marks stale pending rows as `lost_confirmation` and emits a `signal.detected` event so subscribed webhooks know to investigate. Full spec: [`docs/architecture/durable-execution-finality.md`](./docs/architecture/durable-execution-finality.md).
+
+---
+
+## Platform overview
+
+Every screenshot below is a live surface in the running app, not a marketing render.
 
 <div align="center">
 
-**Mission Control** — Real-time strategic posture, decision timeline, and intervention feed.
+**Mission Control.** Strategic posture, decision stream, and live intervention feed.
 
 <img src="public/images/screenshots/Mission Control.png" alt="Mission Control" width="1000" />
 
 <br /><br />
 
-**Approval Queue** — Human-in-the-loop intervention with risk scores and one-click Allow / Deny.
+**Approval Queue.** Human-in-the-loop intervention with risk score, matched policies, and one-click allow or deny.
 
 <img src="public/images/screenshots/Approvals.png" alt="Approval Queue" width="1000" />
 
 <br /><br />
 
-**Guard Policies** — Declarative rules that govern agent behavior before actions execute.
+**Policy Builder.** Declarative shields that govern agent behavior before actions execute.
 
-<img src="public/images/screenshots/policies.png" alt="Guard Policies" width="1000" />
+<img src="public/images/screenshots/Policies.png" alt="Policy Builder" width="1000" />
 
 <br /><br />
 
-**Drift Detection** — Statistical behavioral drift analysis with critical alerts when agents deviate from baselines.
+**Assumption Tracking.** Every action carries its declared assumptions. Drift checks surface when an assumption is invalidated by later evidence.
 
-<img src="public/images/screenshots/Assumptions.png" alt="Drift Detection" width="1000" />
+<img src="public/images/screenshots/Assumptions.png" alt="Assumption Tracking" width="1000" />
 
 </div>
 
----
-
-## Market Intelligence Demo
-
-Seed a full-stack governance demo with one command — knowledge collections, capabilities, policies, model strategy, and a 5-step workflow:
-
-```bash
-node scripts/seed-demo-capabilities.mjs
-```
-
-| What's Seeded | Details |
-|---|---|
-| Knowledge Collection | 3 strategy documents (roadmap, competitors, markets) |
-| Capabilities | 5 real HTTP APIs at different risk levels |
-| Policies | 3 guard policies (auto-allow, warn, require approval) |
-| Model Strategy | Balanced analysis strategy (Claude Sonnet) |
-| Workflow Template | 5-step "Daily Market Briefing" |
-
-Open **Workflows**, find "Daily Market Briefing", and click **Run**. Watch Mission Control light up as each step executes — knowledge search, API fetches, LLM analysis, and a publish step that pauses for human approval. See [DEMO.md](DEMO.md) for the full walkthrough.
+> **Asset note for maintainers.** The four screenshots above are current. Other surfaces with usable assets in [`public/images/screenshots/`](public/images/screenshots/) include Decisions, Agents, Signals, Activity, Compliance, Audit Log, Analytics, Webhooks, Integrations, and Settings. The hero screencast (`demo-gif2.gif`) currently has no destination URL; remove or repoint when a fresh recording exists.
 
 ---
 
-## Quickstart
+## Safety and governance model
 
-### 1. Install the SDK
+DashClaw is not observability. It is control before execution. The model:
 
-**Node.js:**
-```bash
-npm install dashclaw
-```
+1. **Every agent action is evaluated against active policies before the action runs.** Policies are declarative; the policy builder ships with eight pre-built safety switches (Deploy Gate, Risk Threshold, Rate Limiter, and others), an AI generator, and YAML import.
+2. **Sensitive actions require human approval.** Approvals route to the dashboard, the CLI (`@dashclaw/cli`), the mobile PWA at `/approve`, Telegram, or Discord. Same action, any surface.
+3. **Every decision is recorded.** The decisions ledger is replayable: declared goal, reasoning, matched policies, assumptions, signals, and the final outcome.
+4. **Outcomes are durable.** The five-state finality machine guarantees no silent double-execute on retry, and the sweep catches lost confirmations.
+5. **Evidence is exportable.** Compliance evidence bundles (signed manifests, JSON exports) are produced from real action records, not synthetic fixtures.
+6. **Prompt injection scanning is on by default.** Declared goals are scanned for injection patterns. Hits are blocked at guard time.
 
-**Python:**
-```bash
-pip install dashclaw
-```
-
-### 2. Create the Client
-
-**Node.js:**
-```javascript
-import { DashClaw, GuardBlockedError, ApprovalDeniedError } from 'dashclaw';
-
-const claw = new DashClaw({
-  baseUrl: process.env.DASHCLAW_BASE_URL, // or your DashClaw instance URL
-  apiKey: process.env.DASHCLAW_API_KEY,
-  agentId: 'my-agent'
-});
-```
-
-**Python:**
-```python
-from dashclaw.client import DashClaw, GuardBlockedError, ApprovalDeniedError
-import os
-
-claw = DashClaw(
-    base_url=os.environ["DASHCLAW_BASE_URL"],
-    api_key=os.environ.get('DASHCLAW_API_KEY'),
-    agent_id='my-agent'
-)
-```
-
-### 3. Run Your First Governed Action
-
-The minimal governance loop wraps your agent's real-world actions:
-
-```javascript
-// 1. Guard -> "Can I do X?"
-const decision = await claw.guard({
-  action_type: 'database_query',
-  risk_score: 50
-});
-
-// 2. Record -> "I am attempting X."
-const action = await claw.createAction({
-  action_type: 'database_query',
-  declared_goal: 'Extract user statistics'
-});
-
-// 3. Verify -> "I believe Y is true while doing X."
-await claw.recordAssumption({
-  action_id: action.action_id,
-  assumption: 'The database is read-only for these credentials'
-});
-
-try {
-  // Execute the real action here...
-  // ...
-
-  // 4. Outcome -> "X finished with result Z."
-  await claw.updateOutcome(action.action_id, { status: 'completed' });
-} catch (error) {
-  await claw.updateOutcome(action.action_id, { status: 'failed', error_message: error.message });
-}
-```
+The full architecture map lives in [`PROJECT_DETAILS.md`](./PROJECT_DETAILS.md). The runtime API contract is in [`docs/architecture/runtime-api.md`](./docs/architecture/runtime-api.md).
 
 ---
 
-## CLI Approval Channel
+## Approvals beyond the dashboard
 
-Approve agent actions from the terminal without opening a browser. This is the primary interface for developers using Claude Code, Codex, Gemini CLI, or any terminal-first workflow.
+| Surface | Purpose | Setup |
+|---|---|---|
+| Dashboard (`/approvals`) | Primary inbox for operators in front of a browser. | None. |
+| CLI (`@dashclaw/cli`) | Terminal-first inbox. `dashclaw approvals`, `dashclaw approve <id>`. | `npm install -g @dashclaw/cli` |
+| Mobile PWA (`/approve`) | Phone-first allow/deny with risk score and policy. Add to home screen. | None. |
+| Telegram | Inline Approve/Reject buttons in an admin chat. | Optional. See [`docs/telegram-setup.md`](./docs/telegram-setup.md). |
+| Discord | Inline Approve/Deny on DM embeds. | Optional. See `.env.example` (Discord section). |
 
-```bash
-npm install -g @dashclaw/cli
-```
-
-```bash
-dashclaw approvals              # interactive inbox for all pending actions
-dashclaw approve <actionId>     # approve a specific action
-dashclaw deny <actionId> --reason "Outside change window"
-```
-
-When an agent calls `waitForApproval()`, the SDK prints the action ID, risk score, and replay link to stdout. Approve from any terminal and the agent unblocks instantly via SSE.
-
-### Mobile PWA (`/approve`)
-
-Every DashClaw instance ships a phone-first approval surface at `/approve`. Add it to the home screen and incoming approvals appear with the triggering policy, risk score, and one-tap Allow / Deny. Same `/api/approvals/:id` endpoint as the dashboard and CLI — `waitForApproval` unblocks within ~1 second regardless of which surface resolved the action. See [`app/approve/`](./app/approve/).
-
-### Doctor (diagnose & auto-fix)
-
-Validate your DashClaw setup and apply safe fixes automatically. Runs checks across database, configuration, auth, deployment, SDK reachability, and governance.
-
-```bash
-# Self-hosters: check the local instance (full access — env, DB, filesystem)
-npm run doctor                  # rich terminal output, auto-fixes what it can
-npm run doctor -- --json        # JSON for CI
-npm run doctor -- --no-fix      # diagnose only
-npm run doctor -- --category database,config
-
-# Agent developers: check a remote instance via the CLI
-dashclaw doctor                 # auto-fix what it can via /api/doctor/fix
-dashclaw doctor --no-fix        # diagnose only
-dashclaw doctor --json          # JSON for CI
-dashclaw logout                 # remove saved config
-```
-
-**First-run config.** On first use, the CLI prompts for `DASHCLAW_BASE_URL` and `DASHCLAW_API_KEY` (masked) and offers to save them to `~/.dashclaw/config.json` (mode `600`). Env vars always override the saved values. In CI, set them as env vars — the CLI detects non-TTY and errors out cleanly instead of hanging on stdin.
-
-The doctor auto-fixes missing secrets, runs pending migrations, creates a default governance policy, and writes CORS settings. Every non-passing check gets an inline next-step hint telling you exactly what to do. Env var values are never exposed in the output.
+`waitForApproval()` unblocks within roughly one second regardless of which surface resolves the action. All surfaces hit the same `/api/approvals/[actionId]` endpoint.
 
 ---
 
-## Telegram approvals (optional)
-
-When an action lands on `pending_approval`, DashClaw can ping a Telegram admin chat with inline Approve / Reject buttons. One tap on your phone resolves the action.
-
-### Setup
-
-1. Create a bot with [@BotFather](https://t.me/BotFather) and grab the bot token.
-2. Message your bot once; open `https://api.telegram.org/bot<TOKEN>/getUpdates` and copy your numeric `chat.id`.
-3. Generate a webhook secret: `openssl rand -hex 32`.
-4. Set `TELEGRAM_BOT_TOKEN`, `TELEGRAM_ADMIN_CHAT_ID`, `TELEGRAM_WEBHOOK_SECRET`, and `TELEGRAM_APPROVER_ORG_ID` in your deploy's env.
-5. Register the webhook:
-
-   ```bash
-   npm run telegram:register -- --url https://my-dashclaw.vercel.app
-   ```
-
-6. (Optional) Smoke test the round-trip:
-
-   ```bash
-   DASHCLAW_API_KEY=oc_live_… npm run telegram:verify -- --base https://my-dashclaw.vercel.app
-   ```
-
-   Tap Approve on your phone — the script prints the round-trip time.
-
-Telegram is an *additional* approval channel. The dashboard, CLI, and mobile PWA continue to work. If Telegram is unreachable, DashClaw warn-logs and moves on; approvals stay available via the other surfaces.
-
-See also: `.env.example` (Telegram section), `app/lib/telegramApprovals.js`, `app/api/telegram/webhook/route.js`, `scripts/telegram-register-webhook.mjs`, `scripts/telegram-verify-loop.mjs`, `docs/telegram-setup.md` for the detailed walkthrough.
-
----
-
-## Beyond the Basics
+## Beyond the basics
 
 | Feature | Description | Docs |
 |---|---|---|
-| Drift Detection | Monitors reasoning and metric drift across sessions, surfaces signals on deviation | [SDK: Learning Loop](./sdk/README.md#learning-loop) |
-| Recovery Recipes | 6 built-in recipes mapping signals to remediations and auto-actions | [SDK: Recovery](./sdk/README.md#learning-loop) |
-| Scoring Profiles | Multi-dimensional evaluation with weighted composites and auto-calibration | [SDK: Scoring](./sdk/README.md#scoring-profiles) |
-| Learning Loop | Guard responses include historical context — score averages, drift status, patterns | [SDK: Learning](./sdk/README.md#learning-loop) |
-| Prompt Injection Scanning | On by default. Detects and blocks injection patterns in declared goals | [SDK: Security](./sdk/README.md#security-scanning) |
-| Session Lifecycle | Automatic tracking with stall detection, recovery, and graduated autonomy | [CHANGELOG](./CHANGELOG.md) |
-| Capability Registry | Full CRUD, HTTP invocation, health monitoring, and per-agent access rules | [Capability Runtime](./sdk/README.md#capability-runtime) |
-| Workflow Engine | 3 step types, variable substitution, `continue_on_failure`, resume from checkpoint | [DEMO.md](./DEMO.md) |
-| Agent Profiles | Per-agent governance dashboard: trust posture, decision history, assumptions, active signals, and policies at `/agents/[agentId]` | [PROJECT_DETAILS.md](./PROJECT_DETAILS.md) |
-| Policy Builder | Shields-first policy experience with 8 pre-built safety switches (Deploy Gate, Risk Threshold, Rate Limiter, etc.), AI generator, YAML import, and guard activity feed at `/policies` | [PROJECT_DETAILS.md](./PROJECT_DETAILS.md) |
-| Analytics | Cost trends, action volume, agent and type breakdowns, policy enforcement stats, and token efficiency with 7d/30d/90d time ranges at `/analytics` | [PROJECT_DETAILS.md](./PROJECT_DETAILS.md) |
+| Drift detection | Statistical reasoning and metric drift across sessions. | [SDK: Learning Loop](./sdk/README.md#learning-loop) |
+| Capability registry | Wrap real HTTP APIs with per-agent access rules and health monitoring. | [Capability Runtime](./sdk/README.md#capability-runtime) |
+| Workflow engine | Compose governance into multi-step runs with variables, `continue_on_failure`, and resume from checkpoint. | [DEMO.md](./DEMO.md) |
+| Scoring profiles | Multi-dimensional evaluation with weighted composites and auto-calibration. | [SDK: Scoring](./sdk/README.md#scoring-profiles) |
+| Recovery recipes | Six built-in recipes mapping signals to remediations. | [SDK: Learning](./sdk/README.md#learning-loop) |
+| Agent profiles | Per-agent governance dashboard at `/agents/[agentId]`. | [PROJECT_DETAILS.md](./PROJECT_DETAILS.md) |
+| Analytics | Cost trends, action volume, agent and type breakdowns, policy enforcement stats, and token efficiency at `/analytics`. | [PROJECT_DETAILS.md](./PROJECT_DETAILS.md) |
+| Doctor | `npm run doctor` (local) or `dashclaw doctor` (remote). Auto-fixes missing migrations, default policy, CORS, and more. | [SDK README](./sdk/README.md) |
 
 ---
 
-## Local SDK Testing
+## Free while we grow
 
-```bash
-export DASHCLAW_API_KEY="your-api-key"
-export DASHCLAW_BASE_URL="http://localhost:3000"
-python scripts/test-sdk-agent.py --full
-```
+DashClaw is free during the launch ramp. The Pro tier unlocks when our Claude Code integration milestone hits 50 verified instances in the wild, measured by a public SQL query over `action_records` where `agent_id ILIKE 'claude-code%'`, excluding internal orgs, with a 90-day recency window. Progress is published at [dashclaw.io/pricing](https://dashclaw.io/pricing). The runtime (hook, policy pack, approvals, audit ledger, semantic guard, durable finality) stays free forever for solo developers.
 
 ---
 
 ## Documentation
 
-- [SDK README](./sdk/README.md) — Canonical reference for the `dashclaw` npm package (80 v2 methods + canonical HITL flow)
-- [SDK Parity Matrix](./docs/sdk-parity.md) — Node v2 vs Node legacy vs Python surface coverage
-- [Architecture](./PROJECT_DETAILS.md) — System map, boundary rules, and SDK surface inventory
-- [Runtime API](./docs/architecture/runtime-api.md) — The minimal core governance endpoints
-- [Roadmap](./ROADMAP.md) — What's shipped, in progress, and exploring
-- [CHANGELOG](./CHANGELOG.md) — Detailed release history
+- [Quick start](./QUICK-START.md): eight-minute walkthrough from clone to first governed action.
+- [Node SDK reference](./sdk/README.md): canonical reference for the `dashclaw` npm package.
+- [Python SDK reference](./sdk-python/README.md): same surface, snake_case.
+- [SDK parity matrix](./docs/sdk-parity.md): Node v2 vs Python coverage.
+- [Runtime API contract](./docs/architecture/runtime-api.md): minimal core governance endpoints.
+- [API inventory](./docs/api-inventory.md): full route list with maturity tier.
+- [Durable execution finality spec](./docs/architecture/durable-execution-finality.md): five-state machine, sweep, idempotency.
+- [Architecture map](./PROJECT_DETAILS.md): system boundaries and SDK surface inventory.
+- [Roadmap](./ROADMAP.md): shipped, in progress, exploring.
+- [Changelog](./CHANGELOG.md): release history.
+- [Security policy](./SECURITY.md): coordinated disclosure.
 
 ---
 
 ## License
 
-[MIT](LICENSE)
+[MIT](./LICENSE)
 
 <div align="center">
   <br />
