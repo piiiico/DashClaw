@@ -16,6 +16,7 @@ import { ProofPanel } from './components/ProofPanel.js';
 import { ApiKeyReveal } from './components/ApiKeyReveal.js';
 import ModelPricingPanel from './components/ModelPricingPanel.js';
 import AgentIdentityPanel from './components/AgentIdentityPanel';
+import WorkspaceIdentityPanel from './components/WorkspaceIdentityPanel.js';
 import PageLayout from '../components/PageLayout';
 import { LogIn } from 'lucide-react';
 
@@ -67,6 +68,30 @@ export default async function SettingsPage({ searchParams }) {
   const proofDownloadHref = liveProofToken
     ? `/api/setup/proof?proof=${encodeURIComponent(liveProofToken)}&download=1`
     : '/api/setup/proof?download=1';
+
+  // Workspace identity for the right-column panel. x-org-id and x-user-id
+  // are injected by middleware after auth. Operators need these values
+  // for integration setup (Discord, Telegram, webhooks) and there is no
+  // other place in the dashboard that surfaces them today.
+  const workspaceOrgId = headerStore.get('x-org-id') || '';
+  const workspaceUserId = headerStore.get('x-user-id') || '';
+  let workspaceOrg = null;
+  if (viewer.isAuthenticated && workspaceOrgId) {
+    try {
+      const sql = getSql();
+      const rows = await sql`
+        SELECT id, name, slug, plan
+        FROM organizations
+        WHERE id = ${workspaceOrgId}
+        LIMIT 1
+      `;
+      if (rows.length > 0) {
+        workspaceOrg = rows[0];
+      }
+    } catch (err) {
+      console.warn('[settings] Failed to load workspace org context:', err?.message || err);
+    }
+  }
 
   const maskedApiKey = getMaskedApiKey(process.env);
   const protocol = host.startsWith('localhost') || host.startsWith('127.0.0.1') ? 'http' : 'https';
@@ -178,6 +203,15 @@ export default async function SettingsPage({ searchParams }) {
 
           {/* Right Column: Quick Access */}
           <div className="space-y-6">
+            {/* Workspace identity (org_id, user_id, etc. for integration setup) */}
+            <WorkspaceIdentityPanel
+              orgId={workspaceOrgId}
+              orgName={workspaceOrg?.name}
+              orgSlug={workspaceOrg?.slug}
+              orgPlan={workspaceOrg?.plan}
+              userId={workspaceUserId}
+            />
+
             {/* Quick Links */}
             <div className="rounded-xl border border-border bg-surface-secondary p-5">
               <div className="mb-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">
