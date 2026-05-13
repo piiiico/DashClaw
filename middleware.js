@@ -1338,6 +1338,8 @@ export const config = {
     '/calendar/:path*',
     '/security',
     '/security/:path*',
+    '/code-sessions',
+    '/code-sessions/:path*',
     '/tokens',
     '/tokens/:path*',
     '/setup',
