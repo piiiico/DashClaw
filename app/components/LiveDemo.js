@@ -83,15 +83,26 @@ function parseMatchedPolicies(value) {
   return [];
 }
 
-function replayHrefFor(actionId) {
-  // The persisted demo action id replays cleanly. Random ar_demo_* ids minted
-  // by demoGuardPost are not persisted, so for those we link visitors to /demo
-  // which seeds the cookie and lands them on mission control.
-  if (actionId === 'ar_demo_deploy_block_001') {
-    return `/replay/${actionId}`;
+// The persisted demo action id replays cleanly because demoActionDetail
+// has a deterministic fixture for it. Every other guard call returns a
+// random ar_demo_* id that the demo middleware never persists, so the
+// /replay/<id> page would 404. The audit ledger at /decisions is public
+// in demo mode and is the most useful fallback.
+const PERSISTED_REPLAY_ID = 'ar_demo_deploy_block_001';
+
+function destinationFor(decision) {
+  if (decision?.decision === 'require_approval' && decision.action_id === PERSISTED_REPLAY_ID) {
+    return { href: `/replay/${decision.action_id}`, label: 'View this decision' };
   }
-  return '/demo';
+  return { href: '/decisions', label: 'View the decision ledger' };
 }
+
+// After a require_approval resolves locally, the server replay still
+// shows APPROVAL REQUIRED because the demo /api/actions/:id/approve
+// endpoint is not wired (the local Approve / Deny click is component
+// state only). Routing visitors to /decisions instead avoids that
+// staleness while still landing them on a real demo page.
+const RESOLVED_DESTINATION = { href: '/decisions', label: 'View the decision ledger' };
 
 export default function LiveDemo() {
   const [preset, setPreset] = useState(PRESETS[1]);
@@ -175,7 +186,7 @@ export default function LiveDemo() {
       aria-labelledby="live-demo-heading"
       className="py-20 px-6 border-t border-border bg-surface-secondary/40 scroll-mt-20"
     >
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <div className="text-center mb-10">
           <p className="text-[11px] font-mono uppercase tracking-[0.2em] text-text-tertiary mb-3">
             Live demo, real demo endpoints
@@ -212,7 +223,7 @@ export default function LiveDemo() {
                     aria-checked={active}
                     onClick={() => selectPreset(p)}
                     className={[
-                      'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
+                      'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
                       'focus:outline-none focus:ring-2 focus:ring-brand/60 focus:ring-offset-2 focus:ring-offset-surface-tertiary',
                       active
                         ? 'bg-brand-subtle text-brand border border-border-active'
@@ -241,15 +252,15 @@ export default function LiveDemo() {
                 value={goal}
                 onChange={(e) => setGoal(e.target.value)}
                 rows={3}
-                className="w-full text-sm font-mono text-text-primary bg-surface-primary border border-border rounded-lg px-3 py-2 leading-relaxed resize-none focus:outline-none focus:border-border-active focus:ring-2 focus:ring-brand/30"
+                className="w-full text-base font-mono text-text-primary bg-surface-primary border border-border rounded-lg px-3 py-3 leading-relaxed resize-none focus:outline-none focus:border-border-active focus:ring-2 focus:ring-brand/30"
                 disabled={isBusy}
               />
 
-              <div className="mt-4">
+              <div className="mt-5">
                 <div className="text-[10px] font-mono uppercase tracking-[0.18em] text-text-tertiary mb-2">
                   SDK call
                 </div>
-                <pre className="text-xs leading-relaxed font-mono text-text-secondary bg-surface-primary border border-border rounded-lg p-3 overflow-x-auto">
+                <pre className="text-sm leading-relaxed font-mono text-text-secondary bg-surface-primary border border-border rounded-lg p-4 overflow-x-auto">
                   <code>{codePreview}</code>
                 </pre>
               </div>
@@ -259,7 +270,7 @@ export default function LiveDemo() {
                 onClick={handleEvaluate}
                 disabled={isBusy}
                 className={[
-                  'mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold transition-all',
+                  'mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-lg text-base font-bold transition-all',
                   'focus:outline-none focus:ring-2 focus:ring-brand/60 focus:ring-offset-2 focus:ring-offset-surface-secondary',
                   isBusy
                     ? 'bg-brand/60 text-white cursor-not-allowed'
@@ -268,12 +279,12 @@ export default function LiveDemo() {
               >
                 {isEvaluating ? (
                   <>
-                    <Loader2 size={16} className="animate-spin" aria-hidden="true" />
+                    <Loader2 size={18} className="animate-spin" aria-hidden="true" />
                     Evaluating
                   </>
                 ) : (
                   <>
-                    <Play size={16} aria-hidden="true" />
+                    <Play size={18} aria-hidden="true" />
                     Evaluate
                   </>
                 )}
@@ -322,7 +333,7 @@ export default function LiveDemo() {
           </div>
         </div>
 
-        <p className="mt-4 text-[11px] text-text-tertiary text-center max-w-2xl mx-auto leading-relaxed">
+        <p className="mt-5 text-sm text-text-tertiary text-center max-w-2xl mx-auto leading-relaxed">
           Guard decisions are live against the demo deployment. Approval clicks resolve locally so visitors can explore the flow without an account; your own instance routes them to <code className="font-mono text-text-secondary">/api/actions/:id/approve</code>.
         </p>
       </div>
@@ -332,9 +343,9 @@ export default function LiveDemo() {
 
 function IdlePanel() {
   return (
-    <div className="rounded-xl border border-dashed border-border bg-surface-primary/40 p-5 text-sm text-text-tertiary">
+    <div className="rounded-xl border border-dashed border-border bg-surface-primary/40 p-5 text-base text-text-tertiary">
       <div className="flex items-start gap-3">
-        <Sparkles size={16} className="text-text-tertiary mt-0.5 shrink-0" aria-hidden="true" />
+        <Sparkles size={18} className="text-text-tertiary mt-0.5 shrink-0" aria-hidden="true" />
         <p className="leading-relaxed">
           Pick an action and click Evaluate. The result will appear here, including the matched policy, the risk score, and what a human approver would see.
         </p>
@@ -345,9 +356,9 @@ function IdlePanel() {
 
 function EvaluatingPanel() {
   return (
-    <div className="rounded-xl border border-border bg-surface-primary/40 p-5 text-sm text-text-secondary">
+    <div className="rounded-xl border border-border bg-surface-primary/40 p-5 text-base text-text-secondary">
       <div className="flex items-center gap-3">
-        <Loader2 size={16} className="text-brand animate-spin" aria-hidden="true" />
+        <Loader2 size={18} className="text-brand animate-spin" aria-hidden="true" />
         <span>Asking the governance runtime...</span>
       </div>
     </div>
@@ -357,27 +368,27 @@ function EvaluatingPanel() {
 function DecisionBadge({ decision }) {
   if (decision === 'allow') {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider bg-status-success-subtle text-status-success border border-status-success/30">
-        <ShieldCheck size={12} aria-hidden="true" /> Allow
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-status-success-subtle text-status-success border border-status-success/30">
+        <ShieldCheck size={14} aria-hidden="true" /> Allow
       </span>
     );
   }
   if (decision === 'block') {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider bg-status-error-subtle text-status-error border border-status-error/30">
-        <ShieldAlert size={12} aria-hidden="true" /> Block
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-status-error-subtle text-status-error border border-status-error/30">
+        <ShieldAlert size={14} aria-hidden="true" /> Block
       </span>
     );
   }
   if (decision === 'require_approval') {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider bg-brand-subtle text-brand border border-border-active">
-        <Clock size={12} aria-hidden="true" /> Require approval
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-brand-subtle text-brand border border-border-active">
+        <Clock size={14} aria-hidden="true" /> Require approval
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider bg-surface-tertiary text-text-secondary border border-border">
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-surface-tertiary text-text-secondary border border-border">
       {decision || 'unknown'}
     </span>
   );
@@ -386,30 +397,30 @@ function DecisionBadge({ decision }) {
 function DecisionPanel({ decision, onResolve, onReset }) {
   const policies = parseMatchedPolicies(decision.matched_policies);
   const requiresApproval = decision.decision === 'require_approval';
-  const isAllow = decision.decision === 'allow';
-  const isBlock = decision.decision === 'block';
+  const showFooter = decision.decision === 'allow' || decision.decision === 'block';
+  const dest = destinationFor(decision);
 
   return (
     <div className="rounded-xl border border-border bg-surface-primary/40 overflow-hidden">
-      <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+      <div className="px-5 py-4 border-b border-border flex items-center justify-between">
         <DecisionBadge decision={decision.decision} />
-        <span className="text-[11px] font-mono text-text-tertiary">
+        <span className="text-xs font-mono text-text-tertiary">
           risk {decision.risk_score ?? '-'}
         </span>
       </div>
-      <div className="px-4 py-4 space-y-3">
+      <div className="px-5 py-5 space-y-4">
         {decision.reason ? (
-          <p className="text-sm text-text-secondary leading-relaxed">{decision.reason}</p>
+          <p className="text-base text-text-secondary leading-relaxed">{decision.reason}</p>
         ) : null}
 
         {policies.length ? (
-          <div className="text-xs">
-            <span className="text-text-tertiary uppercase tracking-wider font-mono">Matched policies </span>
+          <div className="text-sm">
+            <span className="text-text-tertiary uppercase tracking-wider font-mono text-xs">Matched policies </span>
             <span className="ml-1 inline-flex flex-wrap gap-1.5 align-middle">
               {policies.map((p) => (
                 <span
                   key={p}
-                  className="px-2 py-0.5 rounded bg-surface-tertiary border border-border text-text-secondary font-mono"
+                  className="px-2 py-0.5 rounded bg-surface-tertiary border border-border text-text-secondary font-mono text-xs"
                 >
                   {p}
                 </span>
@@ -419,41 +430,41 @@ function DecisionPanel({ decision, onResolve, onReset }) {
         ) : null}
 
         {requiresApproval ? (
-          <div className="mt-2 rounded-lg border border-border-active bg-brand-subtle/60 p-3">
-            <p className="text-xs text-text-secondary mb-3 leading-relaxed">
+          <div className="mt-2 rounded-lg border border-border-active bg-brand-subtle/60 p-4">
+            <p className="text-sm text-text-secondary mb-3 leading-relaxed">
               A human approver decides what happens next. In production this routes to your dashboard, CLI, mobile PWA, or Telegram bot.
             </p>
             <div className="flex flex-col sm:flex-row gap-2">
               <button
                 type="button"
                 onClick={() => onResolve('allow')}
-                className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-bold bg-status-success text-white hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-status-success/60 focus:ring-offset-2 focus:ring-offset-surface-secondary"
+                className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-md text-sm font-bold bg-status-success text-white hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-status-success/60 focus:ring-offset-2 focus:ring-offset-surface-secondary"
               >
-                <Check size={14} aria-hidden="true" /> Approve
+                <Check size={16} aria-hidden="true" /> Approve
               </button>
               <button
                 type="button"
                 onClick={() => onResolve('deny')}
-                className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-bold bg-status-error text-white hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-status-error/60 focus:ring-offset-2 focus:ring-offset-surface-secondary"
+                className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-md text-sm font-bold bg-status-error text-white hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-status-error/60 focus:ring-offset-2 focus:ring-offset-surface-secondary"
               >
-                <X size={14} aria-hidden="true" /> Deny
+                <X size={16} aria-hidden="true" /> Deny
               </button>
             </div>
           </div>
         ) : null}
 
-        {(isAllow || isBlock) && decision.action_id ? (
-          <div className="pt-2 flex items-center justify-between gap-3 text-xs">
+        {showFooter ? (
+          <div className="pt-2 flex items-center justify-between gap-3 text-sm">
             <Link
-              href={replayHrefFor(decision.action_id)}
+              href={dest.href}
               className="inline-flex items-center gap-1.5 text-brand hover:text-brand-hover transition-colors font-medium"
             >
-              View this decision <ArrowRight size={12} aria-hidden="true" />
+              {dest.label} <ArrowRight size={14} aria-hidden="true" />
             </Link>
             <button
               type="button"
               onClick={onReset}
-              className="text-text-tertiary hover:text-text-primary transition-colors font-mono"
+              className="text-text-tertiary hover:text-text-primary transition-colors font-mono text-xs"
             >
               Reset
             </button>
@@ -468,39 +479,39 @@ function ResolvedPanel({ decision, resolution, onReset }) {
   const approved = resolution === 'allow';
   return (
     <div className="rounded-xl border border-border bg-surface-primary/40 overflow-hidden">
-      <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+      <div className="px-5 py-4 border-b border-border flex items-center justify-between">
         <span
           className={[
-            'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider border',
+            'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider border',
             approved
               ? 'bg-status-success-subtle text-status-success border-status-success/30'
               : 'bg-status-error-subtle text-status-error border-status-error/30',
           ].join(' ')}
         >
-          {approved ? <Check size={12} aria-hidden="true" /> : <X size={12} aria-hidden="true" />}
+          {approved ? <Check size={14} aria-hidden="true" /> : <X size={14} aria-hidden="true" />}
           {approved ? 'Approved by you' : 'Denied by you'}
         </span>
-        <span className="text-[11px] font-mono text-text-tertiary">
+        <span className="text-xs font-mono text-text-tertiary">
           risk {decision.risk_score ?? '-'}
         </span>
       </div>
-      <div className="px-4 py-4 space-y-3 text-sm text-text-secondary leading-relaxed">
+      <div className="px-5 py-5 space-y-4 text-base text-text-secondary leading-relaxed">
         <p>
           {approved
             ? 'Your approval would unblock the agent within about a second. The action carries the approver identity and the resolution reason into the audit trail.'
             : 'The agent receives a denial event, throws ApprovalDeniedError, and never touches the real system. The denial reason lands in the audit trail next to the original guard decision.'}
         </p>
-        <div className="pt-1 flex items-center justify-between gap-3 text-xs">
+        <div className="pt-1 flex items-center justify-between gap-3 text-sm">
           <Link
-            href={replayHrefFor(decision.action_id)}
+            href={RESOLVED_DESTINATION.href}
             className="inline-flex items-center gap-1.5 text-brand hover:text-brand-hover transition-colors font-medium"
           >
-            View this decision <ArrowRight size={12} aria-hidden="true" />
+            {RESOLVED_DESTINATION.label} <ArrowRight size={14} aria-hidden="true" />
           </Link>
           <button
             type="button"
             onClick={onReset}
-            className="text-text-tertiary hover:text-text-primary transition-colors font-mono"
+            className="text-text-tertiary hover:text-text-primary transition-colors font-mono text-xs"
           >
             Reset
           </button>
