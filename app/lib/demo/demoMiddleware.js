@@ -1,3 +1,5 @@
+import { getHomepageDemoActions } from '../homepageDemoActions';
+
 // Deterministic demo data for the 1-Minute Governance Test
 const DEMO_TEST_ACTION_ID = 'ar_demo_deploy_block_001';
 const demoTestAction = {
@@ -243,6 +245,64 @@ export function demoActionDetail(fixtures, actionId) {
     }
 
     return { action: dynamicAction, open_loops, assumptions, decision, decision_reason };
+  }
+
+  // Marketing home demo scenarios. The /decisions ledger prepends three
+  // synthetic rows with stable ids (act_demo_home_sync_001,
+  // act_demo_home_deploy_001, act_demo_home_block_001) backed by
+  // getHomepageDemoActions in app/lib/homepageDemoActions.js. This branch
+  // mirrors that data into the detail endpoint so /decisions/<id> and
+  // /replay/<id> resolve instead of 404ing. resolution=null because the
+  // server cannot read the visitor's localStorage; the deploy entry
+  // therefore renders as pending_approval, which is the correct natural
+  // state of that scenario.
+  if (actionId.startsWith('act_demo_home_')) {
+    const homepageActions = getHomepageDemoActions(null);
+    const action = homepageActions.find((a) => a.action_id === actionId);
+    if (!action) return null;
+
+    const decisionByStatus = {
+      completed: 'allow',
+      pending_approval: 'require_approval',
+      blocked: 'block',
+      cancelled: 'block',
+    };
+    const decision = decisionByStatus[action.status] || 'allow';
+
+    const assumptionByActionId = {
+      act_demo_home_sync_001: {
+        assumption: 'Hourly metric syncs are reversible and below the risk threshold.',
+        basis: 'Risk threshold classifier',
+        validated: 1,
+      },
+      act_demo_home_deploy_001: {
+        assumption: 'Production deploys require human approval before execution.',
+        basis: 'Production deploy policy',
+        validated: 1,
+      },
+      act_demo_home_block_001: {
+        assumption: 'The agent has authorization to drop production tables.',
+        basis: 'Production data protection policy',
+        validated: 0,
+      },
+    };
+    const asm = assumptionByActionId[actionId];
+
+    return {
+      action,
+      open_loops: [],
+      assumptions: [
+        {
+          assumption_id: `asm_${action.action_id}_1`,
+          action_id: action.action_id,
+          assumption: asm.assumption,
+          basis: asm.basis,
+          validated: asm.validated,
+        },
+      ],
+      decision,
+      decision_reason: action.reasoning || action.output_summary || 'Demo scenario from the marketing home page.',
+    };
   }
 
   if (actionId.startsWith('act_pipe_')) {
