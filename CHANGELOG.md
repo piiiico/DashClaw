@@ -27,7 +27,24 @@ are prefixed with the package name.
 
 ## [Unreleased]
 
-_Nothing here yet. Next release will collect changes since 2.14.0._
+### AgentLens absorption — Phase 1: pure module port
+
+Ported the AgentLens (`C:\Projects\RevenueGoalExperiment-V3`) algorithmic core into DashClaw as `app/lib/claude-code/`. All modules are ESM, dependency-injected, and free of DB / HTTP / fs side-effects (except `optimal-files/apply.js` which holds the CLI-only disk writes). 149 new vitest tests pass under `__tests__/unit/claude-code/`, comfortably above the ≥140 floor stated in the phase exit gate.
+
+- **`parser.js`** — v2 JSONL dedup (`requestId → message.id → row uuid`), redacted `safeTarget`, refactored per addendum #2 into an internal `_processLine` helper plus two wrappers: `parseSessionFile(filePath, { mtime })` (streams from disk via `readline`) and `parseSessionLines(lines, { mtime, sourceFile })` (in-memory, used by the future ingest endpoint).
+- **`pricing.js`** — 4-column pricing table (input, output, cache_write, cache_read) preserving the raw cache signal that the 2-column `app/lib/billing.js` folds into `tokens_in`.
+- **Optimizer** — `optimizer.js` + 7 rules in `rules/`: `MODEL_DOWNSHIFT`, `CACHE_WRITE_BLOAT`, `STUCK_LOOP_COST`, `SUBAGENT_PROMPT_BLOAT`, `REPEATED_READ_CYCLES`, `BAD_CACHE_HIT`, `CONTEXT_GAPS_DETECTED`. `buildSessionContext` dropped — context assembly moves to the repository layer in Phase 2.
+- **Signals** — `repeated-runs.js` (confidence-labelled), `insights.js` (stuck loops, cost anomaly, cache health).
+- **Alerts** — `alerts.js` with `PLAN_FIT` renamed to `MULTI_PROJECT_USAGE` (DashClaw has no free-tier upsell concept). SQLite SCHEMA + `persistAlerts`/`listAlerts`/`markAllRead` dropped; those move to the repository in Phase 2. Kept `detectForSession`, `detectCacheCrater`, `digestMarkdown`, `resolveScope`.
+- **Goals / autopsy** — `goals.js` (`classifyOutcome`, `extractGoalText`, `buildAutopsy`, `topMoneyBuckets`). `buildAutopsyFromDb` dropped.
+- **Memo** — `memo.js` reshaped to accept pre-loaded `sessions` / `priorSessions` / `findings` / `stuckLoopTotal` instead of running queries. `writeMemoToDisk` dropped (disk writes are CLI-only).
+- **Subagent ROI** — `subagent-roi.js` (`computeRoi`, `recommend`). `buildInvocationsFromDb` dropped.
+- **Audit** — `audit.js` reshaped to `buildAudit({ session, livedParse })`. The route layer is responsible for loading the stored row and (optionally) supplying a live re-parse for top-requests provenance.
+- **CLAUDE.md generator** — `claudemd.js` reshaped to accept a `projectFiles: Map<relPath, content>` parameter instead of reading from disk. Missing entries produce a stub summary. Pure.
+- **Hook generators** — `hooks-gen.js`. Renamed `agentlens-*` filenames to `dashclaw-*` and the state directory to `~/.claude-dashclaw`.
+- **Optimal Files** — 10 modules under `optimal-files/`. `analyze.js` and `bundle.js` refactored per A4: dependency-injected aggregates (`projectMedianCost`, `similarSessionCount`), `projectFiles` map instead of fs probes, and an `existingPaths: Set<string>` argument for `overwriteRisk` instead of `fs.existsSync`. `writeBundleSelections` is now the pure `planBundleSelections`; the original side-effecting `applyBundlePlan` and `listGeneratedFiles` moved to a CLI-only `optimal-files/apply.js`. `previewBundleMerge` takes an `existingContent` string parameter.
+
+The new tree imports as `@/lib/claude-code/...` thanks to the existing vitest alias. No schema changes, no API routes, no UI yet — those land in Phases 2 onwards.
 
 ## SDK [2.12.0] - 2026-05-13 — Durable execution finality wrappers
 
