@@ -130,11 +130,13 @@ cp -r hooks/dashclaw_agent_intel .claude/hooks/`,
     {
       number: 4,
       title: 'Set environment variables',
-      summary: 'Claude Code reads these from the shell or a .env file in the project root.',
+      summary: 'Claude Code reads these from the shell or a .env file in the project root. DASHCLAW_GUARD_UNAVAILABLE_POLICY defaults to block, which fails closed if the guard is unreachable after three retry attempts. Set it to warn for development if you would rather proceed with a stderr warning when the guard is down.',
       codeTitle: '.env',
       codeBody: `DASHCLAW_BASE_URL=${baseUrl}
 DASHCLAW_API_KEY=oc_live_...
-DASHCLAW_HOOK_MODE=enforce`,
+DASHCLAW_HOOK_MODE=enforce
+DASHCLAW_GUARD_UNAVAILABLE_POLICY=block
+DASHCLAW_GUARD_TIMEOUT=5`,
     },
     {
       number: 5,

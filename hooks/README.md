@@ -147,7 +147,8 @@ The Stop hook also auto-closes any action still in `status='running'` at turn en
 | `DASHCLAW_RISK_THRESHOLD` | No | `60` | Commands with risk above this threshold get elevated risk scores |
 | `DASHCLAW_PERMISSION_MODE` | No | `danger` | Permission mode passed to the guard for policy evaluation |
 | `DASHCLAW_GOVERNED_CATEGORIES` | No | `execution,orchestration,file_io,interactive,mcp` | Comma-separated list of tool categories that are governed |
-| `DASHCLAW_GUARD_TIMEOUT` | No | `2.5` | Timeout in seconds for guard API requests |
+| `DASHCLAW_GUARD_TIMEOUT` | No | `5` | Timeout in seconds for each guard API request attempt. The hook retries up to three times before declaring the guard unreachable. |
+| `DASHCLAW_GUARD_UNAVAILABLE_POLICY` | No | `block` | Behavior when the guard is unreachable after retries. `block` fails closed (exits 2). `warn` prints a stderr warning and proceeds. `allow` proceeds silently. All three paths still write the orphan log for backfill. |
 | `DASHCLAW_APPROVAL_TIMEOUT` | No | `30` | Timeout in seconds when polling for operator approval |
 
 ## Behavior
@@ -161,7 +162,27 @@ The PreToolUse hook calls `POST /api/guard` before each governed tool executes. 
 
 The PostToolUse hook runs after execution completes. It updates the action record with the outcome (completed or failed) and a summary of the output (up to 500 characters). The hook sends structured `outcome_metadata` including `exit_code` and `error_type` when applicable. Errors are classified into four types: `timeout`, `permission`, `not_found`, and `runtime`. The posttool hook never blocks.
 
-If DashClaw is unreachable or misconfigured, both hooks exit silently and Claude Code operates normally. The hooks never crash your session.
+If DashClaw is unconfigured (`DASHCLAW_BASE_URL` or `DASHCLAW_API_KEY` missing), the hooks exit silently and Claude Code operates normally. If DashClaw is configured but unreachable, behavior is governed by `DASHCLAW_GUARD_UNAVAILABLE_POLICY` (default `block`). See the Failure safety section below for the full policy table. The hooks never crash your session.
+
+## Failure safety
+
+If `DASHCLAW_BASE_URL` or `DASHCLAW_API_KEY` is unset, both scripts exit 0 silently and Claude Code is never blocked.
+
+If DashClaw is configured but the API is unreachable (timeout, network error, 5xx) after three retry attempts with exponential backoff, behavior is governed by `DASHCLAW_GUARD_UNAVAILABLE_POLICY`:
+
+| Policy value | Behavior on unreachable guard |
+|---|---|
+| `block` (default) | Hook exits 2, the tool call is blocked, the action is logged to `~/.dashclaw/orphan-actions.jsonl` for backfill when the guard recovers. |
+| `warn` | Hook prints a stderr warning, the action is logged, the tool proceeds. |
+| `allow` | Hook is silent, the action is logged, the tool proceeds. |
+
+The `block` default is correct for production governance posture: destructive actions should not proceed without a guard check. For development environments or single operator setups, `warn` is often the better choice. Set it in your environment:
+
+```bash
+export DASHCLAW_GUARD_UNAVAILABLE_POLICY=warn
+```
+
+The hooks retry transient failures up to three times with 0.4 second and 0.8 second backoff between attempts before concluding the guard is unreachable, so most cold start blips on Vercel and Neon are absorbed automatically.
 
 ## Approving from the terminal
 
@@ -210,7 +231,8 @@ Unknown tools that do not match any configured category fail-safe to governed.
 
 - Tools in ungoverned categories: **search** (Read, Glob, Grep) and **system** (EnterPlanMode, ExitPlanMode, Config, Sleep) pass through without evaluation by default.
 - Any tool call when `DASHCLAW_BASE_URL` or `DASHCLAW_API_KEY` is not set.
-- Any tool call when DashClaw is unreachable (network error, timeout, server error).
+
+Configured but unreachable behavior is controlled by `DASHCLAW_GUARD_UNAVAILABLE_POLICY` (see Failure safety above). With the default `block` policy, unreachable means the tool call is denied, not waived.
 
 ## Replay
 

@@ -20,6 +20,10 @@ import urllib.request
 import urllib.error
 from datetime import datetime, timezone
 
+# Import the shared HTTP retry helper from the sibling intel package.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from dashclaw_agent_intel.http_client import request_with_retry
+
 # ---------------------------------------------------------------------------
 # Load .env file (C:/Projects/DashClaw/.env) before reading config.
 # Values already in the environment take precedence.
@@ -147,7 +151,13 @@ def _extract_outcome(tool_response):
 # ---------------------------------------------------------------------------
 
 def _patch_action(action_id, body):
-    """PATCH /api/actions/{action_id}. Failures log (if DEBUG) and return."""
+    """PATCH /api/actions/{action_id}. Failures log (if DEBUG) and return.
+
+    Retries up to three times with 0.4s then 0.8s backoff between
+    attempts so a Vercel or Neon cold start does not drop the action's
+    terminal status, which would otherwise leave the row stuck in
+    `running` and pollute Mission Control as a zombie.
+    """
     url = BASE_URL + "/api/actions/" + action_id
     data = json.dumps(body).encode("utf-8")
     req = urllib.request.Request(
@@ -160,7 +170,7 @@ def _patch_action(action_id, body):
         method="PATCH",
     )
     try:
-        urllib.request.urlopen(req, timeout=2)
+        request_with_retry(req, timeout=2)
     except urllib.error.HTTPError as e:
         _log("patch_failed", "action_id=" + action_id + " HTTP " + str(e.code))
     except Exception as e:

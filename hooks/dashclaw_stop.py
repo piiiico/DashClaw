@@ -26,6 +26,10 @@ import tempfile
 import urllib.request
 import urllib.error
 
+# Import the shared HTTP retry helper from the sibling intel package.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from dashclaw_agent_intel.http_client import request_with_retry
+
 # ---------------------------------------------------------------------------
 # Env loading — pretool/posttool load from .env.local + .env before reading
 # DASHCLAW_* config; stop needs the same so tokens actually PATCH back
@@ -293,8 +297,8 @@ def _post_action(body):
         method="POST",
     )
     try:
-        with urllib.request.urlopen(req, timeout=3) as resp:
-            payload = json.loads(resp.read().decode("utf-8"))
+        body_bytes = request_with_retry(req, timeout=3)
+        payload = json.loads(body_bytes.decode("utf-8"))
     except urllib.error.HTTPError as e:
         _log_hook_error("POST /api/actions -> HTTP " + str(e.code))
         return None
@@ -358,7 +362,7 @@ def _patch_action(action_id, body):
         method="PATCH",
     )
     try:
-        urllib.request.urlopen(req, timeout=3)
+        request_with_retry(req, timeout=3)
     except urllib.error.HTTPError as e:
         _log_hook_error("PATCH " + action_id + " -> HTTP " + str(e.code))
     except Exception as e:

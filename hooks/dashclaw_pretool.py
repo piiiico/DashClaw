@@ -65,6 +65,7 @@ _load_dotenv()
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from dashclaw_agent_intel import classify_bash, scan_file_operation, classify_tool, McpHealthMonitor
+from dashclaw_agent_intel.http_client import request_with_retry
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -76,7 +77,7 @@ AGENT_ID = os.environ.get("DASHCLAW_AGENT_ID") or "claude-code"
 HOOK_MODE = os.environ.get("DASHCLAW_HOOK_MODE") or "enforce"
 WORKSPACE = os.environ.get("DASHCLAW_WORKSPACE") or os.getcwd()
 PERMISSION_MODE = os.environ.get("DASHCLAW_PERMISSION_MODE") or "danger"
-GUARD_TIMEOUT = float(os.environ.get("DASHCLAW_GUARD_TIMEOUT") or "2.5")
+GUARD_TIMEOUT = float(os.environ.get("DASHCLAW_GUARD_TIMEOUT") or "5")
 APPROVAL_TIMEOUT = float(os.environ.get("DASHCLAW_APPROVAL_TIMEOUT") or "30")
 GUARD_UNAVAILABLE_POLICY = (os.environ.get("DASHCLAW_GUARD_UNAVAILABLE_POLICY") or "block").lower()
 
@@ -113,7 +114,12 @@ def log(msg):
 # ---------------------------------------------------------------------------
 
 def api_request(method, path, body=None, timeout=None):
-    """Make an HTTP request to the DashClaw API. Returns parsed JSON or None."""
+    """Make an HTTP request to the DashClaw API. Returns parsed JSON or None.
+
+    Retries up to three times total with 0.4s then 0.8s backoff between
+    attempts so a Vercel or Neon cold start does not block the tool call.
+    See dashclaw_agent_intel.http_client for the retry shape.
+    """
     if timeout is None:
         timeout = GUARD_TIMEOUT
     url = BASE_URL + path
@@ -128,8 +134,8 @@ def api_request(method, path, body=None, timeout=None):
         method=method,
     )
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            return json.loads(resp.read().decode("utf-8"))
+        body_bytes = request_with_retry(req, timeout=timeout)
+        return json.loads(body_bytes.decode("utf-8"))
     except Exception:
         return None
 
@@ -523,24 +529,24 @@ def handle_guard_unavailable(context, tool_use_id):
 
     # Observe mode always proceeds (by definition — observe is "warn loudly, don't block")
     if mode == "observe":
-        log("[DashClaw] [observe] Guard unreachable at " + BASE_URL + " — action logged to ~/.dashclaw/orphan-actions.jsonl for backfill")
+        log("[DashClaw] [observe] Guard unreachable at " + BASE_URL + " after 3 attempts. Action logged to ~/.dashclaw/orphan-actions.jsonl for backfill.")
         log("Action: " + context.get("declared_goal", "unknown"))
         sys.exit(0)
 
     # Enforce mode: behavior governed by DASHCLAW_GUARD_UNAVAILABLE_POLICY
     if policy == "allow":
-        log("[DashClaw] Guard unreachable at " + BASE_URL + " — proceeding (DASHCLAW_GUARD_UNAVAILABLE_POLICY=allow)")
+        log("[DashClaw] Guard unreachable at " + BASE_URL + " after 3 attempts; proceeding (DASHCLAW_GUARD_UNAVAILABLE_POLICY=allow).")
         log("Action logged to ~/.dashclaw/orphan-actions.jsonl for backfill.")
         sys.exit(0)
 
     if policy == "warn":
-        log("[DashClaw] \u26a0 Guard unreachable at " + BASE_URL + " — proceeding anyway (DASHCLAW_GUARD_UNAVAILABLE_POLICY=warn)")
+        log("[DashClaw] \u26a0 Guard unreachable at " + BASE_URL + " after 3 attempts; proceeding anyway (DASHCLAW_GUARD_UNAVAILABLE_POLICY=warn).")
         log("Action logged to ~/.dashclaw/orphan-actions.jsonl for backfill.")
         log("Set DASHCLAW_GUARD_UNAVAILABLE_POLICY=block to fail closed instead.")
         sys.exit(0)
 
     # Default: block (fail closed)
-    log("[DashClaw] Blocked: guard at " + BASE_URL + " is unreachable")
+    log("[DashClaw] Blocked: guard at " + BASE_URL + " is unreachable after 3 attempts.")
     log("Action: " + context.get("declared_goal", "unknown"))
     log("This is by design — destructive actions must not proceed without governance.")
     log("To change: set DASHCLAW_GUARD_UNAVAILABLE_POLICY=warn or =allow (not recommended).")
