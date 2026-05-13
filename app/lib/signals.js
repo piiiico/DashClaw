@@ -128,12 +128,16 @@ export async function computeSignals(orgId, filterAgentId, sql) {
   const signals = [];
 
   for (const presence of stalePresence) {
+    const minutesSilent = Math.max(
+      10,
+      Math.round((Date.now() - new Date(presence.last_heartbeat_at).getTime()) / 60000),
+    );
     signals.push({
       type: 'agent_silent',
       severity: presence.current_task_id ? 'red' : 'amber',
       label: `Agent heartbeat lost: ${presence.agent_name || presence.agent_id}`,
-      detail: `This agent has not sent a heartbeat for over 10 minutes. Last heartbeat: ${new Date(presence.last_heartbeat_at).toLocaleString()}.`,
-      help: presence.current_task_id 
+      detail: `This agent has not sent a heartbeat for ${minutesSilent} minutes.`,
+      help: presence.current_task_id
         ? 'Agent is silent while assigned to an active task. Investigate potential process crash or network failure.'
         : 'Agent heartbeat lost. It may be offline or unable to reach the dashboard.',
       agent_id: presence.agent_id,
