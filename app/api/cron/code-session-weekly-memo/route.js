@@ -9,6 +9,7 @@ import { generateMemo } from '../../../lib/claude-code/memo.js';
 import {
   getProjectSessionsChronological,
   saveMemo,
+  listProjectsWithSessions,
 } from '../../../lib/repositories/code-sessions.repository.js';
 
 export async function GET(request) {
@@ -22,11 +23,7 @@ export async function GET(request) {
 
     const sql = getSql();
     const summary = { projects_scanned: 0, memos_saved: 0 };
-    const projects = await sql`
-      SELECT p.id AS project_id, p.org_id, p.slug
-      FROM code_projects p
-      WHERE EXISTS (SELECT 1 FROM code_sessions s WHERE s.project_id = p.id)
-    `;
+    const projects = await listProjectsWithSessions(sql);
     const now = new Date();
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000).toISOString();

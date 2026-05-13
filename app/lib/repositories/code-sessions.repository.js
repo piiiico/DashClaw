@@ -478,6 +478,70 @@ export async function saveMemo(sql, orgId, projectId, isoWeekTag, bodyMd) {
 }
 
 // ---------------------------------------------------------------------------
+// Cross-route helpers (consumed by /api/cron/*, /api/learning/*, etc.)
+// All raw SQL lives here per the route-level SQL guardrail.
+// ---------------------------------------------------------------------------
+
+export async function listProjectsWithSessions(sql) {
+  return await sql`
+    SELECT p.id AS project_id, p.org_id, p.slug
+    FROM code_projects p
+    WHERE EXISTS (SELECT 1 FROM code_sessions s WHERE s.project_id = p.id)
+  `;
+}
+
+export async function getProjectTokenTotalsForRange(sql, projectId, startedAtFrom, startedAtTo) {
+  const rows = await sql`
+    SELECT
+      COALESCE(SUM(input_tokens), 0)::bigint AS input_tokens,
+      COALESCE(SUM(cache_read_tokens), 0)::bigint AS cache_read_tokens,
+      COALESCE(SUM(cache_creation_tokens), 0)::bigint AS cache_creation_tokens
+    FROM code_sessions
+    WHERE project_id = ${projectId}
+      AND started_at >= ${startedAtFrom}
+      AND started_at <  ${startedAtTo}
+  `;
+  return {
+    input_tokens: Number(rows[0]?.input_tokens) || 0,
+    cache_read_tokens: Number(rows[0]?.cache_read_tokens) || 0,
+    cache_creation_tokens: Number(rows[0]?.cache_creation_tokens) || 0,
+  };
+}
+
+export async function listSubagentToolUseAttribution(sql, orgId, { projectId = null } = {}) {
+  return await sql`
+    SELECT tu.name,
+           COALESCE(ar.cost_estimate, 0) AS cost_usd,
+           COALESCE(ar.duration_ms, 0) AS duration_ms,
+           CASE WHEN ar.status = 'completed' THEN true
+                WHEN ar.status = 'failed'    THEN false
+                ELSE NULL END AS success
+    FROM code_session_tool_uses tu
+    JOIN code_sessions s ON s.id = tu.session_id
+    LEFT JOIN action_records ar ON ar.action_id = tu.action_id AND ar.org_id = ${orgId}
+    WHERE s.org_id = ${orgId}
+      AND (${projectId}::text IS NULL OR s.project_id = ${projectId})
+  `;
+}
+
+export async function aggregateCodeSignalsByKind(sql, orgId, sinceIso) {
+  return await sql`
+    SELECT
+      sig.kind,
+      COUNT(*)::int AS occurrence_count,
+      COALESCE(SUM(sig.savings_usd), 0)::numeric AS total_savings_usd,
+      COUNT(DISTINCT s.id)::int AS session_count
+    FROM code_session_signals sig
+    JOIN code_sessions s ON s.id = sig.session_id
+    WHERE s.org_id = ${orgId}
+      AND s.created_at >= ${sinceIso}
+      AND sig.kind <> 'repeated_run'
+    GROUP BY sig.kind
+    ORDER BY total_savings_usd DESC, occurrence_count DESC
+  `;
+}
+
+// ---------------------------------------------------------------------------
 // Optimal Files manifests
 // ---------------------------------------------------------------------------
 

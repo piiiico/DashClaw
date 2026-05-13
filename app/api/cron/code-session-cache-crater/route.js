@@ -6,7 +6,11 @@ import { NextResponse } from 'next/server';
 import { getSql } from '../../../lib/db.js';
 import { timingSafeCompare } from '../../../lib/timing-safe.js';
 import { detectCacheCrater } from '../../../lib/claude-code/alerts.js';
-import { insertAlerts } from '../../../lib/repositories/code-sessions.repository.js';
+import {
+  insertAlerts,
+  listProjectsWithSessions,
+  getProjectTokenTotalsForRange,
+} from '../../../lib/repositories/code-sessions.repository.js';
 
 function isoWeekStart(date) {
   const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
@@ -35,44 +39,12 @@ export async function GET(request) {
     const priorWeekStart = new Date(isoWeekStart(now).getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const nextWeekStart = new Date(isoWeekStart(now).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
-    const projects = await sql`
-      SELECT p.id AS project_id, p.org_id, p.slug
-      FROM code_projects p
-      WHERE EXISTS (SELECT 1 FROM code_sessions s WHERE s.project_id = p.id)
-    `;
+    const projects = await listProjectsWithSessions(sql);
 
     for (const proj of projects) {
       summary.projects_scanned += 1;
-      const thisWeekRows = await sql`
-        SELECT
-          COALESCE(SUM(input_tokens), 0)::bigint AS input_tokens,
-          COALESCE(SUM(cache_read_tokens), 0)::bigint AS cache_read_tokens,
-          COALESCE(SUM(cache_creation_tokens), 0)::bigint AS cache_creation_tokens
-        FROM code_sessions
-        WHERE project_id = ${proj.project_id}
-          AND started_at >= ${thisWeekStart}
-          AND started_at < ${nextWeekStart}
-      `;
-      const priorWeekRows = await sql`
-        SELECT
-          COALESCE(SUM(input_tokens), 0)::bigint AS input_tokens,
-          COALESCE(SUM(cache_read_tokens), 0)::bigint AS cache_read_tokens,
-          COALESCE(SUM(cache_creation_tokens), 0)::bigint AS cache_creation_tokens
-        FROM code_sessions
-        WHERE project_id = ${proj.project_id}
-          AND started_at >= ${priorWeekStart}
-          AND started_at < ${thisWeekStart}
-      `;
-      const thisWeek = {
-        input_tokens: Number(thisWeekRows[0]?.input_tokens) || 0,
-        cache_read_tokens: Number(thisWeekRows[0]?.cache_read_tokens) || 0,
-        cache_creation_tokens: Number(thisWeekRows[0]?.cache_creation_tokens) || 0,
-      };
-      const priorWeek = {
-        input_tokens: Number(priorWeekRows[0]?.input_tokens) || 0,
-        cache_read_tokens: Number(priorWeekRows[0]?.cache_read_tokens) || 0,
-        cache_creation_tokens: Number(priorWeekRows[0]?.cache_creation_tokens) || 0,
-      };
+      const thisWeek = await getProjectTokenTotalsForRange(sql, proj.project_id, thisWeekStart, nextWeekStart);
+      const priorWeek = await getProjectTokenTotalsForRange(sql, proj.project_id, priorWeekStart, thisWeekStart);
       const alert = detectCacheCrater({ thisWeek, priorWeek, project: proj });
       if (!alert) continue;
       const inserted = await insertAlerts(sql, proj.org_id, [{ ...alert, scope: 'project' }], {

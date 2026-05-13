@@ -4,6 +4,7 @@ export const revalidate = 0;
 import { NextResponse } from 'next/server';
 import { getSql } from '../../../lib/db.js';
 import { getOrgId } from '../../../lib/org.js';
+import { aggregateCodeSignalsByKind } from '../../../lib/repositories/code-sessions.repository.js';
 
 const VALID_PERIODS = new Set(['7d', '30d', '90d']);
 
@@ -21,23 +22,8 @@ export async function GET(request) {
 
   const sql = getSql();
   const orgId = getOrgId(request);
-
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
-
-  const rows = await sql`
-    SELECT
-      sig.kind,
-      COUNT(*)::int AS occurrence_count,
-      COALESCE(SUM(sig.savings_usd), 0)::numeric AS total_savings_usd,
-      COUNT(DISTINCT s.id)::int AS session_count
-    FROM code_session_signals sig
-    JOIN code_sessions s ON s.id = sig.session_id
-    WHERE s.org_id = ${orgId}
-      AND s.created_at >= ${since}
-      AND sig.kind <> 'repeated_run'
-    GROUP BY sig.kind
-    ORDER BY total_savings_usd DESC, occurrence_count DESC
-  `;
+  const rows = await aggregateCodeSignalsByKind(sql, orgId, since);
 
   return NextResponse.json({
     period,
