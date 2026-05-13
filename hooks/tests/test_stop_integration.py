@@ -148,6 +148,9 @@ def _run_hook(stdin_data, env_overrides=None, timeout=10):
     for key in list(env.keys()):
         if key.startswith("DASHCLAW_"):
             del env[key]
+    # Disable .env walking so the operator's local .env cannot leak into the
+    # subprocess and override test expectations. Production hooks never set this.
+    env["DASHCLAW_DISABLE_DOTENV"] = "1"
     if env_overrides:
         env.update(env_overrides)
     proc = subprocess.run(

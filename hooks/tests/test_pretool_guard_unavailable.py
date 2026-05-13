@@ -52,6 +52,9 @@ def _run_hook(home_dir, tmp_dir, env_overrides=None, timeout=15):
     for key in list(env.keys()):
         if key.startswith("DASHCLAW_"):
             del env[key]
+    # Disable .env walking so the operator's local .env cannot leak into the
+    # subprocess and override test expectations. Production hooks never set this.
+    env["DASHCLAW_DISABLE_DOTENV"] = "1"
 
     env["HOME"] = home_dir
     env["USERPROFILE"] = home_dir

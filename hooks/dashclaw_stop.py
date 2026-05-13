@@ -39,6 +39,11 @@ from dashclaw_agent_intel.http_client import request_with_retry
 # ---------------------------------------------------------------------------
 
 def _load_dotenv():
+    # Test isolation escape hatch: when DASHCLAW_DISABLE_DOTENV is set, skip
+    # the .env walk entirely so the subprocess only sees env vars the test
+    # explicitly passed in. Never set this in production.
+    if os.environ.get("DASHCLAW_DISABLE_DOTENV"):
+        return
     # Walk up from the hook file's directory looking for env files. Works
     # whether this runs from hooks/X.py (project root is one parent up) or
     # from .claude/hooks/X.py after install-hooks runs (project root is two

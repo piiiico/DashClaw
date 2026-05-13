@@ -150,6 +150,7 @@ The Stop hook also auto-closes any action still in `status='running'` at turn en
 | `DASHCLAW_GUARD_TIMEOUT` | No | `5` | Timeout in seconds for each guard API request attempt. The hook retries up to three times before declaring the guard unreachable. |
 | `DASHCLAW_GUARD_UNAVAILABLE_POLICY` | No | `block` | Behavior when the guard is unreachable after retries. `block` fails closed (exits 2). `warn` prints a stderr warning and proceeds. `allow` proceeds silently. All three paths still write the orphan log for backfill. |
 | `DASHCLAW_APPROVAL_TIMEOUT` | No | `30` | Timeout in seconds when polling for operator approval |
+| `DASHCLAW_DISABLE_DOTENV` | No | unset | Test isolation escape hatch. When set to any truthy value, the hooks skip the `.env` walk so the subprocess only sees env vars the caller passes in. The hook test suite sets this. **Never set this in production**: it disables the standard `.env.local` and `.env` loading the install flow relies on. |
 
 ## Behavior
 
