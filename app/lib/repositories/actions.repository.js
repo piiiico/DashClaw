@@ -591,6 +591,19 @@ export async function setActionOutcome(sql, orgId, actionId, payload) {
  * The sweep uses the same one-shot gate as setActionOutcome
  * (`outcome_status = 'pending'`), so an agent report racing with the sweep
  * cannot double-terminate.
+ *
+ * Legacy-status guard (added 2026-05-13): the sweep MUST skip actions whose
+ * lifecycle `status` is already terminal (`completed`, `failed`, `cancelled`,
+ * `blocked`). Every existing integration that uses the PATCH-based
+ * `updateOutcome` path (OpenClaw plugin, Claude Code hooks, the SDK helper
+ * by the same name) sets `status` to a terminal value but leaves
+ * `outcome_status='pending'` because they predate the durable-finality
+ * surface. Without this guard, every such action would be re-marked
+ * `lost_confirmation` after the timeout, generating spurious signals and
+ * misleading the dashboard. Treats legacy terminal status as a proxy for
+ * "outcome was implicitly confirmed via the legacy path." Genuinely orphan
+ * actions (status='running' / 'pending' / 'pending_approval' / null) still
+ * sweep as intended.
  */
 export async function sweepLostOutcomesForOrg(sql, orgId, timeoutMinutes) {
   const minutes = Number.isFinite(timeoutMinutes) && timeoutMinutes > 0
@@ -605,6 +618,7 @@ export async function sweepLostOutcomesForOrg(sql, orgId, timeoutMinutes) {
     WHERE org_id = ${orgId}
       AND outcome_status = 'pending'
       AND created_at < NOW() - make_interval(mins => ${minutes})
+      AND (status IS NULL OR status NOT IN ('completed', 'failed', 'cancelled', 'blocked'))
     RETURNING action_id, agent_id, agent_name, action_type, declared_goal, created_at, outcome_at
   `;
   return rows;

@@ -197,6 +197,25 @@ describe('sweepLostOutcomesForOrg', () => {
     const args = sql.mock.calls[0];
     expect(args).toContain(30);
   });
+
+  it('SQL excludes legacy-terminal statuses (completed / failed / cancelled / blocked)', async () => {
+    // The legacy-status guard prevents the sweep from re-marking
+    // PATCH-based completions as lost_confirmation. Concretely, the
+    // generated SQL must reference each of those four status values plus
+    // a NULL allowance so genuinely orphan rows (status IS NULL or
+    // status='running') still sweep.
+    const sql = makeSqlMock([[]]);
+    await sweepLostOutcomesForOrg(sql, 'org_a', 15);
+    const sqlStrings = sql.mock.calls[0][0];
+    expect(Array.isArray(sqlStrings)).toBe(true);
+    const fullSql = sqlStrings.join('');
+    expect(fullSql).toMatch(/status\s+IS\s+NULL/i);
+    expect(fullSql).toMatch(/status\s+NOT\s+IN/i);
+    expect(fullSql).toContain("'completed'");
+    expect(fullSql).toContain("'failed'");
+    expect(fullSql).toContain("'cancelled'");
+    expect(fullSql).toContain("'blocked'");
+  });
 });
 
 describe('listOrgsWithStaleOutcomes', () => {

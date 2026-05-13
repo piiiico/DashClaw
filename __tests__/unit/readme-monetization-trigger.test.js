@@ -6,42 +6,49 @@ const readme = readFileSync(path.resolve('README.md'), 'utf8');
 const lines = readme.split('\n');
 
 describe('README.md — MON-01 commitment (D-03 location 4)', () => {
-  it('contains the exact trigger commitment text', () => {
-    expect(readme).toContain('50 verified Claude Code integrations');
+  // The May 2026 README repositioning moved DashClaw away from Claude-Code-
+  // only framing. Claude Code remains one of several integration paths but
+  // is no longer in the hero. The MON-01 launch-trigger commitment (50
+  // verified Claude Code integrations in the wild) is still tracked, just
+  // surfaced later in the README under "Free while we grow."
+
+  it('contains the launch-trigger commitment (50 verified Claude Code integrations)', () => {
+    // The trigger phrase may be lightly reflowed; both "50 verified Claude
+    // Code integrations" and "50 verified instances" with Claude Code
+    // context nearby are accepted variants.
+    const triggerExact = readme.includes('50 verified Claude Code integrations');
+    const triggerReflowed =
+      readme.includes('Claude Code integration milestone') &&
+      readme.includes('50 verified');
+    expect(triggerExact || triggerReflowed).toBe(true);
   });
 
-  it('trigger first appears AFTER line 50 (Wave-1 parallel safety with Plan 03-01 Task 4)', () => {
-    // Plan 03-01 Task 4 edits README lines 8 and 19 for screencast URL backfill.
-    // Plan 03-03 Task 3 must insert AFTER line 50 to avoid merge collision.
-    let firstMatchLine = -1;
-    for (let i = 0; i < lines.length; i++) {
-      if (lines[i].includes('50 verified Claude Code integrations')) {
-        firstMatchLine = i + 1; // 1-indexed
-        break;
-      }
-    }
-    expect(firstMatchLine).toBeGreaterThan(50);
-  });
-
-  it('check-readme-lead non-regression: first 50 lines still mention Claude Code + guide link', () => {
-    // Replicates scripts/check-readme-lead.mjs inline so this test fails if a
-    // future edit accidentally displaces the Claude-Code-forward lead.
+  it('trigger appears below the hero (not in the first 50 lines)', () => {
+    // The repositioning explicitly demotes Claude-Code-centric copy out of
+    // the hero. The trigger commitment now lives in the "Free while we grow"
+    // section further down.
     const first50 = lines.slice(0, 50).join('\n');
-    expect(first50).toMatch(/claude code/i);
-    expect(first50).toMatch(/\/guides\/claude-code/);
+    expect(first50).not.toMatch(/50 verified.*claude code/i);
   });
 
   it('points at /pricing for progress (live counter URL)', () => {
     expect(readme).toMatch(/\/pricing/);
   });
 
-  it('contains no paywall/buy-CTA language (D-07: commitment, not purchase)', () => {
-    // Only check the *monetization paragraph*, not the whole README — the rest
-    // of the README may legitimately mention commercial concepts elsewhere.
-    // We locate the trigger line and check its paragraph context (±5 lines).
-    const idx = lines.findIndex((l) => l.includes('50 verified Claude Code integrations'));
-    expect(idx).toBeGreaterThanOrEqual(0);
-    const paragraph = lines.slice(Math.max(0, idx - 3), idx + 5).join('\n');
+  it('references action_records + agent_id criterion so the counter is auditable', () => {
+    // The launch-trigger is measurable, not hand-waved. The README documents
+    // the SQL shape so readers can independently verify progress.
+    expect(readme).toMatch(/action_records/);
+    expect(readme).toMatch(/agent_id\s+ILIKE\s+'claude-code/);
+  });
+
+  it('contains no paywall/buy-CTA language near the trigger paragraph', () => {
+    // The trigger is a launch commitment, not a purchase prompt.
+    const triggerIdx = lines.findIndex((l) =>
+      /50 verified Claude Code integrations|Claude Code integration milestone/.test(l)
+    );
+    expect(triggerIdx).toBeGreaterThanOrEqual(0);
+    const paragraph = lines.slice(Math.max(0, triggerIdx - 3), triggerIdx + 5).join('\n');
     expect(paragraph).not.toMatch(/buy now|upgrade now|subscribe|purchase|checkout|pay now/i);
   });
 });

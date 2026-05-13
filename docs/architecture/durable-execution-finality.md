@@ -137,8 +137,11 @@ SET outcome_status = 'lost_confirmation',
     outcome_summary = 'No outcome reported within timeout window'
 WHERE outcome_status = 'pending'
   AND created_at < NOW() - make_interval(mins => $1)
+  AND (status IS NULL OR status NOT IN ('completed', 'failed', 'cancelled', 'blocked'))
 RETURNING id, org_id;
 ```
+
+The legacy-status guard on the last `WHERE` line matters. Existing integrations (the OpenClaw plugin's `after_tool_call`, the Claude Code `dashclaw_posttool.py` hook, every SDK consumer using `claw.updateOutcome(...)`) terminate actions by setting the lifecycle `status` column directly. They predate the durable-finality surface, so they leave `outcome_status='pending'` even when the action genuinely completed. Without the guard, every such action would re-sweep as `lost_confirmation` 15 minutes later, generating misleading signals and badges. The guard treats a terminal `status` as proof that the outcome was implicitly confirmed via the legacy path. Genuinely orphan actions (status `null`, `running`, `pending`, or `pending_approval`) still sweep as intended.
 
 For each newly-marked row, the sweep emits a `signal.detected` realtime event of type `lost_confirmation`. Operators see it surface in `/mission-control` and `/operations` immediately, and webhook subscribers receive a payload.
 

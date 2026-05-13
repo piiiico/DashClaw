@@ -5,7 +5,7 @@ description: DashClaw platform expert for integration, troubleshooting, and gove
 
 # DashClaw Platform Intelligence
 
-**Shape snapshot:** `sha1:02dfff0781049699630654be4ef73505cd84d6a4`
+**Shape snapshot:** `sha1:ab3cf55d8fbb2dcdbeaf0e13c3a6d6ccc3eb8e56`
 **This file is auto-generated.** Do not edit by hand — regenerate with:
 
 ```bash
@@ -30,7 +30,7 @@ If the snapshot below disagrees with a live query, **trust the live query**.
 ## At a Glance
 
 - **183** active API routes across **48** categories
-- **4** required + **119** optional environment variables
+- **4** required + **120** optional environment variables
 - **73** database tables
 
 ## API Surface
@@ -381,6 +381,7 @@ These have fallbacks or only activate specific features.
 - `ALERT_FROM_EMAIL` *(undocumented)*
 - `ALLOWED_ORIGIN` *(undocumented)*
 - `ANTHROPIC_API_KEY` *(undocumented)*
+- `API_INVENTORY_VERIFIED_DATE` *(undocumented)*
 - `API_SECRET` *(undocumented)*
 - `BASE_URL` *(undocumented)*
 - `CI` *(undocumented)*
