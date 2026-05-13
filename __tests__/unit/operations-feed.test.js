@@ -96,6 +96,58 @@ describe('mapSignals', () => {
 
     expect(items[0].severity).toBe('high');
   });
+
+  it('passes detected_at through to timestamp when present', () => {
+    const items = mapSignals([{
+      type: 'high_impact_low_oversight',
+      severity: 'red',
+      label: 'X',
+      detail: 'Y',
+      agent_id: 'a1',
+      detected_at: '2026-04-08T14:00:00Z',
+    }]);
+
+    expect(items[0].timestamp).toBe('2026-04-08T14:00:00Z');
+  });
+
+  it('returns null timestamp when source has no detected_at (no Date.now fallback)', () => {
+    const items = mapSignals([{
+      type: 'integration_mismatch',
+      severity: 'amber',
+      label: 'X',
+      detail: 'Y',
+      agent_id: 'a1',
+    }]);
+
+    expect(items[0].timestamp).toBeNull();
+  });
+});
+
+describe('timestamp fallbacks (no Date.now lies)', () => {
+  it('mapApprovals returns null when source has no timestamps', () => {
+    const items = mapApprovals([{ action_id: 'act_1', agent_id: 'a1', declared_goal: 'G' }]);
+    expect(items[0].timestamp).toBeNull();
+  });
+
+  it('mapFailures returns null when source has no timestamps', () => {
+    const items = mapFailures([{ action_id: 'act_1', agent_id: 'a1', declared_goal: 'G' }]);
+    expect(items[0].timestamp).toBeNull();
+  });
+
+  it('mapCapabilityHealth returns null when last_invocation missing', () => {
+    const items = mapCapabilityHealth([{ capability_id: 'cap_1', name: 'N', status: 'failing' }]);
+    expect(items[0].timestamp).toBeNull();
+  });
+
+  it('mapIntegrationHealth returns null when checked_at missing', () => {
+    const items = mapIntegrationHealth({ openai: { status: 'error', message: 'm' } });
+    expect(items[0].timestamp).toBeNull();
+  });
+
+  it('mapStaleLoops returns null when created_at missing', () => {
+    const items = mapStaleLoops([{ loop_id: 'l1', description: 'd' }]);
+    expect(items[0].timestamp).toBeNull();
+  });
 });
 
 describe('mapCapabilityHealth', () => {

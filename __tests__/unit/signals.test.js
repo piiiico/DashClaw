@@ -50,6 +50,22 @@ describe('computeSignals', () => {
     expect(signals[0].severity).toBe('amber');
   });
 
+  it('propagates source timestamps to detected_at (no Date.now fabrication)', async () => {
+    const t = '2026-04-08T14:00:00.000Z';
+    const sql = createSignalSqlMock([
+      [{ agent_id: 'a1', agent_name: 'Bot', action_count: '15', last_seen: t }],
+      [{ action_id: 'act_1', agent_id: 'a1', agent_name: 'Bot', declared_goal: 'X', risk_score: '95', action_type: 'd', timestamp_start: t }],
+      [{ agent_id: 'a2', agent_name: 'Bot', failure_count: '4', last_seen: t }],
+      [], [{ agent_id: 'a3', agent_name: 'Bot', invalidation_count: '3', last_seen: t }], [], [],
+    ]);
+    const signals = await computeSignals('org_1', null, sql);
+    const byType = Object.fromEntries(signals.map((s) => [s.type, s]));
+    expect(byType.high_impact_low_oversight?.detected_at).toBe(t);
+    expect(byType.autonomy_spike?.detected_at).toBe(t);
+    expect(byType.repeated_failures?.detected_at).toBe(t);
+    expect(byType.assumption_drift?.detected_at).toBe(t);
+  });
+
   it('detects high_impact_low_oversight with red severity for risk >= 90', async () => {
     const sql = createSignalSqlMock([
       [],

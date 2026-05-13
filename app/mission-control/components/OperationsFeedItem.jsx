@@ -18,8 +18,11 @@ const CATEGORY_PILL = {
 };
 
 function formatRelativeTime(ts) {
-  if (!ts) return '';
-  const diffMs = Date.now() - new Date(ts).getTime();
+  if (!ts) return '—';
+  const parsed = new Date(ts).getTime();
+  if (!Number.isFinite(parsed)) return '—';
+  const diffMs = Date.now() - parsed;
+  if (diffMs < 0) return 'now';
   const diffMins = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMs / 3600000);
   if (diffMins < 1) return 'now';

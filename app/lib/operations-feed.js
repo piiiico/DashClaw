@@ -24,7 +24,7 @@ export function mapApprovals(actions) {
     source: 'action',
     source_id: a.action_id,
     agent_id: a.agent_id || null,
-    timestamp: a.timestamp_start || a.created_at || new Date().toISOString(),
+    timestamp: a.timestamp_start || a.created_at || null,
     action_url: `/decisions/${a.action_id}`,
     suggested_action: 'approve',
   }));
@@ -54,7 +54,7 @@ export function mapFailures(actions) {
       source: 'action',
       source_id: a.action_id,
       agent_id: a.agent_id || null,
-      timestamp: a.timestamp_start || a.created_at || new Date().toISOString(),
+      timestamp: a.timestamp_start || a.created_at || null,
       action_url: `/decisions/${a.action_id}`,
       suggested_action: isWorkflowRun ? 'retry' : 'investigate',
       ...(isWorkflowRun ? { metadata: { template_id: a.trigger.slice('workflow:'.length), run_action_id: a.action_id } } : {}),
@@ -72,7 +72,7 @@ export function mapSignals(signals) {
     source: 'signal',
     source_id: s.action_id || s.loop_id || s.assumption_id || null,
     agent_id: s.agent_id || null,
-    timestamp: s.detected_at || new Date().toISOString(),
+    timestamp: s.detected_at || null,
     action_url: s.agent_id ? `/agents/${encodeURIComponent(s.agent_id)}` : '/security',
     suggested_action: s.type === 'integration_mismatch' ? 'disable' : s.type === 'workflow_stuck' ? 'cancel' : 'investigate',
     ...(s.type === 'workflow_stuck' && s.action_id ? {
@@ -99,7 +99,7 @@ export function mapCapabilityHealth(capabilities) {
       source: 'capability',
       source_id: c.capability_id,
       agent_id: null,
-      timestamp: c.last_invocation || new Date().toISOString(),
+      timestamp: c.last_invocation || null,
       action_url: `/capabilities/${c.capability_id}`,
       suggested_action: c.status === 'failing' ? 'disable' : 'investigate',
       metadata: { capability_id: c.capability_id },
@@ -118,7 +118,7 @@ export function mapIntegrationHealth(healthMap) {
       source: 'integration',
       source_id: provider,
       agent_id: null,
-      timestamp: h.checked_at || new Date().toISOString(),
+      timestamp: h.checked_at || null,
       action_url: '/integrations',
       suggested_action: 'investigate',
     }));
@@ -137,7 +137,7 @@ export function mapStaleLoops(loops) {
     source: 'loop',
     source_id: l.loop_id,
     agent_id: l.agent_id || null,
-    timestamp: l.created_at || new Date().toISOString(),
+    timestamp: l.created_at || null,
     action_url: l.action_id ? `/decisions/${l.action_id}` : '/dashboard',
     suggested_action: 'investigate',
   }));

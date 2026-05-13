@@ -14,7 +14,8 @@
 export async function computeSignals(orgId, filterAgentId, sql) {
   const [autonomySpikes, highImpact, repeatedFailures, staleLoops, assumptionDrift, staleAssumptions, staleRunning, stalePresence, stuckWorkflows, staleApprovals] = await Promise.all([
     sql`
-      SELECT agent_id, agent_name, COUNT(*) as action_count
+      SELECT agent_id, agent_name, COUNT(*) as action_count,
+             MAX(timestamp_start::timestamptz) AS last_seen
       FROM action_records
       WHERE timestamp_start::timestamptz > NOW() - INTERVAL '1 hour'
         AND org_id = ${orgId}
@@ -23,18 +24,21 @@ export async function computeSignals(orgId, filterAgentId, sql) {
       ORDER BY action_count DESC
     `,
     sql`
-      SELECT action_id, agent_id, agent_name, declared_goal, risk_score, action_type
+      SELECT action_id, agent_id, agent_name, declared_goal, risk_score, action_type,
+             timestamp_start
       FROM action_records
       WHERE reversible = 0
         AND org_id = ${orgId}
         AND risk_score >= 70
         AND (authorization_scope IS NULL OR authorization_scope = '')
         AND status = 'running'
+        AND timestamp_start::timestamptz > NOW() - INTERVAL '24 hours'
       ORDER BY risk_score DESC
       LIMIT 10
     `,
     sql`
-      SELECT agent_id, agent_name, COUNT(*) as failure_count
+      SELECT agent_id, agent_name, COUNT(*) as failure_count,
+             MAX(timestamp_start::timestamptz) AS last_seen
       FROM action_records
       WHERE status = 'failed'
         AND org_id = ${orgId}
@@ -55,7 +59,8 @@ export async function computeSignals(orgId, filterAgentId, sql) {
       LIMIT 10
     `,
     sql`
-      SELECT ar.agent_id, ar.agent_name, COUNT(*) as invalidation_count
+      SELECT ar.agent_id, ar.agent_name, COUNT(*) as invalidation_count,
+             MAX(a.invalidated_at::timestamptz) AS last_seen
       FROM assumptions a
       LEFT JOIN action_records ar ON a.action_id = ar.action_id
       WHERE a.invalidated = 1
@@ -144,7 +149,7 @@ export async function computeSignals(orgId, filterAgentId, sql) {
       detail: `This agent made ${spike.action_count} decisions in the last hour without proportional oversight, exceeding the governance threshold of 10.`,
       help: 'High decision frequency without oversight may indicate ungoverned autonomy. Review recent decisions and enforce policy throttling.',
       agent_id: spike.agent_id,
-      detected_at: new Date().toISOString(), // aggregated signal, no single source timestamp
+      detected_at: spike.last_seen || null,
     });
   }
 
@@ -169,7 +174,7 @@ export async function computeSignals(orgId, filterAgentId, sql) {
       detail: `This agent's decision reliability has degraded with ${fail.failure_count} failures in the last 24 hours, exceeding the integrity threshold of 3.`,
       help: 'Repeated decision failures indicate degraded reliability. Review decision rationale and underlying assumptions.',
       agent_id: fail.agent_id,
-      detected_at: new Date().toISOString(), // aggregated signal
+      detected_at: fail.last_seen || null,
     });
   }
 
@@ -195,7 +200,7 @@ export async function computeSignals(orgId, filterAgentId, sql) {
       detail: `${drift.invalidation_count} assumptions invalidated in the last 7 days, indicating the decision basis for this agent is eroding.`,
       help: 'Frequent assumption invalidations degrade the decision basis. Review and re-validate the foundational assumptions.',
       agent_id: drift.agent_id,
-      detected_at: new Date().toISOString(), // aggregated signal
+      detected_at: drift.last_seen || null,
     });
   }
 
@@ -260,11 +265,12 @@ export async function computeSignals(orgId, filterAgentId, sql) {
   try {
     const [connections, health] = await Promise.all([
       sql`SELECT DISTINCT provider, agent_id FROM agent_connections WHERE org_id = ${orgId} AND status = 'active'`,
-      sql`SELECT provider, status FROM integration_health WHERE org_id = ${orgId}`,
+      sql`SELECT provider, status, checked_at FROM integration_health WHERE org_id = ${orgId}`,
     ]);
-    const healthMap = Object.fromEntries(health.map(h => [h.provider, h.status]));
+    const healthMap = Object.fromEntries(health.map(h => [h.provider, h]));
     for (const conn of connections) {
-      const h = healthMap[conn.provider];
+      const entry = healthMap[conn.provider];
+      const h = entry?.status;
       if (h === 'error') {
         signals.push({
           type: 'integration_mismatch',
@@ -274,6 +280,7 @@ export async function computeSignals(orgId, filterAgentId, sql) {
           help: 'Update credentials on the Integrations page.',
           agent_id: conn.agent_id,
           provider: conn.provider,
+          detected_at: entry?.checked_at || null,
         });
       } else if (!h && h !== 'healthy' && h !== 'degraded') {
         // No health record means credentials were never configured or checked
@@ -287,6 +294,7 @@ export async function computeSignals(orgId, filterAgentId, sql) {
             help: 'Configure credentials on the Integrations page.',
             agent_id: conn.agent_id,
             provider: conn.provider,
+            detected_at: null,
           });
         }
       }
@@ -315,6 +323,7 @@ export async function computeSignals(orgId, filterAgentId, sql) {
         help: 'Consider restarting the agent session or checking for blockers',
         agent_id: sess.agent_id,
         session_id: sess.id,
+        detected_at: sess.last_activity || null,
       });
     }
   } catch (e) { /* signal collection is best-effort */ }
@@ -341,6 +350,7 @@ export async function computeSignals(orgId, filterAgentId, sql) {
             detail: `Agent ${dec.agent_id} is working on a branch ${behind} commits behind main`,
             help: 'Rebase or merge-forward before running tests',
             agent_id: dec.agent_id,
+            detected_at: dec.created_at || null,
           });
         }
       } catch (e) {
@@ -355,7 +365,7 @@ export async function computeSignals(orgId, filterAgentId, sql) {
   try {
     const seenServers = new Set();
     const recentMcpDecisions = await sql`
-      SELECT id, agent_id, context FROM guard_decisions
+      SELECT id, agent_id, context, created_at FROM guard_decisions
       WHERE org_id = ${orgId} AND created_at > NOW() - INTERVAL '30 minutes'
       ${filterAgentId ? sql`AND agent_id = ${filterAgentId}` : sql``}
       ORDER BY created_at DESC LIMIT 20
@@ -372,6 +382,7 @@ export async function computeSignals(orgId, filterAgentId, sql) {
             detail: mcp.error || `MCP server ${mcp.server} is ${mcp.status}`,
             help: 'Check MCP server configuration and connectivity',
             agent_id: dec.agent_id,
+            detected_at: dec.created_at || null,
           });
         }
       } catch (e) {
@@ -385,7 +396,7 @@ export async function computeSignals(orgId, filterAgentId, sql) {
   // Green contract insufficiency from recent guard decisions
   try {
     const greenDecisions = await sql`
-      SELECT id, agent_id, context, reason FROM guard_decisions
+      SELECT id, agent_id, context, reason, created_at FROM guard_decisions
       WHERE org_id = ${orgId} AND created_at > NOW() - INTERVAL '1 hour'
       AND decision IN ('block', 'warn')
       ${filterAgentId ? sql`AND agent_id = ${filterAgentId}` : sql``}
@@ -405,6 +416,7 @@ export async function computeSignals(orgId, filterAgentId, sql) {
             detail: 'Agent attempted deploy/merge without sufficient test verification',
             help: 'Run tests at the required green level before proceeding',
             agent_id: dec.agent_id,
+            detected_at: dec.created_at || null,
           });
         }
       } catch (e) {
