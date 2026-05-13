@@ -38,6 +38,7 @@ const PUBLIC_ROUTES = [
   '/api/docs/raw',
   '/api/prompts',
   '/api/monetization/verified-integrations-count',  // MON-01 public counter (Plan 03-03)
+  '/api/marketing',  // anonymous funnel telemetry. Route validates allowlisted events, rate limit + 2 MB body cap still apply.
   '/practical-systems',
   '/replay',
 ];
@@ -444,6 +445,16 @@ export async function middleware(request) {
 
       const method = request.method.toUpperCase();
       const isRead = method === 'GET' || method === 'HEAD';
+
+      // Marketing funnel telemetry is reachable in demo mode too — the
+      // marketing site IS the demo deployment. Pass through to the real
+      // handler; it validates allowlisted event names and writes to Redis.
+      if (pathname.startsWith('/api/marketing/')) {
+        const response = NextResponse.next();
+        addSecurityHeaders(response);
+        withCors(request, response);
+        return response;
+      }
 
       // Policy test runs are read-like (no mutation) — allow through demo write-block.
       if (pathname === '/api/policies/test' && method === 'POST') {

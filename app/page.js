@@ -1,10 +1,14 @@
 import Link from 'next/link';
-import { ShieldAlert, ArrowRight, Terminal, BookOpen, Package, Scale, FileCheck, Network, Shield, FolderKanban, BarChart3, MessageSquare, Activity, FileJson, History, Lock, Bot, Database, XCircle, Radar, Zap, Compass } from 'lucide-react';
+import { ShieldAlert, ArrowRight, Terminal, BookOpen, Package, Scale, FileCheck, Network, Shield, FolderKanban, BarChart3, MessageSquare, History, Bot, XCircle, Radar, Compass } from 'lucide-react';
 import DashClawLogo from './components/DashClawLogo';
 import PublicNavbar from './components/PublicNavbar';
 import PublicFooter from './components/PublicFooter';
 import HeroScreenshot from './components/HeroScreenshot';
 import InlineCopyCommand from './components/InlineCopyCommand';
+import LiveDemo from './components/LiveDemo';
+import UseCases from './components/UseCases';
+import TrackedLink from './components/TrackedLink';
+import MarketingViewObserver from './components/MarketingViewObserver';
 import SetupBanner from './components/SetupBanner';
 import { allScreenshots } from './screenshotData';
 
@@ -31,100 +35,102 @@ export default function LandingPage() {
       {/* ── 2. Hero ── */}
       <section className="pt-32 pb-20 px-6">
         <div className="max-w-3xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border-active bg-brand-subtle text-brand text-xs font-medium mb-6">
-            <ShieldAlert size={14} />
-            Open-source AI governance runtime
-          </div>
-          <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold tracking-tight leading-tight">
-            Intercept agent actions before they reach production.
+          {/* Eyebrow */}
+          <p className="text-[11px] font-mono uppercase tracking-[0.2em] text-text-tertiary mb-5">
+            Decision Infrastructure for AI Agents
+          </p>
+
+          {/* Headline */}
+          <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold tracking-tight leading-tight text-text-primary">
+            The policy firewall for AI agents.
           </h1>
-          <p className="mt-6 text-brand font-semibold text-xl sm:text-2xl">
-            DashClaw is the policy firewall for AI agents.
+
+          {/* Subhead */}
+          <p className="mt-6 text-lg text-text-secondary max-w-2xl mx-auto leading-relaxed">
+            DashClaw intercepts agent actions before they reach the real world. Enforce policies, require human approval, and record verifiable evidence in one open source runtime.
           </p>
-          <p className="mt-4 text-lg text-text-secondary max-w-2xl mx-auto leading-relaxed">
-            DashClaw governs the moment agent intent becomes real-world action. Enforce policies, require human approval, and record verifiable evidence in one runtime.
+
+          {/* CTA row */}
+          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <TrackedLink
+              href="/self-host"
+              event="marketing_hero_cta_clicked"
+              className="px-8 py-3 rounded-lg bg-brand text-white text-sm font-bold hover:bg-brand-hover transition-all hover:scale-105 inline-flex items-center gap-2 shadow-xl shadow-brand/20"
+            >
+              Self host the runtime <ArrowRight size={18} aria-hidden="true" />
+            </TrackedLink>
+            <Link
+              href="#live-demo"
+              className="px-8 py-3 rounded-lg bg-surface-tertiary border border-border-hover text-text-secondary text-sm font-medium hover:bg-surface-elevated hover:text-text-primary transition-all inline-flex items-center gap-2"
+            >
+              <Terminal size={16} aria-hidden="true" /> Run live demo
+            </Link>
+          </div>
+
+          {/* npx demo, demoted */}
+          <div className="mt-6 flex justify-center">
+            <InlineCopyCommand command="npx dashclaw-demo" className="px-3 py-1.5 text-xs" />
+          </div>
+
+          {/* Framework list */}
+          <p className="mt-10 text-sm text-text-tertiary font-medium max-w-2xl mx-auto">
+            Works with Claude Code, Claude Managed Agents, OpenAI, LangChain, CrewAI, AutoGen, Codex, Gemini CLI, and any custom agent.
           </p>
-          <p className="mt-4 text-sm text-text-tertiary font-medium">
-            Works with Claude Managed Agents, Claude Code, OpenAI, LangChain, CrewAI, AutoGen, Codex, Gemini CLI, and any custom agent.
+
+          {/* Trust band */}
+          <div className="mt-8 text-xs text-text-tertiary flex flex-wrap items-center justify-center gap-x-3 gap-y-2">
+            <span>MIT licensed</span>
+            <span className="text-text-disabled" aria-hidden="true">·</span>
+            <span>Self hosted</span>
+            <span className="text-text-disabled" aria-hidden="true">·</span>
+            <span>No per seat pricing</span>
+            <span className="text-text-disabled" aria-hidden="true">·</span>
+            <span>No usage caps</span>
+            <span className="text-text-disabled" aria-hidden="true">·</span>
+            <span>Your data stays on your infrastructure</span>
+          </div>
+
+          {/* ICP filter */}
+          <p className="mt-6 text-sm text-text-tertiary italic max-w-2xl mx-auto">
+            For teams running AI agents where the cost of a bad action is real.
           </p>
-          <p className="mt-4 text-sm text-text-tertiary font-medium italic opacity-80">MIT Licensed. Self-host in seconds.</p>
+        </div>
+      </section>
 
-          {/* Tiny Architecture Diagram */}
-          <div className="mt-12 mb-8 flex items-center justify-center gap-3 sm:gap-6 max-w-lg mx-auto">
-            <div className="flex flex-col items-center gap-2">
-              <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-surface-tertiary border border-border-hover text-text-secondary shadow-lg">
-                <Bot size={20} />
-              </div>
-              <span className="text-[10px] uppercase tracking-wider text-text-tertiary font-bold">Agent Intent</span>
-            </div>
-            
-            <div className="flex flex-col justify-center animate-pulse">
-              <ArrowRight className="text-text-disabled" size={24} />
-            </div>
+      {/* ── Live demo (interactive governance call against real /api/guard) ── */}
+      <LiveDemo />
 
-            <div className="flex flex-col items-center gap-2">
-              <div className="w-16 h-16 flex items-center justify-center rounded-2xl bg-brand/10 border border-brand/40 text-brand shadow-[0_0_25px_rgba(249,115,22,0.2)] ring-1 ring-brand/20">
-                <Shield size={28} />
-              </div>
-              <span className="text-[10px] uppercase tracking-wider text-brand font-extrabold">DashClaw Guard</span>
-            </div>
-
-            <div className="flex flex-col justify-center animate-pulse delay-75">
-              <ArrowRight className="text-text-disabled" size={24} />
-            </div>
-
-            <div className="flex flex-col items-center gap-2">
-              <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-surface-tertiary border border-border-hover text-text-secondary shadow-lg">
-                <Database size={20} />
-              </div>
-              <span className="text-[10px] uppercase tracking-wider text-text-tertiary font-bold">Production System</span>
-            </div>
-          </div>
-
-          <div className="mt-10 flex flex-col items-center gap-6">
-            <InlineCopyCommand command="npx dashclaw-demo" highlight={true} className="sm:scale-110 shadow-[0_0_30px_rgba(249,115,22,0.15)]" />
-            
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Link href="/demo" className="px-8 py-3 rounded-lg bg-brand text-white text-sm font-bold hover:bg-brand-hover transition-all hover:scale-105 inline-flex items-center gap-2 shadow-xl shadow-brand/20">
-                <Terminal size={18} /> Run 1-Minute Demo
-              </Link>
-              <Link href="/self-host" className="px-8 py-3 rounded-lg bg-surface-tertiary border border-border-hover text-text-secondary text-sm font-medium hover:bg-surface-elevated hover:text-text-primary transition-all inline-flex items-center gap-2">
-                Deploy Your Own
-              </Link>
-            </div>
-          </div>
-
-          <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 opacity-40 hover:opacity-100 transition-opacity">
-            <InlineCopyCommand command="npm install dashclaw" />
-            <InlineCopyCommand command="pip install dashclaw" />
-            <InlineCopyCommand command="docker compose up -d" />
-          </div>
-
-          <div className="mt-20 mb-12">
-            <h3 className="text-xs font-mono text-text-tertiary uppercase tracking-[0.2em] mb-8 animate-pulse">Decision Interception Demo</h3>
-            <div className="overflow-hidden rounded-xl border border-border-hover shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_30px_90px_rgba(0,0,0,0.55)]">
-              {/* eslint-disable-next-line @next/next/no-img-element -- animated GIF, next/image strips animation */}
-              <img
-                src="/images/demo-gif2.gif"
-                alt="DashClaw decision interception in action"
-                className="w-full h-auto block"
-              />
-            </div>
-          </div>
-
-          <div className="mt-12 flex flex-wrap items-center justify-center gap-x-8 gap-y-4 text-[10px] sm:text-xs font-mono text-text-tertiary uppercase tracking-widest">
-            <div className="flex items-center gap-2">
-              <div className="w-1 h-1 rounded-full bg-brand"></div> MIT Licensed
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-1 h-1 rounded-full bg-brand"></div> Self-hosted
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-1 h-1 rounded-full bg-brand"></div> Zero-dependency SDK
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-1 h-1 rounded-full bg-brand"></div> Node + Python
-            </div>
+      {/* ── Integration band (which surfaces plug DashClaw in) ── */}
+      <section
+        aria-labelledby="integration-band-heading"
+        className="py-10 px-6 border-t border-border bg-surface-secondary/30"
+      >
+        <div className="max-w-5xl mx-auto">
+          <h2
+            id="integration-band-heading"
+            className="text-[10px] font-mono uppercase tracking-[0.2em] text-text-tertiary text-center mb-4"
+          >
+            Works with
+          </h2>
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-xs text-text-secondary">
+            {[
+              'Claude Code Hooks',
+              'OpenClaw Plugin',
+              'MCP Server',
+              'Platform Skill',
+              'Node SDK',
+              'Python SDK',
+              'REST API',
+              'CLI',
+              'Telegram Approvals',
+            ].map((surface, idx, arr) => (
+              <span key={surface} className="inline-flex items-center gap-3">
+                <span className="font-medium text-text-primary">{surface}</span>
+                {idx < arr.length - 1 ? (
+                  <span className="text-text-disabled" aria-hidden="true">·</span>
+                ) : null}
+              </span>
+            ))}
           </div>
         </div>
       </section>
@@ -558,120 +564,8 @@ if (decision === "allow") {
         </div>
       </section>
 
-      {/* ── 7. Real Use Cases ── */}
-      <section className="py-24 px-6 border-t border-border bg-surface-primary">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary">What developers use DashClaw for</h2>
-            <p className="mt-4 text-text-secondary">Practical scenarios where decision governance creates trust.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 text-text-primary">
-                <div className="p-2 rounded-lg bg-error-subtle border border-error/20 text-error">
-                  <ShieldAlert size={20} />
-                </div>
-                <h3 className="text-xl font-bold">Prevent risky deployments</h3>
-              </div>
-              <p className="text-text-secondary text-sm leading-relaxed">
-                Intercept deploy commands from agents and require approval when risk thresholds are exceeded.
-              </p>
-              <div className="rounded-xl bg-surface-secondary border border-border p-4 font-mono text-[11px] overflow-x-auto text-text-secondary shadow-lg">
-                <span className="text-purple-400">const</span> decision = <span className="text-purple-400">await</span> claw.guard({'{'}
-                <div className="pl-4">actionType: <span className="text-success">&quot;deploy&quot;</span>,</div>
-                <div className="pl-4">environment: <span className="text-success">&quot;production&quot;</span>,</div>
-                <div className="pl-4">riskScore: <span className="text-cyan-300">92</span></div>
-                {'}'})
-              </div>
-              <ul className="space-y-2 text-xs text-text-tertiary">
-                <li className="flex items-center gap-2">&bull; Request human approval</li>
-                <li className="flex items-center gap-2">&bull; Pause execution</li>
-                <li className="flex items-center gap-2">&bull; Record evidence for audit</li>
-              </ul>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 text-text-primary">
-                <div className="p-2 rounded-lg bg-info-subtle border border-blue-500/20 text-info">
-                  <Lock size={20} />
-                </div>
-                <h3 className="text-xl font-bold">Control autonomous API usage</h3>
-              </div>
-              <p className="text-text-secondary text-sm leading-relaxed">
-                Agents interacting with third-party APIs can be governed with policies.
-              </p>
-              <div className="rounded-xl bg-surface-secondary border border-border p-4 font-mono text-[11px] overflow-x-auto text-text-secondary shadow-lg">
-                <span className="text-purple-400">await</span> claw.guard({'{'}
-                <div className="pl-4">actionType: <span className="text-success">&quot;external_api_call&quot;</span>,</div>
-                <div className="pl-4">provider: <span className="text-success">&quot;stripe&quot;</span>,</div>
-                <div className="pl-4">amount: <span className="text-cyan-300">2000</span></div>
-                {'}'})
-              </div>
-              <ul className="space-y-2 text-xs text-text-tertiary">
-                <li className="flex items-center gap-2">&bull; Limit spending thresholds</li>
-                <li className="flex items-center gap-2">&bull; Block dangerous actions</li>
-                <li className="flex items-center gap-2">&bull; Trigger approval workflows</li>
-              </ul>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 text-text-primary">
-                <div className="p-2 rounded-lg bg-brand/10 border border-active/20 text-brand">
-                  <Activity size={20} />
-                </div>
-                <h3 className="text-xl font-bold">Detect agent reasoning drift</h3>
-              </div>
-              <p className="text-text-secondary text-sm leading-relaxed">
-                Track assumptions agents rely on and detect when they become invalid. DashClaw records agent assumptions and decision context.
-              </p>
-              <div className="p-4 rounded-xl bg-surface-secondary border border-border text-xs text-text-secondary space-y-2">
-                <div className="flex items-center justify-between border-b border-border-hover/50 pb-2">
-                  <span>Assumptions Divergence</span>
-                  <span className="text-brand font-mono">DRIFT DETECTED</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Logic Baseline</span>
-                  <span className="text-text-tertiary">v1.2.0</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Current Context</span>
-                  <span className="text-text-tertiary">Unverified state</span>
-                </div>
-              </div>
-              <p className="text-xs text-text-tertiary leading-relaxed italic">
-                When assumptions diverge from reality, the system flags drift immediately.
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 text-text-primary">
-                <div className="p-2 rounded-lg bg-status-success/10 border border-green-500/20 text-success">
-                  <FileJson size={20} />
-                </div>
-                <h3 className="text-xl font-bold">Produce audit trails</h3>
-              </div>
-              <p className="text-text-secondary text-sm leading-relaxed">
-                Every governed action generates structured evidence records ready for compliance and review.
-              </p>
-              <div className="rounded-xl bg-surface-secondary border border-border p-4 font-mono text-[10px] sm:text-xs overflow-x-auto text-success/80 shadow-lg">
-                <pre>{`{
-  "agent": "deployment-bot",
-  "action": "deploy",
-  "riskScore": 85,
-  "policy": "production_guard",
-  "approval": "granted"
-}`}</pre>
-              </div>
-              <ul className="space-y-2 text-xs text-text-tertiary">
-                <li className="flex items-center gap-2">&bull; Compliance reporting</li>
-                <li className="flex items-center gap-2">&bull; Debugging agent failures</li>
-                <li className="flex items-center gap-2">&bull; Governance review</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* ── 7. Use Cases (tabbed: deploys / spend / drift) ── */}
+      <UseCases />
 
       {/* ── 8. Platform Visibility ── */}
       <section id="features" className="py-24 px-6 border-t border-border">
@@ -683,23 +577,45 @@ if (decision === "allow") {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-20">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-20">
             {[
-              { icon: Radar, title: 'Mission Control', description: 'Real-time control tower for fleet posture and active interventions.' },
-              { icon: Zap, title: 'Decision Replay', description: 'Visual causal chains that explain exactly why an agent chose an action.' },
-              { icon: Shield, title: 'Policy Engine', description: 'Semantic guardrails that evolve with your organization without code changes.' },
-              { icon: Activity, title: 'Risk Signals', description: 'Automated detection of autonomy spikes, drift, and failure loops.' },
-              { icon: Terminal, title: 'CLI Approval Channel', description: 'Approve or deny agent actions from the terminal. Works with Claude Code, Codex, and any terminal-first workflow.' },
-              { icon: Zap, title: 'Claude Code Hooks', description: 'Govern Claude Code tool calls via lifecycle hooks. No SDK instrumentation required.' },
-            ].map((feature) => {
-              const Icon = feature.icon;
+              {
+                icon: Radar,
+                title: 'Mission Control',
+                description: 'Live operational visibility for the agent fleet. See what is running, what was decided, and what is waiting on a human.',
+                items: ['Live fleet posture and active interventions', 'Decision replay with the full causal chain', 'Real-time SSE event stream'],
+              },
+              {
+                icon: Shield,
+                title: 'Policy Engine',
+                description: 'Semantic guardrails that decide allow, block, or require approval before the action reaches the real world.',
+                items: ['Guard primitive with policy testing', 'Risk signals for autonomy spikes and failure loops', 'Assumption drift detection with z-score baselines'],
+              },
+              {
+                icon: MessageSquare,
+                title: 'Approval Surfaces',
+                description: 'Approvers resolve pending actions wherever they already work, against the same governance endpoint.',
+                items: ['Dashboard inbox at /approvals', 'CLI with dashclaw approve and approvals', 'Mobile PWA at /approve', 'Telegram inline Approve and Reject buttons', 'Claude Code lifecycle hooks'],
+              },
+            ].map((capability) => {
+              const Icon = capability.icon;
               return (
-                <div key={feature.title} className="p-6 rounded-2xl bg-surface-secondary border border-border hover:border-brand/30 transition-all text-left group">
-                  <div className="w-10 h-10 rounded-xl bg-brand/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                    <Icon size={20} className="text-brand" />
+                <div key={capability.title} className="p-6 rounded-2xl bg-surface-secondary border border-border hover:border-border-hover transition-colors text-left flex flex-col">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-xl bg-brand-subtle border border-border-active flex items-center justify-center">
+                      <Icon size={20} className="text-brand" aria-hidden="true" />
+                    </div>
+                    <h3 className="text-base font-bold text-text-primary tracking-tight">{capability.title}</h3>
                   </div>
-                  <h3 className="text-sm font-bold text-text-primary mb-2 uppercase tracking-tight">{feature.title}</h3>
-                  <p className="text-xs text-text-tertiary leading-relaxed">{feature.description}</p>
+                  <p className="text-sm text-text-secondary leading-relaxed mb-4">{capability.description}</p>
+                  <ul className="space-y-1.5 text-xs text-text-tertiary mt-auto">
+                    {capability.items.map((item) => (
+                      <li key={item} className="flex items-start gap-2 leading-relaxed">
+                        <span className="mt-[6px] w-1 h-1 rounded-full bg-text-disabled shrink-0" aria-hidden="true" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               );
             })}
@@ -761,7 +677,7 @@ if (decision === "allow") {
               </div>
             </div>
 
-            {/* Integration Surfaces — MCP-led */}
+            {/* Integration Surfaces. MCP-led. */}
             <div className="max-w-6xl mx-auto">
               <div className="text-center mb-12">
                 <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary">Integration surfaces</h2>
@@ -793,7 +709,7 @@ if (decision === "allow") {
                   {
                     label: 'Skill',
                     title: 'Claude governance skill',
-                    desc: 'Anthropic skill that teaches Managed Agents the MCP usage protocol — risk tiers, decision handling, recording rules, session lifecycle.',
+                    desc: 'Anthropic skill that teaches Managed Agents the MCP usage protocol: risk tiers, decision handling, recording rules, session lifecycle.',
                     example: 'Pairs with @dashclaw/mcp-server',
                     href: '/docs#governance-skill',
                   },
@@ -807,7 +723,7 @@ if (decision === "allow") {
                   {
                     label: 'CLI',
                     title: 'Terminal approvals',
-                    desc: 'Approve or deny agent actions from any terminal. Same endpoint as the dashboard and mobile PWA — decisions sync over Redis SSE in ~1s.',
+                    desc: 'Approve or deny agent actions from any terminal. Same endpoint as the dashboard and mobile PWA, and decisions sync over Redis SSE in about 1s.',
                     example: 'npm install -g @dashclaw/cli',
                     href: '/docs#cli-and-doctor',
                   },
@@ -826,7 +742,7 @@ if (decision === "allow") {
               </div>
             </div>
 
-            {/* Operate it — Doctor / Mobile PWA / Analytics */}
+            {/* Operate it: Doctor, Mobile PWA, Analytics */}
             <div className="max-w-6xl mx-auto">
               <div className="text-center mb-12">
                 <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary">Operate it</h2>
@@ -857,7 +773,7 @@ if (decision === "allow") {
                 >
                   <div className="text-[10px] uppercase tracking-wider text-text-tertiary mb-2 font-mono">Messaging</div>
                   <h3 className="text-sm font-semibold text-text-primary mb-1.5 group-hover:text-brand transition-colors">Telegram approvals</h3>
-                  <p className="text-xs text-text-secondary leading-relaxed mb-3">Pending actions fan out to an admin Telegram chat with inline Approve / Reject. One tap on your phone resolves the action — same endpoint as the dashboard.</p>
+                  <p className="text-xs text-text-secondary leading-relaxed mb-3">Pending actions fan out to an admin Telegram chat with inline Approve / Reject. One tap on your phone resolves the action against the same endpoint as the dashboard.</p>
                   <pre className="bg-surface-primary rounded-lg px-3 py-2 text-[10px] sm:text-xs text-text-secondary font-mono overflow-x-auto">npm run telegram:setup</pre>
                 </Link>
                 <Link
@@ -872,6 +788,77 @@ if (decision === "allow") {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ── Vs alternatives (LangSmith / Langfuse positioning) ── */}
+      <section
+        id="vs-alternatives"
+        aria-labelledby="vs-alternatives-heading"
+        className="py-24 px-6 border-t border-border bg-surface-secondary/40 scroll-mt-20"
+      >
+        <MarketingViewObserver
+          targetId="vs-alternatives"
+          event="marketing_vs_section_viewed"
+        />
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <p className="text-[11px] font-mono uppercase tracking-[0.2em] text-text-tertiary mb-3">
+              How DashClaw compares
+            </p>
+            <h2
+              id="vs-alternatives-heading"
+              className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary leading-tight"
+            >
+              Observability tools record what happened. DashClaw governs what is allowed to happen.
+            </h2>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-surface-secondary overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-surface-tertiary">
+                    <th scope="col" className="px-4 py-3 text-[10px] font-mono uppercase tracking-[0.18em] text-text-tertiary font-semibold">
+                      Dimension
+                    </th>
+                    <th scope="col" className="px-4 py-3 text-[10px] font-mono uppercase tracking-[0.18em] text-text-tertiary font-semibold">
+                      Tracing tools (LangSmith, Langfuse)
+                    </th>
+                    <th scope="col" className="px-4 py-3 text-[10px] font-mono uppercase tracking-[0.18em] text-brand font-semibold bg-brand-subtle/50">
+                      DashClaw
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { dim: 'When it acts', tracing: 'After the action', dashclaw: 'Before the action' },
+                    { dim: 'Core primitive', tracing: 'Log or trace', dashclaw: 'Guard and policy' },
+                    { dim: 'Human in the loop', tracing: 'Add on', dashclaw: 'First class' },
+                    { dim: 'Compliance evidence', tracing: 'Trace export', dashclaw: 'Action level, policy and approver bound' },
+                    { dim: 'Self host', tracing: 'Available', dashclaw: 'Available, MIT, no paid tier required' },
+                  ].map((row, idx, arr) => (
+                    <tr
+                      key={row.dim}
+                      className={idx < arr.length - 1 ? 'border-b border-border' : ''}
+                    >
+                      <th scope="row" className="px-4 py-3 font-semibold text-text-primary align-top">
+                        {row.dim}
+                      </th>
+                      <td className="px-4 py-3 text-text-secondary align-top">{row.tracing}</td>
+                      <td className="px-4 py-3 text-text-primary font-medium bg-brand-subtle/30 align-top">
+                        {row.dashclaw}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <p className="mt-8 text-sm text-text-secondary leading-relaxed text-center max-w-2xl mx-auto">
+            Tracing tools answer the question, what did my agent do. DashClaw answers the question, what is my agent allowed to do. Both have a place. Most teams will eventually run both.
+          </p>
         </div>
       </section>
 

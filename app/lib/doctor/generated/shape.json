@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:ab3cf55d8fbb2dcdbeaf0e13c3a6d6ccc3eb8e56",
+  "timestamp": "sha1:c5fc3c84f103e491c946afe576e14d96a1a6ddb1",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -1517,6 +1517,15 @@
       "file_path": "app/api/learning/suggestions/route.js"
     },
     {
+      "path": "/api/marketing/event",
+      "methods": [
+        "POST"
+      ],
+      "dynamic_params": [],
+      "archived": false,
+      "file_path": "app/api/marketing/event/route.js"
+    },
+    {
       "path": "/api/mcp",
       "methods": [
         "POST"
@@ -2528,6 +2537,7 @@
       "required": false,
       "files": [
         "app/lib/connectPrompt.js",
+        "app/self-host/SetupTabs.js",
         "examples/first-governed-action.js",
         "graphify-pilot/app/lib/connectPrompt.js",
         "mcp-server/bin/dashclaw-mcp.js",
@@ -3507,7 +3517,9 @@
       "required": false,
       "files": [
         "app/lib/events.js",
-        "graphify-pilot/app/lib/events.js"
+        "app/lib/marketingEvents.js",
+        "graphify-pilot/app/lib/events.js",
+        "scripts/export-marketing-events.mjs"
       ],
       "in_env_example": false
     },
@@ -3534,7 +3546,9 @@
       "required": false,
       "files": [
         "app/lib/events.js",
-        "graphify-pilot/app/lib/events.js"
+        "app/lib/marketingEvents.js",
+        "graphify-pilot/app/lib/events.js",
+        "scripts/export-marketing-events.mjs"
       ],
       "in_env_example": false
     },

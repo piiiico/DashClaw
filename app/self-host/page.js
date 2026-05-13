@@ -5,6 +5,7 @@ import PublicNavbar from '../components/PublicNavbar';
 import PublicFooter from '../components/PublicFooter';
 import CopyMarkdownButton from '../components/CopyMarkdownButton';
 import CopyableCodeBlock from '../components/CopyableCodeBlock';
+import MarketingPageView from '../components/MarketingPageView';
 import SetupTabs from './SetupTabs';
 
 export const metadata = {
@@ -15,6 +16,7 @@ export const metadata = {
 export default function SelfHostPage() {
   return (
     <div className="min-h-screen bg-surface-primary text-text-primary">
+      <MarketingPageView event="marketing_self_host_visited" />
       <PublicNavbar />
 
       <section className="pt-28 pb-12 px-6">
@@ -103,7 +105,7 @@ export default function SelfHostPage() {
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-text-tertiary">Verify</p>
           <h2 className="mt-3 text-2xl font-bold tracking-tight text-text-primary">Confirm your deployment is healthy</h2>
           <p className="mt-2 text-text-secondary">
-            Doctor diagnoses database, configuration, auth, deployment, SDK reachability, governance staleness, and shape drift — and auto-fixes safe issues. Run it as the first thing after your instance comes up.
+            Doctor diagnoses database, configuration, auth, deployment, SDK reachability, governance staleness, and shape drift, and auto-fixes safe issues. Run it as the first thing after your instance comes up.
           </p>
 
           <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -138,7 +140,7 @@ dashclaw doctor`}</pre>
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-text-tertiary">Approve from anywhere</p>
           <h2 className="mt-3 text-2xl font-bold tracking-tight text-text-primary">Resolve pending actions without opening the dashboard</h2>
           <p className="mt-2 text-text-secondary">
-            Every instance exposes four approval surfaces against the same <code className="font-mono text-text-primary">/api/approvals/:id</code> endpoint. Pick whichever your on-call workflow prefers — <code className="font-mono text-text-primary">waitForApproval</code> unblocks the agent within ~1 second regardless of which surface resolved the action.
+            Every instance exposes four approval surfaces against the same <code className="font-mono text-text-primary">/api/approvals/:id</code> endpoint. Pick whichever your on-call workflow prefers. <code className="font-mono text-text-primary">waitForApproval</code> unblocks the agent within about a second regardless of which surface resolved the action.
           </p>
 
           <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -154,7 +156,7 @@ dashclaw doctor`}</pre>
               <div className="text-[10px] uppercase tracking-wider text-text-tertiary mb-2 font-mono">Telegram bot (optional)</div>
               <h3 className="text-sm font-semibold text-text-primary mb-2">Inline Approve / Reject</h3>
               <p className="text-xs text-text-secondary leading-relaxed mb-3">
-                Pending actions push to an admin chat with inline buttons. If Telegram is unreachable, DashClaw warn-logs and approvals stay available via the other surfaces — it is purely additive.
+                Pending actions push to an admin chat with inline buttons. If Telegram is unreachable, DashClaw warn-logs and approvals stay available via the other surfaces; it is purely additive.
               </p>
               <pre className="overflow-x-auto rounded-xl border border-border bg-surface-primary p-3 text-xs leading-relaxed text-text-secondary font-mono">{`npm run telegram:setup`}</pre>
             </div>

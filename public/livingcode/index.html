@@ -48,9 +48,9 @@ p.kicker{background:var(--accent-bg);border:1px solid var(--accent-border);borde
 p.kicker b{color:var(--accent-deep)}
 </style></head><body>
 <h1>DashClaw Livingcode Dashboard</h1>
-<div class="sig" id="sig">Shape signature: sha1:ab3cf55d8fbb2dcdbeaf0e13c3a6d6ccc3eb8e56 · signature-stable</div>
+<div class="sig" id="sig">Shape signature: sha1:c5fc3c84f103e491c946afe576e14d96a1a6ddb1 · signature-stable</div>
 <div class="grid">
-      <div class="cell"><div class="n">183</div><div class="k">Active routes</div></div>
+      <div class="cell"><div class="n">184</div><div class="k">Active routes</div></div>
       <div class="cell"><div class="n">48</div><div class="k">Archived routes</div></div>
       <div class="cell"><div class="n">4</div><div class="k">Required env vars</div></div>
       <div class="cell"><div class="n">120</div><div class="k">Optional env vars</div></div>
@@ -246,12 +246,13 @@ p.kicker b{color:var(--accent-deep)}
 <figure><figcaption>Required env vars over time <span class="sig">(4 → 4)</span></figcaption><svg width="320" height="48" viewBox="0 0 320 48"><polyline fill="none" stroke="var(--accent)" stroke-width="2" points="4.0,44.0 160.0,44.0 316.0,44.0"/></svg></figure>
 <figure><figcaption>Tables over time <span class="sig">(73 → 73)</span></figcaption><svg width="320" height="48" viewBox="0 0 320 48"><polyline fill="none" stroke="var(--accent)" stroke-width="2" points="4.0,44.0 160.0,44.0 316.0,44.0"/></svg></figure></section>
 
-<section><h2>Changed since last snapshot</h2><p class="kicker"><b>14</b> env_vars added, <b>8</b> routes added since last snapshot.</p><ul class="diff">    <li><code>added</code> <b>routes</b>: /api/actions/[actionId]/outcome <span class="sig">New route: GET, POST</span></li>
+<section><h2>Changed since last snapshot</h2><p class="kicker"><b>14</b> env_vars added, <b>9</b> routes added since last snapshot.</p><ul class="diff">    <li><code>added</code> <b>routes</b>: /api/actions/[actionId]/outcome <span class="sig">New route: GET, POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/cron/outcome-sweep <span class="sig">New route: GET</span></li>
     <li><code>added</code> <b>routes</b>: /api/discord/interactions <span class="sig">New route: POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/hosted/cleanup <span class="sig">New route: POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/hosted/workspaces <span class="sig">New route: GET, POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/hosted/workspaces/[workspaceId] <span class="sig">New route: DELETE, GET</span></li>
+    <li><code>added</code> <b>routes</b>: /api/marketing/event <span class="sig">New route: POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/monetization/verified-integrations-count <span class="sig">New route: GET</span></li>
     <li><code>added</code> <b>routes</b>: /api/session/effective <span class="sig">New route: GET</span></li>
     <li><code>added</code> <b>env_vars</b>: API_INVENTORY_VERIFIED_DATE <span class="sig">New env var (optional, undocumented)</span></li>
@@ -371,6 +372,7 @@ p.kicker b{color:var(--accent-deep)}
     <tr data-path="/api/learning/recommendations/events"><td><code>/api/learning/recommendations/events</code></td><td>POST</td><td class="sig">app/api/learning/recommendations/events/route.js</td></tr>
     <tr data-path="/api/learning/recommendations/metrics"><td><code>/api/learning/recommendations/metrics</code></td><td>GET</td><td class="sig">app/api/learning/recommendations/metrics/route.js</td></tr>
     <tr data-path="/api/learning/suggestions"><td><code>/api/learning/suggestions</code></td><td>GET, POST</td><td class="sig">app/api/learning/suggestions/route.js</td></tr></tbody></table></details>
+<details><summary>/marketing/* (1)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/marketing/event"><td><code>/api/marketing/event</code></td><td>POST</td><td class="sig">app/api/marketing/event/route.js</td></tr></tbody></table></details>
 <details><summary>/mcp/* (1)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/mcp"><td><code>/api/mcp</code></td><td>POST</td><td class="sig">app/api/mcp/route.js</td></tr></tbody></table></details>
 <details><summary>/messages/* (4)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/messages"><td><code>/api/messages</code></td><td>GET, PATCH, POST</td><td class="sig">app/api/messages/route.js</td></tr>
     <tr data-path="/api/messages/attachments"><td><code>/api/messages/attachments</code></td><td>GET</td><td class="sig">app/api/messages/attachments/route.js</td></tr>

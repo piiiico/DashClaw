@@ -172,7 +172,7 @@ export default function SetupTabs() {
         <StepCard
           n="5"
           title="Connect your agents"
-          desc="Agents only need a base URL + API key. Once connected, they can record decisions, enforce policies, score outputs, define quality profiles, manage prompts, and track learning -- all through the SDK."
+          desc="Agents only need a base URL plus API key. Every action they take flows through the same guard, record, and outcome loop. The deeper surfaces (scoring profiles, prompt templates, learning analytics) are available from the same SDK once you are connected."
           icon={KeyRound}
         >
           <div className="mb-4">
@@ -194,174 +194,116 @@ DASHCLAW_AGENT_ID=my-agent`}</CopyableCodeBlock>
           </p>
 
           <h3 className="text-sm font-semibold text-white mt-8 mb-3">Quick integration (Node.js)</h3>
-          <CopyableCodeBlock title="agent.js" copyText={`import { DashClaw } from 'dashclaw';
+          <CopyableCodeBlock title="agent.js" copyText={`import { DashClaw, GuardBlockedError } from 'dashclaw';
 
 const dc = new DashClaw({
   baseUrl: process.env.DASHCLAW_BASE_URL,
   apiKey: process.env.DASHCLAW_API_KEY,
-  agentId: 'my-agent',
-  guardMode: 'warn',
+  agentId: process.env.DASHCLAW_AGENT_ID || 'my-agent',
 });
 
-// Record a decision
-const action = await dc.createAction({
-  actionType: 'deploy',
-  declaredGoal: 'Ship auth-service v2.1',
-  riskScore: 40,
-});
-
-// Guard check (policy enforcement)
+// 1. Ask the policy engine before acting.
 const decision = await dc.guard({
-  actionType: 'deploy',
-  content: 'Deploying to production',
-  riskScore: 40,
+  action_type: 'deploy',
+  declared_goal: 'Ship auth-service v2.1',
+  risk_score: 40,
+});
+if (decision.decision === 'block') {
+  throw new GuardBlockedError(decision);
+}
+
+// 2. Record the attempt. The server is the source of truth.
+const { action_id } = await dc.createAction({
+  action_type: 'deploy',
+  declared_goal: 'Ship auth-service v2.1',
+  risk_score: 40,
 });
 
-// Score the output quality
-await dc.scoreOutput({
-  scorer_id: 'es_your_scorer',
-  output: deployResult,
-  action_id: action.action_id,
-});
-
-// Score against your custom quality profile
-const profileScore = await dc.scoreWithProfile('sp_your_profile', {
-  duration_ms: deployResult.duration,
-  confidence: deployResult.confidence,
-  action_id: action.action_id,
-});
-
-// Update outcome
-await dc.updateOutcome(action.action_id, {
-  status: 'completed',
-  outputSummary: 'Deployed successfully',
-});`}>{`import { DashClaw } from 'dashclaw';
+// 3. Run your real work, then close the loop.
+await dc.reportActionSuccess(action_id, 'Deployed auth-service v2.1');`}>{`import { DashClaw, GuardBlockedError } from 'dashclaw';
 
 const dc = new DashClaw({
   baseUrl: process.env.DASHCLAW_BASE_URL,
   apiKey: process.env.DASHCLAW_API_KEY,
-  agentId: 'my-agent',
-  guardMode: 'warn',
+  agentId: process.env.DASHCLAW_AGENT_ID || 'my-agent',
 });
 
-// Record a decision
-const action = await dc.createAction({
-  actionType: 'deploy',
-  declaredGoal: 'Ship auth-service v2.1',
-  riskScore: 40,
-});
-
-// Guard check (policy enforcement)
+// 1. Ask the policy engine before acting.
 const decision = await dc.guard({
-  actionType: 'deploy',
-  content: 'Deploying to production',
-  riskScore: 40,
+  action_type: 'deploy',
+  declared_goal: 'Ship auth-service v2.1',
+  risk_score: 40,
+});
+if (decision.decision === 'block') {
+  throw new GuardBlockedError(decision);
+}
+
+// 2. Record the attempt. The server is the source of truth.
+const { action_id } = await dc.createAction({
+  action_type: 'deploy',
+  declared_goal: 'Ship auth-service v2.1',
+  risk_score: 40,
 });
 
-// Score the output quality
-await dc.scoreOutput({
-  scorer_id: 'es_your_scorer',
-  output: deployResult,
-  action_id: action.action_id,
-});
-
-// Score against your custom quality profile
-const profileScore = await dc.scoreWithProfile('sp_your_profile', {
-  duration_ms: deployResult.duration,
-  confidence: deployResult.confidence,
-  action_id: action.action_id,
-});
-
-// Update outcome
-await dc.updateOutcome(action.action_id, {
-  status: 'completed',
-  outputSummary: 'Deployed successfully',
-});`}</CopyableCodeBlock>
+// 3. Run your real work, then close the loop.
+await dc.reportActionSuccess(action_id, 'Deployed auth-service v2.1');`}</CopyableCodeBlock>
 
           <h3 className="text-sm font-semibold text-white mt-8 mb-3">Quick integration (Python)</h3>
-          <CopyableCodeBlock title="agent.py" copyText={`from dashclaw import DashClaw
+          <CopyableCodeBlock title="agent.py" copyText={`import os
+from dashclaw import DashClaw, GuardBlockedError
 
 dc = DashClaw(
     base_url=os.environ["DASHCLAW_BASE_URL"],
     api_key=os.environ["DASHCLAW_API_KEY"],
-    agent_id="my-agent",
-    guard_mode="warn",
+    agent_id=os.environ.get("DASHCLAW_AGENT_ID", "my-agent"),
 )
 
-# Record a decision
-action = dc.create_action(
+# 1. Ask the policy engine before acting.
+decision = dc.guard({
+    "action_type": "deploy",
+    "declared_goal": "Ship auth-service v2.1",
+    "risk_score": 40,
+})
+if decision["decision"] == "block":
+    raise GuardBlockedError(decision)
+
+# 2. Record the attempt. The server is the source of truth.
+result = dc.create_action(
     action_type="deploy",
     declared_goal="Ship auth-service v2.1",
     risk_score=40,
 )
+action_id = result["action_id"]
 
-# Guard check (policy enforcement)
-decision = dc.guard(
-    action_type="deploy",
-    content="Deploying to production",
-    risk_score=40,
-)
-
-# Score the output quality
-dc.score_output(
-    scorer_id="es_your_scorer",
-    output=deploy_result,
-    action_id=action["action_id"],
-)
-
-# Score against your custom quality profile
-profile_score = dc.score_with_profile("sp_your_profile", {
-    "duration_ms": deploy_result["duration"],
-    "confidence": deploy_result["confidence"],
-    "action_id": action["action_id"],
-})
-
-# Update outcome
-dc.update_outcome(action["action_id"],
-    status="completed",
-    output_summary="Deployed successfully",
-)`}>{`from dashclaw import DashClaw
+# 3. Run your real work, then close the loop.
+dc.report_action_success(action_id, "Deployed auth-service v2.1")`}>{`import os
+from dashclaw import DashClaw, GuardBlockedError
 
 dc = DashClaw(
     base_url=os.environ["DASHCLAW_BASE_URL"],
     api_key=os.environ["DASHCLAW_API_KEY"],
-    agent_id="my-agent",
-    guard_mode="warn",
+    agent_id=os.environ.get("DASHCLAW_AGENT_ID", "my-agent"),
 )
 
-# Record a decision
-action = dc.create_action(
+# 1. Ask the policy engine before acting.
+decision = dc.guard({
+    "action_type": "deploy",
+    "declared_goal": "Ship auth-service v2.1",
+    "risk_score": 40,
+})
+if decision["decision"] == "block":
+    raise GuardBlockedError(decision)
+
+# 2. Record the attempt. The server is the source of truth.
+result = dc.create_action(
     action_type="deploy",
     declared_goal="Ship auth-service v2.1",
     risk_score=40,
 )
+action_id = result["action_id"]
 
-# Guard check (policy enforcement)
-decision = dc.guard(
-    action_type="deploy",
-    content="Deploying to production",
-    risk_score=40,
-)
-
-# Score the output quality
-dc.score_output(
-    scorer_id="es_your_scorer",
-    output=deploy_result,
-    action_id=action["action_id"],
-)
-
-# Score against your custom quality profile
-profile_score = dc.score_with_profile("sp_your_profile", {
-    "duration_ms": deploy_result["duration"],
-    "confidence": deploy_result["confidence"],
-    "action_id": action["action_id"],
-})
-
-# Update outcome
-dc.update_outcome(action["action_id"],
-    status="completed",
-    output_summary="Deployed successfully",
-)`}</CopyableCodeBlock>
+# 3. Run your real work, then close the loop.
+dc.report_action_success(action_id, "Deployed auth-service v2.1")`}</CopyableCodeBlock>
         </StepCard>
       </div>
     </div>

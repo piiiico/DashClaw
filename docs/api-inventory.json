@@ -46,10 +46,10 @@
     ]
   },
   "summary": {
-    "total_routes": 230,
+    "total_routes": 231,
     "stable_routes": 42,
     "beta_routes": 21,
-    "experimental_routes": 167
+    "experimental_routes": 168
   },
   "routes": [
     {
@@ -1468,6 +1468,15 @@
       "maturity": "experimental",
       "matched_prefix": "/api/learning",
       "file": "app/api/learning/suggestions/route.js"
+    },
+    {
+      "path": "/api/marketing/event",
+      "methods": [
+        "POST"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/marketing/event/route.js"
     },
     {
       "path": "/api/mcp",

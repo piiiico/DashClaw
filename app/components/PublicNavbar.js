@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
 import DashClawLogo from './DashClawLogo';
 import GithubIcon from './GithubIcon';
+import { trackMarketingEvent } from '../lib/marketingTrack';
 
 export default function PublicNavbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -28,6 +29,7 @@ export default function PublicNavbar() {
             href="https://github.com/ucsandman/DashClaw"
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => trackMarketingEvent('marketing_github_clicked', { surface: 'navbar' })}
             className="hover:text-text-primary transition-colors inline-flex items-center gap-1.5"
           >
             <GithubIcon size={14} /> GitHub
@@ -92,7 +94,10 @@ export default function PublicNavbar() {
                 href="https://github.com/ucsandman/DashClaw"
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={closeMobile}
+                onClick={() => {
+                  trackMarketingEvent('marketing_github_clicked', { surface: 'mobile_menu' });
+                  closeMobile();
+                }}
                 className="inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-text-secondary transition-colors hover:bg-white/5 hover:text-text-primary"
               >
                 <GithubIcon size={14} aria-hidden="true" /> GitHub

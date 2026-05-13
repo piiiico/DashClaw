@@ -10,8 +10,8 @@ const inter = Inter({
 })
 
 export const metadata = {
-  title: 'DashClaw — Decision Infrastructure for AI Agents',
-  description: 'The governance control plane for AI agent fleets. Enforce policies, require human approval, and record verifiable evidence. Open source, self-hosted, MIT licensed.',
+  title: 'DashClaw, the policy firewall for AI agents',
+  description: 'DashClaw intercepts agent actions before they reach the real world. Enforce policies, require human approval, and record verifiable evidence.',
   icons: {
     icon: [
       { url: '/favicons/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
@@ -21,8 +21,8 @@ export const metadata = {
   },
   manifest: '/config/site.webmanifest',
   openGraph: {
-    title: 'DashClaw — Decision Infrastructure for AI Agents',
-    description: 'The governance control plane for AI agent fleets. Enforce policies, require human approval, and record verifiable evidence. Open source, self-hosted, MIT licensed.',
+    title: 'DashClaw, the policy firewall for AI agents',
+    description: 'DashClaw intercepts agent actions before they reach the real world. Enforce policies, require human approval, and record verifiable evidence.',
     url: 'https://dashclaw.io',
     siteName: 'DashClaw',
     type: 'website',
@@ -31,14 +31,14 @@ export const metadata = {
         url: '/social/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'DashClaw governance control plane for AI agents',
+        alt: 'DashClaw, the policy firewall for AI agents',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'DashClaw — Decision Infrastructure for AI Agents',
-    description: 'The governance control plane for AI agent fleets. Open source, self-hosted, MIT licensed.',
+    title: 'DashClaw, the policy firewall for AI agents',
+    description: 'DashClaw intercepts agent actions before they reach the real world. Enforce policies, require human approval, and record verifiable evidence.',
     images: ['/social/twitter-card.png'],
   },
 }

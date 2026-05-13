@@ -13,10 +13,10 @@ doc-type: architecture
 
 ## Summary
 
-- Total routes: `230`
+- Total routes: `231`
 - Stable routes: `42`
 - Beta routes: `21`
-- Experimental routes: `167`
+- Experimental routes: `168`
 
 ## Routes
 
@@ -171,6 +171,7 @@ doc-type: architecture
 | `/api/learning/recommendations/metrics` | `GET` | `experimental` | `/api/learning` | `app/api/learning/recommendations/metrics/route.js` |
 | `/api/learning/recommendations/{recommendationId}` | `PATCH` | `experimental` | `/api/learning` | `app/api/learning/recommendations/[recommendationId]/route.js` |
 | `/api/learning/suggestions` | `GET, POST` | `experimental` | `/api/learning` | `app/api/learning/suggestions/route.js` |
+| `/api/marketing/event` | `POST` | `experimental` | `(default)` | `app/api/marketing/event/route.js` |
 | `/api/mcp` | `POST` | `experimental` | `(default)` | `app/api/mcp/route.js` |
 | `/api/messages` | `GET, PATCH, POST` | `stable` | `/api/messages` | `app/api/messages/route.js` |
 | `/api/messages/attachments` | `GET` | `stable` | `/api/messages` | `app/api/messages/attachments/route.js` |

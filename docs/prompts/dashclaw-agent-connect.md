@@ -78,8 +78,8 @@ await claw.recordAssumption({
   assumption: 'DashClaw instance is reachable',
 });
 
-// 5. Close the loop
-await claw.updateOutcome(action_id, { status: 'completed' });
+// 5. Close the loop with the v2 finality endpoint
+await claw.reportActionSuccess(action_id, 'Smoke test passed');
 
 console.log('DashClaw action recorded:', action_id);
 ```
@@ -106,9 +106,9 @@ export DASHCLAW_API_KEY=...
 ```
 
 Commands:
-- `dashclaw approvals` -- interactive inbox for pending actions
-- `dashclaw approve <actionId>` -- approve a specific action
-- `dashclaw deny <actionId>` -- deny a specific action
+- `dashclaw approvals`: interactive inbox for pending actions
+- `dashclaw approve <actionId>`: approve a specific action
+- `dashclaw deny <actionId>`: deny a specific action
 
 When an agent calls `waitForApproval()`, the SDK prints the action ID and a replay link to stdout. Approve from any terminal and the agent unblocks instantly via SSE.
 
