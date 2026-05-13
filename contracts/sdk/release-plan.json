@@ -1,14 +1,14 @@
 {
   "node": {
-    "current_version": "2.11.1",
+    "current_version": "2.12.0",
     "next_bump": "patch",
-    "reason": "Legacy _guardCheck no longer hard-stops on require_approval; approval queue now fills correctly",
-    "domains": []
+    "reason": "Durable execution finality wrappers: reportActionOutcome, getActionOutcome, reportActionSuccess/Failure/Partial, deriveIdempotencyKey",
+    "domains": ["actions.outcome", "actions.idempotency"]
   },
   "python": {
-    "current_version": "2.11.0",
+    "current_version": "2.12.0",
     "next_bump": "patch",
-    "reason": "README update: heartbeats now implicit on create_action (no API change)",
-    "domains": []
+    "reason": "Durable execution finality wrappers (snake_case): report_action_outcome, get_action_outcome, report_action_success/failure/partial, derive_idempotency_key",
+    "domains": ["actions.outcome", "actions.idempotency"]
   }
 }
