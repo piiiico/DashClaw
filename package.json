@@ -1,6 +1,6 @@
 {
   "name": "dashclaw-platform",
-  "version": "2.15.0",
+  "version": "2.16.0",
   "description": "Decision infrastructure for AI agents — governance runtime with policy enforcement, decision recording, and human-in-the-loop approval.",
   "private": true,
   "license": "MIT",
@@ -103,7 +103,8 @@
     "@esbuild-kit/core-utils": {
       "esbuild": "^0.25.0"
     },
-    "dompurify": "^3.4.0"
+    "dompurify": "^3.4.0",
+    "postcss": "^8.5.10"
   },
   "devDependencies": {
     "@cfworker/json-schema": "^4.1.1",
@@ -117,7 +118,7 @@
     "eslint": "^8.57.1",
     "eslint-config-next": "^15.5.18",
     "jsdom": "^29.1.1",
-    "postcss": "^8",
+    "postcss": "^8.5.10",
     "tailwindcss": "^3.3.0",
     "vitest": "^4.1.0"
   }

@@ -26,6 +26,9 @@ export default defineConfig({
       '**/playwright-report/**',
       '**/test-results/**',
       'cli/test/**',
+      // Git worktrees may hold sibling-branch copies of the test suite with
+      // their own divergent state; vitest should never walk into them.
+      '.worktrees/**',
     ],
   },
   resolve: {

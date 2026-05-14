@@ -27,6 +27,38 @@ are prefixed with the package name.
 
 ## [Unreleased]
 
+## [2.16.0] - 2026-05-13
+
+### Security — `postcss` XSS via unescaped `</style>` (GHSA-qx2v-qp2m-jg93)
+
+`next@16` pinned `postcss@8.4.31` in its dependency subtree; the rest of the
+toolchain (vite, tailwind, autoprefixer, postcss-load-config, etc.) was
+already on 8.5.10+. The top-level `postcss` devDep was at `^8` — semver-
+compatible with 8.4.31 but allowing the fix. Bumped the direct devDep to
+`^8.5.10` and added a wildcard override so next's nested copy resolves to
+the patched version. `npm audit` clears to 0 vulnerabilities.
+
+### Tooling — vitest excludes `.worktrees/`
+
+Git worktrees can hold sibling-branch copies of the test suite with their
+own divergent state. Adding `.worktrees/**` to `vitest.config.js exclude`
+stops the runner from inadvertently picking up tests from co-located
+worktrees (a `.worktrees/codex-parity/` worktree present on the host added
+73 false-positive failures to the local run before the exclude landed).
+
+### Weekly pricing-refresh workflow
+
+`.github/workflows/refresh-model-pricing.yml` runs every Sunday at 05:00
+UTC and on `workflow_dispatch`. Captures the dry-run diff for the PR body,
+applies `npm run pricing:refresh:apply`, runs the pricing-adjacent test
+suite (gating against regressions), and opens a PR on
+`chore/pricing-refresh` via `peter-evans/create-pull-request@v6` only when
+something actually changed.
+
+One-time repo setup: Settings → Actions → General → Workflow permissions
+→ Read and write + Allow GitHub Actions to create and approve pull
+requests.
+
 ### Dynamic model pricing — driven by LiteLLM's community JSON
 
 `npm run pricing:refresh` now syncs `app/lib/billing.js DEFAULT_PRICING` and
