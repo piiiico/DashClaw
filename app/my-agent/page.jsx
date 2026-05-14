@@ -312,14 +312,19 @@ function InstallPromptHero() {
               Your agent hasn&apos;t run anything yet.
             </h2>
             <p className="mt-2 text-sm text-secondary">
-              Three steps to get Claude Code governed, with Discord approvals on your phone.
+              Three steps to get a coding agent governed, with Discord approvals
+              on your phone. Works with Claude Code, Codex, and Hermes Agent.
             </p>
             <ol className="mx-auto mt-6 max-w-md space-y-2 text-left text-sm text-secondary">
               <li className="flex items-start gap-3">
                 <span className="font-mono text-tertiary tabular-nums">1.</span>
                 <span>
                   Install the hook{' '}
-                  <code className="font-mono text-xs text-primary">npm run hooks:install</code>
+                  <code className="font-mono text-xs text-primary">npm run hooks:install</code>{' '}
+                  (or{' '}
+                  <code className="font-mono text-xs text-primary">dashclaw install codex</code>{' '}
+                  /{' '}
+                  <code className="font-mono text-xs text-primary">bash scripts/install-hermes-plugin.sh</code>)
                 </span>
               </li>
               <li className="flex items-start gap-3">
@@ -328,7 +333,7 @@ function InstallPromptHero() {
               </li>
               <li className="flex items-start gap-3">
                 <span className="font-mono text-tertiary tabular-nums">3.</span>
-                <span>Trigger a Claude Code tool call</span>
+                <span>Trigger a tool call from your agent</span>
               </li>
             </ol>
             <Link
@@ -338,6 +343,19 @@ function InstallPromptHero() {
               Open the full guide
               <ChevronRight size={14} aria-hidden="true" />
             </Link>
+            <div className="mt-3 text-xs text-tertiary">
+              <Link href="/guides/codex" className="underline decoration-border hover:decoration-secondary">
+                Codex
+              </Link>
+              {' · '}
+              <Link href="/guides/hermes" className="underline decoration-border hover:decoration-secondary">
+                Hermes Agent
+              </Link>
+              {' · '}
+              <Link href="/connect" className="underline decoration-border hover:decoration-secondary">
+                all guides
+              </Link>
+            </div>
           </CardContent>
         </Card>
       </div>

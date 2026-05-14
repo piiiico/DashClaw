@@ -460,6 +460,14 @@ ENFORCE_AGENT_SIGNATURES=true`}</CopyableCodeBlock>
               <h3 className="text-sm font-semibold text-text-primary">Claude Code</h3>
               <p className="text-xs text-text-secondary mt-1">Hook-based governance</p>
             </Link>
+            <Link href="/guides/codex" className="p-4 rounded-xl bg-surface-secondary border border-border hover:border-border-active transition-colors">
+              <h3 className="text-sm font-semibold text-text-primary">Codex</h3>
+              <p className="text-xs text-text-secondary mt-1">dashclaw install codex</p>
+            </Link>
+            <Link href="/guides/hermes" className="p-4 rounded-xl bg-surface-secondary border border-border hover:border-border-active transition-colors">
+              <h3 className="text-sm font-semibold text-text-primary">Hermes Agent</h3>
+              <p className="text-xs text-text-secondary mt-1">8 lifecycle hooks + live ingest</p>
+            </Link>
             <Link href="/guides/openai-agents-sdk" className="p-4 rounded-xl bg-surface-secondary border border-border hover:border-border-active transition-colors">
               <h3 className="text-sm font-semibold text-text-primary">OpenAI Agents SDK</h3>
               <p className="text-xs text-text-secondary mt-1">Node.js SDK integration</p>
@@ -472,7 +480,7 @@ ENFORCE_AGENT_SIGNATURES=true`}</CopyableCodeBlock>
               <h3 className="text-sm font-semibold text-text-primary">CrewAI</h3>
               <p className="text-xs text-text-secondary mt-1">@tool decorator pattern</p>
             </Link>
-            <Link href="/docs#openclaw-plugin" className="p-4 rounded-xl bg-surface-secondary border border-border hover:border-border-active transition-colors">
+            <Link href="/guides/openclaw" className="p-4 rounded-xl bg-surface-secondary border border-border hover:border-border-active transition-colors">
               <h3 className="text-sm font-semibold text-text-primary">OpenClaw</h3>
               <p className="text-xs text-text-secondary mt-1">Framework-native plugin</p>
             </Link>
