@@ -13,10 +13,10 @@ doc-type: architecture
 
 ## Summary
 
-- Total routes: `257`
+- Total routes: `259`
 - Stable routes: `46`
 - Beta routes: `23`
-- Experimental routes: `188`
+- Experimental routes: `190`
 
 ## Routes
 
@@ -256,6 +256,8 @@ doc-type: architecture
 | `/api/setup/proof` | `GET` | `beta` | `/api/setup` | `app/api/setup/proof/route.js` |
 | `/api/setup/status` | `GET` | `beta` | `/api/setup` | `app/api/setup/status/route.js` |
 | `/api/signals` | `GET` | `experimental` | `(default)` | `app/api/signals/route.js` |
+| `/api/skills/scan` | `POST` | `experimental` | `(default)` | `app/api/skills/scan/route.js` |
+| `/api/skills/scans/{id}` | `GET` | `experimental` | `(default)` | `app/api/skills/scans/[id]/route.js` |
 | `/api/stream` | `GET` | `experimental` | `(default)` | `app/api/stream/route.js` |
 | `/api/swarm/graph` | `GET` | `experimental` | `/api/swarm` | `app/api/swarm/graph/route.js` |
 | `/api/swarm/link` | `GET` | `experimental` | `/api/swarm` | `app/api/swarm/link/route.js` |

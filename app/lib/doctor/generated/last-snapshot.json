@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:0bd85ff666ac89cd3b4e1b24500ba7adba18d538",
+  "timestamp": "sha1:bdfbcfb2ae441f3e3f6111f668a4ee5a2ff123b5",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -2371,6 +2371,26 @@
       "dynamic_params": [],
       "archived": false,
       "file_path": "app/api/signals/route.js"
+    },
+    {
+      "path": "/api/skills/scan",
+      "methods": [
+        "POST"
+      ],
+      "dynamic_params": [],
+      "archived": false,
+      "file_path": "app/api/skills/scan/route.js"
+    },
+    {
+      "path": "/api/skills/scans/[id]",
+      "methods": [
+        "GET"
+      ],
+      "dynamic_params": [
+        "id"
+      ],
+      "archived": false,
+      "file_path": "app/api/skills/scans/[id]/route.js"
     },
     {
       "path": "/api/stream",

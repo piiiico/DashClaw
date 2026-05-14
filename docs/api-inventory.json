@@ -46,10 +46,10 @@
     ]
   },
   "summary": {
-    "total_routes": 257,
+    "total_routes": 259,
     "stable_routes": 46,
     "beta_routes": 23,
-    "experimental_routes": 188
+    "experimental_routes": 190
   },
   "routes": [
     {
@@ -2268,6 +2268,24 @@
       "maturity": "experimental",
       "matched_prefix": "(default)",
       "file": "app/api/signals/route.js"
+    },
+    {
+      "path": "/api/skills/scan",
+      "methods": [
+        "POST"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/skills/scan/route.js"
+    },
+    {
+      "path": "/api/skills/scans/{id}",
+      "methods": [
+        "GET"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/skills/scans/[id]/route.js"
     },
     {
       "path": "/api/stream",
