@@ -534,7 +534,8 @@ export function createToolHandlers(client) {
           bundle: args.bundle,
         }),
       });
-      return res.json();
+      const data = await res.json();
+      return JSON.stringify(data);
     },
 
     async dashclaw_handoff_latest(args) {
@@ -543,8 +544,9 @@ export function createToolHandlers(client) {
       if (aid) params.set('agent_id', aid);
       if (args.project_id) params.set('project_id', args.project_id);
       const res = await client.fetch(`/api/handoffs/latest?${params}`);
-      if (res.status === 404) return null;
-      return res.json();
+      if (res.status === 404) return JSON.stringify(null);
+      const data = await res.json();
+      return JSON.stringify(data);
     },
 
     async dashclaw_handoff_consume(args) {
@@ -552,7 +554,8 @@ export function createToolHandlers(client) {
         method: 'POST',
         body: JSON.stringify({ session_id: args.session_id }),
       });
-      return res.json();
+      const data = await res.json();
+      return JSON.stringify(data);
     },
 
     async dashclaw_secret_list(args) {
@@ -560,7 +563,8 @@ export function createToolHandlers(client) {
       const aid = agentId(args);
       if (aid) params.set('agent_id', aid);
       const res = await client.fetch(`/api/secrets?${params}`);
-      return res.json();
+      const data = await res.json();
+      return JSON.stringify(data);
     },
 
     async dashclaw_secret_due(args) {
@@ -569,7 +573,8 @@ export function createToolHandlers(client) {
       const aid = agentId(args);
       if (aid) params.set('agent_id', aid);
       const res = await client.fetch(`/api/secrets/rotation-due?${params}`);
-      return res.json();
+      const data = await res.json();
+      return JSON.stringify(data);
     },
 
     async dashclaw_secret_mark_rotated(args) {
@@ -577,7 +582,8 @@ export function createToolHandlers(client) {
         method: 'PATCH',
         body: JSON.stringify({ last_rotated_at: new Date().toISOString() }),
       });
-      return res.json();
+      const data = await res.json();
+      return JSON.stringify(data);
     },
 
     async dashclaw_skill_scan(args) {
@@ -588,7 +594,8 @@ export function createToolHandlers(client) {
           files: args.files,
         }),
       });
-      return res.json();
+      const data = await res.json();
+      return JSON.stringify(data);
     },
 
     async dashclaw_loop_add(args) {
@@ -602,7 +609,8 @@ export function createToolHandlers(client) {
           owner: args.owner,
         }),
       });
-      return res.json();
+      const data = await res.json();
+      return JSON.stringify(data);
     },
 
     async dashclaw_loop_list(args) {
@@ -615,7 +623,8 @@ export function createToolHandlers(client) {
       if (args.from) params.set('from', args.from);
       if (args.to) params.set('to', args.to);
       const res = await client.fetch(`/api/actions/loops?${params}`);
-      return res.json();
+      const data = await res.json();
+      return JSON.stringify(data);
     },
 
     async dashclaw_loop_close(args) {
@@ -626,7 +635,8 @@ export function createToolHandlers(client) {
           resolution: args.resolution || 'Closed by agent via dashclaw_loop_close',
         }),
       });
-      return res.json();
+      const data = await res.json();
+      return JSON.stringify(data);
     },
 
     async dashclaw_learning_log(args) {
@@ -639,7 +649,8 @@ export function createToolHandlers(client) {
           outcome: args.outcome,
         }),
       });
-      return res.json();
+      const data = await res.json();
+      return JSON.stringify(data);
     },
 
     async dashclaw_learning_query(args) {
@@ -649,7 +660,8 @@ export function createToolHandlers(client) {
       if (args.query) params.set('q', args.query);
       if (args.limit) params.set('limit', String(args.limit));
       const res = await client.fetch(`/api/learning/lessons?${params}`);
-      return res.json();
+      const data = await res.json();
+      return JSON.stringify(data);
     },
 
     async dashclaw_decisions_recent(args) {
@@ -661,7 +673,8 @@ export function createToolHandlers(client) {
       if (args.since) params.set('since', args.since);
       if (args.limit) params.set('limit', String(args.limit));
       const res = await client.fetch(`/api/guard/decisions?${params}`);
-      return res.json();
+      const data = await res.json();
+      return JSON.stringify(data);
     },
   };
 }
