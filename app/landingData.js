@@ -52,7 +52,7 @@ export const platformFeatures = [
   { icon: DashClawLogo, title: 'Verified Agent Identity', description: 'Know which agent took which action. RSA signature verification ensures accountability at every step of the decision lifecycle.' },
   { icon: Terminal, title: 'CLI Approval Channel', description: 'Approve or deny agent actions from the terminal without opening a browser. Works with Claude Code, Codex, Hermes Agent, Gemini CLI, and any terminal-first workflow.' },
   { icon: Webhook, title: 'Coding-agent Hooks', description: 'Govern Claude Code, Codex, and Hermes Agent tool calls via shared field-compatible hook schemas. No SDK instrumentation required. Hermes additionally exposes pre_llm_call (per-turn context injection), post_llm_call (live ingest), transform_tool_result (secret redaction), and subagent_stop (delegate_task ROI).' },
-  { icon: Network, title: 'MCP Server', description: 'Connect any MCP client to DashClaw governance with one config line. 8 tools and 4 resources over stdio or Streamable HTTP. Works with Claude Code, Claude Desktop, and Managed Agents.' },
+  { icon: Network, title: 'MCP Server', description: 'Connect any MCP client to DashClaw governance with one config line. 23 tools and 4 resources over stdio or Streamable HTTP. Works with Claude Code, Claude Desktop, and Managed Agents.' },
   { icon: FolderKanban, title: 'Execution Studio', description: 'Workflow templates, capability registry, knowledge collections, and model strategies. Chain governed actions into multi-step pipelines with conditional execution and resume-from-checkpoint.' },
 ];
 
@@ -103,7 +103,7 @@ export const frameworkQuickstarts = [
     }
   }
 }
-// 8 governance tools + 4 resources
+// 23 governance tools + 4 resources
 // No SDK. No code changes.`
   },
   {

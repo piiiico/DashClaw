@@ -64,9 +64,9 @@ The CLI (`dashclaw doctor`) invokes these endpoints. Local mode (`npm run doctor
 
 | Endpoint | Methods | Purpose |
 |---|---|---|
-| `/api/mcp` | POST | Model Context Protocol Streamable HTTP transport. Same 8 tools / 4 resources exposed by the stdio binary (`@dashclaw/mcp-server`). |
+| `/api/mcp` | POST | Model Context Protocol Streamable HTTP transport. Same 23 tools / 4 resources exposed by the stdio binary (`@dashclaw/mcp-server`). |
 
-**Tools:** `dashclaw_guard`, `dashclaw_record`, `dashclaw_invoke`, `dashclaw_capabilities_list`, `dashclaw_policies_list`, `dashclaw_wait_for_approval`, `dashclaw_session_start`, `dashclaw_session_end`.
+**23 tools across 7 groups.** Core governance (8): `dashclaw_guard`, `dashclaw_record`, `dashclaw_invoke`, `dashclaw_capabilities_list`, `dashclaw_policies_list`, `dashclaw_wait_for_approval`, `dashclaw_session_start`, `dashclaw_session_end`. Optimal files (2): `dashclaw_optimal_files_preview`, `dashclaw_optimal_files_manifest`. Session continuity (3): `dashclaw_handoff_create`, `dashclaw_handoff_latest`, `dashclaw_handoff_consume`. Credential hygiene (3): `dashclaw_secret_list`, `dashclaw_secret_due`, `dashclaw_secret_mark_rotated`. Skill safety (1): `dashclaw_skill_scan`. Open loops (3): `dashclaw_loop_add`, `dashclaw_loop_list`, `dashclaw_loop_close`. Learning + retrospection (3): `dashclaw_learning_log`, `dashclaw_learning_query`, `dashclaw_decisions_recent`.
 
 **Resources:** `dashclaw://policies`, `dashclaw://capabilities`, `dashclaw://agent/{agent_id}/history`, `dashclaw://status`.
 

@@ -27,6 +27,27 @@ are prefixed with the package name.
 
 ## [Unreleased]
 
+### Publishing & docs
+
+- **`@dashclaw/mcp-server` published to npm.** The MCP server is now installable
+  via `npx @dashclaw/mcp-server` instead of the local-path workaround. The
+  package was structurally ready (`bin`, `exports`, `files` allow-list, scoped
+  `@dashclaw/` name) but had never been pushed to the registry; the README,
+  landing page, `/connect`, `/docs`, plugin templates, and managed-agent
+  example all assumed it was published, so the actual `npm publish` closes a
+  documentation-vs-reality gap.
+- **Doc fixes for the 8-tool → 23-tool expansion.** Several surfaces still
+  claimed "8 tools and 4 resources" from the v2.12 launch; they now reflect
+  the 23-tool / 7-group reality (`mcp-server/README.md`, `README.md`,
+  `app/page.js`, `app/landingData.js`, `app/docs/page.js`, `app/downloads/page.js`,
+  `sdk/README.md`, `examples/managed-agent-mcp/`, `examples/README.md`, and the
+  `dashclaw-platform-intelligence` skill references). The "6 groups"
+  miscount in user-facing copy was also corrected to "7 groups". Historical
+  changelog entries from v2.12 and the v2.17 expansion are left intact.
+- **Hooks made cwd-independent.** `.claude/settings.json` hooks now resolve
+  via `$CLAUDE_PROJECT_DIR` instead of relative or hardcoded paths, so they
+  no longer fail when an agent `cd`s into a subdirectory.
+
 ## [2.18.0] - 2026-05-14 — Retract the monetization surface entirely
 
 DashClaw is an open-source project for governing AI agents. The earlier

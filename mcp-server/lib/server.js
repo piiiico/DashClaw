@@ -26,7 +26,8 @@ function jsonSchemaToInputSchema(jsonSchema) {
 }
 
 /**
- * Create and configure an McpServer instance with all 8 tools and 4 resources.
+ * Create and configure an McpServer instance with all tools and resources from
+ * TOOL_DEFINITIONS and RESOURCE_DEFINITIONS.
  *
  * @param {object} config - Configuration options
  * @param {string} [config.url] - DashClaw instance URL (default: http://localhost:3000)
@@ -60,7 +61,7 @@ export function createServer(config = {}) {
     }
   );
 
-  // 4. Register all 8 tools
+  // 4. Register all tools
   for (const toolDef of TOOL_DEFINITIONS) {
     const handler = toolHandlers[toolDef.name];
     if (!handler) {

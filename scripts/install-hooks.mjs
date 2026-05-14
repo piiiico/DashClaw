@@ -62,6 +62,10 @@ function copyTree(srcDir, destDir) {
   }
 }
 
+// Hook commands use $CLAUDE_PROJECT_DIR so they resolve correctly regardless
+// of what subdirectory an agent has cd'd into. Relative paths like
+// `.claude/hooks/dashclaw_pretool.py` break the moment any tool changes cwd
+// mid-session, which silently disables every governance hook.
 const HOOK_BLOCKS = {
   PreToolUse: [
     {
@@ -69,7 +73,7 @@ const HOOK_BLOCKS = {
       hooks: [
         {
           type: 'command',
-          command: 'python .claude/hooks/dashclaw_pretool.py',
+          command: 'python "$CLAUDE_PROJECT_DIR/.claude/hooks/dashclaw_pretool.py"',
           timeout: 3600000,
         },
       ],
@@ -81,7 +85,7 @@ const HOOK_BLOCKS = {
       hooks: [
         {
           type: 'command',
-          command: 'python .claude/hooks/dashclaw_posttool.py',
+          command: 'python "$CLAUDE_PROJECT_DIR/.claude/hooks/dashclaw_posttool.py"',
         },
       ],
     },
@@ -91,7 +95,7 @@ const HOOK_BLOCKS = {
       hooks: [
         {
           type: 'command',
-          command: 'python .claude/hooks/dashclaw_stop.py',
+          command: 'python "$CLAUDE_PROJECT_DIR/.claude/hooks/dashclaw_stop.py"',
         },
       ],
     },

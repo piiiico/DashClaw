@@ -689,7 +689,7 @@ if (decision === "allow") {
                   {
                     label: 'Zero code',
                     title: 'MCP server',
-                    desc: 'Any MCP-compatible client (Claude Code, Claude Desktop, Managed Agents) gets governance via 8 tools and 4 resources. No SDK, no hooks.',
+                    desc: 'Any MCP-compatible client (Claude Code, Claude Desktop, Managed Agents) gets governance via 23 tools and 4 resources. No SDK, no hooks.',
                     example: 'npx @dashclaw/mcp-server --url ... --key ...',
                     href: '/docs#mcp-server',
                   },

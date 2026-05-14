@@ -1,6 +1,6 @@
 # @dashclaw/mcp-server
 
-MCP server for [DashClaw](https://github.com/ucsandman/DashClaw) governance. Exposes guard, record, invoke, and discovery tools over [Model Context Protocol](https://modelcontextprotocol.io/).
+MCP server for [DashClaw](https://github.com/ucsandman/DashClaw) governance. Exposes 23 governance tools and 4 read-only resources over [Model Context Protocol](https://modelcontextprotocol.io/). Works with Claude Code, Claude Desktop, Claude Managed Agents, and any MCP-compatible client.
 
 ## Quick Start
 
@@ -45,27 +45,76 @@ agent = client.beta.agents.create(
 )
 ```
 
-## Tools
+## Tools (23)
+
+Grouped by domain. See [`lib/tools.js`](./lib/tools.js) for the canonical definitions.
+
+**Core governance (8)** — the guard / record / invoke loop plus discovery and session lifecycle.
 
 | Tool | Description |
 |---|---|
 | `dashclaw_guard` | Evaluate policies before risky actions |
 | `dashclaw_record` | Log actions to audit trail |
-| `dashclaw_invoke` | Execute governed capabilities |
+| `dashclaw_invoke` | Execute governed capabilities (guard + run + record) |
 | `dashclaw_capabilities_list` | Discover available APIs |
 | `dashclaw_policies_list` | See active governance policies |
-| `dashclaw_wait_for_approval` | Wait for human approval |
+| `dashclaw_wait_for_approval` | Block until a human resolves an approval |
 | `dashclaw_session_start` | Register agent session |
 | `dashclaw_session_end` | Close agent session |
 
-## Resources
+**Optimal files (2)** — Code Sessions optimizer output (root CLAUDE.md, path-scoped rules, hooks, skill packs).
+
+| Tool | Description |
+|---|---|
+| `dashclaw_optimal_files_preview` | Preview optimizer output for a session |
+| `dashclaw_optimal_files_manifest` | Generate optimal-files manifest |
+
+**Session continuity (3)** — agent-runtime handoff bundle for the next session.
+
+| Tool | Description |
+|---|---|
+| `dashclaw_handoff_create` | Write handoff bundle for next session |
+| `dashclaw_handoff_latest` | Fetch latest unconsumed handoff |
+| `dashclaw_handoff_consume` | Mark handoff consumed (idempotent) |
+
+**Credential hygiene (3)** — check rotation due-dates before acting on tracked credentials.
+
+| Tool | Description |
+|---|---|
+| `dashclaw_secret_list` | List tracked secrets (metadata only) |
+| `dashclaw_secret_due` | Secrets coming due for rotation |
+| `dashclaw_secret_mark_rotated` | Mark secret rotated (operator-confirmed) |
+
+**Skill safety (1)** — static safety scan of untrusted skill files; results cached by content hash.
+
+| Tool | Description |
+|---|---|
+| `dashclaw_skill_scan` | Scan skill files for unsafe patterns |
+
+**Open loops (3)** — action-scoped commitments ("I will X later" tracker).
+
+| Tool | Description |
+|---|---|
+| `dashclaw_loop_add` | Register action-scoped commitment |
+| `dashclaw_loop_list` | List open/resolved loops |
+| `dashclaw_loop_close` | Resolve an open loop |
+
+**Learning + retrospection (3)** — log and query non-obvious decisions; recent governed-action ledger.
+
+| Tool | Description |
+|---|---|
+| `dashclaw_learning_log` | Log non-obvious decision + outcome |
+| `dashclaw_learning_query` | Query prior decisions/lessons |
+| `dashclaw_decisions_recent` | Recent governed-action ledger |
+
+## Resources (4)
 
 | URI | Description |
 |---|---|
 | `dashclaw://policies` | Active policy set |
 | `dashclaw://capabilities` | Available capabilities and health |
-| `dashclaw://agent/{agent_id}/history` | Recent action history |
-| `dashclaw://status` | Instance health and metrics |
+| `dashclaw://agent/{agent_id}/history` | Recent action history (last 50) |
+| `dashclaw://status` | Instance health + operational metrics |
 
 ## Configuration
 

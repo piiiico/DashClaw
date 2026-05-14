@@ -91,7 +91,7 @@ For Claude Code specifically, the hook installer alone (without the plugin) gove
 
 ### 2. MCP server (zero code, any MCP host)
 
-[`@dashclaw/mcp-server`](./mcp-server) exposes **23 governance MCP tools** across 6 groups — core governance, optimal files, session continuity, credential hygiene, skill safety, open loops, learning + retrospection — plus 4 read-only resources (`dashclaw://policies`, `dashclaw://capabilities`, `dashclaw://agent/{agent_id}/history`, `dashclaw://status`).
+[`@dashclaw/mcp-server`](./mcp-server) exposes **23 governance MCP tools** across 7 groups — core governance, optimal files, session continuity, credential hygiene, skill safety, open loops, learning + retrospection — plus 4 read-only resources (`dashclaw://policies`, `dashclaw://capabilities`, `dashclaw://agent/{agent_id}/history`, `dashclaw://status`).
 
 **Stdio (Claude Code, Claude Desktop, any stdio MCP client):**
 
