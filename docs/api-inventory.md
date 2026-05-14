@@ -13,10 +13,10 @@ doc-type: architecture
 
 ## Summary
 
-- Total routes: `254`
+- Total routes: `257`
 - Stable routes: `46`
 - Beta routes: `23`
-- Experimental routes: `185`
+- Experimental routes: `188`
 
 ## Routes
 
@@ -237,6 +237,9 @@ doc-type: architecture
 | `/api/scoring/risk-templates` | `GET, POST` | `experimental` | `(default)` | `app/api/scoring/risk-templates/route.js` |
 | `/api/scoring/risk-templates/{templateId}` | `DELETE, PATCH` | `experimental` | `(default)` | `app/api/scoring/risk-templates/[templateId]/route.js` |
 | `/api/scoring/score` | `GET, POST` | `experimental` | `(default)` | `app/api/scoring/score/route.js` |
+| `/api/secrets` | `GET, POST` | `experimental` | `(default)` | `app/api/secrets/route.js` |
+| `/api/secrets/rotation-due` | `GET` | `experimental` | `(default)` | `app/api/secrets/rotation-due/route.js` |
+| `/api/secrets/{id}` | `DELETE, PATCH` | `experimental` | `(default)` | `app/api/secrets/[id]/route.js` |
 | `/api/security/prompt-injection` | `GET, POST` | `beta` | `/api/security` | `app/api/security/prompt-injection/route.js` |
 | `/api/security/scan` | `POST` | `beta` | `/api/security` | `app/api/security/scan/route.js` |
 | `/api/security/status` | `GET` | `beta` | `/api/security` | `app/api/security/status/route.js` |

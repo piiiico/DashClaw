@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:292aa1f3dd01182917c9b81bd38229f873be6c21",
+  "timestamp": "sha1:0bd85ff666ac89cd3b4e1b24500ba7adba18d538",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -2187,6 +2187,37 @@
       "dynamic_params": [],
       "archived": false,
       "file_path": "app/api/scoring/score/route.js"
+    },
+    {
+      "path": "/api/secrets",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "dynamic_params": [],
+      "archived": false,
+      "file_path": "app/api/secrets/route.js"
+    },
+    {
+      "path": "/api/secrets/[id]",
+      "methods": [
+        "DELETE",
+        "PATCH"
+      ],
+      "dynamic_params": [
+        "id"
+      ],
+      "archived": false,
+      "file_path": "app/api/secrets/[id]/route.js"
+    },
+    {
+      "path": "/api/secrets/rotation-due",
+      "methods": [
+        "GET"
+      ],
+      "dynamic_params": [],
+      "archived": false,
+      "file_path": "app/api/secrets/rotation-due/route.js"
     },
     {
       "path": "/api/security/prompt-injection",

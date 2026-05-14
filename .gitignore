@@ -95,6 +95,7 @@ agent-tools/secrets/
 
 # Secrets (paranoid mode)
 secrets/
+!app/api/secrets/
 *.pem
 *.key
 *.crt
