@@ -66,9 +66,13 @@ describe('billing.estimateCost — 5-arg cache extras', () => {
     expect(Math.abs(cost - base - 0.0225)).toBeLessThan(1e-9);
   });
 
-  it('model without cache columns (gpt-4o) returns same as 4-arg even with extras supplied', () => {
-    const base = estimateCost(100, 200, 'gpt-4o');
-    const withExtras = estimateCost(100, 200, 'gpt-4o', null, {
+  it('model without cache columns (codex) returns same as 4-arg even with extras supplied', () => {
+    // gpt-4o gained cache_read pricing in the LiteLLM-driven refresh; use a
+    // model that still has no cache columns to lock in the "extras ignored
+    // when columns absent" contract. Codex is hand-curated and intentionally
+    // stays cache-less because Anthropic-style cache pricing doesn't apply.
+    const base = estimateCost(100, 200, 'codex');
+    const withExtras = estimateCost(100, 200, 'codex', null, {
       cache_creation_tokens: 50000,
       cache_read_tokens: 50000,
     });

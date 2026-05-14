@@ -27,6 +27,68 @@ are prefixed with the package name.
 
 ## [Unreleased]
 
+### Dynamic model pricing — driven by LiteLLM's community JSON
+
+`npm run pricing:refresh` now syncs `app/lib/billing.js DEFAULT_PRICING` and
+`app/lib/claude-code/pricing.js PRICES_PER_MTOK` against [LiteLLM's
+`model_prices_and_context_window.json`](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json),
+the de-facto industry pricing source. Anthropic / OpenAI / Google don't
+publish machine-readable rates; LiteLLM is the most widely-trusted
+community-maintained mirror (~50K developers, weekly updates).
+
+- Script writes to marker-bounded blocks (`MODEL_PRICING_GENERATED:*:START/END`)
+  so hand-curated rows (unversioned family defaults, Codex, Llama variants
+  LiteLLM doesn't track) stay outside the regen path.
+- Dry-run by default; `--apply` to commit. Prints a per-pattern diff so
+  rate changes are visible before the file write.
+- Registry mapping in the script defines DashClaw-pattern → LiteLLM-key
+  candidates per family. First match wins; misses are logged but don't
+  fail the run.
+- `__tests__/unit/refresh-model-pricing.test.js` locks in: per-million
+  conversion, multi-candidate fallback, placeholder-entry skip, no-cache-
+  columns handling, REGISTRY coverage, and the marker-replace contract.
+
+Applied the first refresh; the live diff vs. the prior hand-maintained
+table surfaced these real provider updates:
+
+- **o3: input \$10 → \$2, output \$40 → \$8** (OpenAI's mid-2025 price cut).
+- **o3-pro: input \$150 → \$20, output \$600 → \$80** (same cut).
+- **GPT-4o / GPT-4o-mini / GPT-4.1 family: cache_read rates added**
+  (previously \$0 — we were under-counting cache-heavy spend for those
+  models the same way we did for opus-4-6).
+- **o3-mini / o4-mini: cache_read rates added** (\$0.55 / \$0.275).
+- **Gemini 2.5 Flash: input \$0.15 → \$0.30, output \$0.60 → \$2.50**,
+  cache_read added at \$0.03.
+- **Gemini 2.5 Pro: cache_read added at \$0.125**.
+
+The next operator can re-run `npm run pricing:refresh` weekly (manually or
+via a GitHub Action — workflow scaffolding is straightforward but not
+included in this commit) to keep the table fresh.
+
+### Pricing accuracy fix — Claude 4.5/4.6/4.7 family
+
+Pre-LiteLLM-integration cleanup of the same root cause that drove the
+Code Sessions vs Mission Control 6× cost divergence (see below). Both
+pricing tables carried legacy Opus 4.1 rates (\$15/\$75) for every Opus
+4-x — Anthropic dropped Opus 4.5/4.6/4.7 to \$5/\$25 (with \$6.25 cache
+write, \$0.50 cache read). Sonnet 4.5 and Haiku 4.5 cache columns were
+also missing; Haiku 4.5 input/output had \$0.80/\$4 (Anthropic publishes
+\$1/\$5). All corrected to match
+[platform.claude.com/docs/en/about-claude/pricing](https://platform.claude.com/docs/en/about-claude/pricing).
+
+`scripts/backfill-code-session-cache-cost.mjs` is the path to recompute
+historical `cost_usd` against the corrected rates — opt-in, dry-run by
+default. The detail-page divergence flag now points operators at the
+script.
+
+### Bugfix — backfill script needed env loading
+
+`scripts/backfill-code-session-cache-cost.mjs` silently returned 0 rows
+when `DATABASE_URL` was unset (mock driver fallback). Switched to the
+sibling-script pattern: `import './_load-env.mjs'` + `createSqlFromEnv()`
+auto-loads `.env.local` and errors out with a clear message when the
+env is missing.
+
 ## [2.15.0] - 2026-05-13
 
 ### Code Sessions polish (post-absorption follow-ups)
