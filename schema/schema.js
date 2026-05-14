@@ -4,7 +4,7 @@
 // app/lib/doctor/shape.mjs can filter via getTablesByDomain('<name>') without
 // a hand-maintained map. Current domains: governance. Regenerate after edits
 // with `npm run livingcode:refresh`.
-import { pgTable, text, timestamp, integer, boolean, uniqueIndex, numeric, customType, serial, real, jsonb, pgEnum, check } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, integer, boolean, uniqueIndex, unique, numeric, customType, serial, real, jsonb, pgEnum, check } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
 // Custom vector type for pgvector
@@ -1221,9 +1221,9 @@ export const codeOptimalFileManifests = pgTable('code_optimal_file_manifests', {
 // @domain governance
 export const codeSessionHandoffs = pgTable('code_session_handoffs', {
   id: text('id').primaryKey(),
-  orgId: text('org_id').notNull(),
+  orgId: text('org_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   agentId: text('agent_id').notNull(),
-  projectId: text('project_id'),
+  projectId: text('project_id').references(() => codeProjects.id, { onDelete: 'set null' }),
   createdInSessionId: text('created_in_session_id'),
   bundleJson: jsonb('bundle_json').notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
@@ -1234,7 +1234,7 @@ export const codeSessionHandoffs = pgTable('code_session_handoffs', {
 // @domain governance
 export const governedSecrets = pgTable('governed_secrets', {
   id: text('id').primaryKey(),
-  orgId: text('org_id').notNull(),
+  orgId: text('org_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   agentId: text('agent_id'),
   name: text('name').notNull(),
   lastRotatedAt: timestamp('last_rotated_at', { withTimezone: true }).notNull().defaultNow(),
@@ -1243,18 +1243,22 @@ export const governedSecrets = pgTable('governed_secrets', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (table) => ({
-  uniqueName: uniqueIndex('governed_secrets_unique_per_agent').on(table.orgId, table.agentId, table.name),
+  // NULLS NOT DISTINCT closes the gap for org-wide secrets (agent_id IS NULL):
+  // Postgres 15+ treats NULLs as equal here so we get one row per (org, name)
+  // even when agent_id is NULL. Migration SQL emits this as an inline
+  // CONSTRAINT ... UNIQUE NULLS NOT DISTINCT (...).
+  uniqueName: unique('governed_secrets_unique_per_agent').on(table.orgId, table.agentId, table.name).nullsNotDistinct(),
 }));
 
 // @domain governance
 export const skillScanResults = pgTable('skill_scan_results', {
   id: text('id').primaryKey(),
-  orgId: text('org_id').notNull(),
+  orgId: text('org_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   skillName: text('skill_name').notNull(),
   targetHash: text('target_hash').notNull(),
   findings: jsonb('findings').notNull(),
   passed: boolean('passed').notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 }, (table) => ({
-  dedupe: uniqueIndex('skill_scan_results_dedupe').on(table.orgId, table.skillName, table.targetHash),
+  dedupe: unique('skill_scan_results_dedupe').on(table.orgId, table.skillName, table.targetHash),
 }));
