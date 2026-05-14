@@ -189,6 +189,205 @@ export const TOOL_DEFINITIONS = [
       required: ['session_id', 'selections'],
     },
   },
+  {
+    name: 'dashclaw_handoff_create',
+    description:
+      'Create a session handoff bundle for the next session of this agent to consume on start. ' +
+      'Call this when wrapping up — include a 1-2 sentence summary, any open loops, decisions made, ' +
+      'and freeform state you want the next session to see.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        agent_id: { type: 'string', description: 'Agent ID (override default)' },
+        project_id: { type: 'string', description: 'Optional project ID — handoff is project-scoped' },
+        bundle: {
+          type: 'object',
+          description: 'Handoff content: { summary, open_loops, decisions_made, state_snapshot, generated_at }',
+        },
+      },
+      required: ['bundle'],
+    },
+  },
+  {
+    name: 'dashclaw_handoff_latest',
+    description:
+      'Fetch the latest unconsumed session handoff for this agent (+ project, optional). ' +
+      'Call this on session start to pick up where the last session left off. Returns null if ' +
+      'no handoff is waiting.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        agent_id: { type: 'string' },
+        project_id: { type: 'string' },
+      },
+    },
+  },
+  {
+    name: 'dashclaw_handoff_consume',
+    description:
+      'Mark a handoff as consumed. Call after dashclaw_handoff_latest returns a bundle and you ' +
+      'have processed it. Idempotent.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', description: 'Handoff id (hf_*) from handoff_latest' },
+        session_id: { type: 'string', description: 'Optional current session id for provenance' },
+      },
+      required: ['id'],
+    },
+  },
+  {
+    name: 'dashclaw_secret_list',
+    description:
+      'List tracked secrets (metadata only — no values). Returns each entry with name, rotation ' +
+      'interval, last_rotated_at, and computed next_rotation_due.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        agent_id: { type: 'string', description: 'Optional — scope to this agent' },
+      },
+    },
+  },
+  {
+    name: 'dashclaw_secret_due',
+    description:
+      'List secrets coming due for rotation. Call this BEFORE acting on credentials. If a ' +
+      'credential you would use is in the result, flag the operator rather than proceeding.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        within_days: { type: 'integer', description: 'Lookahead window in days (default 14)' },
+        agent_id: { type: 'string' },
+      },
+    },
+  },
+  {
+    name: 'dashclaw_secret_mark_rotated',
+    description:
+      'Mark a tracked secret as rotated (sets last_rotated_at = now). Agents only call this if ' +
+      'the operator instructs; secret registration is an operator task.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', description: 'Secret id (sec_*)' },
+      },
+      required: ['id'],
+    },
+  },
+  {
+    name: 'dashclaw_skill_scan',
+    description:
+      'Run a static safety scan against the contents of an untrusted skill before loading it. ' +
+      'Returns findings (severity, file, line) and a passed boolean. If passed=false, do NOT load ' +
+      'the skill — show the findings to the operator.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        skill_name: { type: 'string' },
+        files: {
+          type: 'object',
+          description: 'Map of filename -> file content (string)',
+        },
+      },
+      required: ['skill_name', 'files'],
+    },
+  },
+  {
+    name: 'dashclaw_loop_add',
+    description:
+      'Register an open loop on a parent action — a commitment made in conversation that needs ' +
+      'follow-up. Use when you say "I will X later" so the loop is tracked outside of context. ' +
+      'Loops are action-scoped; action_id is required.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        action_id: { type: 'string', description: 'Parent action id (act_*) the loop attaches to' },
+        loop_type: { type: 'string', description: 'Category (e.g., follow_up, blocker, decision_pending)' },
+        description: { type: 'string' },
+        priority: { type: 'string', enum: ['low', 'medium', 'high', 'critical'], description: 'Priority (default medium)' },
+        owner: { type: 'string', description: 'Optional owner (agent or human handle)' },
+      },
+      required: ['action_id', 'loop_type', 'description'],
+    },
+  },
+  {
+    name: 'dashclaw_loop_list',
+    description:
+      'List open (or resolved) loops with optional filters. Use on session start to remember ' +
+      'what you promised to follow up on.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        action_id: { type: 'string', description: 'Filter by parent action' },
+        status: { type: 'string', enum: ['open', 'resolved', 'cancelled'] },
+        priority: { type: 'string', enum: ['low', 'medium', 'high', 'critical'] },
+        agent_id: { type: 'string', description: 'Filter by agent (joined via parent action)' },
+        from: { type: 'string', description: 'ISO timestamp lower bound (reserved)' },
+        to: { type: 'string', description: 'ISO timestamp upper bound (reserved)' },
+      },
+    },
+  },
+  {
+    name: 'dashclaw_loop_close',
+    description:
+      'Resolve an open loop. Call when the followed-up-on item is complete. Requires the loop_id ' +
+      'and a short resolution note.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', description: 'Loop id (loop_*)' },
+        resolution: { type: 'string', description: 'Short note describing how the loop was closed' },
+      },
+      required: ['id'],
+    },
+  },
+  {
+    name: 'dashclaw_learning_log',
+    description:
+      'Log a decision + outcome to the learning database. Use after making a non-obvious decision ' +
+      'so future sessions can recall the reasoning and outcome.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        agent_id: { type: 'string' },
+        decision: { type: 'string', description: 'What was decided' },
+        context: { type: 'string', description: 'Why this decision was made' },
+        outcome: { type: 'string', description: 'What happened (optional, can be updated later)' },
+      },
+      required: ['decision'],
+    },
+  },
+  {
+    name: 'dashclaw_learning_query',
+    description:
+      'Query the learning database for prior decisions and lessons. Use BEFORE making a decision ' +
+      'similar to one you might have made before.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        agent_id: { type: 'string' },
+        query: { type: 'string', description: 'Search text (matches decision/context)' },
+        limit: { type: 'integer', description: 'Max results (default 10)' },
+      },
+    },
+  },
+  {
+    name: 'dashclaw_decisions_recent',
+    description:
+      'Query the guardrail decisions ledger for recent governed actions. Filter by agent, action ' +
+      'type, decision verdict, or time window. Use for in-session retrospection — "what have I done ' +
+      'recently?"',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        agent_id: { type: 'string' },
+        action_type: { type: 'string' },
+        decision: { type: 'string', enum: ['allow', 'warn', 'block', 'require_approval'] },
+        since: { type: 'string', description: 'ISO timestamp lower bound' },
+        limit: { type: 'integer', description: 'Max results (default 20)' },
+      },
+    },
+  },
 ];
 
 /**
@@ -324,6 +523,145 @@ export function createToolHandlers(client) {
         summary: input.summary,
       }, { timeout: 10000 });
       return JSON.stringify(result);
+    },
+
+    async dashclaw_handoff_create(args) {
+      const res = await client.fetch('/api/handoffs', {
+        method: 'POST',
+        body: JSON.stringify({
+          agent_id: agentId(args),
+          project_id: args.project_id,
+          bundle: args.bundle,
+        }),
+      });
+      return res.json();
+    },
+
+    async dashclaw_handoff_latest(args) {
+      const params = new URLSearchParams();
+      const aid = agentId(args);
+      if (aid) params.set('agent_id', aid);
+      if (args.project_id) params.set('project_id', args.project_id);
+      const res = await client.fetch(`/api/handoffs/latest?${params}`);
+      if (res.status === 404) return null;
+      return res.json();
+    },
+
+    async dashclaw_handoff_consume(args) {
+      const res = await client.fetch(`/api/handoffs/${encodeURIComponent(args.id)}/consume`, {
+        method: 'POST',
+        body: JSON.stringify({ session_id: args.session_id }),
+      });
+      return res.json();
+    },
+
+    async dashclaw_secret_list(args) {
+      const params = new URLSearchParams();
+      const aid = agentId(args);
+      if (aid) params.set('agent_id', aid);
+      const res = await client.fetch(`/api/secrets?${params}`);
+      return res.json();
+    },
+
+    async dashclaw_secret_due(args) {
+      const params = new URLSearchParams();
+      if (args.within_days != null) params.set('within_days', String(args.within_days));
+      const aid = agentId(args);
+      if (aid) params.set('agent_id', aid);
+      const res = await client.fetch(`/api/secrets/rotation-due?${params}`);
+      return res.json();
+    },
+
+    async dashclaw_secret_mark_rotated(args) {
+      const res = await client.fetch(`/api/secrets/${encodeURIComponent(args.id)}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ last_rotated_at: new Date().toISOString() }),
+      });
+      return res.json();
+    },
+
+    async dashclaw_skill_scan(args) {
+      const res = await client.fetch('/api/skills/scan', {
+        method: 'POST',
+        body: JSON.stringify({
+          skill_name: args.skill_name,
+          files: args.files,
+        }),
+      });
+      return res.json();
+    },
+
+    async dashclaw_loop_add(args) {
+      const res = await client.fetch('/api/actions/loops', {
+        method: 'POST',
+        body: JSON.stringify({
+          action_id: args.action_id,
+          loop_type: args.loop_type,
+          description: args.description,
+          priority: args.priority,
+          owner: args.owner,
+        }),
+      });
+      return res.json();
+    },
+
+    async dashclaw_loop_list(args) {
+      const params = new URLSearchParams();
+      if (args.action_id) params.set('action_id', args.action_id);
+      if (args.status) params.set('status', args.status);
+      if (args.priority) params.set('priority', args.priority);
+      const aid = agentId(args);
+      if (aid) params.set('agent_id', aid);
+      if (args.from) params.set('from', args.from);
+      if (args.to) params.set('to', args.to);
+      const res = await client.fetch(`/api/actions/loops?${params}`);
+      return res.json();
+    },
+
+    async dashclaw_loop_close(args) {
+      const res = await client.fetch(`/api/actions/loops/${encodeURIComponent(args.id)}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          status: 'resolved',
+          resolution: args.resolution || 'Closed by agent via dashclaw_loop_close',
+        }),
+      });
+      return res.json();
+    },
+
+    async dashclaw_learning_log(args) {
+      const res = await client.fetch('/api/learning', {
+        method: 'POST',
+        body: JSON.stringify({
+          agent_id: agentId(args),
+          decision: args.decision,
+          context: args.context,
+          outcome: args.outcome,
+        }),
+      });
+      return res.json();
+    },
+
+    async dashclaw_learning_query(args) {
+      const params = new URLSearchParams();
+      const aid = agentId(args);
+      if (aid) params.set('agent_id', aid);
+      if (args.query) params.set('q', args.query);
+      if (args.limit) params.set('limit', String(args.limit));
+      const res = await client.fetch(`/api/learning/lessons?${params}`);
+      return res.json();
+    },
+
+    async dashclaw_decisions_recent(args) {
+      const params = new URLSearchParams();
+      const aid = agentId(args);
+      if (aid) params.set('agent_id', aid);
+      if (args.action_type) params.set('action_type', args.action_type);
+      if (args.decision) params.set('decision', args.decision);
+      if (args.since) params.set('since', args.since);
+      if (args.limit) params.set('limit', String(args.limit));
+      const res = await client.fetch(`/api/guard/decisions?${params}`);
+      return res.json();
     },
   };
 }

@@ -72,4 +72,31 @@ export class DashClawClient {
       return { error: err.message, _status: 0 };
     }
   }
+
+  /**
+   * Low-level fetch passthrough used by toolkit MCP handlers that need
+   * direct access to status codes (e.g., 404-as-null) and per-call methods.
+   * Returns the raw Response-like object: { ok, status, json() }.
+   */
+  async fetch(path, opts = {}) {
+    const method = (opts.method || 'GET').toUpperCase();
+    const headers = { 'x-api-key': this.apiKey, ...(opts.headers || {}) };
+    if (opts.body && !headers['Content-Type']) headers['Content-Type'] = 'application/json';
+    const timeout = opts.timeout ?? 10000;
+    try {
+      const res = await fetch(`${this.baseUrl}${path}`, {
+        method,
+        headers,
+        body: opts.body,
+        signal: AbortSignal.timeout(timeout),
+      });
+      return res;
+    } catch (err) {
+      return {
+        ok: false,
+        status: 0,
+        json: async () => ({ error: err.message, _status: 0 }),
+      };
+    }
+  }
 }
