@@ -866,7 +866,12 @@ Expected: FAIL — modules don't exist.
 
 - [ ] **Step 4: Implement the scanner**
 
-Create `app/lib/skill-scanner.js`. Rule patterns are built via `new RegExp()` with string concatenation so this file itself doesn't trigger source-grep tools that look for dangerous-call literals:
+Create `app/lib/skill-scanner.js`. Conventions captured here from code review:
+
+1. Rule patterns are built via `new RegExp()` with string concatenation so this file itself doesn't trigger source-grep tools that look for dangerous-call literals.
+2. `exec`/`eval`/`os.system` rules use a negative lookbehind `(?<![.\w])` (not just `\b`). Plain `\b` over-matched legitimate method calls like `pattern.exec(...)` (JS RegExp), `db.exec(...)` (SQL drivers), `model.eval()` (PyTorch), and would reject any skill containing a regex/SQL/PyTorch example.
+3. The `net-exfil-environ-post` rule is `multiline: true` (with `/s` flag) so an attacker can't bypass it by formatting `requests.post()` across newlines.
+4. Secret-rule matches are masked (first 4 + ellipsis + last 4) in findings so the detected secrets aren't re-leaked into the audit ledger.
 
 ```javascript
 import { createHash } from 'node:crypto';
@@ -874,16 +879,23 @@ import { createHash } from 'node:crypto';
 // Patterns built from concatenated parts so the literal dangerous-call tokens
 // don't appear in this source file (false-positive avoidance for in-repo grep
 // scanners).
+//
+// `(?<![.\w])` = "not preceded by `.` or a word character" — prevents
+// false-positives on method calls like `pattern.exec(...)` / `db.exec(...)` /
+// `model.eval()` while still matching the bare builtin call at line start
+// or after whitespace.
+const NOT_METHOD_CALL = '(?<![.\\w])';
+
 const RULES = [
   {
     id: 'py-dynamic-exec',
     severity: 'high',
-    pattern: new RegExp('\\b' + 'exe' + 'c' + '\\s*\\('),
+    pattern: new RegExp(NOT_METHOD_CALL + 'exe' + 'c' + '\\s*\\('),
   },
   {
     id: 'py-dynamic-eval',
     severity: 'high',
-    pattern: new RegExp('\\b' + 'eva' + 'l' + '\\s*\\('),
+    pattern: new RegExp(NOT_METHOD_CALL + 'eva' + 'l' + '\\s*\\('),
   },
   {
     id: 'secrets-anthropic-key',
@@ -913,7 +925,10 @@ const RULES = [
   {
     id: 'net-exfil-environ-post',
     severity: 'medium',
-    pattern: new RegExp('requests\\.post\\([^)]*' + '(os\\.environ|environ\\[)'),
+    multiline: true,
+    // /s flag so `.` spans newlines — captures `requests.post(\n ...environ...)`
+    // bypass formatting.
+    pattern: new RegExp('requests\\.post\\([^)]*' + '(os\\.environ|environ\\[)', 's'),
   },
   {
     id: 'net-curl-shell-pipe',
@@ -923,7 +938,7 @@ const RULES = [
   {
     id: 'py-os-system',
     severity: 'medium',
-    pattern: new RegExp('\\b' + 'os\\.system' + '\\s*\\('),
+    pattern: new RegExp(NOT_METHOD_CALL + 'os\\.system' + '\\s*\\('),
   },
   {
     id: 'js-cp-spawn-exec',
@@ -934,26 +949,58 @@ const RULES = [
 ];
 
 /**
+ * Mask a matched value for findings. Secret-rule matches are reduced to
+ * first 4 + ellipsis + last 4 so we don't re-leak the detected secret
+ * into the audit ledger. Non-secret matches are truncated at 200 chars.
+ */
+function formatMatch(ruleId, raw) {
+  if (ruleId.startsWith('secrets-')) {
+    return raw.length > 12 ? raw.slice(0, 4) + '…' + raw.slice(-4) : '…';
+  }
+  return raw.slice(0, 200);
+}
+
+/**
  * Scan a map of { filename: content } against the static safety ruleset.
  * Returns { findings, passed }. passed = no 'high' severity hits.
+ *
+ * Rules with `multiline: true` are matched against full file content (with
+ * /s flag) so payloads can span newlines. Line numbers are derived from
+ * the match offset. Other rules match line-by-line as before.
  */
 export function scanSkillContent(files) {
   const findings = [];
   for (const [filename, content] of Object.entries(files)) {
-    const lines = String(content).split('\n');
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      for (const rule of RULES) {
-        const match = line.match(rule.pattern);
+    const text = String(content);
+    const lines = text.split('\n');
+    for (const rule of RULES) {
+      if (rule.multiline) {
+        const match = text.match(rule.pattern);
         if (match) {
+          const lineNum = text.slice(0, match.index).split('\n').length;
           findings.push({
             severity: rule.severity,
             rule_id: rule.id,
             file: filename,
-            line: i + 1,
+            line: lineNum,
             pattern: rule.pattern.source,
-            match: match[0].slice(0, 200),
+            match: formatMatch(rule.id, match[0]),
           });
+        }
+      } else {
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          const match = line.match(rule.pattern);
+          if (match) {
+            findings.push({
+              severity: rule.severity,
+              rule_id: rule.id,
+              file: filename,
+              line: i + 1,
+              pattern: rule.pattern.source,
+              match: formatMatch(rule.id, match[0]),
+            });
+          }
         }
       }
     }
@@ -1006,9 +1053,12 @@ export async function upsertScan(sql, orgId, input) {
   const findings = Array.isArray(input.findings) ? input.findings : [];
   const passed = Boolean(input.passed);
 
+  // JSON.stringify(...)::jsonb — the Neon driver auto-binds JS arrays as
+  // text[], which fails against the jsonb column. Cast explicitly. Mirrors
+  // the convention used in code-sessions.repository.js / actions.repository.js.
   const rows = await sql`
     INSERT INTO skill_scan_results (id, org_id, skill_name, target_hash, findings, passed)
-    VALUES (${id}, ${orgId}, ${input.skillName}, ${input.targetHash}, ${findings}, ${passed})
+    VALUES (${id}, ${orgId}, ${input.skillName}, ${input.targetHash}, ${JSON.stringify(findings)}::jsonb, ${passed})
     ON CONFLICT (org_id, skill_name, target_hash)
     DO UPDATE SET findings = EXCLUDED.findings, passed = EXCLUDED.passed
     RETURNING id, org_id, skill_name, target_hash, findings, passed, created_at
@@ -1030,7 +1080,7 @@ export async function getScanById(sql, orgId, id) {
 - [ ] **Step 6: Run tests, expect PASS**
 
 Run: `npx vitest run __tests__/unit/skill-scan-results-repository.test.js __tests__/unit/skill-scanner.test.js`
-Expected: 12 tests pass (4 repository + 8 scanner).
+Expected: 17 tests pass (4 repository + 13 scanner — the scanner suite covers the baseline rules plus negative-lookbehind, multiline-exfil, and secret-masking conventions added per code review).
 
 - [ ] **Step 7: Commit**
 
