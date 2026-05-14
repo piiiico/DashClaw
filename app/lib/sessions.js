@@ -110,14 +110,20 @@ export async function updateSession(sql, sessionId, orgId, updates) {
   // (no reviving via PATCH { status: 'active' }, no late mutations of
   // green_level/branch_freshness/etc.). The UPDATE matches zero rows, returns
   // null, and the event-insert below is skipped.
+  //
+  // Every parameter is explicitly cast. neon-serverless sends NULL parameters as
+  // untyped, and Postgres cannot infer the type from contexts like `IS NOT NULL`
+  // — without these casts, a PATCH that omits optional fields (e.g. session_end
+  // sending only { status }) fails with 42P18 "could not determine data type of
+  // parameter $N". The casts are no-ops for non-null values.
   const rows = await sql`
     UPDATE agent_sessions SET
-      status           = COALESCE(${status}, status),
-      status_since     = CASE WHEN ${status} IS NOT NULL AND ${status} != status THEN NOW() ELSE status_since END,
-      green_level      = COALESCE(${green_level}, green_level),
-      branch_freshness = COALESCE(${branch_freshness}, branch_freshness),
+      status           = COALESCE(${status}::text, status),
+      status_since     = CASE WHEN ${status}::text IS NOT NULL AND ${status}::text != status THEN NOW() ELSE status_since END,
+      green_level      = COALESCE(${green_level}::text, green_level),
+      branch_freshness = COALESCE(${branch_freshness}::text, branch_freshness),
       commits_behind   = COALESCE(${commits_behind}::integer, commits_behind),
-      blocked_reason   = CASE WHEN ${status} = 'blocked' THEN ${effectiveBlockedReason} ELSE blocked_reason END,
+      blocked_reason   = CASE WHEN ${status}::text = 'blocked' THEN ${effectiveBlockedReason}::text ELSE blocked_reason END,
       last_activity    = NOW(),
       updated_at       = NOW()
     WHERE id = ${sessionId} AND org_id = ${orgId} AND status != 'closed'

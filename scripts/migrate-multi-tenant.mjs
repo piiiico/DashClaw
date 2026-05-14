@@ -1607,8 +1607,28 @@ async function run() {
         context TEXT,
         risk_score INTEGER,
         action_type TEXT,
-        created_at TEXT NOT NULL
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
+    `;
+    // Backfill: pre-existing instances had created_at as TEXT, which broke every
+    // comparison against NOW() (signals dashboard, decisions ledger, recent-decisions MCP tool).
+    // ALTER is idempotent — if the column is already TIMESTAMPTZ the cast is a no-op.
+    await sql`
+      DO $$
+      BEGIN
+        IF EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'guard_decisions'
+            AND column_name = 'created_at'
+            AND data_type = 'text'
+        ) THEN
+          ALTER TABLE guard_decisions
+            ALTER COLUMN created_at TYPE TIMESTAMPTZ USING created_at::timestamptz;
+          ALTER TABLE guard_decisions
+            ALTER COLUMN created_at SET DEFAULT NOW();
+        END IF;
+      END
+      $$;
     `;
     await sql`CREATE INDEX IF NOT EXISTS idx_guard_decisions_org_id ON guard_decisions(org_id)`;
     await sql`CREATE INDEX IF NOT EXISTS idx_guard_decisions_created_at ON guard_decisions(created_at)`;

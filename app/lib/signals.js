@@ -341,7 +341,7 @@ export async function computeSignals(orgId, filterAgentId, sql) {
   try {
     const recentDecisions = await sql`
       SELECT id, agent_id, context, created_at FROM guard_decisions
-      WHERE org_id = ${orgId} AND created_at > NOW() - INTERVAL '1 hour'
+      WHERE org_id = ${orgId} AND created_at::timestamptz > NOW() - INTERVAL '1 hour'
       ${filterAgentId ? sql`AND agent_id = ${filterAgentId}` : sql``}
       ORDER BY created_at DESC LIMIT 20
     `;
@@ -375,7 +375,7 @@ export async function computeSignals(orgId, filterAgentId, sql) {
     const seenServers = new Set();
     const recentMcpDecisions = await sql`
       SELECT id, agent_id, context, created_at FROM guard_decisions
-      WHERE org_id = ${orgId} AND created_at > NOW() - INTERVAL '30 minutes'
+      WHERE org_id = ${orgId} AND created_at::timestamptz > NOW() - INTERVAL '30 minutes'
       ${filterAgentId ? sql`AND agent_id = ${filterAgentId}` : sql``}
       ORDER BY created_at DESC LIMIT 20
     `;
@@ -406,7 +406,7 @@ export async function computeSignals(orgId, filterAgentId, sql) {
   try {
     const greenDecisions = await sql`
       SELECT id, agent_id, context, reason, created_at FROM guard_decisions
-      WHERE org_id = ${orgId} AND created_at > NOW() - INTERVAL '1 hour'
+      WHERE org_id = ${orgId} AND created_at::timestamptz > NOW() - INTERVAL '1 hour'
       AND decision IN ('block', 'warn')
       ${filterAgentId ? sql`AND agent_id = ${filterAgentId}` : sql``}
       ORDER BY created_at DESC LIMIT 10

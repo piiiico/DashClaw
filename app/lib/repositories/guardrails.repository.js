@@ -91,7 +91,7 @@ export async function getGuardDecisionStats(sql, orgId) {
       COUNT(*) FILTER (WHERE decision = 'require_approval')::int AS approvals,
       COUNT(*) FILTER (WHERE decision = 'warn')::int AS warns
     FROM guard_decisions
-    WHERE org_id = $1 AND created_at > NOW() - INTERVAL '7 days'`,
+    WHERE org_id = $1 AND created_at::timestamptz > NOW() - INTERVAL '7 days'`,
     [orgId]
   );
   const row = result[0] || {};
