@@ -369,6 +369,14 @@ The full architecture map lives in [`PROJECT_DETAILS.md`](./PROJECT_DETAILS.md).
 
 ---
 
+## A public commitment, not a pricing strategy
+
+DashClaw stays free for everyone until **50 verified coding-agent integrations** are running in the wild — Claude Code, Codex, and Hermes Agent installs all count equally. The metric is measured, not claimed: a public, unauthenticated counter at [`/api/monetization/verified-integrations-count`](./app/api/monetization/verified-integrations-count/route.js) returns the live distinct-org count derived from `action_records` where `agent_id ILIKE 'claude-code%' OR agent_id ILIKE 'codex%' OR agent_id ILIKE 'hermes%'`, excluding internal orgs, with a 90-day recency window. Live progress at [dashclaw.io/pricing](https://dashclaw.io/pricing).
+
+The runtime — hooks, policy pack, approvals, durable finality, audit ledger, semantic guard, all 23 MCP tools, all 87 Node SDK methods, all 235 Python SDK methods — stays free forever for solo developers regardless of where the counter lands. The trigger is the contract; the contract is auditable; the counter is live.
+
+---
+
 ## Documentation
 
 - [Quick start](./QUICK-START.md): eight-minute walkthrough from clone to first governed action.
