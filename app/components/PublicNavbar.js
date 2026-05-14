@@ -19,14 +19,13 @@ export default function PublicNavbar() {
           <DashClawLogo size={20} />
           <span className="text-lg font-semibold text-text-primary">DashClaw</span>
         </Link>
-        <div className="hidden sm:flex items-center gap-6 text-sm text-text-secondary">
+        <div className="hidden sm:flex items-center gap-5 text-sm text-text-secondary whitespace-nowrap">
           <Link href="/#features" className="hover:text-text-primary transition-colors">Features</Link>
           <Link href="/gallery" className="hover:text-text-primary transition-colors">Gallery</Link>
-          <Link href="/connect" className="hover:text-text-primary transition-colors">Connect an Agent</Link>
+          <Link href="/connect" className="hover:text-text-primary transition-colors">Connect</Link>
           <Link href="/docs" className="hover:text-text-primary transition-colors">Docs</Link>
           <Link href="/downloads" className="hover:text-text-primary transition-colors">Downloads</Link>
           <Link href="/pricing" className="hover:text-text-primary transition-colors">Pricing</Link>
-          <Link href="/practical-systems" className="hover:text-text-primary transition-colors">Practical Systems</Link>
           <a
             href="https://github.com/ucsandman/DashClaw"
             target="_blank"
@@ -38,10 +37,10 @@ export default function PublicNavbar() {
           </a>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/demo" className="px-4 py-1.5 rounded-lg bg-brand text-white text-sm font-medium hover:bg-brand-hover transition-colors">
+          <Link href="/demo" className="px-4 py-1.5 rounded-lg bg-brand text-white text-sm font-medium hover:bg-brand-hover transition-colors whitespace-nowrap">
             Mission Control
           </Link>
-          <Link href="/self-host" className="hidden sm:inline-flex px-4 py-1.5 rounded-lg bg-surface-tertiary border border-border-hover text-text-secondary text-sm font-medium hover:bg-surface-elevated hover:text-text-primary transition-colors">
+          <Link href="/self-host" className="hidden sm:inline-flex px-4 py-1.5 rounded-lg bg-surface-tertiary border border-border-hover text-text-secondary text-sm font-medium hover:bg-surface-elevated hover:text-text-primary transition-colors whitespace-nowrap">
             Get Started
           </Link>
           <button
@@ -94,9 +93,6 @@ export default function PublicNavbar() {
               </Link>
               <Link href="/pricing" onClick={closeMobile} className="rounded-lg px-3 py-2.5 text-sm text-text-secondary transition-colors hover:bg-white/5 hover:text-text-primary">
                 Pricing
-              </Link>
-              <Link href="/practical-systems" onClick={closeMobile} className="rounded-lg px-3 py-2.5 text-sm text-text-secondary transition-colors hover:bg-white/5 hover:text-text-primary">
-                Practical Systems
               </Link>
               <a
                 href="https://github.com/ucsandman/DashClaw"
