@@ -16,16 +16,24 @@
  * opus-4-7, sonnet-4-6, haiku-4-5. Other entries are left to default to 0.
  */
 export const DEFAULT_PRICING = [
-  // Anthropic Claude 4.5/4.6/4.7 family
-  { pattern: 'opus-4-7', label: 'Claude Opus 4.7', input: 15, output: 75, cache_write: 18.75, cache_read: 1.50 },
-  { pattern: 'opus-4-6', label: 'Claude Opus 4.6', input: 15, output: 75 },
-  { pattern: 'opus-4-5', label: 'Claude Opus 4.5', input: 15, output: 75 },
-  { pattern: 'opus', label: 'Claude Opus (default)', input: 15, output: 75 },
+  // Anthropic Claude 4.5/4.6/4.7 family.
+  //
+  // Pricing source: platform.claude.com/docs/en/about-claude/pricing.
+  // Opus 4.5/4.6/4.7 all share new lower rates ($5/$25). Opus 4.1 kept the
+  // legacy $15/$75 rates — preserved as the unversioned 'opus' default so
+  // legacy ingests that report only "opus" don't get silently re-priced.
+  // Cache rates follow the family rule: cache_write = 1.25x input, cache_read
+  // = 0.10x input.
+  { pattern: 'opus-4-7', label: 'Claude Opus 4.7', input: 5, output: 25, cache_write: 6.25, cache_read: 0.50 },
+  { pattern: 'opus-4-6', label: 'Claude Opus 4.6', input: 5, output: 25, cache_write: 6.25, cache_read: 0.50 },
+  { pattern: 'opus-4-5', label: 'Claude Opus 4.5', input: 5, output: 25, cache_write: 6.25, cache_read: 0.50 },
+  { pattern: 'opus-4-1', label: 'Claude Opus 4.1 (legacy)', input: 15, output: 75, cache_write: 18.75, cache_read: 1.50 },
+  { pattern: 'opus', label: 'Claude Opus (legacy default)', input: 15, output: 75, cache_write: 18.75, cache_read: 1.50 },
   { pattern: 'sonnet-4-6', label: 'Claude Sonnet 4.6', input: 3, output: 15, cache_write: 3.75, cache_read: 0.30 },
-  { pattern: 'sonnet-4-5', label: 'Claude Sonnet 4.5', input: 3, output: 15 },
-  { pattern: 'sonnet', label: 'Claude Sonnet (default)', input: 3, output: 15 },
-  { pattern: 'haiku-4-5', label: 'Claude Haiku 4.5', input: 0.80, output: 4, cache_write: 1.25, cache_read: 0.10 },
-  { pattern: 'haiku', label: 'Claude Haiku (default)', input: 0.80, output: 4 },
+  { pattern: 'sonnet-4-5', label: 'Claude Sonnet 4.5', input: 3, output: 15, cache_write: 3.75, cache_read: 0.30 },
+  { pattern: 'sonnet', label: 'Claude Sonnet (default)', input: 3, output: 15, cache_write: 3.75, cache_read: 0.30 },
+  { pattern: 'haiku-4-5', label: 'Claude Haiku 4.5', input: 1, output: 5, cache_write: 1.25, cache_read: 0.10 },
+  { pattern: 'haiku', label: 'Claude Haiku (default)', input: 1, output: 5, cache_write: 1.25, cache_read: 0.10 },
   // OpenAI
   { pattern: 'codex-5.4', label: 'Codex 5.4', input: 3, output: 15 },
   { pattern: 'codex', label: 'Codex (default)', input: 3, output: 15 },

@@ -21,9 +21,11 @@ describe('estimateCost', () => {
   });
 
   it('prices known models via the default pricing table', () => {
-    expect(estimateCost(1_000_000, 1_000_000, 'claude-opus-4-6')).toBeCloseTo(90, 5);
+    // Opus 4.x family per Anthropic: $5 input + $25 output per 1M.
+    expect(estimateCost(1_000_000, 1_000_000, 'claude-opus-4-6')).toBeCloseTo(30, 5);
     expect(estimateCost(1_000_000, 1_000_000, 'claude-sonnet-4-6')).toBeCloseTo(18, 5);
-    expect(estimateCost(1_000_000, 1_000_000, 'haiku-4-5')).toBeCloseTo(4.80, 5);
+    // Haiku 4.5: $1 input + $5 output per 1M (was previously $0.80/$4 — corrected).
+    expect(estimateCost(1_000_000, 1_000_000, 'haiku-4-5')).toBeCloseTo(6, 5);
   });
 
   it('returns 0 for unknown-but-present models and warns once per model', () => {

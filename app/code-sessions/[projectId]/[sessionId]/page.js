@@ -170,10 +170,12 @@ export default async function CodeSessionDetailPage({ params }) {
               </div>
               {costDiverges && (
                 <div className="mt-2 rounded border border-orange-400/40 bg-orange-400/10 p-2 text-xs text-orange-300">
-                  ⚠ {costRatio.toFixed(1)}× divergence — beyond the 5% expected gap.
-                  Likely either: (a) model lacks cache rates in <code>app/lib/billing.js</code>,
-                  (b) cache_read fold heuristic is off for this model, or
-                  (c) token totals differ between parser and stored values.
+                  ⚠ {costRatio.toFixed(1)}× divergence — likely historical: this session was
+                  re-priced against the current pricing table at ingest time, but the
+                  stored <code>cost_usd</code> may reflect older rates. Run
+                  <code className="mx-1">scripts/backfill-code-session-cache-cost.mjs</code>
+                  to recompute historical cost_usd against the latest{' '}
+                  <code>billing.js</code> rates.
                 </div>
               )}
             </div>

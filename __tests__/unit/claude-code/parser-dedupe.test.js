@@ -114,11 +114,12 @@ describe('claude-code/parser dedup', () => {
       assistantRow({ uuid: 'u3', requestId: 'R1', messageId: 'M1', ...usage }),
     ]);
     const parsed = await parseSessionFile(f);
-    // Opus pricing: output 75/M, cache_read 1.50/M -> 1000*75/1e6 + 10000*1.5/1e6 = 0.075 + 0.015 = 0.09
-    expect(Math.abs(parsed.cost_usd - 0.09)).toBeLessThan(1e-9);
-    expect(Math.abs(parsed.naiveCostUsd - 0.27)).toBeLessThan(1e-9);
-    // Cache savings: 10000 * (15 - 1.5)/1M = 0.135
-    expect(Math.abs(parsed.cache_savings_usd - 0.135)).toBeLessThan(1e-9);
+    // Opus 4.x pricing: output 25/M, cache_read 0.50/M -> 1000*25/1e6 + 10000*0.50/1e6 = 0.025 + 0.005 = 0.03
+    expect(Math.abs(parsed.cost_usd - 0.03)).toBeLessThan(1e-9);
+    // Naive (one count per row) = 3 * 0.03 = 0.09
+    expect(Math.abs(parsed.naiveCostUsd - 0.09)).toBeLessThan(1e-9);
+    // Cache savings: 10000 * (5 - 0.50)/1M = 0.045
+    expect(Math.abs(parsed.cache_savings_usd - 0.045)).toBeLessThan(1e-9);
     fs.unlinkSync(f);
   });
 });

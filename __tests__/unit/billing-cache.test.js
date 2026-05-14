@@ -30,16 +30,18 @@ describe('billing.estimateCost — legacy 4-arg parity', () => {
 });
 
 describe('billing.estimateCost — 5-arg cache extras', () => {
-  it('opus-4-7 adds cache_creation @ 18.75/M and cache_read @ 1.50/M', () => {
+  it('opus-4-7 adds cache_creation @ 6.25/M and cache_read @ 0.50/M', () => {
+    // Opus 4.5/4.6/4.7 family rates per Anthropic pricing docs:
+    // input $5/M, output $25/M, cache_write $6.25/M, cache_read $0.50/M.
     const base = estimateCost(100, 200, 'claude-opus-4-7');
-    // 100*15/1M + 200*75/1M = 0.0015 + 0.015 = 0.0165
-    expect(Math.abs(base - 0.0165)).toBeLessThan(1e-9);
+    // 100*5/1M + 200*25/1M = 0.0005 + 0.005 = 0.0055
+    expect(Math.abs(base - 0.0055)).toBeLessThan(1e-9);
     const cost = estimateCost(100, 200, 'claude-opus-4-7', null, {
       cache_creation_tokens: 10000,
       cache_read_tokens: 100000,
     });
-    // base + (10000 * 18.75 + 100000 * 1.50)/1M = 0.0165 + (187500 + 150000)/1M = 0.0165 + 0.3375
-    expect(Math.abs(cost - (0.0165 + 0.3375))).toBeLessThan(1e-9);
+    // base + (10000 * 6.25 + 100000 * 0.50)/1M = 0.0055 + (62500 + 50000)/1M = 0.0055 + 0.1125
+    expect(Math.abs(cost - (0.0055 + 0.1125))).toBeLessThan(1e-9);
   });
 
   it('sonnet-4-6 adds cache_creation @ 3.75/M and cache_read @ 0.30/M', () => {

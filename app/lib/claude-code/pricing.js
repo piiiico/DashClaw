@@ -11,10 +11,17 @@
  * No fs.
  */
 
+// Pricing source: platform.claude.com/docs/en/about-claude/pricing.
+// Opus 4.5/4.6/4.7 share new lower rates ($5/$25); only Opus 4.1 kept the
+// legacy $15/$75. Cache-rate family rule: cache_write = 1.25x input,
+// cache_read = 0.10x input. Earlier revisions of this file incorrectly set
+// Opus 4.6/4.7 to $15/$75 — fixed alongside the matching billing.js change.
 export const PRICES_PER_MTOK = Object.freeze({
-  'claude-opus-4-7':            { input: 15.00, output: 75.00, cache_write: 18.75, cache_read: 1.50 },
-  'claude-opus-4-7[1m]':        { input: 15.00, output: 75.00, cache_write: 18.75, cache_read: 1.50 },
-  'claude-opus-4-6':            { input: 15.00, output: 75.00, cache_write: 18.75, cache_read: 1.50 },
+  'claude-opus-4-7':            { input:  5.00, output: 25.00, cache_write:  6.25, cache_read: 0.50 },
+  'claude-opus-4-7[1m]':        { input:  5.00, output: 25.00, cache_write:  6.25, cache_read: 0.50 },
+  'claude-opus-4-6':            { input:  5.00, output: 25.00, cache_write:  6.25, cache_read: 0.50 },
+  'claude-opus-4-5':            { input:  5.00, output: 25.00, cache_write:  6.25, cache_read: 0.50 },
+  'claude-opus-4-1':            { input: 15.00, output: 75.00, cache_write: 18.75, cache_read: 1.50 },
   'claude-sonnet-4-6':          { input:  3.00, output: 15.00, cache_write:  3.75, cache_read: 0.30 },
   'claude-sonnet-4-5':          { input:  3.00, output: 15.00, cache_write:  3.75, cache_read: 0.30 },
   'claude-haiku-4-5':           { input:  1.00, output:  5.00, cache_write:  1.25, cache_read: 0.10 },
