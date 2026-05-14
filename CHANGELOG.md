@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 DashClaw ships two independently versioned artifacts from this repo:
 
 - **Platform** — the Next.js app, API routes, dashboard, and supporting
-  libraries. Current: **2.17.1**. This is the version of the DashClaw instance
+  libraries. Current: **2.17.2**. This is the version of the DashClaw instance
   you deploy to Vercel. Governance features, UI changes, new API routes, and
   database migrations land on this track.
 - **SDK** — the `dashclaw` npm package published from `sdk/`. Current:
@@ -26,6 +26,60 @@ Plugin and tooling entries (e.g. `@dashclaw/openclaw-plugin`, `@dashclaw/cli`)
 are prefixed with the package name.
 
 ## [Unreleased]
+
+## [2.17.2] - 2026-05-14 — MON-01 counter visible + accurate
+
+Three fixes to the public-commitment surface. Together they take the
+"0 / 50" reading on /pricing (which read as broken) to a live, accurate,
+discoverable counter.
+
+### `/pricing` is now linked from the public chrome
+
+`PublicNavbar` (desktop + mobile menu) and `PublicFooter` both link to
+`/pricing` now. Previously the page existed but was unreachable except
+via direct URL — defeating the point of a public-commitment page.
+
+### Counter no longer excludes the founder's own production instance
+
+`countVerifiedIntegrations` default exclusion changed from
+`['org_default', 'org_demo']` to `['org_demo']`. The original framing
+treated `org_default` (founder's own dogfooded instance) as ineligible —
+which produced a "0 / 50" reading on /pricing even while the founder
+was actively governing coding-agent actions through DashClaw. That read
+as broken. `org_default` *is* a verified coding-agent integration in
+the wild, so it counts. `org_demo` (canned demo sandbox) still doesn't.
+Tests that want the stricter "non-founder only" framing pass
+`excludeOrgIds: ['org_default', 'org_demo']` explicitly.
+
+### Counter API is no longer 403-gated by demo mode
+
+`GET /api/monetization/verified-integrations-count` was already in
+`PUBLIC_ROUTES`, but middleware's demo-mode block (line 1035) fires
+before the PUBLIC_ROUTES bypass (line 1155). So the launch tweet's
+publicly-cited live URL was returning 403 demo-mode for everyone except
+the SSR pricing page. Added a passthrough next to `/api/marketing/`
+(same reasoning: marketing site IS the demo deployment, this endpoint
+returns aggregate-only data with no per-org leak).
+
+### Pricing page hero reframed
+
+Headline changed from "DashClaw is free while we grow." (apologetic
+ramp tone) to "A public commitment, not a pricing strategy." Matches
+the README reframe from earlier today. Subhead now enumerates the
+free-forever surface explicitly: 23 MCP tools, 87 Node SDK methods,
+235 Python SDK methods.
+
+### Test coverage
+
+- `monetization-repository.test.js` Case 5 updated to assert
+  `['org_demo']` only; added negative assertion that `org_default` is
+  NOT in the default exclusion.
+- `pricing-page.test.jsx` continues to pass (only checks for the
+  trigger commitment text, N/50 format, bullet lists, no-paywall, and
+  no-hex — all preserved).
+- `readme-monetization-trigger.test.js` continues to pass.
+
+37/37 affected tests pass; lint clean.
 
 ## [2.17.1] - 2026-05-14 — Plugin + hooks bundles in livingcode-refresh
 

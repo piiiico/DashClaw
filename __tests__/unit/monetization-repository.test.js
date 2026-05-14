@@ -49,16 +49,19 @@ describe('countVerifiedIntegrations', () => {
     expect(sql.calls[0].text).toMatch(/COUNT\(DISTINCT\s+org_id\)/i);
   });
 
-  it('Case 5: default exclusion list is [org_default, org_demo]', async () => {
+  it('Case 5: default exclusion list is [org_demo] only — founder dogfooding counts', async () => {
     const sql = makeSqlMock([{ count: 0 }]);
     await countVerifiedIntegrations(sql);
 
-    // The exclusion array is interpolated as a single value — find it.
-    const arrayParam = sql.calls[0].values.find(
-      (v) => Array.isArray(v) && v.includes('org_default') && v.includes('org_demo'),
-    );
+    // org_demo is the canned demo sandbox — never a real integration.
+    // org_default IS the founder's own production instance and DOES count as
+    // a verified coding-agent integration in the wild, so it is no longer
+    // excluded by default. Tests that need the stricter "non-founder only"
+    // framing should pass excludeOrgIds: ['org_default', 'org_demo'] explicitly.
+    const arrayParam = sql.calls[0].values.find((v) => Array.isArray(v));
     expect(arrayParam).toBeDefined();
-    expect(arrayParam).toEqual(['org_default', 'org_demo']);
+    expect(arrayParam).toEqual(['org_demo']);
+    expect(arrayParam).not.toContain('org_default');
   });
 
   it('Case 6: default recency window is 90 days', async () => {

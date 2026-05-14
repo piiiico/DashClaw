@@ -456,6 +456,17 @@ export async function middleware(request) {
         return response;
       }
 
+      // Monetization counter is the public commitment signal — the launch
+      // tweet and HN body cite this URL directly. It must stay reachable in
+      // demo mode (same reasoning as /api/marketing/ above: marketing site
+      // IS the demo deployment). Aggregate-only response, no per-org leak.
+      if (pathname === '/api/monetization/verified-integrations-count') {
+        const response = NextResponse.next();
+        addSecurityHeaders(response);
+        withCors(request, response);
+        return response;
+      }
+
       // Policy test runs are read-like (no mutation) — allow through demo write-block.
       if (pathname === '/api/policies/test' && method === 'POST') {
         const fixtures = getDemoFixtures();

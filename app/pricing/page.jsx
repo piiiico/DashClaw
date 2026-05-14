@@ -22,7 +22,7 @@ export const dynamic = 'force-dynamic';
 export const metadata = {
   title: 'Pricing — DashClaw',
   description:
-    'DashClaw is free while we grow. Pro tier launches when we hit 50 verified Claude Code integrations in the wild.',
+    'A public commitment, not a pricing strategy. DashClaw stays free for everyone until 50 verified coding-agent integrations are running in the wild. The metric is measured, not claimed — live counter at /api/monetization/verified-integrations-count.',
 };
 
 async function getCount() {
@@ -64,12 +64,14 @@ export default async function PricingPage() {
               Pricing
             </p>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-              DashClaw is free while we grow.
+              A public commitment, not a pricing strategy.
             </h1>
             <p className="mt-4 text-base text-text-secondary">
-              The runtime — hook, policy pack, Discord approvals, audit ledger,
-              semantic guard — stays free forever for solo devs. There is
-              nothing to buy on this page today.
+              The runtime — hooks, policy pack, approvals, audit ledger, durable
+              finality, semantic guard, all 23 MCP tools, all 87 Node SDK methods,
+              all 235 Python SDK methods — stays free forever for solo developers.
+              The page below documents the trigger that unlocks a Pro tier for
+              teams. There is nothing to buy on this page today.
             </p>
           </header>
 

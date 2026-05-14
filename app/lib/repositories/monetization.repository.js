@@ -16,8 +16,12 @@
  *   governed coding agent surface DashClaw ships installers for.
  *
  * Exclusions (D-01 "in the wild"):
- *   org_default (founder's own instance) and org_demo (demo sandbox) are
- *   excluded by default. Override via excludeOrgIds option.
+ *   Only org_demo (the canned demo sandbox) is excluded by default. The
+ *   founder's own production instance lives under org_default and is a
+ *   real, governed coding-agent integration — it counts. Excluding it
+ *   produced a "0 / 50" counter on /pricing that read as broken even
+ *   though the founder was actively dogfooding the product. Override via
+ *   excludeOrgIds option for tests or audits that need stricter framing.
  *
  * Recency (D-01):
  *   Default 90-day window prunes stale one-off integrations so the counter
@@ -29,12 +33,12 @@
 /**
  * @param {object} sql - Neon tagged-template SQL driver (getSql() result)
  * @param {object} [options]
- * @param {string[]} [options.excludeOrgIds=['org_default','org_demo']]
+ * @param {string[]} [options.excludeOrgIds=['org_demo']]
  * @param {number}   [options.recencyDays=90]
  * @returns {Promise<number>} COUNT(DISTINCT org_id) as a plain integer
  */
 export async function countVerifiedIntegrations(sql, options = {}) {
-  const excludeOrgIds = options.excludeOrgIds ?? ['org_default', 'org_demo'];
+  const excludeOrgIds = options.excludeOrgIds ?? ['org_demo'];
   const recencyDays = options.recencyDays ?? 90;
 
   const rows = await sql`
