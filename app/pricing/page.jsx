@@ -39,7 +39,10 @@ export default async function PricingPage() {
   const counterDisplay = count === null ? '—' : String(count);
 
   const freeBullets = [
-    'Solo-dev coding-agent integrations — Claude Code, Codex, Hermes Agent (hook + policy pack).',
+    'Coding-agent plugins — Claude Code, Codex, Hermes Agent, and the OpenClaw plugin. Solo-dev integration in one install command.',
+    'MCP server — 23 governance tools across 6 groups for Claude Desktop, Claude Managed Agents, and any MCP host (stdio or Streamable HTTP).',
+    'Node + Python SDKs with built-in framework integrations: LangChain, CrewAI, AutoGen, LangGraph, OpenAI Agents SDK.',
+    'Direct REST API + webhooks — 259 routes pinned in OpenAPI, full event catalog (signal.detected, decision.created, action.created, lost_confirmation, …).',
     'Discord + Telegram approvals from your phone.',
     '/decisions ledger with full replay.',
     'Semantic guard (bring your own LLM key).',
@@ -84,11 +87,21 @@ export default async function PricingPage() {
               integrations in the wild.
             </h2>
             <p className="mt-3 text-sm text-text-secondary">
-              Counts Claude Code, Codex, and Hermes Agent installs against the
-              same threshold. Measured by a public SQL query over <code className="rounded border border-border bg-surface-tertiary px-1 py-0.5 font-mono text-[11px]">action_records</code> where
-              {' '}<code className="rounded border border-border bg-surface-tertiary px-1 py-0.5 font-mono text-[11px]">agent_id ILIKE &apos;claude-code%&apos; OR &apos;codex%&apos; OR &apos;hermes%&apos;</code>,
-              excluding internal orgs, with a 90-day recency window. No
-              time-boxed backstop — the trigger fires when it fires.
+              The counter is a publicly-verifiable subset — the three coding-agent
+              surfaces DashClaw ships installers for have deterministic{' '}
+              <code className="rounded border border-border bg-surface-tertiary px-1 py-0.5 font-mono text-[11px]">agent_id</code>
+              {' '}prefixes, so a SQL query over <code className="rounded border border-border bg-surface-tertiary px-1 py-0.5 font-mono text-[11px]">action_records</code> where
+              {' '}<code className="rounded border border-border bg-surface-tertiary px-1 py-0.5 font-mono text-[11px]">agent_id ILIKE &apos;claude-code%&apos; OR &apos;codex%&apos; OR &apos;hermes%&apos;</code>{' '}
+              (excluding the demo sandbox, 90-day recency) is auditable by anyone.
+            </p>
+            <p className="mt-3 text-sm text-text-secondary">
+              MCP server, Node/Python SDK, OpenClaw plugin, framework integrations
+              (LangChain, CrewAI, AutoGen, LangGraph, OpenAI Agents SDK), and
+              direct REST clients all run on the same governance primitives. They
+              count toward the commitment in spirit but stay outside the
+              counter because their agent_id values aren&apos;t a fixed prefix
+              the public can verify. No time-boxed backstop — the trigger fires
+              when it fires.
             </p>
             <div
               aria-label={`Progress toward trigger: ${counterDisplay} / 50`}
@@ -119,7 +132,7 @@ export default async function PricingPage() {
               </p>
               <h3 className="mt-2 text-lg font-semibold">Free forever</h3>
               <p className="mt-1 text-sm text-text-secondary">
-                Everything a solo developer needs to govern Claude Code.
+                Every integration path DashClaw ships, every governance primitive, every approval surface — for solo developers, indefinitely.
               </p>
               <ul className="mt-5 space-y-2 text-sm text-text-secondary">
                 {freeBullets.map((b) => (
