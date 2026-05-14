@@ -1112,7 +1112,7 @@ const repo = vi.hoisted(() => ({
 }));
 vi.mock('../../app/lib/repositories/code-session-handoffs.repository.js', () => repo);
 vi.mock('../../app/lib/db.js', () => ({ getSql: () => ({}) }));
-vi.mock('../../app/lib/org.js', () => ({ getOrgId: async () => 'org_1' }));
+vi.mock('../../app/lib/org.js', () => ({ getOrgId: () => 'org_1' }));
 
 beforeEach(() => {
   Object.values(repo).forEach((fn) => fn.mockReset());
@@ -1236,6 +1236,7 @@ Expected: FAIL — route files don't exist.
 import { NextResponse } from 'next/server';
 import { getSql } from '../../lib/db.js';
 import { getOrgId } from '../../lib/org.js';
+import { apiErrorResponse } from '../../lib/apiErrors.js';
 import { createHandoff } from '../../lib/repositories/code-session-handoffs.repository.js';
 
 export const dynamic = 'force-dynamic';
@@ -1244,8 +1245,7 @@ export const revalidate = 0;
 export async function POST(req) {
   try {
     const sql = getSql();
-    const orgId = await getOrgId(req);
-    if (!orgId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const orgId = getOrgId(req);
 
     const body = await req.json().catch(() => ({}));
     if (!body.agent_id) return NextResponse.json({ error: 'agent_id required' }, { status: 400 });
@@ -1261,8 +1261,7 @@ export async function POST(req) {
     });
     return NextResponse.json({ id: result.id }, { status: 201 });
   } catch (err) {
-    console.error('[HANDOFFS POST] error:', err);
-    return NextResponse.json({ error: 'internal_error' }, { status: 500 });
+    return apiErrorResponse(err, 'HANDOFFS_POST');
   }
 }
 ```
@@ -1273,6 +1272,7 @@ export async function POST(req) {
 import { NextResponse } from 'next/server';
 import { getSql } from '../../../lib/db.js';
 import { getOrgId } from '../../../lib/org.js';
+import { apiErrorResponse } from '../../../lib/apiErrors.js';
 import { getLatestHandoff } from '../../../lib/repositories/code-session-handoffs.repository.js';
 
 export const dynamic = 'force-dynamic';
@@ -1281,8 +1281,7 @@ export const revalidate = 0;
 export async function GET(req) {
   try {
     const sql = getSql();
-    const orgId = await getOrgId(req);
-    if (!orgId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const orgId = getOrgId(req);
 
     const { searchParams } = new URL(req.url);
     const agentId = searchParams.get('agent_id');
@@ -1300,8 +1299,7 @@ export async function GET(req) {
       created_at: row.created_at,
     });
   } catch (err) {
-    console.error('[HANDOFFS LATEST] error:', err);
-    return NextResponse.json({ error: 'internal_error' }, { status: 500 });
+    return apiErrorResponse(err, 'HANDOFFS_LATEST');
   }
 }
 ```
@@ -1312,6 +1310,7 @@ export async function GET(req) {
 import { NextResponse } from 'next/server';
 import { getSql } from '../../../lib/db.js';
 import { getOrgId } from '../../../lib/org.js';
+import { apiErrorResponse } from '../../../lib/apiErrors.js';
 import { getHandoffById } from '../../../lib/repositories/code-session-handoffs.repository.js';
 
 export const dynamic = 'force-dynamic';
@@ -1321,8 +1320,7 @@ export async function GET(req, { params }) {
   try {
     const { id } = await params;
     const sql = getSql();
-    const orgId = await getOrgId(req);
-    if (!orgId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const orgId = getOrgId(req);
 
     const row = await getHandoffById(sql, orgId, id);
     if (!row) return NextResponse.json({ error: 'not_found' }, { status: 404 });
@@ -1336,8 +1334,7 @@ export async function GET(req, { params }) {
       consumed_at: row.consumed_at,
     });
   } catch (err) {
-    console.error('[HANDOFF GET] error:', err);
-    return NextResponse.json({ error: 'internal_error' }, { status: 500 });
+    return apiErrorResponse(err, 'HANDOFFS_GET');
   }
 }
 ```
@@ -1348,6 +1345,7 @@ export async function GET(req, { params }) {
 import { NextResponse } from 'next/server';
 import { getSql } from '../../../../lib/db.js';
 import { getOrgId } from '../../../../lib/org.js';
+import { apiErrorResponse } from '../../../../lib/apiErrors.js';
 import { consumeHandoff } from '../../../../lib/repositories/code-session-handoffs.repository.js';
 
 export const dynamic = 'force-dynamic';
@@ -1357,8 +1355,7 @@ export async function POST(req, { params }) {
   try {
     const { id } = await params;
     const sql = getSql();
-    const orgId = await getOrgId(req);
-    if (!orgId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const orgId = getOrgId(req);
 
     const body = await req.json().catch(() => ({}));
     const row = await consumeHandoff(sql, orgId, id, body.session_id || null);
@@ -1366,8 +1363,7 @@ export async function POST(req, { params }) {
 
     return NextResponse.json({ id: row.id, consumed_at: row.consumed_at });
   } catch (err) {
-    console.error('[HANDOFF CONSUME] error:', err);
-    return NextResponse.json({ error: 'internal_error' }, { status: 500 });
+    return apiErrorResponse(err, 'HANDOFFS_CONSUME');
   }
 }
 ```
@@ -1415,7 +1411,7 @@ const repo = vi.hoisted(() => ({
 }));
 vi.mock('../../app/lib/repositories/governed-secrets.repository.js', () => repo);
 vi.mock('../../app/lib/db.js', () => ({ getSql: () => ({}) }));
-vi.mock('../../app/lib/org.js', () => ({ getOrgId: async () => 'org_1' }));
+vi.mock('../../app/lib/org.js', () => ({ getOrgId: () => 'org_1' }));
 
 beforeEach(() => Object.values(repo).forEach((fn) => fn.mockReset()));
 
@@ -1516,6 +1512,7 @@ Expected: FAIL.
 import { NextResponse } from 'next/server';
 import { getSql } from '../../lib/db.js';
 import { getOrgId } from '../../lib/org.js';
+import { apiErrorResponse } from '../../lib/apiErrors.js';
 import { listSecrets, createSecret } from '../../lib/repositories/governed-secrets.repository.js';
 
 export const dynamic = 'force-dynamic';
@@ -1524,24 +1521,21 @@ export const revalidate = 0;
 export async function GET(req) {
   try {
     const sql = getSql();
-    const orgId = await getOrgId(req);
-    if (!orgId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const orgId = getOrgId(req);
 
     const { searchParams } = new URL(req.url);
     const agentId = searchParams.get('agent_id');
     const rows = await listSecrets(sql, orgId, agentId ? { agentId } : {});
     return NextResponse.json({ secrets: rows });
   } catch (err) {
-    console.error('[SECRETS GET] error:', err);
-    return NextResponse.json({ error: 'internal_error' }, { status: 500 });
+    return apiErrorResponse(err, 'SECRETS_GET');
   }
 }
 
 export async function POST(req) {
   try {
     const sql = getSql();
-    const orgId = await getOrgId(req);
-    if (!orgId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const orgId = getOrgId(req);
 
     const body = await req.json().catch(() => ({}));
     if (!body.name) return NextResponse.json({ error: 'name required' }, { status: 400 });
@@ -1555,8 +1549,7 @@ export async function POST(req) {
     });
     return NextResponse.json({ id: result.id, name: result.name }, { status: 201 });
   } catch (err) {
-    console.error('[SECRETS POST] error:', err);
-    return NextResponse.json({ error: 'internal_error' }, { status: 500 });
+    return apiErrorResponse(err, 'SECRETS_POST');
   }
 }
 ```
@@ -1567,6 +1560,7 @@ export async function POST(req) {
 import { NextResponse } from 'next/server';
 import { getSql } from '../../../lib/db.js';
 import { getOrgId } from '../../../lib/org.js';
+import { apiErrorResponse } from '../../../lib/apiErrors.js';
 import { updateSecret, deleteSecret } from '../../../lib/repositories/governed-secrets.repository.js';
 
 export const dynamic = 'force-dynamic';
@@ -1576,8 +1570,7 @@ export async function PATCH(req, { params }) {
   try {
     const { id } = await params;
     const sql = getSql();
-    const orgId = await getOrgId(req);
-    if (!orgId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const orgId = getOrgId(req);
 
     const body = await req.json().catch(() => ({}));
     const row = await updateSecret(sql, orgId, id, {
@@ -1588,8 +1581,7 @@ export async function PATCH(req, { params }) {
     if (!row) return NextResponse.json({ error: 'not_found' }, { status: 404 });
     return NextResponse.json(row);
   } catch (err) {
-    console.error('[SECRET PATCH] error:', err);
-    return NextResponse.json({ error: 'internal_error' }, { status: 500 });
+    return apiErrorResponse(err, 'SECRETS_PATCH');
   }
 }
 
@@ -1597,15 +1589,13 @@ export async function DELETE(req, { params }) {
   try {
     const { id } = await params;
     const sql = getSql();
-    const orgId = await getOrgId(req);
-    if (!orgId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const orgId = getOrgId(req);
 
     const ok = await deleteSecret(sql, orgId, id);
     if (!ok) return NextResponse.json({ error: 'not_found' }, { status: 404 });
     return NextResponse.json({ deleted: id });
   } catch (err) {
-    console.error('[SECRET DELETE] error:', err);
-    return NextResponse.json({ error: 'internal_error' }, { status: 500 });
+    return apiErrorResponse(err, 'SECRETS_DELETE');
   }
 }
 ```
@@ -1616,6 +1606,7 @@ export async function DELETE(req, { params }) {
 import { NextResponse } from 'next/server';
 import { getSql } from '../../../lib/db.js';
 import { getOrgId } from '../../../lib/org.js';
+import { apiErrorResponse } from '../../../lib/apiErrors.js';
 import { listRotationDue } from '../../../lib/repositories/governed-secrets.repository.js';
 
 export const dynamic = 'force-dynamic';
@@ -1624,8 +1615,7 @@ export const revalidate = 0;
 export async function GET(req) {
   try {
     const sql = getSql();
-    const orgId = await getOrgId(req);
-    if (!orgId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const orgId = getOrgId(req);
 
     const { searchParams } = new URL(req.url);
     const withinDays = Number(searchParams.get('within_days')) || 14;
@@ -1637,8 +1627,7 @@ export async function GET(req) {
     });
     return NextResponse.json({ due: rows, within_days: withinDays });
   } catch (err) {
-    console.error('[SECRETS DUE] error:', err);
-    return NextResponse.json({ error: 'internal_error' }, { status: 500 });
+    return apiErrorResponse(err, 'SECRETS_DUE');
   }
 }
 ```
@@ -1689,7 +1678,7 @@ const scanner = vi.hoisted(() => ({
 vi.mock('../../app/lib/repositories/skill-scan-results.repository.js', () => repo);
 vi.mock('../../app/lib/skill-scanner.js', () => scanner);
 vi.mock('../../app/lib/db.js', () => ({ getSql: () => ({}) }));
-vi.mock('../../app/lib/org.js', () => ({ getOrgId: async () => 'org_1' }));
+vi.mock('../../app/lib/org.js', () => ({ getOrgId: () => 'org_1' }));
 
 beforeEach(() => {
   Object.values(repo).forEach((fn) => fn.mockReset());
@@ -1781,6 +1770,7 @@ Expected: FAIL.
 import { NextResponse } from 'next/server';
 import { getSql } from '../../../lib/db.js';
 import { getOrgId } from '../../../lib/org.js';
+import { apiErrorResponse } from '../../../lib/apiErrors.js';
 import { scanSkillContent, hashContent } from '../../../lib/skill-scanner.js';
 import { getCachedScan, upsertScan } from '../../../lib/repositories/skill-scan-results.repository.js';
 
@@ -1790,8 +1780,7 @@ export const revalidate = 0;
 export async function POST(req) {
   try {
     const sql = getSql();
-    const orgId = await getOrgId(req);
-    if (!orgId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const orgId = getOrgId(req);
 
     const body = await req.json().catch(() => ({}));
     if (!body.skill_name) return NextResponse.json({ error: 'skill_name required' }, { status: 400 });
@@ -1828,8 +1817,7 @@ export async function POST(req) {
       cached: false,
     });
   } catch (err) {
-    console.error('[SKILL SCAN] error:', err);
-    return NextResponse.json({ error: 'internal_error' }, { status: 500 });
+    return apiErrorResponse(err, 'SKILL_SCAN');
   }
 }
 ```
@@ -1840,6 +1828,7 @@ export async function POST(req) {
 import { NextResponse } from 'next/server';
 import { getSql } from '../../../../lib/db.js';
 import { getOrgId } from '../../../../lib/org.js';
+import { apiErrorResponse } from '../../../../lib/apiErrors.js';
 import { getScanById } from '../../../../lib/repositories/skill-scan-results.repository.js';
 
 export const dynamic = 'force-dynamic';
@@ -1849,15 +1838,13 @@ export async function GET(req, { params }) {
   try {
     const { id } = await params;
     const sql = getSql();
-    const orgId = await getOrgId(req);
-    if (!orgId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const orgId = getOrgId(req);
 
     const row = await getScanById(sql, orgId, id);
     if (!row) return NextResponse.json({ error: 'not_found' }, { status: 404 });
     return NextResponse.json(row);
   } catch (err) {
-    console.error('[SCAN GET] error:', err);
-    return NextResponse.json({ error: 'internal_error' }, { status: 500 });
+    return apiErrorResponse(err, 'SCAN_GET');
   }
 }
 ```
@@ -1976,6 +1963,7 @@ Create `app/api/loops/route.js`:
 import { NextResponse } from 'next/server';
 import { getSql } from '../../lib/db.js';
 import { getOrgId } from '../../lib/org.js';
+import { apiErrorResponse } from '../../lib/apiErrors.js';
 import { listLoops, createLoop } from '../../lib/repositories/open-loops.repository.js';
 
 export const dynamic = 'force-dynamic';
@@ -1984,8 +1972,7 @@ export const revalidate = 0;
 export async function GET(req) {
   try {
     const sql = getSql();
-    const orgId = await getOrgId(req);
-    if (!orgId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const orgId = getOrgId(req);
 
     const { searchParams } = new URL(req.url);
     const rows = await listLoops(sql, orgId, {
@@ -1994,16 +1981,14 @@ export async function GET(req) {
     });
     return NextResponse.json({ loops: rows });
   } catch (err) {
-    console.error('[LOOPS GET] error:', err);
-    return NextResponse.json({ error: 'internal_error' }, { status: 500 });
+    return apiErrorResponse(err, 'LOOPS_GET');
   }
 }
 
 export async function POST(req) {
   try {
     const sql = getSql();
-    const orgId = await getOrgId(req);
-    if (!orgId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const orgId = getOrgId(req);
 
     const body = await req.json().catch(() => ({}));
     if (!body.agent_id || !body.description) {
@@ -2016,8 +2001,7 @@ export async function POST(req) {
     });
     return NextResponse.json(result, { status: 201 });
   } catch (err) {
-    console.error('[LOOPS POST] error:', err);
-    return NextResponse.json({ error: 'internal_error' }, { status: 500 });
+    return apiErrorResponse(err, 'LOOPS_POST');
   }
 }
 ```
@@ -2028,6 +2012,7 @@ Create `app/api/loops/[id]/route.js`:
 import { NextResponse } from 'next/server';
 import { getSql } from '../../../lib/db.js';
 import { getOrgId } from '../../../lib/org.js';
+import { apiErrorResponse } from '../../../lib/apiErrors.js';
 import { closeLoop } from '../../../lib/repositories/open-loops.repository.js';
 
 export const dynamic = 'force-dynamic';
@@ -2037,8 +2022,7 @@ export async function PATCH(req, { params }) {
   try {
     const { id } = await params;
     const sql = getSql();
-    const orgId = await getOrgId(req);
-    if (!orgId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const orgId = getOrgId(req);
 
     const body = await req.json().catch(() => ({}));
     if (body.status === 'closed') {
@@ -2048,8 +2032,7 @@ export async function PATCH(req, { params }) {
     }
     return NextResponse.json({ error: 'unsupported_patch' }, { status: 400 });
   } catch (err) {
-    console.error('[LOOP PATCH] error:', err);
-    return NextResponse.json({ error: 'internal_error' }, { status: 500 });
+    return apiErrorResponse(err, 'LOOPS_PATCH');
   }
 }
 ```
@@ -2068,7 +2051,7 @@ const repo = vi.hoisted(() => ({
 }));
 vi.mock('../../app/lib/repositories/open-loops.repository.js', () => repo);
 vi.mock('../../app/lib/db.js', () => ({ getSql: () => ({}) }));
-vi.mock('../../app/lib/org.js', () => ({ getOrgId: async () => 'org_1' }));
+vi.mock('../../app/lib/org.js', () => ({ getOrgId: () => 'org_1' }));
 
 beforeEach(() => Object.values(repo).forEach((fn) => fn.mockReset()));
 
@@ -2746,7 +2729,7 @@ const repo = vi.hoisted(() => ({
 }));
 vi.mock('../../app/lib/repositories/code-session-handoffs.repository.js', () => repo);
 vi.mock('../../app/lib/db.js', () => ({ getSql: () => ({}) }));
-vi.mock('../../app/lib/org.js', () => ({ getOrgId: async () => 'org_e2e' }));
+vi.mock('../../app/lib/org.js', () => ({ getOrgId: () => 'org_e2e' }));
 
 beforeEach(() => Object.values(repo).forEach((fn) => fn.mockReset()));
 
