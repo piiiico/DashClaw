@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
 import { execFileSync } from 'child_process';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { DashClaw } from 'dashclaw';
 import {
   bold, dim, inverse, colorByRisk, clearScreen,
@@ -12,6 +14,13 @@ import { resolveConfig, clearConfigFile, configPath } from '../lib/config.js';
 import { runIngest, defaultClaudeProjectsDir } from '../lib/code/ingest.js';
 import { runMemo } from '../lib/code/memo.js';
 import { runApply } from '../lib/code/apply.js';
+import {
+  runCodexIngest,
+  defaultCodexSessionsDir,
+  defaultCodexOutDir,
+} from '../lib/code/ingest-codex.js';
+import { installCodex, codexConfigPath, codexHooksDir } from '../lib/codex/install.js';
+import { runCodexNotify } from '../lib/codex/notify.js';
 
 process.on('unhandledRejection', (reason) => {
   console.error('Unhandled Rejection:', reason);
@@ -56,6 +65,10 @@ ${bold('Usage:')}
     --category <list>                    Filter checks (e.g., database,config)
   dashclaw code ingest [--dry-run]       Backfill Claude Code transcripts from ~/.claude/projects
     --projects-dir <path>                Override the default scan directory
+  dashclaw code ingest-codex [--dry-run] Backfill Codex transcripts from ~/.codex/sessions
+    --sessions-dir <path>                Override the default scan directory
+    --out <dir>                          Local output dir (default ~/.dashclaw/codex-sessions)
+    --endpoint <url>                     POST to <url> instead of writing local (advanced)
   dashclaw code memo --project=<slug>    Print the latest weekly memo for a project
     --save                               Also write to ./memos/<weekTag>-<slug>.md
   dashclaw code apply <manifestId>       Apply an Optimal Files manifest (Phase 6+ feature)
@@ -63,6 +76,12 @@ ${bold('Usage:')}
     --yes                                Overwrite existing files when manifest says so
     --allow-redactions                   Write files that contain redacted secret patterns
     --overwrite                          Clobber existing .NEW side-by-side files
+  dashclaw install codex                 Provision DashClaw governance into Codex CLI
+    --project <path>                     Project to receive AGENTS.md (default: cwd)
+    --approval-policy <p>                Codex approval_policy (default: on-request)
+    --include-notify                     Also wire Codex's notify config to dashclaw codex notify
+  dashclaw codex notify '<json>'         Record a Codex turn-complete event
+                                         (called by Codex's notify config; always exits 0)
   dashclaw logout                        Remove saved config (~/.dashclaw/config.json)
   dashclaw help                          Show this help
 
@@ -341,7 +360,124 @@ async function cmdApprovals() {
   });
 }
 
+// -- install subcommand group ------------------------------------------------
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+// cli/bin/ -> cli/ -> repo root
+const REPO_ROOT = resolve(__dirname, '..', '..');
+
+async function cmdInstallCodex() {
+  const projectDir = getFlag('--project') || process.cwd();
+  const approvalPolicy = getFlag('--approval-policy') || 'on-request';
+  const includeNotify = args.includes('--include-notify');
+
+  try {
+    const result = await installCodex({
+      repoRoot: REPO_ROOT,
+      projectDir,
+      baseUrl,
+      approvalPolicy,
+      includeNotify,
+      logger: console,
+    });
+
+    console.log();
+    console.log(`  ${green('Done.')} DashClaw governance is wired into Codex.`);
+    console.log(`  ${dim('Hooks:')}  ${result.hooks.hooksDst}`);
+    console.log(`  ${dim('Config:')} ${result.config.path}${result.config.backup ? dim(' (backup: ' + result.config.backup + ')') : ''}`);
+    console.log(`  ${dim('AGENTS:')} ${result.agentsMd.path}${result.agentsMd.backup ? dim(' (backup: ' + result.agentsMd.backup + ')') : ''}`);
+    console.log();
+    console.log(`  Next: open a new Codex session in ${projectDir} and run a governed tool call.`);
+    console.log(`  Codex requires you to trust new hooks; it will prompt on first use.`);
+  } catch (err) {
+    console.error(`Error: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+async function cmdInstall() {
+  const target = args[1];
+  switch (target) {
+    case 'codex':
+      return cmdInstallCodex();
+    default:
+      console.error(`Unknown install target: dashclaw install ${target || '(missing)'}\n` +
+                    'Try: dashclaw install codex [--project <path>] [--approval-policy <p>]');
+      process.exit(1);
+  }
+}
+
+// -- codex subcommand group --------------------------------------------------
+//
+// `dashclaw codex notify '<json>'` is invoked by Codex's legacy notify config.
+// It records a turn-complete action_record in DashClaw. ALWAYS exits 0 so
+// Codex never sees an error from the spawn.
+
+async function cmdCodexNotify() {
+  // Skip the leading 'codex' and 'notify' tokens — runCodexNotify reads the
+  // JSON payload from the LAST argv slot (per Codex's notify contract).
+  const notifyArgv = args.slice(1); // includes 'notify' and the payload
+  await runCodexNotify({
+    argv: notifyArgv,
+    baseUrl,
+    apiKey,
+    agentId: agentId || 'codex',
+    logger: console,
+  });
+  process.exit(0);
+}
+
+async function cmdCodex() {
+  const sub = args[1];
+  switch (sub) {
+    case 'notify':
+      return cmdCodexNotify();
+    default:
+      console.error(`Unknown subcommand: dashclaw codex ${sub || '(missing)'}\n` +
+                    'Try: dashclaw codex notify \'<json>\'   (called by Codex notify config)');
+      process.exit(1);
+  }
+}
+
 // -- code subcommand group ---------------------------------------------------
+
+async function cmdCodeIngestCodex() {
+  const dryRun = args.includes('--dry-run');
+  const sessionsDir = getFlag('--sessions-dir') || defaultCodexSessionsDir();
+  const outDir = getFlag('--out') || defaultCodexOutDir();
+  const endpoint = getFlag('--endpoint') || null;
+  console.log(`Scanning ${sessionsDir} ...`);
+  const results = await runCodexIngest({
+    sessionsDir,
+    outDir,
+    endpoint,
+    apiKey,
+    dryRun,
+    logger: console,
+  });
+  if (!results.length) {
+    console.log('No sessions to ingest.');
+    return;
+  }
+  let written = 0, ingested = 0, dryRunCount = 0, skipped = 0, errors = 0;
+  for (const r of results) {
+    if (r.status === 'written_local') written++;
+    else if (r.status === 'ingested') ingested++;
+    else if (r.status === 'dry_run') dryRunCount++;
+    else if (r.status === 'skipped') skipped++;
+    else if (r.status === 'error') {
+      errors++;
+      console.error(`  ${red('error')} ${r.file}: ${r.reason}${r.detail ? ' — ' + r.detail : ''}`);
+    }
+  }
+  console.log();
+  console.log(`Done. Written: ${written}  Ingested: ${ingested}  Dry-run: ${dryRunCount}  Skipped: ${skipped}  Errors: ${errors}`);
+  if (!endpoint && written > 0) {
+    console.log(dim(`  Local sessions saved under ${outDir}.`));
+    console.log(dim(`  Server-side codex ingest will be wired in a follow-up phase.`));
+  }
+  if (errors > 0) process.exit(2);
+}
 
 async function cmdCodeIngest() {
   const dryRun = args.includes('--dry-run');
@@ -418,6 +554,8 @@ async function cmdCode() {
   switch (sub) {
     case 'ingest':
       return cmdCodeIngest();
+    case 'ingest-codex':
+      return cmdCodeIngestCodex();
     case 'memo':
       return cmdCodeMemo();
     case 'apply':
@@ -425,6 +563,7 @@ async function cmdCode() {
     default:
       console.error(`Unknown subcommand: dashclaw code ${sub || '(missing)'}\n` +
                     'Try: dashclaw code ingest [--dry-run]\n' +
+                    '     dashclaw code ingest-codex [--dry-run] [--out <dir>] [--endpoint <url>]\n' +
                     '     dashclaw code memo --project=<slug> [--save]\n' +
                     '     dashclaw code apply <manifestId> --dest=<dir> [--yes]');
       process.exit(1);
@@ -434,6 +573,13 @@ async function cmdCode() {
 // -- Router -------------------------------------------------------------------
 
 const COMMANDS_NEEDING_CONFIG = new Set(['approvals', 'approve', 'deny', 'doctor', 'code']);
+// `install` deliberately omitted: provisioning hooks and AGENTS.md shouldn't
+// require the user to have already configured API keys. If config happens to
+// be present, install will pick up baseUrl for the AGENTS.md instance link.
+// `codex notify` also opt-in: if no config, the notify fail-softs to skipped
+// rather than erroring (Codex never sees the error anyway — it spawns with
+// stdio nulled).
+const COMMANDS_OPTIONAL_CONFIG = new Set(['install', 'codex']);
 
 async function main() {
   if (COMMANDS_NEEDING_CONFIG.has(command)) {
@@ -446,6 +592,13 @@ async function main() {
     baseUrl = config.baseUrl;
     apiKey = config.apiKey;
     agentId = config.agentId;
+  } else if (COMMANDS_OPTIONAL_CONFIG.has(command)) {
+    const config = await resolveConfig({ interactive: false }).catch(() => null);
+    if (config) {
+      baseUrl = config.baseUrl;
+      apiKey = config.apiKey;
+      agentId = config.agentId;
+    }
   }
 
   switch (command) {
@@ -466,6 +619,12 @@ async function main() {
       break;
     case 'code':
       await cmdCode();
+      break;
+    case 'install':
+      await cmdInstall();
+      break;
+    case 'codex':
+      await cmdCodex();
       break;
     case 'help':
     case '--help':
