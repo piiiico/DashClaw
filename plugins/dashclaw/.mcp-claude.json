@@ -1,9 +1,10 @@
 {
   "mcpServers": {
     "dashclaw": {
-      "command": "node",
+      "command": "npx",
       "args": [
-        "../../mcp-server/bin/dashclaw-mcp.js",
+        "-y",
+        "@dashclaw/mcp-server",
         "--agent-id",
         "claude-code"
       ]

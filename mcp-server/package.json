@@ -4,7 +4,7 @@
   "description": "MCP server for DashClaw governance — guard, record, invoke, and discover capabilities.",
   "type": "module",
   "bin": {
-    "dashclaw-mcp": "./bin/dashclaw-mcp.js"
+    "dashclaw-mcp": "bin/dashclaw-mcp.js"
   },
   "main": "./lib/server.js",
   "exports": {
