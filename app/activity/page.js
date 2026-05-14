@@ -48,7 +48,13 @@ export default function GlobalActivityFeed() {
       const [actionsRes, guardRes, auditRes] = await Promise.all(fetches);
 
       const actions = (await actionsRes.json()).actions || [];
-      const guards = (await guardRes.json()).evaluations || [];
+      // /api/guard returns { decisions, total, stats } — the older
+      // `.evaluations` key never existed on this endpoint, so reading it
+      // silently produced [] on every page load and POLICY EVALUATION events
+      // only survived in the live-stream buffer. On refresh they vanished
+      // while the DECISION FINALIZED events (correctly read from `.actions`)
+      // stuck around. Read the actual key the API returns.
+      const guards = (await guardRes.json()).decisions || [];
       const audits = auditRes ? ((await auditRes.json()).logs || []) : [];
 
       // Normalize into unified event format
