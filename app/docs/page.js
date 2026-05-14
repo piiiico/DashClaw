@@ -92,7 +92,7 @@ function SectionNav({ items }) {
 const navItems = [
   { href: '#quick-start', label: 'Quick Start' },
   { href: '#mcp-server', label: 'MCP Server' },
-  { href: '#mcp-tools', label: 'Tools (8)', indent: true },
+  { href: '#mcp-tools', label: 'Tools (23)', indent: true },
   { href: '#mcp-resources', label: 'Resources (4)', indent: true },
   { href: '#mcp-config', label: 'Configuration', indent: true },
   { href: '#cli-and-doctor', label: 'CLI & Doctor' },
@@ -213,7 +213,7 @@ export default async function DocsPage({ searchParams }) {
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">SDK Documentation</h1>
           </div>
           <p className="text-text-secondary max-w-2xl leading-relaxed">
-            Canonical reference for the DashClaw SDK (v2.11.1). Node.js and Python parity across all core governance features.
+            Canonical reference for the DashClaw SDK (v2.12.0). Node.js and Python parity across all core governance features.
           </p>
           <Suspense fallback={null}>
             <CopyDocsButton />
@@ -370,12 +370,12 @@ except Exception as e:
               <h2 className="text-2xl font-bold tracking-tight">MCP Server</h2>
             </div>
             <p className="mt-2 mb-8 text-sm text-text-secondary leading-relaxed">
-              <code className="font-mono text-text-secondary">@dashclaw/mcp-server</code> exposes DashClaw governance over Model Context Protocol. Any MCP-compatible client gets 8 governance tools and 4 read-only resources.
+              <code className="font-mono text-text-secondary">@dashclaw/mcp-server</code> exposes DashClaw governance over Model Context Protocol. Any MCP-compatible client gets 23 governance tools across 6 groups (core governance, optimal files, session continuity, credential hygiene, skill safety, open loops, learning + retrospection) plus 4 read-only resources.
             </p>
 
             {/* Tools */}
             <div id="mcp-tools" className="scroll-mt-20 mb-10">
-              <h3 className="text-lg font-semibold text-text-primary mb-4">Tools (8)</h3>
+              <h3 className="text-lg font-semibold text-text-primary mb-4">Tools (23)</h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
@@ -387,7 +387,7 @@ except Exception as e:
                   </thead>
                   <tbody>
                     {[
-                      { tool: 'dashclaw_guard', desc: 'Evaluate policies before risky actions', inputs: 'action_type, declared_goal, risk_score' },
+                      { group: 'Core governance', tool: 'dashclaw_guard', desc: 'Evaluate policies before risky actions', inputs: 'action_type, declared_goal, risk_score' },
                       { tool: 'dashclaw_record', desc: 'Log action to audit trail', inputs: 'action_type, declared_goal, status' },
                       { tool: 'dashclaw_invoke', desc: 'Execute governed capability', inputs: 'capability_id, declared_goal, payload' },
                       { tool: 'dashclaw_capabilities_list', desc: 'Discover available APIs', inputs: 'category, risk_level, search' },
@@ -395,9 +395,29 @@ except Exception as e:
                       { tool: 'dashclaw_wait_for_approval', desc: 'Wait for human decision', inputs: 'action_id, timeout_seconds' },
                       { tool: 'dashclaw_session_start', desc: 'Register agent session', inputs: 'agent_id, workspace' },
                       { tool: 'dashclaw_session_end', desc: 'Close session', inputs: 'session_id, status, summary' },
+                      { group: 'Optimal files', tool: 'dashclaw_optimal_files_preview', desc: 'Preview optimizer output for a session', inputs: 'session_id' },
+                      { tool: 'dashclaw_optimal_files_manifest', desc: 'Generate optimal-files manifest', inputs: 'session_id, selections' },
+                      { group: 'Session continuity', tool: 'dashclaw_handoff_create', desc: 'Write handoff bundle for next session', inputs: 'bundle, agent_id, project_id' },
+                      { tool: 'dashclaw_handoff_latest', desc: 'Fetch latest unconsumed handoff', inputs: 'agent_id, project_id' },
+                      { tool: 'dashclaw_handoff_consume', desc: 'Mark handoff consumed (idempotent)', inputs: 'id, session_id' },
+                      { group: 'Credential hygiene', tool: 'dashclaw_secret_list', desc: 'List tracked secrets (metadata only)', inputs: 'agent_id' },
+                      { tool: 'dashclaw_secret_due', desc: 'Secrets coming due for rotation', inputs: 'within_days, agent_id' },
+                      { tool: 'dashclaw_secret_mark_rotated', desc: 'Mark secret rotated (operator-confirmed)', inputs: 'id' },
+                      { group: 'Skill safety', tool: 'dashclaw_skill_scan', desc: 'Static safety scan of skill files', inputs: 'skill_name, files' },
+                      { group: 'Open loops', tool: 'dashclaw_loop_add', desc: 'Register action-scoped commitment', inputs: 'action_id, loop_type, description' },
+                      { tool: 'dashclaw_loop_list', desc: 'List open/resolved loops', inputs: 'action_id, status, priority' },
+                      { tool: 'dashclaw_loop_close', desc: 'Resolve an open loop', inputs: 'id, resolution' },
+                      { group: 'Learning + retrospection', tool: 'dashclaw_learning_log', desc: 'Log non-obvious decision + outcome', inputs: 'decision, context, outcome' },
+                      { tool: 'dashclaw_learning_query', desc: 'Query prior decisions/lessons', inputs: 'query, agent_id, limit' },
+                      { tool: 'dashclaw_decisions_recent', desc: 'Recent governed-action ledger', inputs: 'agent_id, action_type, decision, since' },
                     ].map((row) => (
                       <tr key={row.tool} className="border-b border-border">
-                        <td className="py-2 pr-4 font-mono text-xs text-brand">{row.tool}</td>
+                        <td className="py-2 pr-4 font-mono text-xs text-brand">
+                          {row.group && (
+                            <div className="text-[10px] uppercase tracking-[0.14em] text-text-tertiary font-sans mb-0.5">{row.group}</div>
+                          )}
+                          {row.tool}
+                        </td>
                         <td className="py-2 pr-4 text-xs text-text-secondary">{row.desc}</td>
                         <td className="py-2 font-mono text-xs text-text-tertiary">{row.inputs}</td>
                       </tr>

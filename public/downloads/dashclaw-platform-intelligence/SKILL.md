@@ -5,7 +5,7 @@ description: DashClaw platform expert for integration, troubleshooting, and gove
 
 # DashClaw Platform Intelligence
 
-**Shape snapshot:** `sha1:bdfbcfb2ae441f3e3f6111f668a4ee5a2ff123b5`
+**Shape snapshot:** `sha1:457fa236fe47eb7011762929feda2e523c2f4080`
 **This file is auto-generated.** Do not edit by hand — regenerate with:
 
 ```bash
@@ -30,7 +30,7 @@ If the snapshot below disagrees with a live query, **trust the live query**.
 ## At a Glance
 
 - **212** active API routes across **53** categories
-- **4** required + **120** optional environment variables
+- **4** required + **119** optional environment variables
 - **84** database tables
 
 ## API Surface
@@ -483,7 +483,6 @@ These have fallbacks or only activate specific features.
 - `HOSTED_TRIAL_ACTION_CAP` *(undocumented)*
 - `HOSTED_TRIAL_DAYS` *(undocumented)*
 - `INTEGRATION_DATABASE_URL` *(undocumented)*
-- `MEMORY_DIR` *(undocumented)*
 - `MOONSHOT_API_KEY` *(undocumented)*
 - `NEXTAUTH_URL`
 - `NEXT_PUBLIC_APP_URL` *(undocumented)*

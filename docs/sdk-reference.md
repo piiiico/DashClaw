@@ -1,7 +1,7 @@
 ---
 source-of-truth: false
 status: redirect
-last-verified: 2026-04-11
+last-verified: 2026-05-14
 doc-type: pointer
 ---
 
@@ -11,19 +11,19 @@ doc-type: pointer
 > document moved to **[`sdk/README.md`](../sdk/README.md)** during the
 > 2026-04-11 docs sync pass. The previous standalone reference drifted
 > out of date with the actual SDK surface (it documented 45 methods while
-> the v2 SDK had grown to 80) and was retired to prevent two sources of
+> the v2 SDK had grown to 87) and was retired to prevent two sources of
 > truth.
 
 ## Where to go
 
 | Looking for | Canonical location |
 |---|---|
-| Full v2 method catalogue (80 methods) + canonical HITL flow + error handling + Execution Studio usage | **[`sdk/README.md`](../sdk/README.md)** |
+| Full v2 method catalogue (87 methods) + canonical HITL flow + error handling + Execution Studio usage | **[`sdk/README.md`](../sdk/README.md)** |
 | Domain-level parity between Node v2 / Node legacy / Python | **[`docs/sdk-parity.md`](./sdk-parity.md)** |
 | Per-domain method inventory and system architecture | **[`PROJECT_DETAILS.md`](../PROJECT_DETAILS.md)** |
 | Runtime governance loop (HTTP API shape) | **[`docs/architecture/runtime-api.md`](./architecture/runtime-api.md)** |
 | Legacy v1 method surface (pairing, compliance, webhooks, drift, etc.) | **[`docs/sdk-parity.md`](./sdk-parity.md)** → Legacy Node section |
-| Published npm package | [`npm install dashclaw`](https://www.npmjs.com/package/dashclaw) (currently 2.11.1) |
+| Published npm package | [`npm install dashclaw`](https://www.npmjs.com/package/dashclaw) (currently 2.12.0) |
 
 The historical content of this file is preserved at
 [`docs/archive/sdk-reference-2026-04-11.md`](./archive/sdk-reference-2026-04-11.md)

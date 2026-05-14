@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:bdfbcfb2ae441f3e3f6111f668a4ee5a2ff123b5",
+  "timestamp": "sha1:457fa236fe47eb7011762929feda2e523c2f4080",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -3486,14 +3486,6 @@
       "required": false,
       "files": [
         "__tests__/integration/hosted/end-to-end.test.js"
-      ],
-      "in_env_example": false
-    },
-    {
-      "name": "MEMORY_DIR",
-      "required": false,
-      "files": [
-        "agent-tools/tools/memory-diff.js"
       ],
       "in_env_example": false
     },

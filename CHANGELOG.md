@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 DashClaw ships two independently versioned artifacts from this repo:
 
 - **Platform** — the Next.js app, API routes, dashboard, and supporting
-  libraries. Current: **2.14.0**. This is the version of the DashClaw instance
+  libraries. Current: **2.17.0**. This is the version of the DashClaw instance
   you deploy to Vercel. Governance features, UI changes, new API routes, and
   database migrations land on this track.
 - **SDK** — the `dashclaw` npm package published from `sdk/`. Current:
@@ -26,6 +26,143 @@ Plugin and tooling entries (e.g. `@dashclaw/openclaw-plugin`, `@dashclaw/cli`)
 are prefixed with the package name.
 
 ## [Unreleased]
+
+## [2.17.0] - 2026-05-14 — Agent toolkit absorbed into the runtime
+
+The Python `agent-tools/` CLI (52 files across 14 tools) is retired. Every operation
+it provided is now a first-class governed surface — DB-backed, org-scoped, and
+exposed as an MCP tool, an HTTP route, and (where it makes sense) a Hermes hook.
+Agents that loaded `agent-tools/` previously should remove it and re-instrument
+through the MCP server; the plugins for Claude Code, Codex, and Hermes Agent
+pick up the new tools automatically.
+
+### New tables (drizzle/0007_agent_toolkit_into_runtime.sql)
+
+Three additive tables with proper FKs, `NULLS NOT DISTINCT`, quoted identifiers,
+statement breakpoints, idempotent guards. `auto-migrate.mjs` applies them on every
+Vercel deploy.
+
+- `code_session_handoffs` — handoff bundle (`{summary, open_loops, decisions_made,
+  state_snapshot, generated_at}`) keyed by `(org_id, agent_id, project_id)`, with
+  `consumed_at` for one-shot semantics.
+- `governed_secrets` — operator-tracked credential rotation metadata. No secret
+  values stored; only names, rotation intervals, last-rotated timestamps.
+- `skill_scan_results` — cached static-safety scan results, keyed by content hash
+  to dedupe scans of identical skill files.
+
+### 11 new API routes (4 stable + 5 experimental)
+
+| Family | Routes |
+|---|---|
+| Session handoffs | `POST/GET /api/handoffs`, `GET /api/handoffs/latest`, `GET /api/handoffs/{id}`, `POST /api/handoffs/{id}/consume` (all `stable`) |
+| Operator-tracked secrets | `GET/POST /api/secrets`, `PATCH/DELETE /api/secrets/{id}`, `GET /api/secrets/rotation-due` |
+| Skill safety scan | `POST /api/skills/scan`, `GET /api/skills/scans/{id}` |
+
+All routes follow the repository pattern (no direct route SQL) — see
+`app/lib/repositories/code-session-handoffs.repository.js`,
+`governed-secrets.repository.js`, `skill-scan-results.repository.js`. Sync
+`getOrgId(request)` + `apiErrorResponse(...)` matching the rest of the runtime.
+
+### 13 new MCP tools (8 → 23)
+
+`mcp-server/lib/tools.js` adds six new groups behind a single discovery surface.
+The plugin manifests (Claude Code / Codex / Hermes Agent) reference the same
+on-disk `mcp-server/` — no separate npm publish; users get the new tools on the
+next agent restart after a `git pull`.
+
+- **Session continuity:** `dashclaw_handoff_create`, `dashclaw_handoff_latest`,
+  `dashclaw_handoff_consume`.
+- **Credential hygiene:** `dashclaw_secret_list`, `dashclaw_secret_due`,
+  `dashclaw_secret_mark_rotated`.
+- **Skill safety:** `dashclaw_skill_scan` (11-rule static detector; lookbehind
+  `(?<![.\w])` to avoid method-call false positives; multi-line exfil; secret
+  masking in stored findings).
+- **Open loops (action-scoped):** `dashclaw_loop_add`, `dashclaw_loop_list`,
+  `dashclaw_loop_close` — open loops attach to a parent `action_id`; close maps
+  to `status: 'resolved'`.
+- **Learning + retrospection:** `dashclaw_learning_log`, `dashclaw_learning_query`,
+  `dashclaw_decisions_recent` — log non-obvious decisions; query prior reasoning;
+  ledger of recent governed actions filterable by verdict / `since`.
+
+Return shape was normalized to the existing `JSON.stringify(result)` MCP text
+content protocol after a code-review round.
+
+### Hermes Agent hooks — wire on_session_end / on_session_start / pre_llm_call
+
+`.hermes/hooks/dashclaw_common.py` adds `post_handoff_create`, `get_handoff_latest`,
+`post_handoff_consume` helpers. `on_session_end` packs `{summary, open_loops,
+decisions_made, state_snapshot}` and POSTs `/api/handoffs`. `on_session_start`
+fetches `/api/handoffs/latest`, caches the bundle on disk, and POSTs
+`/api/handoffs/{id}/consume`. `pre_llm_call` injects the cached handoff bundle
+(bounded to 1500 chars) on the first turn of a session, then degrades back to
+the standard per-turn governance context.
+
+Open loop / decisions collection retargets to existing routes after a code-review
+round: `/api/actions/loops` (not a non-existent `/api/loops`) and
+`/api/guard/decisions` (not `/api/decisions`).
+
+### Governance skill — 6 new "when to use" sections
+
+`plugins/dashclaw/skills/dashclaw-governance/SKILL.md` adds: Session Continuity,
+Skill Safety, Credential Hygiene, Commitment Tracking, Learning From Prior
+Sessions, In-Session Retrospection. Each section teaches the new MCP tool with
+the action-scoped loop semantics and the operator-vs-agent boundary (e.g. agents
+don't register secrets — that's an operator task — but they DO check rotation
+due-dates before acting on credentials).
+
+Plugin manifest version bumped 2.13.3 → 2.14.0 in all three (`.claude-plugin/`,
+`.codex-plugin/`, `.hermes-plugin/`) reflecting the additive skill content.
+
+### Retirement — agent-tools/ + /toolkit page
+
+- Deleted `agent-tools/` (52 files, 11283 lines removed). Includes
+  `sync_to_dashclaw.py` (the script there was no clear "where do I run this"
+  answer for — that confusion is now gone because MCP tools are auto-discovered
+  by every agent that loads the plugin).
+- Deleted `app/toolkit/page.js`. Added a `/toolkit → /docs#mcp-tools` redirect
+  in `next.config.js` so any stale link still lands somewhere useful.
+- `PublicFooter.js`, `CONTRIBUTING.md`, `README.md`, and
+  `docs/operator/first-15-minutes.md` updated to drop `/toolkit` references and
+  point at MCP / Hermes / Codex installer commands instead.
+
+### Generated artifacts
+
+`livingcode-refresh.mjs` now mirrors `dashclaw-governance` into
+`plugins/dashclaw/skills/dashclaw-governance/` as a third target alongside
+`public/downloads/` and `~/.claude/skills/`. Platform intelligence snapshot
+SHA-1 advances to `bdfbcfb2…`; route count `203 → 212`, table count `81 → 84`.
+
+### Doc surfaces
+
+- `sdk/README.md` — heading + surface-area version → 2.12.0; MCP section
+  expanded from 8 tools to 23 across 6 groups; added "Agent runtime endpoints
+  (server-side, no SDK wrapper)" pointer table.
+- `sdk-python/README.md` — same MCP tool-count update; Node v2 method-count
+  reference corrected from 80 → 87.
+- `app/docs/page.js` — version line, MCP description, and tools table updated
+  to reflect 23 tools across the 6 categories.
+- `docs/sdk-parity.md` — three new rows in Non-SDK Surfaces table making
+  explicit that handoffs / secrets / skill-scan are intentionally NOT in the
+  SDK; agents reach them via MCP or hooks.
+- `PROJECT_DETAILS.md` — title version, runtime version, npm package version,
+  route count (230 → 259), and a new Tier 2 row for each of the three new
+  surfaces.
+- `CLAUDE.md` — Platform `2.13.3` → `2.14.0`, npm `2.11.1` → `2.12.0`,
+  method-count `80` → `87`.
+- `docs/sdk-reference.md` — `2.11.1` → `2.12.0`; method-count references
+  updated.
+
+### Verification
+
+- `npm run lint`, `npm run docs:check`, `npm run openapi:check`,
+  `npm run api:inventory:check` all clean.
+- `npm test` — 2160 passing / 5 skipped (was 2137 — +23 new tests across
+  schema, repositories, scanner, routes, MCP tools, Hermes hooks, governance
+  skill, livingcode mirror, toolkit retirement).
+- Production probe — `/api/handoffs/latest`, `/api/secrets`,
+  `/api/skills/scan` all return 403 `Demo mode: endpoint disabled` from
+  `www.dashclaw.io` (route + table present, gated by demo middleware as
+  expected).
 
 ## [2.16.0] - 2026-05-13
 

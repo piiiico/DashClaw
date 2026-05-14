@@ -1,4 +1,4 @@
-# DashClaw SDK (v2.11.1)
+# DashClaw SDK (v2.12.0)
 
 **Minimal governance runtime for AI agents.**
 
@@ -247,7 +247,7 @@ See:
 
 ---
 
-## SDK Surface Area (v2.11.1)
+## SDK Surface Area (v2.12.0)
 
 The v2 SDK exposes the stable governance runtime plus promoted execution domains in the canonical Node client:
 
@@ -590,9 +590,29 @@ If your agent supports Model Context Protocol (Claude Code, Claude Desktop, Mana
 
 **Streamable HTTP transport** (same surface, served by your DashClaw instance at `POST /api/mcp`).
 
-**8 tools:** `dashclaw_guard`, `dashclaw_record`, `dashclaw_invoke`, `dashclaw_capabilities_list`, `dashclaw_policies_list`, `dashclaw_wait_for_approval`, `dashclaw_session_start`, `dashclaw_session_end`.
+**23 tools** in 6 groups:
+
+- **Core governance (8):** `dashclaw_guard`, `dashclaw_record`, `dashclaw_invoke`, `dashclaw_capabilities_list`, `dashclaw_policies_list`, `dashclaw_wait_for_approval`, `dashclaw_session_start`, `dashclaw_session_end`.
+- **Optimal files (2):** `dashclaw_optimal_files_preview`, `dashclaw_optimal_files_manifest` — Code Sessions optimizer output (root CLAUDE.md, path-scoped rules, hooks, skill packs).
+- **Session continuity (3):** `dashclaw_handoff_create`, `dashclaw_handoff_latest`, `dashclaw_handoff_consume` — agent-runtime handoff bundle for the next session.
+- **Credential hygiene (3):** `dashclaw_secret_list`, `dashclaw_secret_due`, `dashclaw_secret_mark_rotated` — check rotation due-dates before acting on tracked credentials.
+- **Skill safety (1):** `dashclaw_skill_scan` — static safety scan of untrusted skill files; results cached by content hash.
+- **Open loops (3):** `dashclaw_loop_add`, `dashclaw_loop_list`, `dashclaw_loop_close` — action-scoped commitments (the "I will X later" tracker).
+- **Learning + retrospection (3):** `dashclaw_learning_log`, `dashclaw_learning_query`, `dashclaw_decisions_recent` — log + query non-obvious decisions; recent governed-action ledger.
 
 **4 resources:** `dashclaw://policies`, `dashclaw://capabilities`, `dashclaw://agent/{agent_id}/history`, `dashclaw://status`.
+
+### Agent runtime endpoints (server-side, no SDK wrapper)
+
+DashClaw 2.17 (platform) added three route families that are **agent-runtime infrastructure, not developer SDK methods**. They are called by the MCP server (the tools listed above), by Hermes Agent hooks, and by other governance plumbing — never directly from agent code. By design, they are not exposed on `claw.*`:
+
+| Family | Endpoints | Where called from |
+|---|---|---|
+| Session handoffs | `POST/GET /api/handoffs`, `GET /api/handoffs/latest`, `GET /api/handoffs/{id}`, `POST /api/handoffs/{id}/consume` | Hermes `on_session_end` / `on_session_start` / `pre_llm_call` hooks; MCP `dashclaw_handoff_*` tools |
+| Operator-tracked secrets | `GET/POST /api/secrets`, `PATCH/DELETE /api/secrets/{id}`, `GET /api/secrets/rotation-due` | MCP `dashclaw_secret_*` tools; operator UI |
+| Skill safety scan | `POST /api/skills/scan`, `GET /api/skills/scans/{id}` | MCP `dashclaw_skill_scan` tool; agents before loading an untrusted skill |
+
+If you're building a custom integration that needs these without MCP, call them as plain HTTP — see `docs/api-inventory.md` and the OpenAPI spec at `docs/openapi/critical-stable.openapi.json`.
 
 ## OpenClaw Plugin (`@dashclaw/openclaw-plugin`)
 

@@ -1,7 +1,7 @@
 ---
 source-of-truth: true
 owner: SDK Lead
-last-verified: 2026-05-13
+last-verified: 2026-05-14
 doc-type: architecture
 ---
 
@@ -137,6 +137,9 @@ These are reachable via HTTP but are not intended as SDK methods. Documented her
 | Analytics dashboard | `GET /api/analytics` | Dashboard frontend only |
 | Guard decisions audit log | `GET /api/guard/decisions` | Policy Builder ActivityTab; no SDK wrapper yet |
 | Agent governance profile | `GET /api/agents/[agentId]/profile` | `/agents/[agentId]` dashboard page aggregator |
+| Session handoffs (agent runtime) | `POST/GET /api/handoffs`, `GET /api/handoffs/latest`, `GET /api/handoffs/[id]`, `POST /api/handoffs/[id]/consume` | Hermes hooks (`.hermes/hooks/dashclaw_on_session_{start,end}_hermes.py`) + MCP server (`dashclaw_handoff_create/latest/consume`). Agents pick up the previous session's bundle on first turn; not an SDK developer method. |
+| Operator-tracked secrets | `GET/POST /api/secrets`, `PATCH/DELETE /api/secrets/[id]`, `GET /api/secrets/rotation-due` | Operator surface + MCP server (`dashclaw_secret_list/due/mark_rotated`). Registration is an operator task; agents only check rotation due-dates via MCP. |
+| Skill safety scan | `POST /api/skills/scan`, `GET /api/skills/scans/[id]` | MCP server (`dashclaw_skill_scan`). Agents scan untrusted skill files before loading; results cached by content hash. |
 
 If any of these later need first-class SDK exposure, promote them into the matrix above.
 

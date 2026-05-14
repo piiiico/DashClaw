@@ -1,11 +1,11 @@
 ---
 source-of-truth: true
 owner: API Governance Lead
-last-verified: 2026-05-13
+last-verified: 2026-05-14
 doc-type: architecture
 ---
 
-# DashClaw Project Details (v2.13.3 Governance Runtime)
+# DashClaw Project Details (v2.14.0 Governance Runtime)
 
 DashClaw is decision infrastructure for AI agents. It provides the governance layer between agents and external systems: policy evaluation before execution, human approval when needed, durable action records, terminal outcome tracking, and evidence that operators can audit later.
 
@@ -25,7 +25,7 @@ Generated inventories remain authoritative for generated facts:
 | SDK parity by domain | `docs/sdk-parity.md` |
 | Durable execution finality spec | `docs/architecture/durable-execution-finality.md` |
 
-As of this verification, generated API inventory reports **230 routes**: **42 stable**, **21 beta**, **167 experimental**.
+As of this verification, generated API inventory reports **259 routes**: **46 stable**, **23 beta**, **190 experimental**.
 
 ## Product boundary
 
@@ -112,6 +112,9 @@ These modules consume core runtime data and add operator value without changing 
 | Prompts | `/api/prompts/*` | Prompt templates, versions, rendering, stats, and raw setup/connect prompts. |
 | Billing and usage | `/api/billing/*`, `/api/usage/*`, `/api/cron/reset-meters` | Stripe checkout/portal, usage readout, and meter reset. |
 | Code Sessions | `/api/code-sessions/*`, `/code-sessions` UI, `/api/cron/code-session-{cache-crater,weekly-memo}` | Multi-agent transcript ingest: Claude Code (Stop hook + JSONL backfill), Codex (JSONL parser + `dashclaw code ingest-codex`), and Hermes Agent (per-turn live ingest via `POST /api/code-sessions/ingest-live` with optional `finalize: true` to run optimizer + alerts pass on session close). 4-column cache-aware pricing, 7-rule optimizer, repeated-run detection, signals/alerts, weekly memo, /goal autopsy, Subagent ROI, and Optimal Files bundle generator (root CLAUDE.md, path-scoped rules, hooks, skill packs). Tables: `code_projects`, `code_sessions`, `code_session_messages`, `code_session_tool_uses`, `code_session_signals`, `code_session_alerts`, `code_session_memos`, `code_optimal_file_manifests`. Path B CLI: `dashclaw code ingest|ingest-codex|memo|apply`. MCP: `dashclaw_optimal_files_{preview,manifest}` tools and `dashclaw://code-sessions/*` resources. |
+| Session handoffs | `POST/GET /api/handoffs`, `GET /api/handoffs/latest`, `GET /api/handoffs/{id}`, `POST /api/handoffs/{id}/consume` | Bridges agent sessions of the same agent: prior session writes a `{summary, open_loops, decisions_made, state_snapshot}` bundle on `on_session_end`; next session reads it via `on_session_start` and injects on first `pre_llm_call`. Hermes hooks wire this automatically; agents on Claude Code / Codex pick up via MCP (`dashclaw_handoff_create/latest/consume`). Table: `code_session_handoffs`. |
+| Operator-tracked secrets | `GET/POST /api/secrets`, `PATCH/DELETE /api/secrets/{id}`, `GET /api/secrets/rotation-due` | Operator-owned credential rotation tracker. Stores metadata only — no values. Agents call `dashclaw_secret_due` before acting on credentials and `dashclaw_secret_mark_rotated` only when an operator confirms a rotation. Table: `governed_secrets`. |
+| Skill safety scan | `POST /api/skills/scan`, `GET /api/skills/scans/{id}` | Static safety detector (11 rules across credential exfil, command injection, multi-line exfil, dangerous evals; false-positive avoidance via `(?<![.\w])` lookbehind). Agents call `dashclaw_skill_scan` before loading an untrusted skill; identical-content scans are deduped by hash. Table: `skill_scan_results`. |
 
 ### Tier 3: Archived platform-era routes
 
@@ -143,7 +146,7 @@ DashClaw is intentionally multi-surface. Claude Code hooks are one strong integr
 | Path | Best for | Artifact |
 |:---|:---|:---|
 | MCP server | MCP-capable agents, Claude Desktop/Code, managed agents, remote tool access | `@dashclaw/mcp-server`, `POST /api/mcp` |
-| Node SDK | JavaScript/TypeScript agents and apps | `sdk/dashclaw.js`, npm package `dashclaw` version `2.11.1` |
+| Node SDK | JavaScript/TypeScript agents and apps | `sdk/dashclaw.js`, npm package `dashclaw` version `2.12.0` |
 | Python SDK | Python agents and backend workflows | `sdk-python/dashclaw/client.py` |
 | Claude Code hooks | Coding-agent tool governance without per-call SDK code | `hooks/`, `npm run hooks:install`, `plugins/dashclaw/.claude-plugin/` |
 | Codex plugin | Codex coding-agent governance via field-compatible hook schema | `cli/lib/codex/`, `dashclaw install codex`, `plugins/dashclaw/.codex-plugin/` |
@@ -161,7 +164,7 @@ DashClaw ships two Node SDK entry points and a Python SDK.
 
 | Surface | Entry point | Version or role |
 |:---|:---|:---|
-| Canonical Node SDK | `import { DashClaw } from 'dashclaw'` from `sdk/dashclaw.js` | npm package `dashclaw` version `2.11.1`; primary SDK for new work. |
+| Canonical Node SDK | `import { DashClaw } from 'dashclaw'` from `sdk/dashclaw.js` | npm package `dashclaw` version `2.12.0`; primary SDK for new work. |
 | Legacy Node SDK | `import { DashClaw } from 'dashclaw/legacy'` from `sdk/legacy/dashclaw-v1.js` | Compatibility layer for older integrations. |
 | Python SDK | `sdk-python/dashclaw/client.py` | Broad Python surface with route-contract parity for critical domains. |
 
