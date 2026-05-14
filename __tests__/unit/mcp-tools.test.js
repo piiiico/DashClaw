@@ -60,18 +60,45 @@ describe('Tool Handlers', () => {
       expect(result).toContain('"decision":"allow"');
     });
 
-    it('uses provided agent_id over default', async () => {
+    it('server-configured agent_id wins over LLM-supplied agent_id', async () => {
+      // Governance: a confused or adversarial prompt must not be able to
+      // attribute actions to a different agent identity than the server is
+      // configured with. The server's client.agentId (DASHCLAW_AGENT_ID /
+      // --agent-id / auto-derived from MCP clientInfo) is authoritative; the
+      // tool-input field is preserved only as a last-resort fallback for
+      // setups that intentionally run without a server-level default.
       mockPost.mockResolvedValue({ decision: 'block' });
 
       await handlers.dashclaw_guard({
         action_type: 'deploy',
         declared_goal: 'test',
         risk_score: 50,
-        agent_id: 'custom-agent',
+        agent_id: 'spoofed-agent', // LLM tries to override the server identity
       });
 
       expect(mockPost).toHaveBeenCalledWith('/api/guard', expect.objectContaining({
-        agent_id: 'custom-agent',
+        agent_id: 'default-agent', // server config, not 'spoofed-agent'
+      }), expect.anything());
+    });
+
+    it('falls back to LLM-supplied agent_id only when server has no default', async () => {
+      // Last-resort fallback: if the MCP server was started with no
+      // --agent-id, no DASHCLAW_AGENT_ID, AND clientInfo auto-derivation
+      // didn't fire (e.g. HTTP transport, or an MCP client that omits
+      // clientInfo.name), input.agent_id is the only identity available.
+      const bareClient = { agentId: '', post: mockPost, get: mockGet, patch: mockPatch };
+      const bareHandlers = createToolHandlers(bareClient);
+      mockPost.mockResolvedValue({ decision: 'allow' });
+
+      await bareHandlers.dashclaw_guard({
+        action_type: 'deploy',
+        declared_goal: 'test',
+        risk_score: 30,
+        agent_id: 'bare-fallback',
+      });
+
+      expect(mockPost).toHaveBeenCalledWith('/api/guard', expect.objectContaining({
+        agent_id: 'bare-fallback',
       }), expect.anything());
     });
   });

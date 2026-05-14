@@ -68,10 +68,17 @@ describe('Claude MCP config', () => {
     assert.equal(args[idx + 1], 'claude-code');
   });
 
-  it('points at the same MCP server binary as Codex would', () => {
+  it('runs the published @dashclaw/mcp-server package via npx', () => {
+    // Plugin templates moved off the repo-local
+    // `node ../../mcp-server/bin/dashclaw-mcp.js` path once
+    // `@dashclaw/mcp-server` was published to npm — see the 1.0.0 publish
+    // commit. The plugin now works for users who installed the plugin zip
+    // without cloning the DashClaw repo.
     const cfg = loadJson(CLAUDE_MCP);
+    assert.equal(cfg.mcpServers.dashclaw.command, 'npx');
     const args = cfg.mcpServers.dashclaw.args;
-    assert.match(args[0], /mcp-server[\/\\]bin[\/\\]dashclaw-mcp\.js$/);
+    assert.ok(args.includes('@dashclaw/mcp-server'),
+      'args must reference the published @dashclaw/mcp-server npm package');
   });
 });
 
