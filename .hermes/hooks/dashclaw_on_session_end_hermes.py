@@ -47,17 +47,19 @@ def _summarize_session(data: dict, state: dict) -> str:
 
 def _collect_open_loops(agent_id: str) -> list:
     try:
-        resp = api_request("GET", f"/api/loops?agent_id={agent_id}&status=open", timeout=3)
+        resp = api_request("GET", f"/api/actions/loops?agent_id={agent_id}&status=open", timeout=3)
         return ((resp or {}).get("loops") or [])[:10]
-    except Exception:
+    except Exception as e:
+        log_error("on_session_end", f"_collect_open_loops failed: {type(e).__name__}: {e}")
         return []
 
 
 def _collect_recent_decisions(agent_id: str) -> list:
     try:
-        resp = api_request("GET", f"/api/decisions?agent_id={agent_id}&limit=10", timeout=3)
+        resp = api_request("GET", f"/api/guard/decisions?agent_id={agent_id}&limit=10", timeout=3)
         return ((resp or {}).get("decisions") or [])[:10]
-    except Exception:
+    except Exception as e:
+        log_error("on_session_end", f"_collect_recent_decisions failed: {type(e).__name__}: {e}")
         return []
 
 
