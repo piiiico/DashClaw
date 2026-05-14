@@ -54,7 +54,7 @@ export function createServer(config = {}) {
   const server = new McpServer(
     {
       name: '@dashclaw/mcp-server',
-      version: '1.0.1',
+      version: '1.0.2',
     },
     {
       capabilities: {

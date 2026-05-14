@@ -27,6 +27,23 @@ are prefixed with the package name.
 
 ## [Unreleased]
 
+### `@dashclaw/mcp-server@1.0.2` — server-configured agent_id wins over LLM input
+
+Followup to 1.0.1. Auto-derivation worked, but the LLM-supplied
+`input.agent_id` was still being checked FIRST in `agentId()`, which meant
+a prompt like "smoke test the MCP server fully" caused Claude to pass
+`agent_id: "claude-mcp-smoketest"` in every tool call — overriding the
+user's explicit `DASHCLAW_AGENT_ID="claude-desktop"` config.
+
+Priority order is now correct: `client.agentId` (explicit env var /
+CLI arg / auto-derived from MCP `clientInfo.name`) wins over the
+tool-input field. The input field remains as a last-resort fallback for
+configurations that intentionally run without a server-level default.
+
+This closes the "agent_id spoofing via prompt" attack surface — a
+malicious or confused prompt can no longer attribute its actions to a
+different agent identity than the one the server was configured with.
+
 ### `@dashclaw/mcp-server@1.0.1` — auto-derive agent_id from MCP clientInfo
 
 End-to-end testing surfaced a real UX cliff: Claude Desktop tool calls were

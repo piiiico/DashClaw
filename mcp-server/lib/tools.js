@@ -397,7 +397,15 @@ export const TOOL_DEFINITIONS = [
  * @returns {Object<string, function>}
  */
 export function createToolHandlers(client) {
-  const agentId = (input) => input.agent_id || client.agentId;
+  // Priority: server-configured agent_id (DASHCLAW_AGENT_ID / --agent-id /
+  // auto-derived from MCP clientInfo) wins over anything the LLM passes in the
+  // tool call. This is deliberate: agent identity is a governance primitive,
+  // and letting the LLM pick its own agent_id based on prompt context (e.g.
+  // it sees "smoke test" and picks "claude-mcp-smoketest") breaks attribution
+  // and lets a single misbehaving prompt impersonate a different agent. The
+  // input.agent_id field is preserved only as a last-resort fallback for
+  // configurations that intentionally run without a server-level default.
+  const agentId = (input) => client.agentId || input.agent_id;
 
   return {
     async dashclaw_optimal_files_preview(input) {
