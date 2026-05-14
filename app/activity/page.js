@@ -55,7 +55,11 @@ export default function GlobalActivityFeed() {
       // while the DECISION FINALIZED events (correctly read from `.actions`)
       // stuck around. Read the actual key the API returns.
       const guards = (await guardRes.json()).decisions || [];
-      const audits = auditRes ? ((await auditRes.json()).logs || []) : [];
+      // /api/activity returns { events, stats, pagination } — same bug class
+      // as the guards one above. Reading `.logs` silently produced [] forever,
+      // so system-event audit rows never appeared on the activity feed on
+      // refresh (and there's no realtime handler for them either).
+      const audits = auditRes ? ((await auditRes.json()).events || []) : [];
 
       // Normalize into unified event format
       const normalized = [
@@ -77,7 +81,12 @@ export default function GlobalActivityFeed() {
           label: 'Policy evaluation',
           actor: g.agent_name || g.agent_id,
           actorId: g.agent_id,
-          detail: `${g.decision.toUpperCase()}: ${g.reason}`,
+          // The /api/guard endpoint returns the joined-reason field as
+          // `reasons` (guardrails compat aliases `reason AS reasons` for legacy
+          // schemas). The realtime SSE payload publishes the same string as
+          // `reason` (singular — see app/lib/guard.js publishOrgEvent). Read
+          // both so neither code path renders "ALLOW: undefined".
+          detail: `${g.decision.toUpperCase()}: ${g.reasons || g.reason || ''}`,
           status: g.decision,
           link: `/decisions` // Guard doesn't have deep detail yet
         })),
@@ -135,7 +144,10 @@ export default function GlobalActivityFeed() {
         label: 'Policy evaluation',
         actor: payload.agent_name || payload.agent_id,
         actorId: payload.agent_id,
-        detail: `${payload.decision.toUpperCase()}: ${payload.reason}`,
+        // Match the initial-load fallback: SSE publish uses `reason` (singular,
+        // joined string) but the API returns `reasons` — read both so the cell
+        // never renders "ALLOW: undefined" if the publish shape ever changes.
+        detail: `${payload.decision.toUpperCase()}: ${payload.reason || payload.reasons || ''}`,
         status: payload.decision,
         link: `/decisions`
       };
