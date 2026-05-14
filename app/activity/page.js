@@ -39,27 +39,36 @@ export default function GlobalActivityFeed() {
       // activity_logs is keyed on the human actor_id, so it's skipped when
       // filtering by agent — there are no agent-scoped audit events yet.
       const agentQs = agentId ? `&agent_id=${encodeURIComponent(agentId)}` : '';
+      // Each fetch is independently failure-tolerant: a single 500 (e.g.
+      // schema drift on guard_decisions) used to take down the entire feed
+      // because Promise.all rejects on first failure. Now each source is
+      // wrapped to resolve with {} on error, so the surviving endpoints
+      // still render their data.
+      const safeJson = (url) =>
+        fetch(url)
+          .then((r) => (r.ok ? r.json() : Promise.resolve({})))
+          .catch(() => ({}));
+
       const fetches = [
-        fetch(`/api/actions?limit=15${agentQs}`),
-        fetch(`/api/guard?limit=15${agentQs}`),
+        safeJson(`/api/actions?limit=15${agentQs}`),
+        safeJson(`/api/guard?limit=15${agentQs}`),
       ];
-      if (!agentId) fetches.push(fetch('/api/activity?limit=10'));
+      if (!agentId) fetches.push(safeJson('/api/activity?limit=10'));
 
-      const [actionsRes, guardRes, auditRes] = await Promise.all(fetches);
+      const [actionsData, guardData, auditData = {}] = await Promise.all(fetches);
 
-      const actions = (await actionsRes.json()).actions || [];
-      // /api/guard returns { decisions, total, stats } — the older
-      // `.evaluations` key never existed on this endpoint, so reading it
-      // silently produced [] on every page load and POLICY EVALUATION events
-      // only survived in the live-stream buffer. On refresh they vanished
-      // while the DECISION FINALIZED events (correctly read from `.actions`)
-      // stuck around. Read the actual key the API returns.
-      const guards = (await guardRes.json()).decisions || [];
-      // /api/activity returns { events, stats, pagination } — same bug class
-      // as the guards one above. Reading `.logs` silently produced [] forever,
-      // so system-event audit rows never appeared on the activity feed on
-      // refresh (and there's no realtime handler for them either).
-      const audits = auditRes ? ((await auditRes.json()).events || []) : [];
+      const actions = actionsData.actions || [];
+      // /api/guard returns { decisions, total, stats }. The page used to read
+      // .evaluations — a key this endpoint never returned — so guard rows
+      // silently produced [] on every page load. POLICY EVALUATION events
+      // would only survive in the live-stream buffer; on refresh they
+      // vanished. Match the API contract.
+      const guards = guardData.decisions || [];
+      // /api/activity returns { events, stats, pagination }. Same bug class
+      // as the guards key. Reading .logs silently produced [] forever, so
+      // system-event audit rows never appeared on the activity feed at all
+      // (there's also no realtime handler for them).
+      const audits = auditData.events || [];
 
       // Normalize into unified event format
       const normalized = [
@@ -119,42 +128,80 @@ export default function GlobalActivityFeed() {
   }, [fetchInitialData]);
 
   // Handle real-time updates. Drop events from other agents when filtering.
+  //
+  // Three event types are handled here, mirroring the three normalized
+  // categories the initial-load seed produces:
+  //
+  //   action.created / action.updated → 'decision' category. Status drives
+  //     the label (running → "Intent declared", completed → "Decision
+  //     finalized") so a record arriving as already-completed (the canonical
+  //     dashclaw_record pattern) doesn't display "Intent declared" until the
+  //     next refresh. action.updated is handled so live status transitions
+  //     update the existing card instead of being silently dropped.
+  //
+  //   guard.decision.created → 'guard' category. SSE publishes `reason`
+  //     (singular, joined string from app/lib/guard.js:257) but the REST
+  //     API returns `reasons` — fallback reads both so the cell never
+  //     renders "undefined".
+  //
+  //   decision.created is intentionally NOT handled here. That event is
+  //     published by /api/learning POST when a learning record is created,
+  //     and its payload shape (learning_decisions row: id, decision,
+  //     context, outcome, confidence, agent_id, created_at) doesn't match
+  //     the action shape the rest of this handler assumes. Learning events
+  //     have their own UI at /learning.
+  //
+  // IDs are stable (no Date.now() suffix) so a realtime event updates the
+  // matching seed row in place instead of duplicating it.
   useRealtime((event, payload) => {
     if (agentId && payload?.agent_id && payload.agent_id !== agentId) return;
 
     let newEvt = null;
+    let updateOnly = false;
 
-    if (event === 'decision.created' || event === 'action.created') {
+    if (event === 'action.created' || event === 'action.updated') {
+      const status = payload.status || 'running';
       newEvt = {
-        id: `act-${payload.action_id}-${Date.now()}`,
-        timestamp: payload.timestamp_start || new Date().toISOString(),
+        id: `act-${payload.action_id}`,
+        timestamp: payload.timestamp_start || payload.created_at || new Date().toISOString(),
         category: 'decision',
-        label: 'Intent declared',
+        label: status === 'completed' ? 'Decision finalized' : 'Intent declared',
         actor: payload.agent_name || payload.agent_id,
         actorId: payload.agent_id,
         detail: payload.declared_goal,
-        status: 'running',
-        link: `/decisions`
+        status,
+        link: payload.action_id ? `/decisions/${payload.action_id}` : `/decisions`,
       };
+      updateOnly = event === 'action.updated';
     } else if (event === 'guard.decision.created') {
       newEvt = {
-        id: `grd-${payload.id}-${Date.now()}`,
+        id: `grd-${payload.id}`,
         timestamp: payload.created_at || new Date().toISOString(),
         category: 'guard',
         label: 'Policy evaluation',
         actor: payload.agent_name || payload.agent_id,
         actorId: payload.agent_id,
-        // Match the initial-load fallback: SSE publish uses `reason` (singular,
-        // joined string) but the API returns `reasons` — read both so the cell
-        // never renders "ALLOW: undefined" if the publish shape ever changes.
-        detail: `${payload.decision.toUpperCase()}: ${payload.reason || payload.reasons || ''}`,
+        detail: `${(payload.decision || 'unknown').toUpperCase()}: ${payload.reason || payload.reasons || ''}`,
         status: payload.decision,
-        link: `/decisions`
+        link: `/decisions`,
       };
     }
 
     if (newEvt) {
-      setEvents(prev => [newEvt, ...prev].slice(0, 50));
+      setEvents((prev) => {
+        const idx = prev.findIndex((e) => e.id === newEvt.id);
+        if (idx >= 0) {
+          // Replace in place — preserves position, prevents duplication when
+          // a realtime event arrives for an action that's already in the seed.
+          const next = prev.slice();
+          next[idx] = newEvt;
+          return next;
+        }
+        // action.updated for an action not currently in our window — ignore
+        // rather than prepending a fragmented update at the top.
+        if (updateOnly) return prev;
+        return [newEvt, ...prev].slice(0, 50);
+      });
       setLastUpdated(new Date().toLocaleTimeString());
     }
   });
