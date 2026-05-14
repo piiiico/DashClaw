@@ -8,7 +8,7 @@ const repo = vi.hoisted(() => ({
 }));
 vi.mock('../../app/lib/repositories/code-session-handoffs.repository.js', () => repo);
 vi.mock('../../app/lib/db.js', () => ({ getSql: () => ({}) }));
-vi.mock('../../app/lib/org.js', () => ({ getOrgId: async () => 'org_1' }));
+vi.mock('../../app/lib/org.js', () => ({ getOrgId: () => 'org_1' }));
 
 beforeEach(() => {
   Object.values(repo).forEach((fn) => fn.mockReset());

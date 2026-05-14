@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSql } from '../../lib/db.js';
 import { getOrgId } from '../../lib/org.js';
+import { apiErrorResponse } from '../../lib/apiErrors.js';
 import { createHandoff } from '../../lib/repositories/code-session-handoffs.repository.js';
 
 export const dynamic = 'force-dynamic';
@@ -9,8 +10,7 @@ export const revalidate = 0;
 export async function POST(req) {
   try {
     const sql = getSql();
-    const orgId = await getOrgId(req);
-    if (!orgId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const orgId = getOrgId(req);
 
     const body = await req.json().catch(() => ({}));
     if (!body.agent_id) return NextResponse.json({ error: 'agent_id required' }, { status: 400 });
@@ -26,7 +26,6 @@ export async function POST(req) {
     });
     return NextResponse.json({ id: result.id }, { status: 201 });
   } catch (err) {
-    console.error('[HANDOFFS POST] error:', err);
-    return NextResponse.json({ error: 'internal_error' }, { status: 500 });
+    return apiErrorResponse(err, 'HANDOFFS_POST');
   }
 }
