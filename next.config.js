@@ -85,6 +85,19 @@ const nextConfig = {
       { source: '/api/actions/signals', destination: '/api/signals' },
     ];
   },
+  // Permanent redirects for retired surfaces.
+  // The legacy Python agent-toolkit (/toolkit) has been replaced by the MCP tools
+  // surface documented under /docs#mcp-tools (governed-agent MCP tools — handoffs,
+  // secret rotation, skill safety, open loops, learning, audit retrospection).
+  async redirects() {
+    return [
+      {
+        source: '/toolkit',
+        destination: '/docs#mcp-tools',
+        permanent: true,
+      },
+    ];
+  },
 }
 
 module.exports = nextConfig

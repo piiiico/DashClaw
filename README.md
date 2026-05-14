@@ -52,7 +52,7 @@ DashClaw meets agents where they already are. Pick the path closest to how your 
 
 ### 1. MCP server (zero code)
 
-For Claude Code, Claude Desktop, Claude Managed Agents, and any MCP-capable host. The [`@dashclaw/mcp-server`](./mcp-server) package exposes 8 governance tools and 4 resources.
+For Claude Code, Claude Desktop, Claude Managed Agents, and any MCP-capable host. The [`@dashclaw/mcp-server`](./mcp-server) package exposes governance MCP tools and resources covering decisions, assumptions, signals, handoffs, secret rotation, skill safety, open loops, learning, and audit retrospection — this is the canonical agent-toolkit surface (replacing the retired Python `agent-tools/` CLI).
 
 **Stdio (Claude Code, Claude Desktop):**
 

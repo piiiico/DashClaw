@@ -95,5 +95,5 @@ After you have one event flowing, switch to:
 
 - `/docs` to understand the event model
 - `sdk/` or `sdk-python/` to instrument a real agent
-- `agent-tools/` for local operations and security workflows
+- `mcp-server/` for the governance MCP tools surface (handoffs, secret rotation, skill safety, open loops, learning, audit retrospection)
 

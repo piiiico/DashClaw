@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { BookOpen, Eye, Terminal, ExternalLink } from 'lucide-react';
+import { BookOpen, Eye, ExternalLink } from 'lucide-react';
 import DashClawLogo from './DashClawLogo';
 import GithubIcon from './GithubIcon';
 
@@ -30,10 +30,6 @@ export default function PublicFooter() {
           <Link href="/gallery" className="flex items-center gap-1.5 hover:text-text-primary transition-colors">
             <Eye size={14} />
             Gallery
-          </Link>
-          <Link href="/toolkit" className="flex items-center gap-1.5 hover:text-text-primary transition-colors">
-            <Terminal size={14} />
-            Toolkit
           </Link>
           <Link href="/mission-control" className="flex items-center gap-1.5 hover:text-text-primary transition-colors">
             <ExternalLink size={14} />

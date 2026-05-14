@@ -55,7 +55,7 @@ To get started with the codebase:
 ## Project Structure
 
 -   `app/`: The Next.js 16 dashboard (App Router), API routes, and UI components.
--   `agent-tools/`: Specialized Python CLI tools for agent memory, goals, and context tracking.
+-   `mcp-server/`: MCP server exposing governance tools (handoffs, secret rotation, skill safety, open loops, learning, audit retrospection) — the canonical agent-toolkit surface (replaces the retired Python `agent-tools/` CLI).
 -   `sdk/`: The Node.js DashClaw SDK for instrumenting agents.
 -   `sdk-python/`: The Python DashClaw SDK and parity test suite.
 -   `scripts/`: Utility scripts for migrations, security scanning, and testing.
