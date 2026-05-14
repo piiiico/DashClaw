@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 DashClaw ships two independently versioned artifacts from this repo:
 
 - **Platform** — the Next.js app, API routes, dashboard, and supporting
-  libraries. Current: **2.17.2**. This is the version of the DashClaw instance
+  libraries. Current: **2.18.0**. This is the version of the DashClaw instance
   you deploy to Vercel. Governance features, UI changes, new API routes, and
   database migrations land on this track.
 - **SDK** — the `dashclaw` npm package published from `sdk/`. Current:
@@ -26,6 +26,100 @@ Plugin and tooling entries (e.g. `@dashclaw/openclaw-plugin`, `@dashclaw/cli`)
 are prefixed with the package name.
 
 ## [Unreleased]
+
+## [2.18.0] - 2026-05-14 — Retract the monetization surface entirely
+
+DashClaw is an open-source project for governing AI agents. The earlier
+"50-integration trigger" pricing commitment (formerly MON-01 / Plan 03-03)
+is fully retracted. There is no `/pricing` page, no public counter, no
+Pro tier framing, no "Free while we grow" copy. The product is free.
+That's it.
+
+### Why retract
+
+Two reasons surfaced over a few hours of dogfooding:
+
+1. **The counter is structurally unfixable.** It read 0 indefinitely
+   because the marketing-site Neon DB and a user's own DashClaw-instance
+   Neon DB are different databases. The counter could only ever measure
+   what hit the marketing site directly, which is approximately nothing.
+   Either the metric has to change (phone-home consent, hand-curated
+   attestations) or it has to go. The simplest answer was: go.
+2. **The framing was a SaaS funnel pretending to be a commitment.** "Pro
+   tier launches when…" reads apologetic ("we won't charge you yet")
+   even when reframed as a public commitment. DashClaw is open source.
+   It helps people control AI agents. There is no charging mechanic the
+   project is building toward — so don't put one in the marketing.
+
+### Deleted (full removal, not deprecation)
+
+- `app/pricing/page.jsx`
+- `app/api/monetization/verified-integrations-count/route.js` +
+  parent `app/api/monetization/` directory
+- `app/lib/repositories/monetization.repository.js`
+- `docs/launch/` — three drafts (hn-post.md, blog-post.md,
+  tweet-thread.md) that cited the live counter URL
+- `scripts/check-launch-content.mjs` — the pre-launch gate that
+  enforced trigger-commitment presence across the launch drafts
+- Six tests:
+  - `__tests__/unit/pricing-page.test.jsx`
+  - `__tests__/unit/monetization-repository.test.js`
+  - `__tests__/unit/readme-monetization-trigger.test.js`
+  - `__tests__/unit/verified-integrations-count.route.test.js`
+  - `__tests__/unit/launch-content-assertions.test.js`
+  - `__tests__/unit/blog-post-claude-code-beachhead.test.jsx`
+  - `__tests__/unit/project-md-content.test.js`
+  - `__tests__/unit/require-tier.test.js` + the
+    `__tests__/fixtures/pro-gated-route-fixture.js` fixture
+
+### Tier infrastructure — neutralized, not ripped out
+
+`requireTier()` in `app/lib/org.js` is called by seven routes (actions,
+capabilities/invoke, keys, setup/migrate, team/invite, webhooks/stripe,
+workflows/templates/execute). Rather than sweep those call sites, the
+helper is now a no-op shim that always returns null — every org is
+rank 1 in a `{ free: 1, pro: 1 }` ladder. The "Coming soon / 50 verified
+Claude Code integrations / see /pricing" 403 branch is gone. Schema
+columns (`organizations.plan`, `stripe_customer_id`, etc.) and the
+Stripe webhook route are preserved as dormant infrastructure — they
+don't appear on any user surface.
+
+### User-facing surfaces scrubbed
+
+- `README.md` — removed the "A public commitment, not a pricing
+  strategy" section shipped earlier today.
+- `app/components/PublicNavbar.js` — removed `/pricing` link (desktop
+  + mobile menu).
+- `app/components/PublicFooter.js` — removed `/pricing` link.
+- `middleware.js` — removed `/api/monetization/verified-integrations-count`
+  from `PUBLIC_ROUTES` and removed the demo-mode passthrough block.
+- `app/blog/claude-code-beachhead/page.jsx` — removed the entire
+  "50-integration commitment" section (~50 lines).
+- `app/blog/codex-parity/page.jsx` — replaced the "Free for solo devs,
+  same 50-integration commitment" bullet with "Free for everyone, no
+  tier gating."
+- `app/blog/layout.js` — removed the `/pricing` chrome-match comment.
+- `docs/SECURITY.md` — removed the public-route entry for the now-deleted
+  counter API.
+
+### Planning docs
+
+- `.planning/PROJECT.md` — Monetization commitment row and `[x]` Key
+  Decisions item rewritten to reflect the retraction (history of the
+  prior decision is in the commit log + earlier CHANGELOG entries).
+- `DASHCLAW_README_REPOSITIONING_GOAL.md` moved to
+  `.planning/seeds/readme-repositioning-goal.md` (root cleanup).
+- `.planning/phases/03-public-launch/*` left untouched — the launch
+  phase happened, this is what came of it.
+- `.planning/STATE.md`, `.planning/REQUIREMENTS.md`, `.planning/ROADMAP.md`
+  left untouched as historical record.
+
+### Auto-regenerated
+
+`npm run livingcode:refresh` regenerated `app/lib/doctor/generated/`,
+the platform-intelligence skill at all four mirror targets,
+`docs/api-inventory.md` / `.json`, the OpenAPI spec, and both download
+zips. Route count drops from 259 → 256 (three monetization routes gone).
 
 ## [2.17.2] - 2026-05-14 — MON-01 counter visible + accurate
 

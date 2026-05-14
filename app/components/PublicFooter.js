@@ -31,9 +31,6 @@ export default function PublicFooter() {
             <Download size={14} />
             Downloads
           </Link>
-          <Link href="/pricing" className="hover:text-text-primary transition-colors">
-            Pricing
-          </Link>
           <Link href="/gallery" className="flex items-center gap-1.5 hover:text-text-primary transition-colors">
             <Eye size={14} />
             Gallery

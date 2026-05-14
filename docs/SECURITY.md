@@ -353,7 +353,6 @@ DashClaw includes Data Loss Prevention (DLP) redaction to reduce the chance of s
   - `/api/cron/*` (`Authorization: Bearer $CRON_SECRET` required in every handler)
   - `/api/docs/raw`, `/api/prompts/*` (read-only content endpoints; specific prompt-management routes like `/api/prompts/templates`, `/render`, `/runs`, `/stats` re-enforce auth in middleware before reaching the handler)
   - `/api/telegram/webhook` and `/api/discord/interactions` (public-by-necessity inbound webhooks; each verifies its own signature inside the handler — Telegram via `X-Telegram-Bot-Api-Secret-Token` + chat-id allowlist, Discord via Ed25519 signature + user-id allowlist)
-  - `/api/monetization/verified-integrations-count` (public Pro-tier launch counter; reads `action_records` aggregate only)
 - `/setup` is the one intentional pre-auth page exception on the UI side. It is public so first-time operators can diagnose broken auth/setup states, but the page uses a public-safe projection that exposes verification status only, not secrets or raw configuration values.
 - `/api/setup/proof` follows the same projection model: anonymous callers receive a sanitized JSON proof artifact, while authenticated operators receive richer operational detail.
 - `/api/setup/live-proof` is not public. It stays behind normal API auth and only mints signed proof tokens from successful SDK validation summaries. The token contains sanitized verification metadata only and is designed to be safe to attach to `/setup?proof=...`.

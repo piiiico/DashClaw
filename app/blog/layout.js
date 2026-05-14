@@ -5,7 +5,7 @@
  * app/blog/claude-code-beachhead/page.js.
  *
  * Design: CSS tokens only per .impeccable.md. The max-w-3xl prose column
- * matches /pricing so brand chrome feels consistent across launch surfaces.
+ * is the standard prose width across blog and long-form surfaces.
  */
 
 import PublicNavbar from '../components/PublicNavbar';

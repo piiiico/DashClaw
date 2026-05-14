@@ -13,10 +13,10 @@ doc-type: architecture
 
 ## Summary
 
-- Total routes: `259`
+- Total routes: `258`
 - Stable routes: `46`
 - Beta routes: `23`
-- Experimental routes: `190`
+- Experimental routes: `189`
 
 ## Routes
 
@@ -203,7 +203,6 @@ doc-type: architecture
 | `/api/model-strategies` | `GET, POST` | `experimental` | `(default)` | `app/api/model-strategies/route.js` |
 | `/api/model-strategies/{strategyId}` | `DELETE, GET, PATCH` | `experimental` | `(default)` | `app/api/model-strategies/[strategyId]/route.js` |
 | `/api/model-strategies/{strategyId}/complete` | `POST` | `experimental` | `(default)` | `app/api/model-strategies/[strategyId]/complete/route.js` |
-| `/api/monetization/verified-integrations-count` | `GET` | `experimental` | `(default)` | `app/api/monetization/verified-integrations-count/route.js` |
 | `/api/operations/feed` | `GET` | `experimental` | `(default)` | `app/api/operations/feed/route.js` |
 | `/api/operations/summary` | `GET` | `experimental` | `(default)` | `app/api/operations/summary/route.js` |
 | `/api/orgs` | `GET, POST` | `stable` | `/api/orgs` | `app/api/orgs/route.js` |

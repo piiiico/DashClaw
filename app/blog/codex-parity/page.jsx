@@ -212,16 +212,9 @@ export default function BlogPostPage() {
           </li>
           <li>· Same policy packs. No Codex-specific policies to write.</li>
           <li>
-            · Free for solo devs, same 50-integration commitment. The
-            counter at{' '}
-            <Link
-              href="/pricing"
-              className="text-text-primary underline decoration-border hover:decoration-text-primary"
-            >
-              dashclaw.io/pricing
-            </Link>{' '}
-            now counts both Claude Code and Codex integrations toward the
-            same threshold.
+            · Free for everyone, no tier gating. DashClaw is an
+            open-source project — there is no pricing surface and no
+            Pro plan.
           </li>
         </ul>
       </section>

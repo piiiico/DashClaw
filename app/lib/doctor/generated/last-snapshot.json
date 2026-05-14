@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:457fa236fe47eb7011762929feda2e523c2f4080",
+  "timestamp": "sha1:33c994e6ab397d8f7c8cf7103f95793040bb315c",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -1836,15 +1836,6 @@
       ],
       "archived": false,
       "file_path": "app/api/model-strategies/[strategyId]/complete/route.js"
-    },
-    {
-      "path": "/api/monetization/verified-integrations-count",
-      "methods": [
-        "GET"
-      ],
-      "dynamic_params": [],
-      "archived": false,
-      "file_path": "app/api/monetization/verified-integrations-count/route.js"
     },
     {
       "path": "/api/operations/feed",

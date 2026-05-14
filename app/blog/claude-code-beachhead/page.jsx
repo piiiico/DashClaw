@@ -174,54 +174,6 @@ export default function BlogPostPage() {
         </p>
       </section>
 
-      <section
-        aria-label="50-integration commitment"
-        className="mt-10 rounded-3xl border border-border bg-surface-secondary p-6 sm:p-8"
-      >
-        <h2 className="text-xl font-semibold tracking-tight">
-          The 50-integration commitment
-        </h2>
-        <p className="mt-3 text-base text-text-secondary">
-          DashClaw is free while I grow. Pro tier launches when DashClaw
-          hits{' '}
-          <span className="text-brand font-semibold">
-            50 verified Claude Code integrations
-          </span>{' '}
-          in the wild — measured by a public SQL query over{' '}
-          <code className="rounded border border-border bg-surface-tertiary px-1.5 py-0.5 font-mono text-sm">
-            action_records
-          </code>{' '}
-          where{' '}
-          <code className="rounded border border-border bg-surface-tertiary px-1.5 py-0.5 font-mono text-sm">
-            agent_id
-          </code>{' '}
-          starts with{' '}
-          <code className="rounded border border-border bg-surface-tertiary px-1.5 py-0.5 font-mono text-sm">
-            claude-code
-          </code>
-          , 90-day recency window, internal orgs excluded. Live counter
-          at{' '}
-          <Link
-            href="/pricing"
-            className="text-text-primary underline decoration-border hover:decoration-text-primary"
-          >
-            dashclaw.io/pricing
-          </Link>
-          .
-        </p>
-        <p className="mt-3 text-base text-text-secondary">
-          The free tier above stays free forever. Pro adds multi-user
-          orgs with SSO, custom policy packs, audit export, and
-          non-Claude-Code integrations — things a team needs, not things
-          a solo dev on Claude Code needs.
-        </p>
-        <p className="mt-3 text-base text-text-secondary">
-          I committed this in four places so I can&apos;t quietly change
-          my mind: the pricing page, the README, PROJECT.md, and this
-          post.
-        </p>
-      </section>
-
       <section>
         <h2 className="mt-10 text-xl font-semibold tracking-tight">
           What broke and what I fixed

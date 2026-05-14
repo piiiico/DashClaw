@@ -37,7 +37,6 @@ const PUBLIC_ROUTES = [
   // Public read-only content endpoints
   '/api/docs/raw',
   '/api/prompts',
-  '/api/monetization/verified-integrations-count',  // MON-01 public counter (Plan 03-03)
   '/api/marketing',  // anonymous funnel telemetry. Route validates allowlisted events, rate limit + 2 MB body cap still apply.
   '/practical-systems',
   '/replay',
@@ -450,17 +449,6 @@ export async function middleware(request) {
       // marketing site IS the demo deployment. Pass through to the real
       // handler; it validates allowlisted event names and writes to Redis.
       if (pathname.startsWith('/api/marketing/')) {
-        const response = NextResponse.next();
-        addSecurityHeaders(response);
-        withCors(request, response);
-        return response;
-      }
-
-      // Monetization counter is the public commitment signal — the launch
-      // tweet and HN body cite this URL directly. It must stay reachable in
-      // demo mode (same reasoning as /api/marketing/ above: marketing site
-      // IS the demo deployment). Aggregate-only response, no per-org leak.
-      if (pathname === '/api/monetization/verified-integrations-count') {
         const response = NextResponse.next();
         addSecurityHeaders(response);
         withCors(request, response);

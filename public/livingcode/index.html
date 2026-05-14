@@ -48,9 +48,9 @@ p.kicker{background:var(--accent-bg);border:1px solid var(--accent-border);borde
 p.kicker b{color:var(--accent-deep)}
 </style></head><body>
 <h1>DashClaw Livingcode Dashboard</h1>
-<div class="sig" id="sig">Shape signature: sha1:457fa236fe47eb7011762929feda2e523c2f4080 · signature-stable</div>
+<div class="sig" id="sig">Shape signature: sha1:33c994e6ab397d8f7c8cf7103f95793040bb315c · signature-stable</div>
 <div class="grid">
-      <div class="cell"><div class="n">212</div><div class="k">Active routes</div></div>
+      <div class="cell"><div class="n">211</div><div class="k">Active routes</div></div>
       <div class="cell"><div class="n">48</div><div class="k">Archived routes</div></div>
       <div class="cell"><div class="n">4</div><div class="k">Required env vars</div></div>
       <div class="cell"><div class="n">119</div><div class="k">Optional env vars</div></div>
@@ -257,7 +257,7 @@ p.kicker b{color:var(--accent-deep)}
 <figure><figcaption>Required env vars over time <span class="sig">(4 → 4)</span></figcaption><svg width="320" height="48" viewBox="0 0 320 48"><polyline fill="none" stroke="var(--accent)" stroke-width="2" points="4.0,44.0 160.0,44.0 316.0,44.0"/></svg></figure>
 <figure><figcaption>Tables over time <span class="sig">(73 → 73)</span></figcaption><svg width="320" height="48" viewBox="0 0 320 48"><polyline fill="none" stroke="var(--accent)" stroke-width="2" points="4.0,44.0 160.0,44.0 316.0,44.0"/></svg></figure></section>
 
-<section><h2>Changed since last snapshot</h2><p class="kicker"><b>14</b> env_vars added, <b>1</b> env_vars removed, <b>37</b> routes added, <b>11</b> tables added since last snapshot.</p><ul class="diff">    <li><code>added</code> <b>routes</b>: /api/actions/[actionId]/outcome <span class="sig">New route: GET, POST</span></li>
+<section><h2>Changed since last snapshot</h2><p class="kicker"><b>14</b> env_vars added, <b>1</b> env_vars removed, <b>36</b> routes added, <b>11</b> tables added since last snapshot.</p><ul class="diff">    <li><code>added</code> <b>routes</b>: /api/actions/[actionId]/outcome <span class="sig">New route: GET, POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/code-sessions/alerts <span class="sig">New route: GET</span></li>
     <li><code>added</code> <b>routes</b>: /api/code-sessions/alerts/read-all <span class="sig">New route: POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/code-sessions/ingest-jsonl <span class="sig">New route: POST</span></li>
@@ -287,7 +287,6 @@ p.kicker b{color:var(--accent-deep)}
     <li><code>added</code> <b>routes</b>: /api/hosted/workspaces/[workspaceId] <span class="sig">New route: DELETE, GET</span></li>
     <li><code>added</code> <b>routes</b>: /api/learning/code-signals <span class="sig">New route: GET</span></li>
     <li><code>added</code> <b>routes</b>: /api/marketing/event <span class="sig">New route: POST</span></li>
-    <li><code>added</code> <b>routes</b>: /api/monetization/verified-integrations-count <span class="sig">New route: GET</span></li>
     <li><code>added</code> <b>routes</b>: /api/secrets <span class="sig">New route: GET, POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/secrets/[id] <span class="sig">New route: DELETE, PATCH</span></li>
     <li><code>added</code> <b>routes</b>: /api/secrets/rotation-due <span class="sig">New route: GET</span></li>
@@ -455,7 +454,6 @@ p.kicker b{color:var(--accent-deep)}
 <details><summary>/model-strategies/* (3)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/model-strategies"><td><code>/api/model-strategies</code></td><td>GET, POST</td><td class="sig">app/api/model-strategies/route.js</td></tr>
     <tr data-path="/api/model-strategies/[strategyId]"><td><code>/api/model-strategies/[strategyId]</code></td><td>DELETE, GET, PATCH</td><td class="sig">app/api/model-strategies/[strategyId]/route.js</td></tr>
     <tr data-path="/api/model-strategies/[strategyId]/complete"><td><code>/api/model-strategies/[strategyId]/complete</code></td><td>POST</td><td class="sig">app/api/model-strategies/[strategyId]/complete/route.js</td></tr></tbody></table></details>
-<details><summary>/monetization/* (1)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/monetization/verified-integrations-count"><td><code>/api/monetization/verified-integrations-count</code></td><td>GET</td><td class="sig">app/api/monetization/verified-integrations-count/route.js</td></tr></tbody></table></details>
 <details><summary>/operations/* (2)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/operations/feed"><td><code>/api/operations/feed</code></td><td>GET</td><td class="sig">app/api/operations/feed/route.js</td></tr>
     <tr data-path="/api/operations/summary"><td><code>/api/operations/summary</code></td><td>GET</td><td class="sig">app/api/operations/summary/route.js</td></tr></tbody></table></details>
 <details><summary>/orgs/* (3)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/orgs"><td><code>/api/orgs</code></td><td>GET, POST</td><td class="sig">app/api/orgs/route.js</td></tr>

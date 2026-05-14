@@ -20,54 +20,29 @@ export function getUserId(request) {
 }
 
 /**
- * Tier rank ladder. Unknown values (null, 'mystery-tier', undefined) default
- * to rank 0 via nullish coalescing at lookup time — this is the default-deny
- * posture that mitigates T-03-03-01 (fail-open on unknown plan values).
- *
- * Phase 3 ships with the single paid tier 'pro' (D-04). 'business' and
- * 'enterprise' are NOT in this ladder because D-04 explicitly rejected
- * multi-tier pricing for Phase 3 — they would need rank decisions beyond
- * this plan's scope.
+ * Tier rank ladder, retained as a no-op shim. DashClaw is open source and
+ * free — there is no paid tier and no pricing surface. The ladder still
+ * exists so call sites passing `minTier: 'pro'` keep type-compatible even
+ * though every comparison now resolves equal (every org is rank 1).
  */
-const TIER_RANK = { free: 0, pro: 1 };
+const TIER_RANK = { free: 1, pro: 1 };
 
 /**
- * Middleware helper for Pro-tier routes. Composes on top of getOrgPlan()
- * (app/lib/usage.js) and organizations.plan (schema/schema.js).
+ * No-op tier gate. Preserved as an export because seven routes call
+ * `await requireTier(request, 'pro')` (actions, capabilities/invoke, keys,
+ * setup/migrate, team/invite, webhooks/stripe, workflows/templates/execute)
+ * and removing the call sites was out of scope for the pricing-surface
+ * retraction. With every TIER_RANK entry equal, this always returns null
+ * and every caller proceeds.
  *
- * Phase 3 contract (MON-02, D-07):
- *   - Returns null when the org meets the minimum tier (caller proceeds).
- *   - Returns a NextResponse 403 with COMING_SOON body when the org is below
- *     the minimum tier. The response body is a public-commitment signal, NOT
- *     a paywall CTA — it must contain NO buy/upgrade/subscribe/pay language.
- *
- * Flip-to-paid path when MON-01 fires:
- *   UPDATE organizations SET plan='pro' WHERE id='org_<customer>';
- *   (zero code deploy — this helper picks up the new tier on next request.)
+ * If a future build re-introduces tiers, restore TIER_RANK as
+ * `{ free: 0, pro: 1 }` and the original 403 COMING_SOON branch below.
  *
  * @param {Request} request - middleware-injected org headers (see getOrgId)
- * @param {string} minTier - 'pro' (the only Phase 3 gate)
- * @returns {Promise<null | NextResponse>}
+ * @param {string} minTier - kept for API compatibility; no longer enforced
+ * @returns {Promise<null>} always null
  */
+// eslint-disable-next-line no-unused-vars
 export async function requireTier(request, minTier) {
-  const orgId = getOrgId(request);
-  const sql = getSql();
-  const currentTier = await getOrgPlan(orgId, sql);
-
-  const currentRank = TIER_RANK[currentTier] ?? 0;
-  const requiredRank = TIER_RANK[minTier] ?? 0;
-
-  if (currentRank >= requiredRank) return null;
-
-  return NextResponse.json(
-    {
-      error: 'Coming soon',
-      code: 'COMING_SOON',
-      reason:
-        'Pro features unlock when DashClaw hits 50 verified Claude Code integrations in the wild. See /pricing for progress.',
-      current_tier: currentTier,
-      required_tier: minTier,
-    },
-    { status: 403 },
-  );
+  return null;
 }

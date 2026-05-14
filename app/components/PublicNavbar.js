@@ -25,7 +25,6 @@ export default function PublicNavbar() {
           <Link href="/connect" className="hover:text-text-primary transition-colors">Connect</Link>
           <Link href="/docs" className="hover:text-text-primary transition-colors">Docs</Link>
           <Link href="/downloads" className="hover:text-text-primary transition-colors">Downloads</Link>
-          <Link href="/pricing" className="hover:text-text-primary transition-colors">Pricing</Link>
           <a
             href="https://github.com/ucsandman/DashClaw"
             target="_blank"
@@ -90,9 +89,6 @@ export default function PublicNavbar() {
               </Link>
               <Link href="/downloads" onClick={closeMobile} className="rounded-lg px-3 py-2.5 text-sm text-text-secondary transition-colors hover:bg-white/5 hover:text-text-primary">
                 Downloads
-              </Link>
-              <Link href="/pricing" onClick={closeMobile} className="rounded-lg px-3 py-2.5 text-sm text-text-secondary transition-colors hover:bg-white/5 hover:text-text-primary">
-                Pricing
               </Link>
               <a
                 href="https://github.com/ucsandman/DashClaw"
