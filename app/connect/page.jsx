@@ -395,6 +395,16 @@ dashclaw doctor`}</CodeBlock>
                   desc: 'Govern Bash, Edit, Write, and MultiEdit tool calls via PreToolUse hooks. Zero SDK code required.',
                 },
                 {
+                  href: '/guides/codex',
+                  title: 'Codex',
+                  desc: 'One dashclaw install codex command wires the same PreToolUse / PostToolUse / Stop hooks into ~/.codex/config.toml.',
+                },
+                {
+                  href: '/guides/hermes',
+                  title: 'Hermes Agent',
+                  desc: 'Eight lifecycle hooks: pre/post tool, pre/post LLM call with per-turn context injection, on session start/end, transform tool result redaction, and subagent_stop ROI tracking.',
+                },
+                {
                   href: '/guides/openai-agents-sdk',
                   title: 'OpenAI Agents SDK',
                   desc: 'Add guard, record, and outcome governance to your OpenAI agent tools with the Node.js SDK.',

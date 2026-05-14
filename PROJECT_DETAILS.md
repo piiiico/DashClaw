@@ -111,7 +111,7 @@ These modules consume core runtime data and add operator value without changing 
 | Drift | `/api/drift/*` | Drift metrics, snapshots, alerts, and stats. |
 | Prompts | `/api/prompts/*` | Prompt templates, versions, rendering, stats, and raw setup/connect prompts. |
 | Billing and usage | `/api/billing/*`, `/api/usage/*`, `/api/cron/reset-meters` | Stripe checkout/portal, usage readout, and meter reset. |
-| Code Sessions | `/api/code-sessions/*`, `/code-sessions` UI, `/api/cron/code-session-{cache-crater,weekly-memo}` | Claude Code transcript ingest (Stop hook + JSONL backfill), 4-column cache-aware pricing, 7-rule optimizer, repeated-run detection, signals/alerts, weekly memo, /goal autopsy, Subagent ROI, and Optimal Files bundle generator (root CLAUDE.md, path-scoped rules, hooks, skill packs). Tables: `code_projects`, `code_sessions`, `code_session_messages`, `code_session_tool_uses`, `code_session_signals`, `code_session_alerts`, `code_session_memos`, `code_optimal_file_manifests`. Path B CLI: `dashclaw code ingest|memo|apply`. MCP: `dashclaw_optimal_files_{preview,manifest}` tools and `dashclaw://code-sessions/*` resources. |
+| Code Sessions | `/api/code-sessions/*`, `/code-sessions` UI, `/api/cron/code-session-{cache-crater,weekly-memo}` | Multi-agent transcript ingest: Claude Code (Stop hook + JSONL backfill), Codex (JSONL parser + `dashclaw code ingest-codex`), and Hermes Agent (per-turn live ingest via `POST /api/code-sessions/ingest-live` with optional `finalize: true` to run optimizer + alerts pass on session close). 4-column cache-aware pricing, 7-rule optimizer, repeated-run detection, signals/alerts, weekly memo, /goal autopsy, Subagent ROI, and Optimal Files bundle generator (root CLAUDE.md, path-scoped rules, hooks, skill packs). Tables: `code_projects`, `code_sessions`, `code_session_messages`, `code_session_tool_uses`, `code_session_signals`, `code_session_alerts`, `code_session_memos`, `code_optimal_file_manifests`. Path B CLI: `dashclaw code ingest|ingest-codex|memo|apply`. MCP: `dashclaw_optimal_files_{preview,manifest}` tools and `dashclaw://code-sessions/*` resources. |
 
 ### Tier 3: Archived platform-era routes
 
@@ -145,7 +145,9 @@ DashClaw is intentionally multi-surface. Claude Code hooks are one strong integr
 | MCP server | MCP-capable agents, Claude Desktop/Code, managed agents, remote tool access | `@dashclaw/mcp-server`, `POST /api/mcp` |
 | Node SDK | JavaScript/TypeScript agents and apps | `sdk/dashclaw.js`, npm package `dashclaw` version `2.11.1` |
 | Python SDK | Python agents and backend workflows | `sdk-python/dashclaw/client.py` |
-| Claude Code hooks | Coding-agent tool governance without per-call SDK code | `hooks/`, `npm run hooks:install` |
+| Claude Code hooks | Coding-agent tool governance without per-call SDK code | `hooks/`, `npm run hooks:install`, `plugins/dashclaw/.claude-plugin/` |
+| Codex plugin | Codex coding-agent governance via field-compatible hook schema | `cli/lib/codex/`, `dashclaw install codex`, `plugins/dashclaw/.codex-plugin/` |
+| Hermes Agent plugin | Per-turn governance context injection, secret redaction, subagent ROI, live session ingest | `.hermes/hooks/`, `plugins/dashclaw/.hermes-plugin/`, `scripts/install-hermes-plugin.{sh,ps1}` |
 | OpenClaw plugin | OpenClaw lifecycle-native governance | `packages/openclaw-plugin/` |
 | Platform intelligence skills | Agent self-instrumentation and platform reference | `public/downloads/dashclaw-platform-intelligence/` and zip bundle |
 | REST API | Custom frameworks and direct integrations | `app/api/**/route.js`, generated inventory/OpenAPI docs |

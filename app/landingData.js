@@ -50,8 +50,8 @@ export const platformFeatures = [
   { icon: Download, title: 'Compliance Export Bundles', description: 'Framework mapping, gap analysis, evidence capture, and audit-ready exports for serious governance workflows.' },
   { icon: SlidersHorizontal, title: 'Scoring Profiles', description: 'User-defined weighted quality scoring with auto-calibration from real data. Replace hardcoded agent risk numbers with transparent rules.' },
   { icon: DashClawLogo, title: 'Verified Agent Identity', description: 'Know which agent took which action. RSA signature verification ensures accountability at every step of the decision lifecycle.' },
-  { icon: Terminal, title: 'CLI Approval Channel', description: 'Approve or deny agent actions from the terminal without opening a browser. Works with Claude Code, Codex, Gemini CLI, and any terminal-first workflow.' },
-  { icon: Webhook, title: 'Claude Code Hooks', description: 'Govern Claude Code tool calls via PreToolUse and PostToolUse hooks. No SDK instrumentation required. Drop two Python scripts into .claude/hooks/ and every Bash, Edit, Write, and MultiEdit call is governed.' },
+  { icon: Terminal, title: 'CLI Approval Channel', description: 'Approve or deny agent actions from the terminal without opening a browser. Works with Claude Code, Codex, Hermes Agent, Gemini CLI, and any terminal-first workflow.' },
+  { icon: Webhook, title: 'Coding-agent Hooks', description: 'Govern Claude Code, Codex, and Hermes Agent tool calls via shared field-compatible hook schemas. No SDK instrumentation required. Hermes additionally exposes pre_llm_call (per-turn context injection), post_llm_call (live ingest), transform_tool_result (secret redaction), and subagent_stop (delegate_task ROI).' },
   { icon: Network, title: 'MCP Server', description: 'Connect any MCP client to DashClaw governance with one config line. 8 tools and 4 resources over stdio or Streamable HTTP. Works with Claude Code, Claude Desktop, and Managed Agents.' },
   { icon: FolderKanban, title: 'Execution Studio', description: 'Workflow templates, capability registry, knowledge collections, and model strategies. Chain governed actions into multi-step pipelines with conditional execution and resume-from-checkpoint.' },
 ];
@@ -203,6 +203,26 @@ type = "command"
 command = "python ~/.codex/hooks/dashclaw/dashclaw_pretool.py"
 
 # Same hooks. Same audit ledger. agent_id = codex.`
+  },
+  {
+    id: 'hermes',
+    name: 'Hermes Agent',
+    label: '8 lifecycle hooks + live ingest',
+    code: `# One install script wires 8 hooks into ~/.hermes/config.yaml
+$ bash scripts/install-hermes-plugin.sh
+
+# Managed block written to ~/.hermes/config.yaml:
+hooks:
+  pre_tool_call:  [...]  # guard / block / require_approval
+  post_tool_call: [...]  # outcome recording
+  pre_llm_call:   [...]  # per-turn policy + approval context injection
+  post_llm_call:  [...]  # live ingest to /api/code-sessions/ingest-live
+  on_session_start: [...] # cache warm
+  on_session_end:   [...] # finalize: true -> optimizer + alerts pass
+  transform_tool_result: [...] # redact API keys, JWTs, PEM blocks
+  subagent_stop:    [...] # delegate_task ROI tracking
+
+# Per-turn cost attribution. agent_id = hermes.`
   },
 ];
 

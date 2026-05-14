@@ -1,0 +1,47 @@
+{
+  "name": "dashclaw",
+  "version": "2.13.3",
+  "description": "DashClaw governance, integration, troubleshooting, and platform intelligence for Codex.",
+  "author": {
+    "name": "DashClaw",
+    "email": "team@dashclaw.io",
+    "url": "https://dashclaw.io"
+  },
+  "homepage": "https://dashclaw.io/docs",
+  "repository": "https://github.com/ucsandman/DashClaw",
+  "license": "MIT",
+  "keywords": [
+    "dashclaw",
+    "governance",
+    "mcp",
+    "agent-safety",
+    "approval"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "DashClaw",
+    "shortDescription": "Govern agents with guard checks, approvals, and audit trails.",
+    "longDescription": "DashClaw gives Codex platform intelligence for integrating and operating DashClaw, plus a governance protocol skill and MCP tools for guard checks, action recording, governed capability invocation, approval waits, policy discovery, and session tracking.",
+    "developerName": "DashClaw",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Governance",
+      "MCP",
+      "Developer Tools",
+      "Approvals"
+    ],
+    "websiteURL": "https://dashclaw.io",
+    "privacyPolicyURL": "https://dashclaw.io",
+    "termsOfServiceURL": "https://dashclaw.io",
+    "defaultPrompt": [
+      "Instrument this agent with DashClaw.",
+      "Debug this DashClaw guard decision.",
+      "Set up governed MCP actions."
+    ],
+    "brandColor": "var(--color-brand)",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png",
+    "screenshots": []
+  }
+}
