@@ -5,7 +5,7 @@ description: DashClaw platform expert for integration, troubleshooting, and gove
 
 # DashClaw Platform Intelligence
 
-**Shape snapshot:** `sha1:2ae0e246e40dd8fb03c09c84b483542040c5a8e9`
+**Shape snapshot:** `sha1:aee2aab1d79d5df04b1906067bf422f2e37c226f`
 **This file is auto-generated.** Do not edit by hand — regenerate with:
 
 ```bash
@@ -31,7 +31,7 @@ If the snapshot below disagrees with a live query, **trust the live query**.
 
 - **203** active API routes across **50** categories
 - **4** required + **120** optional environment variables
-- **81** database tables
+- **84** database tables
 
 ## API Surface
 
@@ -524,7 +524,7 @@ These have fallbacks or only activate specific features.
 
 ## Database Tables
 
-All 81 tables defined in `schema/schema.js` (Drizzle ORM):
+All 84 tables defined in `schema/schema.js` (Drizzle ORM):
 
 - `action_embeddings`
 - `action_records`
@@ -542,6 +542,7 @@ All 81 tables defined in `schema/schema.js` (Drizzle ORM):
 - `code_optimal_file_manifests`
 - `code_projects`
 - `code_session_alerts`
+- `code_session_handoffs`
 - `code_session_memos`
 - `code_session_messages`
 - `code_session_signals`
@@ -563,6 +564,7 @@ All 81 tables defined in `schema/schema.js` (Drizzle ORM):
 - `executions`
 - `feedback`
 - `goals`
+- `governed_secrets`
 - `guard_decisions`
 - `guard_policies`
 - `guardrails_test_runs`
@@ -593,6 +595,7 @@ All 81 tables defined in `schema/schema.js` (Drizzle ORM):
 - `scoring_profiles`
 - `session_events`
 - `shared_docs`
+- `skill_scan_results`
 - `snippets`
 - `token_budgets`
 - `token_snapshots`

@@ -1217,3 +1217,44 @@ export const codeOptimalFileManifests = pgTable('code_optimal_file_manifests', {
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 });
+
+// @domain governance
+export const codeSessionHandoffs = pgTable('code_session_handoffs', {
+  id: text('id').primaryKey(),
+  orgId: text('org_id').notNull(),
+  agentId: text('agent_id').notNull(),
+  projectId: text('project_id'),
+  createdInSessionId: text('created_in_session_id'),
+  bundleJson: jsonb('bundle_json').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  consumedAt: timestamp('consumed_at', { withTimezone: true }),
+  consumedBySessionId: text('consumed_by_session_id'),
+});
+
+// @domain governance
+export const governedSecrets = pgTable('governed_secrets', {
+  id: text('id').primaryKey(),
+  orgId: text('org_id').notNull(),
+  agentId: text('agent_id'),
+  name: text('name').notNull(),
+  lastRotatedAt: timestamp('last_rotated_at', { withTimezone: true }).notNull().defaultNow(),
+  rotationIntervalDays: integer('rotation_interval_days').notNull().default(90),
+  notes: text('notes'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => ({
+  uniqueName: uniqueIndex('governed_secrets_unique_per_agent').on(table.orgId, table.agentId, table.name),
+}));
+
+// @domain governance
+export const skillScanResults = pgTable('skill_scan_results', {
+  id: text('id').primaryKey(),
+  orgId: text('org_id').notNull(),
+  skillName: text('skill_name').notNull(),
+  targetHash: text('target_hash').notNull(),
+  findings: jsonb('findings').notNull(),
+  passed: boolean('passed').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => ({
+  dedupe: uniqueIndex('skill_scan_results_dedupe').on(table.orgId, table.skillName, table.targetHash),
+}));

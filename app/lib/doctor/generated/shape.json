@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:2ae0e246e40dd8fb03c09c84b483542040c5a8e9",
+  "timestamp": "sha1:aee2aab1d79d5df04b1906067bf422f2e37c226f",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -4058,6 +4058,11 @@
       "domain": null
     },
     {
+      "name": "code_session_handoffs",
+      "file_path": "schema/schema.js",
+      "domain": "governance"
+    },
+    {
       "name": "code_session_memos",
       "file_path": "schema/schema.js",
       "domain": null
@@ -4161,6 +4166,11 @@
       "name": "goals",
       "file_path": "schema/schema.js",
       "domain": null
+    },
+    {
+      "name": "governed_secrets",
+      "file_path": "schema/schema.js",
+      "domain": "governance"
     },
     {
       "name": "guard_decisions",
@@ -4311,6 +4321,11 @@
       "name": "shared_docs",
       "file_path": "schema/schema.js",
       "domain": null
+    },
+    {
+      "name": "skill_scan_results",
+      "file_path": "schema/schema.js",
+      "domain": "governance"
     },
     {
       "name": "snippets",
