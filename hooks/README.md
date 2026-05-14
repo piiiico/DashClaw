@@ -118,8 +118,11 @@ cp hooks/settings.json .claude/settings.json
 ```bash
 export DASHCLAW_BASE_URL=https://your-dashclaw-instance.vercel.app
 export DASHCLAW_API_KEY=your_api_key_here
-export DASHCLAW_AGENT_ID=claude-code   # optional, defaults to "claude-code"
+export DASHCLAW_AGENT_ID=claude-code              # optional, defaults to "claude-code"
+export DASHCLAW_CODE_SESSIONS_ENABLED=1           # optional: enable Stop-hook session telemetry
 ```
+
+`DASHCLAW_CODE_SESSIONS_ENABLED=1` opt-in turns on the Code Sessions reporter (`dashclaw_code_session_reporter.py`, lazily imported by the Stop hook). After the existing token-capture + outcome PATCH work runs, the reporter slices the new JSONL lines since the previous turn's cursor, builds a tool_use → action_id map from a session-scoped log written by `dashclaw_pretool.py`, and POSTs the delta to `/api/code-sessions/ingest-jsonl` with `source_host='hook'`. Fail-silent: if `DASHCLAW_BASE_URL` is empty or the endpoint is unreachable, the hook still exits 0 with no traceback. The full backfill path for historical sessions runs through `dashclaw code ingest` instead (see [cli/README.md](../cli/README.md#dashclaw-code)).
 
 ### Smoke test
 

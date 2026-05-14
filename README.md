@@ -42,6 +42,7 @@
 | **Record** | Every action becomes a replayable decision record: declared goal, reasoning, risk score, matched policies, assumptions, evidence. |
 | **Finalize** | Terminal outcomes are one-shot and durable. Lost confirmations are swept and surfaced, so retries do not double-execute. |
 | **Govern external systems** | The capability registry wraps real HTTP APIs with per-agent access rules, rate limits, and audit. Workflows compose these into multi-step governed runs. |
+| **Improve** | Code Sessions ingests Claude Code transcripts (Stop-hook live or JSONL backfill), prices the spend, surfaces optimizer signals (stuck loops, cache crater, context gaps), and distills sessions into an Optimal Files bundle — root CLAUDE.md, path-scoped rules, hooks, and skill packs — applied locally via `dashclaw code apply`. |
 
 ---
 

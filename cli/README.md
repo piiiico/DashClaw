@@ -70,6 +70,26 @@ dashclaw doctor --category database,config
 
 The CLI invokes your instance's `/api/doctor` endpoints, so fixes that need filesystem access (env writes) are handled separately by self-hosters running `npm run doctor` locally.
 
+### `dashclaw code`
+
+Subcommand group for Code Sessions (Claude Code analytics, ported from AgentLens). Three actions:
+
+```bash
+dashclaw code ingest                     # walk ~/.claude/projects and POST every .jsonl
+dashclaw code ingest --dry-run           # preview the file list and payload shape without POSTing
+dashclaw code ingest --projects-dir <p>  # override the default projects directory (also reads $CLAUDE_PROJECTS_DIR)
+
+dashclaw code memo --project <slug>      # show the most recent weekly memo for a project
+dashclaw code memo --project <slug> --save  # write the memo to ./memos/<iso-week>.md
+
+dashclaw code apply <manifest-id> --dest=<project-cwd>   # apply an Optimal Files manifest locally
+dashclaw code apply <manifest-id> --dest=<project-cwd> --dry-run
+```
+
+`ingest` stream-reads each session JSONL line-by-line, gzip+base64-encodes the payload to fit Vercel's 4.5 MB per-request limit, retries 429s and 5xxs with exponential backoff, and throttles 150 ms between POSTs. Files over 30 MB raw are skipped with a `too_large` log entry. Never logs raw transcript content.
+
+`apply` fetches a manifest from `/api/code-sessions/manifests/<id>`, re-runs the secret scan, and writes the bundled files to `--dest`. Existing files get a three-way merge via the section-aware markdown merger; new files are written directly. Refuses any path outside `--dest` (path-traversal guard).
+
 ### `dashclaw help`
 
 Show all commands and flags.

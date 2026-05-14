@@ -111,6 +111,7 @@ These modules consume core runtime data and add operator value without changing 
 | Drift | `/api/drift/*` | Drift metrics, snapshots, alerts, and stats. |
 | Prompts | `/api/prompts/*` | Prompt templates, versions, rendering, stats, and raw setup/connect prompts. |
 | Billing and usage | `/api/billing/*`, `/api/usage/*`, `/api/cron/reset-meters` | Stripe checkout/portal, usage readout, and meter reset. |
+| Code Sessions | `/api/code-sessions/*`, `/code-sessions` UI, `/api/cron/code-session-{cache-crater,weekly-memo}` | Claude Code transcript ingest (Stop hook + JSONL backfill), 4-column cache-aware pricing, 7-rule optimizer, repeated-run detection, signals/alerts, weekly memo, /goal autopsy, Subagent ROI, and Optimal Files bundle generator (root CLAUDE.md, path-scoped rules, hooks, skill packs). Tables: `code_projects`, `code_sessions`, `code_session_messages`, `code_session_tool_uses`, `code_session_signals`, `code_session_alerts`, `code_session_memos`, `code_optimal_file_manifests`. Path B CLI: `dashclaw code ingest|memo|apply`. MCP: `dashclaw_optimal_files_{preview,manifest}` tools and `dashclaw://code-sessions/*` resources. |
 
 ### Tier 3: Archived platform-era routes
 

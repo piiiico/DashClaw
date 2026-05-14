@@ -27,6 +27,23 @@ are prefixed with the package name.
 
 ## [Unreleased]
 
+## [2.15.0] - 2026-05-13
+
+### Code Sessions polish (post-absorption follow-ups)
+
+Same-day fixes and UX work landing on top of the 2.14.0 AgentLens absorption to take the Code Sessions surface from "shipped" to "usable end-to-end."
+
+- **CLI ingest** — gzip+base64 payload encoding for large JSONL files (`302f835d`); the original `lines: string[]` shape inflated past Vercel's 4.5 MB body limit on transcripts over ~3.5 MB raw. New CLI cap is 30 MB raw. Retry-with-backoff added earlier for 429/5xx (`06855be9`). The 54 prior 413 errors against `~/.claude/projects` cleared to 1 (a single 10.6 MB transcript whose compressed payload still exceeds Vercel's hard edge — chunked POST is the only path past that).
+- **Server body cap** — per-route override raising `/api/code-sessions/ingest-jsonl` from the global 2 MB middleware cap to 4.4 MB (`368f051a`). Vercel's 4.5 MB edge is the binding constraint above that.
+- **Middleware matcher + page-route header injection** — `/code-sessions` and nested routes now run through middleware (`d9973217`). The page-route branch injects `x-org-id` / `x-org-role` / `x-user-id` from the session token (`368f051a`) so server components that read `headers().get('x-org-id')` resolve to the user's actual org instead of falling back to `org_default`. Fixes the "page renders empty despite 600 ingested sessions" bug.
+- **Optimal Files panel** (`8de605ed`, `e2f0f92d`, `01690f79`, `7b9627f0`, `67391ac9`, `dfe427ac`) — moved into its own full-width section; group-by-category presentation with sentence-case labels and 1-line descriptions; per-row content preview with auto-expand for the top 2 manifestable rows per group; per-file Copy and Edit controls (textarea, "edited" badge, Reset to discard); edited content rides through to the manifest via `selections[i].content` and the server route honors the override after path-allowlist validation; primary CTAs (`Generate Optimal Files`, `Create manifest`) use the filled brand-orange treatment per `.impeccable.md`. Virtual placeholder paths (`(none — pattern needs more sessions)`) filtered from default selection so the 400 they used to cause is gone; server error bodies now surface in the panel for any future similar drift.
+- **Signal overhaul** — payload `title` and `description` from each rule now render via `app/lib/claude-code/signal-labels.js`; named signals sort by severity × confidence; the 79+ `repeated_run` signals collapse into a single `<details>` cluster with confidence counts and top tools by call frequency.
+- **Cost reconciliation divergence flag** — Code Sessions vs Mission Control costs now show a callout when they diverge >2× with three candidate causes. Token breakdown (input / output / cache_write / cache_read) added to the Summary card so the next root-cause investigation has numbers to read.
+- **Timeline cap** — 50-message default with a `<details>` reveal for the rest; per-message tool-count badge.
+- **Project session list** wrapped in `PageLayout` (`a45715b8`) — was missing the sidebar and used light-theme `zinc-*` classes that made the Source badge invisible.
+- **CI portability** — `path.win32.isAbsolute` added to the `absolutize` path-traversal guard (`8b1de809`); on POSIX runners `path.isAbsolute` doesn't recognize `C:\Windows\System32` as absolute, so the guard was silently joining drive-rooted strings into the project tree.
+- **Test regressions cleared** — cron-cache-crater test rewired to mock the refactored repository helpers after the route-SQL guardrail fix (`916a9485`); `bg-bg-primary` typo fixed to the real `bg-primary` token (`dfe427ac`) so the edit-mode textarea stopped rendering on a browser-default white background.
+
 ### AgentLens absorption — Phases 6-9 (final batch)
 
 - **Phase 6 — Optimal Files routes + MCP tools.** `POST .../sessions/[id]/optimal-files/{preview,manifest,merge-preview}`, `GET /api/code-sessions/manifests/[id]` (24h TTL). Manifest endpoint validates paths against an allowlist (`CLAUDE.md`, `.claude/agentlens/`, `.claude/rules/`, `.claude/hooks/`, `.claude/skills/`) and refuses traversal. Two new MCP tools: `dashclaw_optimal_files_preview`, `dashclaw_optimal_files_manifest`. Tool-count expectations in `mcp-tools.test.js` and `mcp-route.test.js` bumped from 8 to 10.
