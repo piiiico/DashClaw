@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:aee2aab1d79d5df04b1906067bf422f2e37c226f",
+  "timestamp": "sha1:292aa1f3dd01182917c9b81bd38229f873be6c21",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -1431,6 +1431,46 @@
       "dynamic_params": [],
       "archived": false,
       "file_path": "app/api/guard/decisions/route.js"
+    },
+    {
+      "path": "/api/handoffs",
+      "methods": [
+        "POST"
+      ],
+      "dynamic_params": [],
+      "archived": false,
+      "file_path": "app/api/handoffs/route.js"
+    },
+    {
+      "path": "/api/handoffs/[id]",
+      "methods": [
+        "GET"
+      ],
+      "dynamic_params": [
+        "id"
+      ],
+      "archived": false,
+      "file_path": "app/api/handoffs/[id]/route.js"
+    },
+    {
+      "path": "/api/handoffs/[id]/consume",
+      "methods": [
+        "POST"
+      ],
+      "dynamic_params": [
+        "id"
+      ],
+      "archived": false,
+      "file_path": "app/api/handoffs/[id]/consume/route.js"
+    },
+    {
+      "path": "/api/handoffs/latest",
+      "methods": [
+        "GET"
+      ],
+      "dynamic_params": [],
+      "archived": false,
+      "file_path": "app/api/handoffs/latest/route.js"
     },
     {
       "path": "/api/health",

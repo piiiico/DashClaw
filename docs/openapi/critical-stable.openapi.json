@@ -1021,6 +1021,224 @@
         "x-api-maturity": "stable"
       }
     },
+    "/api/handoffs": {
+      "post": {
+        "operationId": "post_api_handoffs",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": true,
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "202": {
+            "description": "Accepted"
+          },
+          "400": {
+            "description": "Validation or request error"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "POST /api/handoffs",
+        "tags": [
+          "handoffs"
+        ],
+        "x-api-maturity": "stable"
+      }
+    },
+    "/api/handoffs/latest": {
+      "get": {
+        "operationId": "get_api_handoffs_latest",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Validation or request error"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "GET /api/handoffs/latest",
+        "tags": [
+          "handoffs"
+        ],
+        "x-api-maturity": "stable"
+      }
+    },
+    "/api/handoffs/{id}": {
+      "get": {
+        "operationId": "get_api_handoffs_id",
+        "parameters": [
+          {
+            "description": "Path parameter: id",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Validation or request error"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "GET /api/handoffs/{id}",
+        "tags": [
+          "handoffs"
+        ],
+        "x-api-maturity": "stable"
+      }
+    },
+    "/api/handoffs/{id}/consume": {
+      "post": {
+        "operationId": "post_api_handoffs_id_consume",
+        "parameters": [
+          {
+            "description": "Path parameter: id",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": true,
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "202": {
+            "description": "Accepted"
+          },
+          "400": {
+            "description": "Validation or request error"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "POST /api/handoffs/{id}/consume",
+        "tags": [
+          "handoffs"
+        ],
+        "x-api-maturity": "stable"
+      }
+    },
     "/api/health": {
       "get": {
         "operationId": "get_api_health",
