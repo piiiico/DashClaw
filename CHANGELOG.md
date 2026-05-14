@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 DashClaw ships two independently versioned artifacts from this repo:
 
 - **Platform** — the Next.js app, API routes, dashboard, and supporting
-  libraries. Current: **2.17.0**. This is the version of the DashClaw instance
+  libraries. Current: **2.17.1**. This is the version of the DashClaw instance
   you deploy to Vercel. Governance features, UI changes, new API routes, and
   database migrations land on this track.
 - **SDK** — the `dashclaw` npm package published from `sdk/`. Current:
@@ -26,6 +26,49 @@ Plugin and tooling entries (e.g. `@dashclaw/openclaw-plugin`, `@dashclaw/cli`)
 are prefixed with the package name.
 
 ## [Unreleased]
+
+## [2.17.1] - 2026-05-14 — Plugin + hooks bundles in livingcode-refresh
+
+Follow-up to 2.17.0. The plugin tree and Claude Code hooks now get packaged
+alongside the two skill zips on every `npm run livingcode:refresh`, so the
+"upload to ClawHub" flow is one source-of-truth refresh away — no manual zip
+step, no risk of shipping a stale plugin.
+
+### New artifacts in `public/downloads/`
+
+- `dashclaw-governance-plugin.zip` (~76K, 21 files) — full `plugins/dashclaw/`
+  tree: all three plugin manifests (Claude Code / Codex / Hermes), MCP configs,
+  both mirrored skills, assets, `PLUGIN_PARITY.md`. Manifest version v2.14.0.
+- `dashclaw-claude-code-hooks.zip` (~80K, 22 files) — the four hook scripts
+  (pretool, posttool, stop, code-session reporter), `dashclaw_agent_intel/`,
+  default `settings.json`, and the test suite. Drop the unzipped `hooks/` into
+  `<project>/.claude/`.
+
+### Script changes
+
+`scripts/livingcode-refresh.mjs`:
+- `refreshSkillZip` generalized to `refreshBundleZip(srcDir, zipPath,
+  manifestPath, excludeRe = null)`. Optional `excludeRe` lets the hooks bundle
+  skip `__pycache__/` and `.pytest_cache/` so test runs don't churn the bundle
+  hash. Old name kept as a back-compat alias.
+- `hashDirectory` takes the same optional regex so the manifest-hash check
+  agrees with what actually ends up in the zip.
+- New `stageFiltered` helper copies filtered tree to a temp dir before zipping
+  (PowerShell's `Compress-Archive` has no native exclude flag).
+- `SOURCE_PATH_RE` widened: hand-edits under
+  `plugins/dashclaw/{.claude-plugin,.codex-plugin,.hermes-plugin,assets,*.json,PLUGIN_PARITY.md}`
+  and `hooks/` (minus the cache dirs) now trigger the refresh.
+- `GENERATED_PATH_RE` extended to include the two new zip + manifest pairs so
+  staging the regenerated artifacts doesn't loop back into a "needs refresh"
+  signal.
+
+### Downloads page
+
+`app/downloads/page.js` surfaces both new zips:
+- Plugins section: full plugin bundle as a primary download card above the
+  per-ecosystem install commands.
+- Hooks section: hooks bundle as a primary download card above the
+  install-from-checkout commands.
 
 ## [2.17.0] - 2026-05-14 — Agent toolkit absorbed into the runtime
 

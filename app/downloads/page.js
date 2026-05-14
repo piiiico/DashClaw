@@ -167,6 +167,26 @@ export default function DownloadsPage() {
             title="Plugins"
             description="One DashClaw plugin source, three ecosystems. Each plugin ships the MCP server config, both skills above, and an agent identity used by Mission Control to separate sessions by host (claude-code, codex, hermes)."
           />
+
+          {/* Bundle download — single zip containing all three plugin manifests, MCP configs, mirrored skills, assets */}
+          <div className="mb-6">
+            <DownloadCard
+              name="dashclaw-governance-plugin"
+              role="Full plugin bundle in one zip — the three plugin manifests (Claude Code / Codex / Hermes), MCP configs, both skills, assets, and PLUGIN_PARITY.md. Drop into your agent's plugin directory or extract for inspection. Manifest version v2.14.0."
+              sizeLabel="manifests + skills + MCP configs"
+              primaryHref="/downloads/dashclaw-governance-plugin.zip"
+              primaryLabel="dashclaw-governance-plugin.zip"
+              secondary={(
+                <div className="mt-4">
+                  <CommandBlock label="Unzip">
+{`unzip dashclaw-governance-plugin.zip
+# produces a dashclaw/ tree you can drop into ~/.claude/plugins/, ~/.codex/plugins/, etc.`}
+                  </CommandBlock>
+                </div>
+              )}
+            />
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
             <PluginEntry
               ecosystem="Claude Code"
@@ -259,7 +279,28 @@ hermes dashclaw doctor`}
             title="Hooks"
             description="Govern Claude Code tool calls without per-call SDK code. Installs three hooks (PreToolUse, PostToolUse, Stop) plus the tool-classification module into .claude/hooks/, then merges the relevant blocks into .claude/settings.json. Idempotent — re-run after every git pull to upgrade."
           />
+
+          {/* Hooks bundle download */}
+          <div className="mb-6">
+            <DownloadCard
+              name="dashclaw-claude-code-hooks"
+              role="The four hook scripts (pretool, posttool, stop, code-session reporter), the dashclaw_agent_intel/ tool-classification module, default settings.json, and the test suite. Drop the unzipped hooks/ directory into your project's .claude/hooks/."
+              sizeLabel="hooks + agent_intel + tests"
+              primaryHref="/downloads/dashclaw-claude-code-hooks.zip"
+              primaryLabel="dashclaw-claude-code-hooks.zip"
+              secondary={(
+                <div className="mt-4">
+                  <CommandBlock label="Unzip into your project">
+{`unzip dashclaw-claude-code-hooks.zip -d <your-project>/.claude/
+# Then merge .claude/hooks/settings.json snippets into your .claude/settings.json`}
+                  </CommandBlock>
+                </div>
+              )}
+            />
+          </div>
+
           <div className="rounded-xl border border-border bg-surface-secondary p-5">
+            <h3 className="text-sm font-semibold text-text-primary mb-3">Or install from a repo checkout</h3>
             <CommandBlock label="Install from a DashClaw checkout">{`npm run hooks:install`}</CommandBlock>
             <div className="h-3" />
             <CommandBlock label="Install from any other project pointing at a DashClaw checkout">{`node /path/to/DashClaw/scripts/install-hooks.mjs --target=.`}</CommandBlock>
