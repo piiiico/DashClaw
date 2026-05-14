@@ -58,6 +58,13 @@ const GENERATED_DIR = resolve(REPO_ROOT, 'app', 'lib', 'doctor', 'generated');
 const WEBSITE_SKILL_DIR = resolve(REPO_ROOT, 'public', 'downloads', 'dashclaw-platform-intelligence');
 const WEBSITE_SKILL_ZIP = resolve(REPO_ROOT, 'public', 'downloads', 'dashclaw-platform-intelligence.zip');
 const WEBSITE_SKILL_MANIFEST = `${WEBSITE_SKILL_ZIP}.manifest`;
+// dashclaw-governance is hand-authored (not livingcode-generated) but still
+// gets zipped here so /docs and /downloads have a working download link. The
+// directory itself is the source of truth; this just keeps the zip fresh
+// against directory contents via hash-vs-manifest comparison.
+const GOVERNANCE_SKILL_DIR = resolve(REPO_ROOT, 'public', 'downloads', 'dashclaw-governance');
+const GOVERNANCE_SKILL_ZIP = resolve(REPO_ROOT, 'public', 'downloads', 'dashclaw-governance.zip');
+const GOVERNANCE_SKILL_MANIFEST = `${GOVERNANCE_SKILL_ZIP}.manifest`;
 const GLOBAL_SKILL_DIR = resolve(homedir(), '.claude', 'skills', 'dashclaw-platform-intelligence');
 // Project-local skill dir. `.claude/` is gitignored at the repo level, so this
 // stays on the developer's machine — it's the in-repo Claude Code skill that
@@ -416,6 +423,14 @@ async function main() {
   mirrorSubdir(WEBSITE_SKILL_DIR, PLUGIN_SKILL_DIR, 'scripts', 'skill-scripts (plugin)');
 
   refreshSkillZip(WEBSITE_SKILL_DIR, WEBSITE_SKILL_ZIP, WEBSITE_SKILL_MANIFEST);
+
+  // Zip the hand-authored governance skill so the /docs and /downloads
+  // download links resolve. Same hash-vs-manifest idempotence as the
+  // platform-intelligence zip — only rebuilds when the directory contents
+  // actually changed.
+  if (existsSync(GOVERNANCE_SKILL_DIR)) {
+    refreshSkillZip(GOVERNANCE_SKILL_DIR, GOVERNANCE_SKILL_ZIP, GOVERNANCE_SKILL_MANIFEST);
+  }
 
   log('refresh complete');
 }

@@ -38,7 +38,7 @@ describe('/pricing page — MON-01 commitment (D-03 location 1)', () => {
   it('renders the exact trigger commitment text', async () => {
     mockCountVerifiedIntegrations.mockResolvedValue(7);
     const html = await renderPage();
-    expect(html).toContain('50 verified Claude Code integrations');
+    expect(html).toContain('50 verified coding-agent integrations');
   });
 
   it('renders live counter in N/50 format (accepts "7 / 50" or "7/50"; rejects literal "N/50")', async () => {
@@ -104,7 +104,7 @@ describe('/pricing page — MON-01 commitment (D-03 location 1)', () => {
     const html = await renderPage();
 
     // Page still renders (does not throw)
-    expect(html).toContain('50 verified Claude Code integrations');
+    expect(html).toContain('50 verified coding-agent integrations');
     // Counter renders the em-dash fallback instead of a number
     expect(html).toMatch(/—\s*\/\s*50/);
     // And exposes no error detail

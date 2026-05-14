@@ -29,16 +29,18 @@ describe('countVerifiedIntegrations', () => {
     expect(n).toBe(3);
   });
 
-  it('Case 3: SQL uses agent_id ILIKE \'claude-code%\' (matches claude-code-wes-laptop override)', async () => {
+  it('Case 3: SQL matches all three coding-agent agent_id patterns (claude-code%, codex%, hermes%)', async () => {
     const sql = makeSqlMock([{ count: 1 }]);
     await countVerifiedIntegrations(sql);
 
     expect(sql.calls.length).toBe(1);
     const joined = sql.calls[0].text;
     expect(joined).toMatch(/agent_id\s+ILIKE/i);
-    // The literal 'claude-code%' appears in the tagged template (not in
-    // interpolated values), so check the raw text.
+    // The literal pattern strings appear in the tagged template (not in
+    // interpolated values), so check the raw text for each.
     expect(joined).toMatch(/claude-code%/);
+    expect(joined).toMatch(/codex%/);
+    expect(joined).toMatch(/hermes%/);
   });
 
   it('Case 4: SQL counts DISTINCT org_id (aggregate, never per-row)', async () => {

@@ -97,8 +97,12 @@ const navItems = [
   { href: '#mcp-config', label: 'Configuration', indent: true },
   { href: '#cli-and-doctor', label: 'CLI & Doctor' },
   { href: '#dashclaw-doctor', label: 'dashclaw doctor', indent: true },
+  { href: '#claude-code-plugin', label: 'Claude Code Plugin', indent: true },
+  { href: '#codex-plugin', label: 'Codex Plugin', indent: true },
+  { href: '#hermes-plugin', label: 'Hermes Agent Plugin', indent: true },
   { href: '#openclaw-plugin', label: 'OpenClaw Plugin', indent: true },
   { href: '#governance-skill', label: 'Governance Skill', indent: true },
+  { href: '#platform-intelligence-skill', label: 'Platform Intelligence Skill', indent: true },
   { href: '#constructor', label: 'Constructor' },
   { href: '#behavior-guard', label: 'Behavior Guard' },
   { href: '#guard', label: 'guard', indent: true },
@@ -489,6 +493,52 @@ dashclaw logout                          # remove saved config
 npm run doctor`}</CodeBlock>
             </div>
 
+            <div id="claude-code-plugin" className="scroll-mt-20 mb-10">
+              <h3 className="text-lg font-semibold text-text-primary mb-4">Claude Code Plugin</h3>
+              <p className="text-xs text-text-tertiary mb-3">
+                <code className="font-mono text-text-secondary">plugins/dashclaw/.claude-plugin/plugin.json</code> is the Claude Code plugin manifest. Distributes the DashClaw MCP server (<code className="font-mono text-text-secondary">.mcp-claude.json</code>) plus the <code className="font-mono text-text-secondary">dashclaw-governance</code> and <code className="font-mono text-text-secondary">dashclaw-platform-intelligence</code> skills as one installable bundle. Full step-by-step at <Link href="/guides/claude-code" className="text-brand hover:text-brand-hover">/guides/claude-code</Link>.
+              </p>
+              <CodeBlock title="Install">{`# From the DashClaw repo root:
+npm run hooks:install                # PreToolUse / PostToolUse / Stop hooks
+# Then add the plugin to ~/.claude/plugins/ via Claude Code's plugin loader:
+ln -s "$(pwd)/plugins/dashclaw" ~/.claude/plugins/dashclaw
+
+# Or just copy:
+cp -r plugins/dashclaw ~/.claude/plugins/dashclaw`}</CodeBlock>
+            </div>
+
+            <div id="codex-plugin" className="scroll-mt-20 mb-10">
+              <h3 className="text-lg font-semibold text-text-primary mb-4">Codex Plugin</h3>
+              <p className="text-xs text-text-tertiary mb-3">
+                <code className="font-mono text-text-secondary">dashclaw install codex</code> wires the same governance surface DashClaw ships for Claude Code into Codex&apos;s <code className="font-mono text-text-secondary">~/.codex/config.toml</code> — MCP server config, PreToolUse / PostToolUse / Stop hooks, and the governance protocol in <code className="font-mono text-text-secondary">AGENTS.md</code>. Idempotent; re-run after every <code className="font-mono text-text-secondary">git pull</code>. Full step-by-step at <Link href="/guides/codex" className="text-brand hover:text-brand-hover">/guides/codex</Link>.
+              </p>
+              <CodeBlock title="Install">{`# One command from the DashClaw repo root:
+node cli/bin/dashclaw.js install codex --project /path/to/your/project
+
+# Optional: opt in to legacy notify config for turn-complete records
+node cli/bin/dashclaw.js install codex --project /path/to/your/project --include-notify
+
+# Backfill existing rollouts for analytics
+node cli/bin/dashclaw.js code ingest-codex --dry-run
+node cli/bin/dashclaw.js code ingest-codex`}</CodeBlock>
+            </div>
+
+            <div id="hermes-plugin" className="scroll-mt-20 mb-10">
+              <h3 className="text-lg font-semibold text-text-primary mb-4">Hermes Agent Plugin</h3>
+              <p className="text-xs text-text-tertiary mb-3">
+                <code className="font-mono text-text-secondary">plugins/dashclaw/.hermes-plugin/</code> ships eight lifecycle hooks for Hermes Agent: pre/post tool, pre/post LLM call with per-turn governance context injection, on-session start/end with live ingest finalize, secret redaction in tool output, and subagent_stop ROI tracking. Full step-by-step at <Link href="/guides/hermes" className="text-brand hover:text-brand-hover">/guides/hermes</Link>.
+              </p>
+              <CodeBlock title="Install">{`# macOS / Linux — symlinks the plugin, appends 8 hook entries to
+# ~/.hermes/config.yaml between sentinel markers (idempotent).
+bash scripts/install-hermes-plugin.sh
+
+# Windows
+powershell -File scripts/install-hermes-plugin.ps1
+
+# 4-section sanity check
+hermes dashclaw doctor`}</CodeBlock>
+            </div>
+
             <div id="openclaw-plugin" className="scroll-mt-20 mb-10">
               <h3 className="text-lg font-semibold text-text-primary mb-4">OpenClaw Plugin</h3>
               <p className="text-xs text-text-tertiary mb-3">
@@ -496,11 +546,36 @@ npm run doctor`}</CodeBlock>
               </p>
             </div>
 
-            <div id="governance-skill" className="scroll-mt-20">
-              <h3 className="text-lg font-semibold text-text-primary mb-4">Governance Skill (Claude)</h3>
+            <div id="governance-skill" className="scroll-mt-20 mb-10">
+              <h3 className="text-lg font-semibold text-text-primary mb-4">Governance Skill</h3>
               <p className="text-xs text-text-tertiary mb-3">
-                <code className="font-mono text-text-secondary">@dashclaw/governance</code> is an Anthropic Claude skill that teaches governed agents how to use the MCP tools correctly — risk thresholds, decision handling, recording rules, session lifecycle. Pairs with <code className="font-mono text-text-secondary">@dashclaw/mcp-server</code> for Managed Agents. Download the zip from your instance at <code className="font-mono text-text-secondary">/downloads/dashclaw-governance.zip</code>.
+                <code className="font-mono text-text-secondary">dashclaw-governance</code> teaches governed agents how to use DashClaw correctly — risk thresholds, decision handling (allow / warn / block / require_approval), action recording, approval-wait protocol, and session lifecycle. Pairs with <code className="font-mono text-text-secondary">@dashclaw/mcp-server</code>. Auto-installed by the Claude Code, Codex, and Hermes plugins; also downloadable as a standalone zip.
               </p>
+              <CodeBlock title="Download">{`# Zip download from this instance:
+curl -O ${'`'}https://${'<'}your-deployment${'>'}/downloads/dashclaw-governance.zip${'`'}
+
+# Or copy the source dir directly:
+cp -r public/downloads/dashclaw-governance ~/.claude/skills/
+
+# Already auto-installed if you ran one of the plugin installers above.`}</CodeBlock>
+            </div>
+
+            <div id="platform-intelligence-skill" className="scroll-mt-20">
+              <h3 className="text-lg font-semibold text-text-primary mb-4">Platform Intelligence Skill</h3>
+              <p className="text-xs text-text-tertiary mb-3">
+                <code className="font-mono text-text-secondary">dashclaw-platform-intelligence</code> gives an agent a live reference to DashClaw&apos;s API surface, governance vocabulary, integration patterns, and troubleshooting playbooks. Regenerated from the codebase via <code className="font-mono text-text-secondary">npm run livingcode:refresh</code> so the skill never drifts from the runtime. Distributed as a zip download, mirrored into <code className="font-mono text-text-secondary">~/.claude/skills/</code> by the refresh, and shipped inside the Claude Code / Codex / Hermes plugin manifests.
+              </p>
+              <CodeBlock title="Download">{`# Zip download (regenerated on every livingcode refresh):
+curl -O ${'`'}https://${'<'}your-deployment${'>'}/downloads/dashclaw-platform-intelligence.zip${'`'}
+
+# Source files:
+ls public/downloads/dashclaw-platform-intelligence/
+#   SKILL.md            (auto-generated from livingcode shape)
+#   references/         (api-surface, platform-knowledge, troubleshooting)
+#   scripts/            (bootstrap-agent-quick, diagnose, validate-integration)
+
+# Or just run the refresh — installs to ~/.claude/skills/ automatically:
+npm run livingcode:refresh`}</CodeBlock>
             </div>
           </section>
 

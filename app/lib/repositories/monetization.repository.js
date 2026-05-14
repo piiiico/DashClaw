@@ -9,6 +9,12 @@
  *   MAY override via DASHCLAW_AGENT_ID=<custom> (e.g. "claude-code-wes-laptop").
  *   Canonical match: agent_id ILIKE 'claude-code%' — catches default + overrides.
  *
+ * Multi-agent expansion (post-Hermes / Codex parity):
+ *   Codex installs default agent_id="codex"; Hermes Agent plugin defaults to
+ *   agent_id="hermes". All three count toward the same trigger so the
+ *   "50 verified coding-agent integrations" commitment captures every
+ *   governed coding agent surface DashClaw ships installers for.
+ *
  * Exclusions (D-01 "in the wild"):
  *   org_default (founder's own instance) and org_demo (demo sandbox) are
  *   excluded by default. Override via excludeOrgIds option.
@@ -34,7 +40,11 @@ export async function countVerifiedIntegrations(sql, options = {}) {
   const rows = await sql`
     SELECT COUNT(DISTINCT org_id)::int AS count
     FROM action_records
-    WHERE agent_id ILIKE 'claude-code%'
+    WHERE (
+        agent_id ILIKE 'claude-code%'
+        OR agent_id ILIKE 'codex%'
+        OR agent_id ILIKE 'hermes%'
+      )
       AND org_id <> ALL(${excludeOrgIds})
       AND timestamp_start::timestamptz > NOW() - (${recencyDays} * INTERVAL '1 day')
   `;

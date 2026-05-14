@@ -39,7 +39,7 @@ export default async function PricingPage() {
   const counterDisplay = count === null ? '—' : String(count);
 
   const freeBullets = [
-    'Solo-dev Claude Code integration (hook + policy pack).',
+    'Solo-dev coding-agent integrations — Claude Code, Codex, Hermes Agent (hook + policy pack).',
     'Discord + Telegram approvals from your phone.',
     '/decisions ledger with full replay.',
     'Semantic guard (bring your own LLM key).',
@@ -50,7 +50,7 @@ export default async function PricingPage() {
     'Multi-user orgs + SSO + role-based policies.',
     'Custom policy pack authoring.',
     'Audit export + SOC 2-friendly reporting.',
-    'Integrations beyond Claude Code (Cursor, Aider, Devin, custom SDK).',
+    'Integrations beyond Claude Code, Codex, and Hermes (Cursor, Aider, Devin, custom SDK).',
   ];
 
   return (
@@ -78,12 +78,13 @@ export default async function PricingPage() {
             className="mb-10 rounded-3xl border border-border bg-surface-secondary p-6 sm:p-8"
           >
             <h2 className="text-xl font-semibold tracking-tight">
-              Pro tier launches when DashClaw hits 50 verified Claude Code
+              Pro tier launches when DashClaw hits 50 verified coding-agent
               integrations in the wild.
             </h2>
             <p className="mt-3 text-sm text-text-secondary">
-              Measured by a public SQL query over <code className="rounded border border-border bg-surface-tertiary px-1 py-0.5 font-mono text-[11px]">action_records</code> where
-              {' '}<code className="rounded border border-border bg-surface-tertiary px-1 py-0.5 font-mono text-[11px]">agent_id ILIKE &apos;claude-code%&apos;</code>,
+              Counts Claude Code, Codex, and Hermes Agent installs against the
+              same threshold. Measured by a public SQL query over <code className="rounded border border-border bg-surface-tertiary px-1 py-0.5 font-mono text-[11px]">action_records</code> where
+              {' '}<code className="rounded border border-border bg-surface-tertiary px-1 py-0.5 font-mono text-[11px]">agent_id ILIKE &apos;claude-code%&apos; OR &apos;codex%&apos; OR &apos;hermes%&apos;</code>,
               excluding internal orgs, with a 90-day recency window. No
               time-boxed backstop — the trigger fires when it fires.
             </p>

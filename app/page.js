@@ -74,7 +74,7 @@ export default function LandingPage() {
 
           {/* Framework list */}
           <p className="mt-10 text-sm text-text-tertiary font-medium max-w-2xl mx-auto">
-            Works with Claude Code, Claude Managed Agents, OpenAI, LangChain, CrewAI, AutoGen, Codex, Gemini CLI, and any custom agent.
+            Works with Claude Code, Codex, Hermes Agent, Claude Managed Agents, OpenAI, LangChain, CrewAI, AutoGen, Gemini CLI, and any custom agent.
           </p>
 
           {/* Trust band */}

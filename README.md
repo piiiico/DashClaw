@@ -321,7 +321,7 @@ The full architecture map lives in [`PROJECT_DETAILS.md`](./PROJECT_DETAILS.md).
 
 ## Free while we grow
 
-DashClaw is free during the launch ramp. The Pro tier unlocks when our Claude Code integration milestone hits 50 verified instances in the wild, measured by a public SQL query over `action_records` where `agent_id ILIKE 'claude-code%'`, excluding internal orgs, with a 90-day recency window. Progress is published at [dashclaw.io/pricing](https://dashclaw.io/pricing). The runtime (hook, policy pack, approvals, audit ledger, semantic guard, durable finality) stays free forever for solo developers.
+DashClaw is free during the launch ramp. The Pro tier unlocks when our Claude Code integration milestone hits 50 verified coding-agent integrations in the wild — counting Claude Code, Codex, and Hermes Agent installs against the same threshold. Measured by a public SQL query over `action_records` where `agent_id ILIKE 'claude-code%' OR agent_id ILIKE 'codex%' OR agent_id ILIKE 'hermes%'`, excluding internal orgs, with a 90-day recency window. Progress is published at [dashclaw.io/pricing](https://dashclaw.io/pricing). The runtime (hook, policy pack, approvals, audit ledger, semantic guard, durable finality) stays free forever for solo developers.
 
 ---
 
