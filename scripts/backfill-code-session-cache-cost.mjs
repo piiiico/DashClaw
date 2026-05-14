@@ -14,14 +14,22 @@
  *   node scripts/backfill-code-session-cache-cost.mjs --apply
  */
 
-import { getSql } from '../app/lib/db.js';
+import './_load-env.mjs';
+import { createSqlFromEnv } from './_db.mjs';
 import { estimateCost } from '../app/lib/billing.js';
 import { getModelPricing } from '../app/lib/repositories/settings.repository.js';
 
 const APPLY = process.argv.includes('--apply');
 
+if (!process.env.DATABASE_URL) {
+  console.error('DATABASE_URL is required (add to .env.local or export it).');
+  console.error('This script needs a real database connection to recompute historical');
+  console.error('cost_usd values; the mock driver returns zero rows.');
+  process.exit(1);
+}
+
 async function main() {
-  const sql = getSql();
+  const sql = createSqlFromEnv();
   const rows = await sql`
     SELECT id, org_id, model_primary, input_tokens, output_tokens,
            cache_read_tokens, cache_creation_tokens, cost_usd
