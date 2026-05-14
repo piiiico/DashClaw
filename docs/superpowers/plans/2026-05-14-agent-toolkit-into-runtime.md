@@ -66,6 +66,12 @@
 
 - [ ] **Step 1: Write the SQL migration**
 
+Codebase conventions for `drizzle/*.sql` (see `drizzle/0000_clammy_falcon.sql` and `drizzle/0006_code_sessions.sql`):
+
+1. Wrap every table / column / constraint / index identifier in `"..."`. The column-drift sync regex in `scripts/auto-migrate.mjs` line 207 (`^CREATE TABLE\s+"(\w+)"\s*\(/i`) requires quoted table names — unquoted tables get silently skipped on redeploy.
+2. Separate every DDL statement with `--> statement-breakpoint` on its own line. `scripts/auto-migrate.mjs` splits each `.sql` file on this marker so each statement is logged independently and the `SAFE_CODES` skip pass evaluates per-statement.
+3. For columns whose UNIQUE constraint must treat NULL as equal (org-wide rows where `agent_id IS NULL`), use Postgres 15+ `UNIQUE NULLS NOT DISTINCT`. Default Postgres treats NULLs as distinct, which would allow duplicate `(org_id, name)` rows when `agent_id IS NULL`.
+
 Create `drizzle/0007_agent_toolkit_into_runtime.sql`:
 
 ```sql
@@ -74,53 +80,67 @@ Create `drizzle/0007_agent_toolkit_into_runtime.sql`:
 -- features: session handoffs, secret rotation tracker, skill safety
 -- scanner. See docs/superpowers/specs/2026-05-14-agent-toolkit-into-runtime-design.md
 
-CREATE TABLE IF NOT EXISTS code_session_handoffs (
-  id TEXT PRIMARY KEY,
-  org_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
-  agent_id TEXT NOT NULL,
-  project_id TEXT REFERENCES code_projects(id) ON DELETE SET NULL,
-  created_in_session_id TEXT,
-  bundle_json JSONB NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  consumed_at TIMESTAMPTZ,
-  consumed_by_session_id TEXT
+CREATE TABLE IF NOT EXISTS "code_session_handoffs" (
+  "id" TEXT PRIMARY KEY,
+  "org_id" TEXT NOT NULL REFERENCES "organizations"("id") ON DELETE CASCADE,
+  "agent_id" TEXT NOT NULL,
+  "project_id" TEXT REFERENCES "code_projects"("id") ON DELETE SET NULL,
+  "created_in_session_id" TEXT,
+  "bundle_json" JSONB NOT NULL,
+  "created_at" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  "consumed_at" TIMESTAMPTZ,
+  "consumed_by_session_id" TEXT
 );
 
-CREATE INDEX IF NOT EXISTS code_session_handoffs_lookup_idx
-  ON code_session_handoffs (org_id, agent_id, project_id, consumed_at, created_at DESC);
+--> statement-breakpoint
 
-CREATE TABLE IF NOT EXISTS governed_secrets (
-  id TEXT PRIMARY KEY,
-  org_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
-  agent_id TEXT,
-  name TEXT NOT NULL,
-  last_rotated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  rotation_interval_days INTEGER NOT NULL DEFAULT 90,
-  notes TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  CONSTRAINT governed_secrets_unique_per_agent UNIQUE (org_id, agent_id, name)
+CREATE INDEX IF NOT EXISTS "code_session_handoffs_lookup_idx"
+  ON "code_session_handoffs" ("org_id", "agent_id", "project_id", "consumed_at", "created_at" DESC);
+
+--> statement-breakpoint
+
+CREATE TABLE IF NOT EXISTS "governed_secrets" (
+  "id" TEXT PRIMARY KEY,
+  "org_id" TEXT NOT NULL REFERENCES "organizations"("id") ON DELETE CASCADE,
+  "agent_id" TEXT,
+  "name" TEXT NOT NULL,
+  "last_rotated_at" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  "rotation_interval_days" INTEGER NOT NULL DEFAULT 90,
+  "notes" TEXT,
+  "created_at" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  "updated_at" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT "governed_secrets_unique_per_agent" UNIQUE NULLS NOT DISTINCT ("org_id", "agent_id", "name")
 );
 
-CREATE INDEX IF NOT EXISTS governed_secrets_org_agent_idx
-  ON governed_secrets (org_id, agent_id);
+--> statement-breakpoint
 
-CREATE TABLE IF NOT EXISTS skill_scan_results (
-  id TEXT PRIMARY KEY,
-  org_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
-  skill_name TEXT NOT NULL,
-  target_hash TEXT NOT NULL,
-  findings JSONB NOT NULL,
-  passed BOOLEAN NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  CONSTRAINT skill_scan_results_dedupe UNIQUE (org_id, skill_name, target_hash)
+CREATE INDEX IF NOT EXISTS "governed_secrets_org_agent_idx"
+  ON "governed_secrets" ("org_id", "agent_id");
+
+--> statement-breakpoint
+
+CREATE TABLE IF NOT EXISTS "skill_scan_results" (
+  "id" TEXT PRIMARY KEY,
+  "org_id" TEXT NOT NULL REFERENCES "organizations"("id") ON DELETE CASCADE,
+  "skill_name" TEXT NOT NULL,
+  "target_hash" TEXT NOT NULL,
+  "findings" JSONB NOT NULL,
+  "passed" BOOLEAN NOT NULL,
+  "created_at" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT "skill_scan_results_dedupe" UNIQUE ("org_id", "skill_name", "target_hash")
 );
 
-CREATE INDEX IF NOT EXISTS skill_scan_results_org_skill_idx
-  ON skill_scan_results (org_id, skill_name, created_at DESC);
+--> statement-breakpoint
+
+CREATE INDEX IF NOT EXISTS "skill_scan_results_org_skill_idx"
+  ON "skill_scan_results" ("org_id", "skill_name", "created_at" DESC);
 ```
 
 - [ ] **Step 2: Add drizzle definitions in `schema/schema.js`**
+
+Codebase convention: every `text('org_id').notNull()` chains `.references(() => organizations.id, { onDelete: 'cascade' })` and project FKs chain `.references(() => codeProjects.id, { onDelete: 'set null' })`. See `codeOptimalFileManifests` directly above the new block.
+
+`unique()` (not `uniqueIndex`) is the right primitive for inline `CONSTRAINT ... UNIQUE` and supports `.nullsNotDistinct()` for the Postgres 15+ NULL-equals-NULL semantics needed on `governed_secrets`. Add `unique` to the existing `drizzle-orm/pg-core` import line.
 
 Append after the last existing pgTable definition (find via `grep -n "pgTable" schema/schema.js | tail -1`):
 
@@ -128,9 +148,9 @@ Append after the last existing pgTable definition (find via `grep -n "pgTable" s
 // @domain governance
 export const codeSessionHandoffs = pgTable('code_session_handoffs', {
   id: text('id').primaryKey(),
-  orgId: text('org_id').notNull(),
+  orgId: text('org_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   agentId: text('agent_id').notNull(),
-  projectId: text('project_id'),
+  projectId: text('project_id').references(() => codeProjects.id, { onDelete: 'set null' }),
   createdInSessionId: text('created_in_session_id'),
   bundleJson: jsonb('bundle_json').notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
@@ -141,7 +161,7 @@ export const codeSessionHandoffs = pgTable('code_session_handoffs', {
 // @domain governance
 export const governedSecrets = pgTable('governed_secrets', {
   id: text('id').primaryKey(),
-  orgId: text('org_id').notNull(),
+  orgId: text('org_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   agentId: text('agent_id'),
   name: text('name').notNull(),
   lastRotatedAt: timestamp('last_rotated_at', { withTimezone: true }).notNull().defaultNow(),
@@ -150,24 +170,30 @@ export const governedSecrets = pgTable('governed_secrets', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (table) => ({
-  uniqueName: uniqueIndex('governed_secrets_unique_per_agent').on(table.orgId, table.agentId, table.name),
+  // NULLS NOT DISTINCT closes the gap for org-wide secrets (agent_id IS NULL):
+  // Postgres 15+ treats NULLs as equal here so we get one row per (org, name)
+  // even when agent_id is NULL. Migration SQL emits this as an inline
+  // CONSTRAINT ... UNIQUE NULLS NOT DISTINCT (...).
+  uniqueName: unique('governed_secrets_unique_per_agent').on(table.orgId, table.agentId, table.name).nullsNotDistinct(),
 }));
 
 // @domain governance
 export const skillScanResults = pgTable('skill_scan_results', {
   id: text('id').primaryKey(),
-  orgId: text('org_id').notNull(),
+  orgId: text('org_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   skillName: text('skill_name').notNull(),
   targetHash: text('target_hash').notNull(),
   findings: jsonb('findings').notNull(),
   passed: boolean('passed').notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 }, (table) => ({
-  dedupe: uniqueIndex('skill_scan_results_dedupe').on(table.orgId, table.skillName, table.targetHash),
+  dedupe: unique('skill_scan_results_dedupe').on(table.orgId, table.skillName, table.targetHash),
 }));
 ```
 
 - [ ] **Step 3: Write the migration-shape test**
+
+Regexes match the quoted identifiers emitted by Step 1 and explicitly verify the `NULLS NOT DISTINCT` modifier on `governed_secrets` plus the `--> statement-breakpoint` separators required by `scripts/auto-migrate.mjs`.
 
 Create `__tests__/integration/schema-0007-apply.test.js`:
 
@@ -180,30 +206,35 @@ describe('migration 0007 — agent toolkit into runtime', () => {
   const sql = readFileSync(path.resolve('drizzle/0007_agent_toolkit_into_runtime.sql'), 'utf8');
 
   it('creates three new tables', () => {
-    expect(sql).toMatch(/CREATE TABLE IF NOT EXISTS code_session_handoffs/);
-    expect(sql).toMatch(/CREATE TABLE IF NOT EXISTS governed_secrets/);
-    expect(sql).toMatch(/CREATE TABLE IF NOT EXISTS skill_scan_results/);
+    expect(sql).toMatch(/CREATE TABLE IF NOT EXISTS "code_session_handoffs"/);
+    expect(sql).toMatch(/CREATE TABLE IF NOT EXISTS "governed_secrets"/);
+    expect(sql).toMatch(/CREATE TABLE IF NOT EXISTS "skill_scan_results"/);
   });
 
   it('declares org_id foreign keys on every new table', () => {
-    const fks = sql.match(/REFERENCES organizations\(id\)/g) || [];
+    const fks = sql.match(/REFERENCES "organizations"\("id"\)/g) || [];
     expect(fks.length).toBeGreaterThanOrEqual(3);
   });
 
   it('handoffs table has project_id with SET NULL cascade', () => {
-    expect(sql).toMatch(/project_id\s+TEXT\s+REFERENCES\s+code_projects\(id\)\s+ON\s+DELETE\s+SET\s+NULL/i);
+    expect(sql).toMatch(/"project_id"\s+TEXT\s+REFERENCES\s+"code_projects"\("id"\)\s+ON\s+DELETE\s+SET\s+NULL/i);
   });
 
-  it('governed_secrets has unique constraint per (org_id, agent_id, name)', () => {
-    expect(sql).toMatch(/UNIQUE\s*\(\s*org_id\s*,\s*agent_id\s*,\s*name\s*\)/);
+  it('governed_secrets has unique NULLS NOT DISTINCT constraint per (org_id, agent_id, name)', () => {
+    expect(sql).toMatch(/UNIQUE\s+NULLS\s+NOT\s+DISTINCT\s*\(\s*"org_id"\s*,\s*"agent_id"\s*,\s*"name"\s*\)/i);
   });
 
   it('skill_scan_results dedupes per (org_id, skill_name, target_hash)', () => {
-    expect(sql).toMatch(/UNIQUE\s*\(\s*org_id\s*,\s*skill_name\s*,\s*target_hash\s*\)/);
+    expect(sql).toMatch(/UNIQUE\s*\(\s*"org_id"\s*,\s*"skill_name"\s*,\s*"target_hash"\s*\)/);
   });
 
   it('lookup index on handoffs supports the project+agent+freshness query', () => {
-    expect(sql).toMatch(/CREATE INDEX IF NOT EXISTS code_session_handoffs_lookup_idx/);
+    expect(sql).toMatch(/CREATE INDEX IF NOT EXISTS "code_session_handoffs_lookup_idx"/);
+  });
+
+  it('separates statements with --> statement-breakpoint so auto-migrate logs per-statement', () => {
+    const breakpoints = sql.match(/-->\s*statement-breakpoint/g) || [];
+    expect(breakpoints.length).toBeGreaterThanOrEqual(5);
   });
 });
 ```
@@ -211,7 +242,7 @@ describe('migration 0007 — agent toolkit into runtime', () => {
 - [ ] **Step 4: Run the test, expect PASS**
 
 Run: `npx vitest run __tests__/integration/schema-0007-apply.test.js`
-Expected: 6 tests pass
+Expected: 7 tests pass
 
 - [ ] **Step 5: Apply migration locally and verify**
 
