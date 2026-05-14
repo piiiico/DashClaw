@@ -193,10 +193,10 @@ function FileRow({ file, selected, onToggle, disabled, defaultOpen, edited, onEd
                       onChange={e => onEdit(e.target.value)}
                       spellCheck={false}
                       rows={Math.min(24, Math.max(8, currentContent.split('\n').length + 1))}
-                      className="block w-full resize-y rounded border border-border bg-bg-primary p-3 font-mono text-[11px] leading-relaxed text-primary focus:border-border-active focus:outline-none focus:ring-1 focus:ring-orange-500/30"
+                      className="block w-full resize-y rounded border border-border bg-primary p-3 font-mono text-[11px] leading-relaxed text-primary focus:border-border-active focus:outline-none focus:ring-1 focus:ring-orange-500/30"
                     />
                   ) : (
-                    <pre className="max-h-72 overflow-auto rounded border border-border bg-bg-primary p-3 text-[11px] leading-relaxed text-secondary">
+                    <pre className="max-h-72 overflow-auto rounded border border-border bg-primary p-3 text-[11px] leading-relaxed text-secondary">
 {displayContent}
                     </pre>
                   )}
@@ -316,7 +316,7 @@ export default function OptimalFilesPanel({ sessionId }) {
           <button
             type="button"
             onClick={loadPreview}
-            className="inline-flex shrink-0 items-center gap-2 rounded-md bg-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-orange-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary"
+            className="inline-flex shrink-0 items-center gap-2 rounded-md bg-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-orange-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
           >
             Generate
             <ArrowRight className="h-4 w-4" aria-hidden />
@@ -370,7 +370,7 @@ export default function OptimalFilesPanel({ sessionId }) {
   if (phase === 'done' && manifest) {
     return (
       <PanelShell subtitle="Manifest ready. Run the command below locally.">
-        <pre className="overflow-x-auto rounded-md border border-border bg-bg-primary p-3 font-mono text-xs text-primary">
+        <pre className="overflow-x-auto rounded-md border border-border bg-primary p-3 font-mono text-xs text-primary">
 {manifest.apply_command}
         </pre>
         <p className="mt-3 text-xs text-tertiary">
@@ -469,7 +469,7 @@ export default function OptimalFilesPanel({ sessionId }) {
         <button
           disabled={phase === 'saving' || acceptedCount === 0}
           onClick={createManifest}
-          className="inline-flex items-center gap-2 rounded-md bg-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-orange-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary disabled:cursor-not-allowed disabled:bg-surface-tertiary disabled:text-tertiary disabled:shadow-none"
+          className="inline-flex items-center gap-2 rounded-md bg-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-orange-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-primary disabled:cursor-not-allowed disabled:bg-surface-tertiary disabled:text-tertiary disabled:shadow-none"
         >
           {phase === 'saving' ? 'Creating manifest…' : `Create manifest · ${acceptedCount}`}
           {phase !== 'saving' && acceptedCount > 0 && <ArrowRight className="h-4 w-4" aria-hidden />}
