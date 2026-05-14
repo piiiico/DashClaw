@@ -76,6 +76,11 @@ const PROJECT_SKILL_DIR = resolve(REPO_ROOT, '.claude', 'skills', 'dashclaw-plat
 // pick up the live livingcode-derived SKILL.md and companion files. Treated
 // as a regen target — never edit by hand; edit the website source instead.
 const PLUGIN_SKILL_DIR = resolve(REPO_ROOT, 'plugins', 'dashclaw', 'skills', 'dashclaw-platform-intelligence');
+// Governance skill plugin mirror — hand-authored source lives under
+// public/downloads/dashclaw-governance/ (treated as canonical). The plugin
+// copy is kept in lockstep so the committed plugin distribution always
+// carries the latest governance protocol text.
+const PLUGIN_GOVERNANCE_SKILL_DIR = resolve(REPO_ROOT, 'plugins', 'dashclaw', 'skills', 'dashclaw-governance');
 const MCP_INVENTORY_PATH = resolve(REPO_ROOT, 'mcp-server', 'lib', 'routes-inventory.generated.json');
 const DASHBOARD_PATH = resolve(REPO_ROOT, 'public', 'livingcode', 'index.html');
 
@@ -91,7 +96,7 @@ const DASHBOARD_SIG_LINE = /^(<div class="sig" id="sig">Shape signature: )([^<]+
 const SOURCE_PATH_RE = /^(app\/api\/|app\/lib\/|schema\/schema\.js$|middleware\.js$|livingcode\/|public\/downloads\/dashclaw-platform-intelligence\/(references|scripts)\/)/;
 // Paths that are themselves generated output — staging these doesn't count as
 // a source change that should trigger a refresh.
-const GENERATED_PATH_RE = /^(app\/lib\/doctor\/generated\/|public\/downloads\/dashclaw-platform-intelligence\/SKILL\.md$|public\/downloads\/dashclaw-platform-intelligence\.zip(\.manifest)?$|plugins\/dashclaw\/skills\/dashclaw-platform-intelligence\/)/;
+const GENERATED_PATH_RE = /^(app\/lib\/doctor\/generated\/|public\/downloads\/dashclaw-platform-intelligence\/SKILL\.md$|public\/downloads\/dashclaw-platform-intelligence\.zip(\.manifest)?$|plugins\/dashclaw\/skills\/dashclaw-platform-intelligence\/|plugins\/dashclaw\/skills\/dashclaw-governance\/)/;
 
 function isSourceChange(path) {
   const normalised = path.replace(/\\/g, '/');
@@ -421,6 +426,25 @@ async function main() {
   writeIfChanged(join(PLUGIN_SKILL_DIR, 'SKILL.md'), skillContent, 'skill (plugin)');
   mirrorSubdir(WEBSITE_SKILL_DIR, PLUGIN_SKILL_DIR, 'references', 'skill-references (plugin)');
   mirrorSubdir(WEBSITE_SKILL_DIR, PLUGIN_SKILL_DIR, 'scripts', 'skill-scripts (plugin)');
+
+  // Mirror dashclaw-governance to plugins/ (hand-authored — not livingcode-
+  // generated — but we keep the plugin copy in sync with the website canonical
+  // copy so the plugin distribution always carries the latest governance
+  // protocol text).
+  if (existsSync(GOVERNANCE_SKILL_DIR)) {
+    const govSkillContent = readFileSync(join(GOVERNANCE_SKILL_DIR, 'SKILL.md'), 'utf8');
+    writeIfChanged(
+      join(PLUGIN_GOVERNANCE_SKILL_DIR, 'SKILL.md'),
+      govSkillContent,
+      'governance-skill (plugin)',
+    );
+    mirrorSubdir(
+      GOVERNANCE_SKILL_DIR,
+      PLUGIN_GOVERNANCE_SKILL_DIR,
+      'references',
+      'governance-references (plugin)',
+    );
+  }
 
   refreshSkillZip(WEBSITE_SKILL_DIR, WEBSITE_SKILL_ZIP, WEBSITE_SKILL_MANIFEST);
 
