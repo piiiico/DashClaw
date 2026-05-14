@@ -67,6 +67,24 @@ export async function POST(request, { params }) {
     selections,
   });
 
+  // Apply caller-supplied content overrides. The path is already
+  // allowlist-validated above, so editing content cannot smuggle a write
+  // outside the .claude tree. The CLI re-runs the secret scan at apply
+  // time, so server-side rescan is best-effort — we skip it to keep the
+  // contract narrow.
+  const contentOverrides = new Map();
+  for (const sel of selections) {
+    if (typeof sel.content === 'string') contentOverrides.set(sel.path, sel.content);
+  }
+  if (contentOverrides.size > 0) {
+    for (const result of plan.results) {
+      if (contentOverrides.has(result.path)) {
+        result.content = contentOverrides.get(result.path);
+        result.edited = true;
+      }
+    }
+  }
+
   const saved = await saveManifest(sql, orgId, sessionId, session.project_cwd || '', plan.results, 24);
   return NextResponse.json({
     manifest_id: saved.id,

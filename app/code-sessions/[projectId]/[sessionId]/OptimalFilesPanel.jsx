@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Copy, Check, Pencil, RotateCcw } from 'lucide-react';
 
 const GROUP_META = {
   recommended_now: {
@@ -47,13 +47,30 @@ function ConfidenceBadge({ confidence }) {
   );
 }
 
-function FileRow({ file, selected, onToggle, disabled }) {
-  const [open, setOpen] = useState(false);
-  const previewContent = file.content || '';
-  const truncated = previewContent.length > 4000;
-  const displayContent = truncated ? previewContent.slice(0, 4000) + '\n…\n[truncated]' : previewContent;
+function FileRow({ file, selected, onToggle, disabled, defaultOpen, edited, onEdit }) {
+  const [open, setOpen] = useState(!!defaultOpen);
+  const [editing, setEditing] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const baseContent = file.content || '';
+  const currentContent = edited != null ? edited : baseContent;
+  const isEdited = edited != null && edited !== baseContent;
+  const truncated = currentContent.length > 4000;
+  const displayContent = truncated && !editing
+    ? currentContent.slice(0, 4000) + '\n…\n[truncated]'
+    : currentContent;
   const secretFindings = file.secret_scan?.findings || [];
-  const hasContent = previewContent.length > 0;
+  const hasContent = baseContent.length > 0;
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(currentContent);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // Clipboard may be unavailable in non-secure contexts; fall back to
+      // selecting the pre element so the user can copy manually.
+    }
+  }
 
   return (
     <li className="rounded-md border border-border bg-surface-secondary/40 transition-colors hover:border-border-hover">
@@ -76,6 +93,11 @@ function FileRow({ file, selected, onToggle, disabled }) {
             <span aria-hidden className="text-tertiary">{open ? '▾' : '▸'}</span>
             <code className="truncate font-mono text-xs text-primary">{file.path}</code>
             <ConfidenceBadge confidence={file.confidence} />
+            {isEdited && (
+              <span className="rounded-full border border-orange-500/40 bg-orange-500/10 px-2 py-0.5 text-[10px] font-medium text-orange-300">
+                edited
+              </span>
+            )}
             {disabled && (
               <span className="rounded-full border border-border/60 px-2 py-0.5 text-[10px] text-tertiary/70">
                 preview only
@@ -116,14 +138,69 @@ function FileRow({ file, selected, onToggle, disabled }) {
                 </div>
               )}
               {hasContent ? (
-                <details>
-                  <summary className="cursor-pointer text-tertiary hover:text-secondary">
-                    Preview content · {previewContent.length.toLocaleString()} chars{truncated ? ' · truncated' : ''}
-                  </summary>
-                  <pre className="mt-2 max-h-72 overflow-auto rounded border border-border bg-bg-primary p-3 text-[11px] leading-relaxed text-secondary">
+                <div>
+                  <div className="mb-2 flex items-center gap-2">
+                    <span className="text-tertiary">
+                      Content · {currentContent.length.toLocaleString()} chars
+                      {truncated && !editing ? ' · truncated' : ''}
+                    </span>
+                    <div className="ml-auto flex items-center gap-1">
+                      {!disabled && !editing && (
+                        <button
+                          type="button"
+                          onClick={() => setEditing(true)}
+                          className="inline-flex items-center gap-1 rounded border border-border px-2 py-1 text-[11px] text-secondary hover:border-border-hover hover:text-primary"
+                          aria-label={`Edit ${file.path}`}
+                        >
+                          <Pencil className="h-3 w-3" aria-hidden />
+                          Edit
+                        </button>
+                      )}
+                      {!disabled && editing && isEdited && (
+                        <button
+                          type="button"
+                          onClick={() => { onEdit(null); }}
+                          className="inline-flex items-center gap-1 rounded border border-border px-2 py-1 text-[11px] text-secondary hover:border-border-hover hover:text-primary"
+                          aria-label={`Reset ${file.path}`}
+                        >
+                          <RotateCcw className="h-3 w-3" aria-hidden />
+                          Reset
+                        </button>
+                      )}
+                      {!disabled && editing && (
+                        <button
+                          type="button"
+                          onClick={() => setEditing(false)}
+                          className="inline-flex items-center gap-1 rounded border border-border px-2 py-1 text-[11px] text-secondary hover:border-border-hover hover:text-primary"
+                        >
+                          Done
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={handleCopy}
+                        className="inline-flex items-center gap-1 rounded border border-border px-2 py-1 text-[11px] text-secondary hover:border-border-hover hover:text-primary"
+                        aria-label={`Copy ${file.path} content`}
+                      >
+                        {copied ? <Check className="h-3 w-3" aria-hidden /> : <Copy className="h-3 w-3" aria-hidden />}
+                        {copied ? 'Copied' : 'Copy'}
+                      </button>
+                    </div>
+                  </div>
+                  {editing ? (
+                    <textarea
+                      value={currentContent}
+                      onChange={e => onEdit(e.target.value)}
+                      spellCheck={false}
+                      rows={Math.min(24, Math.max(8, currentContent.split('\n').length + 1))}
+                      className="block w-full resize-y rounded border border-border bg-bg-primary p-3 font-mono text-[11px] leading-relaxed text-primary focus:border-border-active focus:outline-none focus:ring-1 focus:ring-orange-500/30"
+                    />
+                  ) : (
+                    <pre className="max-h-72 overflow-auto rounded border border-border bg-bg-primary p-3 text-[11px] leading-relaxed text-secondary">
 {displayContent}
-                  </pre>
-                </details>
+                    </pre>
+                  )}
+                </div>
               ) : (
                 <p className="text-tertiary italic">No content — virtual placeholder.</p>
               )}
@@ -139,6 +216,7 @@ export default function OptimalFilesPanel({ sessionId }) {
   const [phase, setPhase] = useState('idle'); // idle | loading | preview | saving | done | error
   const [bundle, setBundle] = useState([]);
   const [selected, setSelected] = useState({});
+  const [edits, setEdits] = useState({}); // { [path]: editedContent | null (=reset) }
   const [manifest, setManifest] = useState(null);
   const [error, setError] = useState('');
 
@@ -167,11 +245,22 @@ export default function OptimalFilesPanel({ sessionId }) {
         initialSel[f.path] = manifestable && f.confidence !== 'low';
       }
       setSelected(initialSel);
+      setEdits({});
       setPhase('preview');
     } catch (err) {
       setError(err.message);
       setPhase('error');
     }
+  }
+
+  function handleEdit(path, content) {
+    setEdits(e => {
+      if (content === null) {
+        const { [path]: _drop, ...rest } = e;
+        return rest;
+      }
+      return { ...e, [path]: content };
+    });
   }
 
   async function createManifest() {
@@ -183,7 +272,14 @@ export default function OptimalFilesPanel({ sessionId }) {
       // UX without weakening the server-side allowlist.
       const selections = bundle
         .filter(f => selected[f.path] && !f.virtual && isManifestablePath(f.path))
-        .map(f => ({ path: f.path, accept: true }));
+        .map(f => {
+          const sel = { path: f.path, accept: true };
+          // Pass edited content through so the manifest stores the edited
+          // version. The server validates the path against the same
+          // allowlist regardless of whether content was overridden.
+          if (edits[f.path] != null) sel.content = edits[f.path];
+          return sel;
+        });
       if (selections.length === 0) {
         throw new Error('No manifestable files selected. Virtual placeholders cannot be applied.');
       }
@@ -330,6 +426,15 @@ export default function OptimalFilesPanel({ sessionId }) {
       <div className="space-y-5">
         {orderedGroups.map(([group, items]) => {
           const meta = groupMetaFor(group);
+          // Auto-expand the first two manifestable rows in each group so the
+          // user sees real content immediately. Disabled (virtual / placeholder)
+          // rows are skipped — they don't have content worth showing first.
+          const autoExpandPaths = new Set(
+            items
+              .filter(f => !f.virtual && isManifestablePath(f.path) && (f.content || '').length > 0)
+              .slice(0, 2)
+              .map(f => f.path),
+          );
           return (
             <section key={group}>
               <header className="mb-2">
@@ -349,6 +454,9 @@ export default function OptimalFilesPanel({ sessionId }) {
                     selected={selected[f.path]}
                     onToggle={v => setSelected(s => ({ ...s, [f.path]: v }))}
                     disabled={f.virtual || !isManifestablePath(f.path)}
+                    defaultOpen={autoExpandPaths.has(f.path)}
+                    edited={edits[f.path] ?? null}
+                    onEdit={content => handleEdit(f.path, content)}
                   />
                 ))}
               </ul>
