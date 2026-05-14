@@ -13,6 +13,11 @@ dist/
 !packages/openclaw-plugin/dist/
 !packages/openclaw-plugin/dist/**
 
+# npm pack output for the OpenClaw plugin — versioned tarballs are
+# distributed via NPM registry, not git. The plugin's dist/ source is
+# tracked (see exception above); the packaged .tgz is a build artifact.
+packages/openclaw-plugin/*.tgz
+
 # Fuzz / test reports (schemathesis, playwright, etc.)
 .fuzz-report/
 .hypothesis/
