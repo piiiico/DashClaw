@@ -12,7 +12,7 @@
     and tracks terminal outcomes so a retried agent never silently double-executes.
   </p>
 
-  <p><sub>Works with MCP runtimes (Claude Code, Claude Desktop, Claude Managed Agents, any MCP host), agent frameworks (LangChain, LangGraph, CrewAI, AutoGen, OpenAI Agents SDK), coding agents (Claude Code, Codex, Gemini CLI), the OpenClaw plugin, and any custom agent over the REST API.</sub></p>
+  <p><sub>Plugs into the agents you already run: Claude Code, Codex, Hermes Agent, OpenClaw, Claude Desktop, and Claude Managed Agents. Framework integrations for LangChain, CrewAI, AutoGen, LangGraph, and OpenAI Agents SDK. Any other runtime over MCP, the Node/Python SDK, or direct REST.</sub></p>
 
   <p>
     <a href="#deploy"><img alt="Deploy" src="https://img.shields.io/badge/Deploy-Vercel%20%2B%20Neon-orange?style=flat-square" /></a>
@@ -48,13 +48,52 @@
 
 ## Choose your integration path
 
-DashClaw meets agents where they already are. Pick the path closest to how your agent already runs.
+DashClaw meets agents where they already are. Every path lands on the same governance primitives, audit ledger, and approval queue — pick the one closest to how your agent already runs.
 
-### 1. MCP server (zero code)
+### Coverage at a glance
 
-For Claude Code, Claude Desktop, Claude Managed Agents, and any MCP-capable host. The [`@dashclaw/mcp-server`](./mcp-server) package exposes governance MCP tools and resources covering decisions, assumptions, signals, handoffs, secret rotation, skill safety, open loops, learning, and audit retrospection — this is the canonical agent-toolkit surface (replacing the retired Python `agent-tools/` CLI).
+| If your agent is… | Use this path | Install |
+|---|---|---|
+| Claude Code | Plugin + hooks | `npm run hooks:install` |
+| Codex | Plugin | `dashclaw install codex --project <path>` |
+| Hermes Agent | Plugin (8 lifecycle hooks) | `bash scripts/install-hermes-plugin.sh` |
+| OpenClaw | OpenClaw plugin | `npm install @dashclaw/openclaw-plugin` |
+| Claude Desktop, any MCP host | MCP server (stdio) | `npx @dashclaw/mcp-server` |
+| Claude Managed Agents | MCP server (Streamable HTTP) | Point at `/api/mcp` |
+| LangChain | Python SDK callback handler | `pip install dashclaw` |
+| CrewAI | Python SDK task callback / agent wrapper | `pip install dashclaw` |
+| AutoGen | Python SDK instrumentation | `pip install dashclaw` |
+| LangGraph, OpenAI Agents SDK | Node or Python SDK | `npm install dashclaw` |
+| Custom / framework-less | Node or Python SDK | `npm install dashclaw` |
+| Anything HTTP | REST API + webhooks | [OpenAPI spec](./docs/openapi/critical-stable.openapi.json) |
 
-**Stdio (Claude Code, Claude Desktop):**
+Working end-to-end examples for each runtime live in [`examples/`](./examples/) — `anthropic-governed-agent`, `autogen-governed`, `claude-code-review-agent`, `codex-review-agent`, `crewai-governed`, `langgraph-governed`, `managed-agent-governed`, `managed-agent-mcp`, `openai-agents-governed`, and more.
+
+### 1. Coding-agent plugins (Claude Code, Codex, Hermes Agent)
+
+One plugin source, three ecosystems. Distributed via [`plugins/dashclaw/`](./plugins/dashclaw/). Each manifest ships the MCP server config, the `dashclaw-governance` protocol skill, the `dashclaw-platform-intelligence` reference skill, and a distinct `agent_id` so Mission Control separates sessions per host.
+
+```bash
+# Claude Code — installer for hooks + plugin
+npm run hooks:install
+ln -s "$(pwd)/plugins/dashclaw" ~/.claude/plugins/dashclaw
+
+# Codex — installer wires manifest, hooks, and AGENTS.md governance protocol
+node cli/bin/dashclaw.js install codex --project /path/to/your/project
+
+# Hermes Agent — 8 lifecycle hooks (pre/post tool, pre/post LLM, on-session
+# start/end, secret redaction, subagent_stop ROI tracking)
+bash scripts/install-hermes-plugin.sh        # macOS / Linux
+powershell -File scripts/install-hermes-plugin.ps1   # Windows
+```
+
+For Claude Code specifically, the hook installer alone (without the plugin) governs 40+ tool types (Bash, Edit, Write, MultiEdit, …) with semantic classification, risk scoring, and per-turn token capture — no SDK calls in your agent code. Set `DASHCLAW_BASE_URL`, `DASHCLAW_API_KEY`, and optionally `DASHCLAW_HOOK_MODE=enforce`. Full details in [`hooks/README.md`](hooks/README.md).
+
+### 2. MCP server (zero code, any MCP host)
+
+[`@dashclaw/mcp-server`](./mcp-server) exposes **23 governance MCP tools** across 6 groups — core governance, optimal files, session continuity, credential hygiene, skill safety, open loops, learning + retrospection — plus 4 read-only resources (`dashclaw://policies`, `dashclaw://capabilities`, `dashclaw://agent/{agent_id}/history`, `dashclaw://status`).
+
+**Stdio (Claude Code, Claude Desktop, any stdio MCP client):**
 
 ```json
 {
@@ -71,7 +110,7 @@ For Claude Code, Claude Desktop, Claude Managed Agents, and any MCP-capable host
 }
 ```
 
-**Streamable HTTP (Claude Managed Agents):** every DashClaw instance also serves MCP at `/api/mcp`, no npm package required.
+**Streamable HTTP (Claude Managed Agents, any remote MCP client):** every DashClaw instance serves MCP at `/api/mcp` — no npm package, no client install.
 
 ```python
 agent = client.beta.agents.create(
@@ -87,28 +126,33 @@ agent = client.beta.agents.create(
 )
 ```
 
-### 2. SDK (Node and Python, full control)
+### 3. Node and Python SDKs — including framework integrations
 
-For custom agents and frameworks where you want explicit control over what gets governed.
+For custom agents, frameworks, and anywhere you want explicit control over what gets governed.
 
 ```bash
 npm install dashclaw     # Node 18+
 pip install dashclaw     # Python 3.7+
 ```
 
-The 4-step governance loop is in the [Quick start](#quick-start) below. Framework guides (OpenAI Agents SDK, LangGraph, CrewAI) are at [`/connect`](https://dashclaw.io/connect) on your own instance.
+87-method canonical Node surface: core governance, durable execution finality, scoring profiles, learning analytics, messaging, handoffs, security scanning, threads, sessions, and the execution-studio domains (workflow templates, model strategies, knowledge collections, capability runtime). The Python SDK exposes 235 methods including ready-made framework integrations:
 
-### 3. Claude Code hooks (coding-agent governance)
+```python
+# LangChain — auto-log LLM calls, tool use, and costs
+from dashclaw.integrations.langchain import DashClawCallbackHandler
+agent.run("Hello world", callbacks=[DashClawCallbackHandler(claw)])
 
-If your governed agent is a coding agent, the hook path gives you 40+ tool types (Bash, Edit, Write, MultiEdit, ...) governed automatically, with semantic classification, risk scoring, and per-turn token capture. No SDK calls in your code.
+# CrewAI — per-task callback or agent-level instrumentation
+from dashclaw.integrations.crewai import DashClawCrewIntegration
+integration = DashClawCrewIntegration(claw)
+analyst = integration.instrument_agent(analyst)
 
-```bash
-npm run hooks:install
-# or, in any project that has DashClaw cloned alongside it:
-node /path/to/DashClaw/scripts/install-hooks.mjs --target=.
+# AutoGen — multi-agent conversation monitoring
+from dashclaw.integrations.autogen import DashClawAutoGenIntegration
+DashClawAutoGenIntegration(claw).instrument_agent(assistant)
 ```
 
-Set `DASHCLAW_BASE_URL`, `DASHCLAW_API_KEY`, and optionally `DASHCLAW_HOOK_MODE=enforce`. Full details in [`hooks/README.md`](hooks/README.md).
+Full method catalogues: [`sdk/README.md`](./sdk/README.md) (Node, camelCase), [`sdk-python/README.md`](./sdk-python/README.md) (Python, snake_case). The 4-step governance loop is in the [Quick start](#quick-start) below.
 
 ### 4. OpenClaw plugin
 
@@ -118,19 +162,25 @@ For agents built on [OpenClaw](https://github.com/openclaw), [`@dashclaw/opencla
 npm install @dashclaw/openclaw-plugin
 ```
 
-It intercepts tool-use, calls guard/record/waitForApproval, and ships a `HOOK.md` the `openclaw` CLI installs. Tool-classification vocabulary aligns with DashClaw guard action types so policies behave consistently across plugin, hook, and SDK paths.
+It intercepts every tool-use call (`before_tool_call`, `llm_output`, `after_tool_call`, `agent_end`), calls guard / record / waitForApproval automatically, and ships a `HOOK.md` the `openclaw` CLI installs. Tool-classification vocabulary aligns with DashClaw guard action types so policies behave consistently across plugin, hook, and SDK paths.
 
 ### 5. Direct REST API and webhooks
 
-Every governance primitive is reachable as HTTP. The OpenAPI spec for the stable contract lives at [`docs/openapi/critical-stable.openapi.json`](./docs/openapi/critical-stable.openapi.json). The full route inventory is at [`docs/api-inventory.md`](./docs/api-inventory.md). Webhooks for `signal.detected`, `decision.created`, `action.created`, `lost_confirmation`, and the rest of the event catalog are configurable per org.
+Every governance primitive is reachable as HTTP. The stable contract is pinned in [`docs/openapi/critical-stable.openapi.json`](./docs/openapi/critical-stable.openapi.json); the full inventory (**259 routes**: 46 stable, 23 beta, 190 experimental) is at [`docs/api-inventory.md`](./docs/api-inventory.md). Webhook events include `signal.detected`, `decision.created`, `action.created`, `lost_confirmation`, and the rest of the catalog — configurable per org.
 
-### 6. Platform-intelligence skill (optional add-on)
+### 6. Skills — governance protocol + live platform reference
 
-The [`dashclaw-platform-intelligence`](./public/downloads/dashclaw-platform-intelligence/) bundle teaches an AI agent the DashClaw API surface, env var contract, and troubleshooting playbook through progressive disclosure. Drop it into `.claude/skills/` or upload it to a Managed Agent and the agent self-instruments.
+Two drop-in skills, both available as zip bundles or source directories in [`public/downloads/`](./public/downloads/) and auto-bundled into the coding-agent plugins:
+
+- [`dashclaw-governance`](./public/downloads/dashclaw-governance/) — governance protocol skill. Teaches agents the decision tree (allow / warn / block / require_approval), action recording, approval-wait protocol, session lifecycle, plus six new sections for handoffs, secret hygiene, skill safety, action-scoped open loops, learning, and in-session retrospection.
+- [`dashclaw-platform-intelligence`](./public/downloads/dashclaw-platform-intelligence/) — live API reference, env var contract, and troubleshooting playbook with progressive disclosure. Regenerated from the codebase on every release so it never drifts from the running runtime.
 
 ```bash
+cp -r public/downloads/dashclaw-governance .claude/skills/
 cp -r public/downloads/dashclaw-platform-intelligence .claude/skills/
 ```
+
+Or grab the zips from [dashclaw.io/downloads](https://dashclaw.io/downloads). The platform-intelligence skill is also published on [ClawHub](https://clawhub.ai/@dashclaw).
 
 ---
 
@@ -316,12 +366,6 @@ The full architecture map lives in [`PROJECT_DETAILS.md`](./PROJECT_DETAILS.md).
 | Agent profiles | Per-agent governance dashboard at `/agents/[agentId]`. | [PROJECT_DETAILS.md](./PROJECT_DETAILS.md) |
 | Analytics | Cost trends, action volume, agent and type breakdowns, policy enforcement stats, and token efficiency at `/analytics`. | [PROJECT_DETAILS.md](./PROJECT_DETAILS.md) |
 | Doctor | `npm run doctor` (local) or `dashclaw doctor` (remote). Auto-fixes missing migrations, default policy, CORS, and more. | [SDK README](./sdk/README.md) |
-
----
-
-## Free while we grow
-
-DashClaw is free during the launch ramp. The Pro tier unlocks when our Claude Code integration milestone hits 50 verified coding-agent integrations in the wild — counting Claude Code, Codex, and Hermes Agent installs against the same threshold. Measured by a public SQL query over `action_records` where `agent_id ILIKE 'claude-code%' OR agent_id ILIKE 'codex%' OR agent_id ILIKE 'hermes%'`, excluding internal orgs, with a 90-day recency window. Progress is published at [dashclaw.io/pricing](https://dashclaw.io/pricing). The runtime (hook, policy pack, approvals, audit ledger, semantic guard, durable finality) stays free forever for solo developers.
 
 ---
 
