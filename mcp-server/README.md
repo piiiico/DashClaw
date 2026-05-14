@@ -7,7 +7,7 @@ MCP server for [DashClaw](https://github.com/ucsandman/DashClaw) governance. Exp
 ### Claude Desktop / Claude Code (stdio)
 
 ```bash
-npx @dashclaw/mcp-server --url https://your-dashclaw.vercel.app --key oc_live_xxx
+npx -y @dashclaw/mcp-server --url https://your-dashclaw.vercel.app --key oc_live_xxx --agent-id claude-desktop
 ```
 
 Or add to `claude_desktop_config.json`:
@@ -17,15 +17,18 @@ Or add to `claude_desktop_config.json`:
   "mcpServers": {
     "dashclaw": {
       "command": "npx",
-      "args": ["@dashclaw/mcp-server"],
+      "args": ["-y", "@dashclaw/mcp-server"],
       "env": {
         "DASHCLAW_URL": "https://your-dashclaw.vercel.app",
-        "DASHCLAW_API_KEY": "oc_live_xxx"
+        "DASHCLAW_API_KEY": "oc_live_xxx",
+        "DASHCLAW_AGENT_ID": "claude-desktop"
       }
     }
   }
 }
 ```
+
+**About `DASHCLAW_AGENT_ID`:** this is the name that shows up on `/fleet`, `/decisions`, and every other governance surface. If you omit it, the server auto-derives an `agent_id` from the MCP protocol's `clientInfo.name` (e.g. `claude-ai` for Claude Desktop, `cursor-vscode` for Cursor) so calls don't silently commingle with other agents — but a human-friendly name like `claude-desktop` is what you actually want for dashboard readability. Explicit configuration always wins over auto-derivation.
 
 ### Claude Managed Agents (Streamable HTTP)
 

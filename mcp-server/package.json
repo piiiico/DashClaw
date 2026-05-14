@@ -1,6 +1,6 @@
 {
   "name": "@dashclaw/mcp-server",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "MCP server for DashClaw governance — guard, record, invoke, and discover capabilities.",
   "type": "module",
   "bin": {

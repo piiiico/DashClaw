@@ -27,6 +27,35 @@ are prefixed with the package name.
 
 ## [Unreleased]
 
+### `@dashclaw/mcp-server@1.0.1` — auto-derive agent_id from MCP clientInfo
+
+End-to-end testing surfaced a real UX cliff: Claude Desktop tool calls were
+silently being bucketed under `claude-code` (or whatever default the server
+fell back to) because the user's MCP config didn't set `DASHCLAW_AGENT_ID`
+and no agent appeared on `/fleet` matching their `claude-desktop` API key.
+The MCP protocol already identifies the connecting client via
+`clientInfo.name` on the initialize handshake — the server just wasn't
+reading it.
+
+- **stdio transport** (`bin/dashclaw-mcp.js`): wraps the transport's
+  `onmessage` after `server.connect()` to capture `clientInfo.name` from
+  the initialize request. If `--agent-id` / `DASHCLAW_AGENT_ID` is unset,
+  uses the captured name as the default `agent_id` for every subsequent
+  tool call. Logs the derived value to stderr for transparency.
+- **Quick Start docs** updated to mark `DASHCLAW_AGENT_ID` as recommended
+  and explain the auto-derivation fallback. Most users want a friendly
+  name like `claude-desktop` rather than the protocol-level `claude-ai`.
+- **HTTP transport** (`/api/mcp`) is unchanged — it's stateless per-request
+  so the initialize→tool-call handoff doesn't apply. Agent identification
+  for HTTP MCP relies on caller-supplied `agent_id` in the tool body; a
+  future fix can pull from `clientInfo.name` on the initialize response
+  echo or from the API key's name.
+- `createServer()` now returns `{ server, client }` instead of just
+  `server`, so the bin can hold a reference to the client for the
+  auto-derivation hook. Only `bin/dashclaw-mcp.js` consumes this factory
+  function (the HTTP route constructs its own client), so the shape
+  change is internal.
+
 ### Publishing & docs
 
 - **`@dashclaw/mcp-server` published to npm.** The MCP server is now installable

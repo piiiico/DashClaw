@@ -45,7 +45,31 @@ config.url = config.url || process.env.DASHCLAW_URL;
 config.apiKey = config.apiKey || process.env.DASHCLAW_API_KEY;
 config.agentId = config.agentId || process.env.DASHCLAW_AGENT_ID;
 
-const server = createServer(config);
+const { server, client } = createServer(config);
 const transport = new StdioServerTransport();
 await server.connect(transport);
+
+// Auto-derive agent_id from the MCP `initialize` clientInfo when the user
+// hasn't supplied --agent-id or DASHCLAW_AGENT_ID. Without this, every call
+// from Claude Desktop, MCP Inspector, etc. arrives with an empty agent_id and
+// silently commingles with whatever default the server falls back to (almost
+// always `claude-code`). The MCP protocol's clientInfo.name identifies the
+// connecting client (e.g. "claude-ai" for Claude Desktop, "cursor-vscode" for
+// Cursor) so we use it as a sensible default — explicit configuration still
+// wins, because we only set it when client.agentId is empty.
+const originalOnMessage = transport.onmessage;
+if (typeof originalOnMessage === 'function') {
+  transport.onmessage = (message) => {
+    if (
+      message?.method === 'initialize' &&
+      !client.agentId &&
+      message.params?.clientInfo?.name
+    ) {
+      client.agentId = String(message.params.clientInfo.name);
+      console.error(`[dashclaw] auto-derived agent_id from MCP clientInfo: ${client.agentId}`);
+    }
+    return originalOnMessage(message);
+  };
+}
+
 console.error('@dashclaw/mcp-server running on stdio');

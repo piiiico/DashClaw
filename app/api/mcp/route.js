@@ -8,7 +8,7 @@ import { RESOURCE_DEFINITIONS, createResourceHandlers } from '../../../mcp-serve
 
 const SERVER_INFO = {
   name: '@dashclaw/mcp-server',
-  version: '1.0.0',
+  version: '1.0.1',
 };
 
 const PROTOCOL_VERSION = '2025-03-26';

@@ -33,7 +33,10 @@ function jsonSchemaToInputSchema(jsonSchema) {
  * @param {string} [config.url] - DashClaw instance URL (default: http://localhost:3000)
  * @param {string} [config.apiKey] - API key (oc_live_ prefix)
  * @param {string} [config.agentId] - Default agent ID for tool calls
- * @returns {McpServer} Configured MCP server ready to connect
+ * @returns {{ server: McpServer, client: DashClawClient }} Configured MCP server
+ *   ready to connect, plus the DashClawClient so callers (the stdio bin) can
+ *   auto-derive `agentId` from the MCP initialize handshake when no
+ *   --agent-id / DASHCLAW_AGENT_ID was provided.
  */
 export function createServer(config = {}) {
   // 1. Create DashClawClient
@@ -51,7 +54,7 @@ export function createServer(config = {}) {
   const server = new McpServer(
     {
       name: '@dashclaw/mcp-server',
-      version: '1.0.0',
+      version: '1.0.1',
     },
     {
       capabilities: {
@@ -128,5 +131,5 @@ export function createServer(config = {}) {
     }
   }
 
-  return server;
+  return { server, client };
 }
