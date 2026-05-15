@@ -25,6 +25,73 @@ JWKS server, or AgentLair.
 | `expired`        | Signature valid, but `exp` is in the past                 |
 | `failed`         | Bad signature, malformed token, or `aud` mismatch         |
 | `unknown_issuer` | `iss` not in `DASHCLAW_ALLOWED_ISSUER` (when configured)  |
+| `exp_too_far`    | `exp` exceeds `DASHCLAW_JTI_MAX_TTL_SECONDS` (default 24h)|
+
+## Phase 2b: replay protection
+
+Phase 2 verifies *who* signed a token. Phase 2b prevents *reusing* one. A
+captured `verified` token can otherwise be replayed against the same audience
+inside its `exp` window — the signature stays valid until expiry. Adding `jti`
+plus a "seen set" closes that gap.
+
+> Design and shape by @piiiico in issue #120.
+
+### How it works
+
+1. After signature verification succeeds, DashClaw extracts the `jti` claim.
+2. It calls an atomic `INSERT ... ON CONFLICT DO NOTHING RETURNING jti` against
+   the `jwt_replay_log` table, keyed by `(issuer, jti)`.
+3. A returned row means **first use**; an empty result means **replay detected**.
+4. The outcome is recorded in `guard_decisions.replay_status` alongside
+   `verification_status`. Replays force `decision = 'deny'`.
+
+### replay_status enum
+
+| Value            | Meaning                                                          |
+|------------------|------------------------------------------------------------------|
+| `not_applicable` | No JWT, or token was not `verified` (legacy / Phase 1 path)      |
+| `unique`         | First time this `(issuer, jti)` was seen → guard proceeds        |
+| `replayed`       | Same `(issuer, jti)` seen before → guard denies                  |
+| `not_present`    | Verified token did not include a `jti` claim                     |
+| `unavailable`    | Replay store unreachable                                         |
+| `exp_too_far`    | Token `exp` exceeds the configured TTL cap                       |
+
+### Modes
+
+Set `DASHCLAW_JTI_REPLAY_PROTECTION` to one of:
+
+| Mode          | `replayed` | `not_present` | `unavailable` |
+|---------------|------------|---------------|---------------|
+| `off`         | allow      | allow         | allow (skipped)|
+| `best_effort` | **deny**   | allow         | allow         |
+| `required`    | **deny**   | **deny**      | **deny**      |
+
+`best_effort` is the default and matches Phase 2's fail-soft posture. `required`
+is for adversarial deployments where any uncertainty must fail closed.
+
+> **Security note** — In `best_effort` mode, an issuer that doesn't emit `jti`
+> (or strips it under attack) bypasses replay protection entirely. If your
+> threat model includes a hostile or misconfigured IdP, run `required` and
+> make sure your IdP always emits `jti`.
+
+### Storage and sweep
+
+Rows in `jwt_replay_log` carry an `expires_at` mirroring the token's `exp`, so
+each row becomes purgeable at the same instant the token does. Two sweeps run
+in tandem:
+
+- **Probabilistic in-line**: ~1% of writes trigger a `DELETE WHERE expires_at < now`.
+- **Scheduled**: `GET /api/cron/jti-sweep` runs every 5 minutes via
+  `.github/workflows/jti-sweep.yml`.
+
+The table never accumulates rows beyond one TTL window of inactivity.
+
+### Configuration
+
+```bash
+DASHCLAW_JTI_REPLAY_PROTECTION=best_effort   # off | best_effort | required
+DASHCLAW_JTI_MAX_TTL_SECONDS=86400           # cap on accepted exp (24h default)
+```
 
 ## Resilience
 

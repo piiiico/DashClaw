@@ -5,7 +5,7 @@ description: DashClaw platform expert for integration, troubleshooting, and gove
 
 # DashClaw Platform Intelligence
 
-**Shape snapshot:** `sha1:0581c37e91341053846ce0b6163601ec102d55ea`
+**Shape snapshot:** `sha1:b6917bb952c6e0518e0741694343cf1563b3c065`
 **This file is auto-generated.** Do not edit by hand — regenerate with:
 
 ```bash
@@ -29,9 +29,9 @@ If the snapshot below disagrees with a live query, **trust the live query**.
 
 ## At a Glance
 
-- **211** active API routes across **52** categories
-- **4** required + **125** optional environment variables
-- **84** database tables
+- **212** active API routes across **52** categories
+- **4** required + **127** optional environment variables
+- **85** database tables
 
 ## API Surface
 
@@ -142,6 +142,7 @@ If the snapshot below disagrees with a live query, **trust the live query**.
 - `GET` `/api/cron/code-session-cache-crater`
 - `GET` `/api/cron/code-session-weekly-memo`
 - `GET` `/api/cron/integration-health`
+- `GET` `/api/cron/jti-sweep`
 - `GET` `/api/cron/learning-episodes-backfill`
 - `GET` `/api/cron/learning-recommendations`
 - `GET` `/api/cron/memory-maintenance`
@@ -445,6 +446,8 @@ These have fallbacks or only activate specific features.
 - `DASHCLAW_DISABLE_RATE_LIMIT` *(undocumented)*
 - `DASHCLAW_GUARD_FALLBACK` *(undocumented)*
 - `DASHCLAW_HOSTED` *(undocumented)*
+- `DASHCLAW_JTI_MAX_TTL_SECONDS` *(undocumented)*
+- `DASHCLAW_JTI_REPLAY_PROTECTION` *(undocumented)*
 - `DASHCLAW_JWT_AUDIENCE` *(undocumented)*
 - `DASHCLAW_LOCAL_ADMIN_PASSWORD` *(undocumented)*
 - `DASHCLAW_MAX_ORG_ATTACHMENT_BYTES` *(undocumented)*
@@ -543,7 +546,7 @@ These have fallbacks or only activate specific features.
 
 ## Database Tables
 
-All 84 tables defined in `schema/schema.js` (Drizzle ORM):
+All 85 tables defined in `schema/schema.js` (Drizzle ORM):
 
 - `action_embeddings`
 - `action_records`
@@ -590,6 +593,7 @@ All 84 tables defined in `schema/schema.js` (Drizzle ORM):
 - `health_snapshots`
 - `ideas`
 - `interactions`
+- `jwt_replay_log`
 - `learning_curves`
 - `learning_episodes`
 - `learning_recommendation_events`

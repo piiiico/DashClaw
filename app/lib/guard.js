@@ -89,6 +89,30 @@ export async function evaluateGuard(orgId, context, sql, options = {}) {
   if (!orgId || typeof orgId !== 'string') {
     throw new Error('evaluateGuard: orgId is required and must be a string');
   }
+
+  // Phase 2b (issue #120, design by @piiiico): block replays before policy
+  // evaluation so the audit row records exactly why this call was denied.
+  //   - replayed    → always deny (any protection mode but 'off' would
+  //                   have produced this, so blocking is the correct fail
+  //                   shape regardless of mode)
+  //   - unavailable → deny only when DASHCLAW_JTI_REPLAY_PROTECTION=required
+  //                   (best_effort default keeps Phase 2's fail-soft posture)
+  //   - exp_too_far → deny: token outside the configured TTL cap
+  //
+  // The route layer (app/api/guard/route.js) populates context.replay_status
+  // and context.jti by calling jti-replay.repository before us. We never
+  // re-check here — that's the route's job — but we ARE the audit boundary.
+  const replayProtection = (process.env.DASHCLAW_JTI_REPLAY_PROTECTION || 'best_effort').toLowerCase();
+  const replayStatusEarly = context.replay_status || 'not_applicable';
+  let replayBlockReason = null;
+  if (replayStatusEarly === 'replayed') {
+    replayBlockReason = `Replay detected: jti has been seen in a prior verified guard call within its exp window.`;
+  } else if (replayStatusEarly === 'exp_too_far') {
+    replayBlockReason = `Token exp exceeds the configured max TTL (DASHCLAW_JTI_MAX_TTL_SECONDS).`;
+  } else if (replayStatusEarly === 'unavailable' && replayProtection === 'required') {
+    replayBlockReason = `Replay store unreachable and DASHCLAW_JTI_REPLAY_PROTECTION=required.`;
+  }
+
   const allPolicies = await sql`
     SELECT id, name, policy_type, rules, agent_ids
     FROM guard_policies
@@ -235,18 +259,34 @@ export async function evaluateGuard(orgId, context, sql, options = {}) {
   }
 
   const verificationStatus = context.verification_status || 'unverified';
+  // Phase 2b (issue #120, design by @piiiico): replay-check outcome
+  // recorded alongside the signature outcome. `not_applicable` covers
+  // the legacy/unverified callers; verified+jti calls upgrade to one of
+  // unique | replayed | not_present | unavailable | exp_too_far.
+  const replayStatus = context.replay_status || 'not_applicable';
+  const jti = context.jti || null;
+
+  // If the replay pre-check decided to block, override the policy outcome.
+  // The policy loop may have already added reasons; we keep them as
+  // forensic context but the headline decision must be `deny`.
+  if (replayBlockReason) {
+    highestDecision = 'deny';
+    reasons.unshift(replayBlockReason);
+  }
 
   // Fire-and-forget — the response leaves before the audit row commits.
   // `void` makes the floating-promise intent explicit (matches the
   // publishOrgEvent pattern below) so static analysis won't flag it.
   void sql`
-    INSERT INTO guard_decisions (id, org_id, agent_id, agent_name, verification_status, decision, reason, matched_policies, context, risk_score, action_type, created_at)
+    INSERT INTO guard_decisions (id, org_id, agent_id, agent_name, verification_status, replay_status, jti, decision, reason, matched_policies, context, risk_score, action_type, created_at)
     VALUES (
       ${decisionId},
       ${orgId},
       ${context.agent_id || null},
       ${context.agent_name || null},
       ${verificationStatus},
+      ${replayStatus},
+      ${jti},
       ${highestDecision},
       ${reasons.join('; ') || null},
       ${JSON.stringify(matchedPolicies)},
@@ -267,6 +307,8 @@ export async function evaluateGuard(orgId, context, sql, options = {}) {
       agent_id: context.agent_id || null,
       agent_name: context.agent_name || null,
       verification_status: verificationStatus,
+      replay_status: replayStatus,
+      jti,
       decision: highestDecision,
       reason: reasons.join('; ') || null,
       matched_policies: matchedPolicies,

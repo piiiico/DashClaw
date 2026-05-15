@@ -4,7 +4,7 @@
 // app/lib/doctor/shape.mjs can filter via getTablesByDomain('<name>') without
 // a hand-maintained map. Current domains: governance. Regenerate after edits
 // with `npm run livingcode:refresh`.
-import { pgTable, text, timestamp, integer, boolean, uniqueIndex, unique, numeric, customType, serial, real, jsonb, pgEnum, check } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, integer, boolean, uniqueIndex, unique, numeric, customType, serial, real, jsonb, pgEnum, check, bigint, primaryKey, index } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
 // Custom vector type for pgvector
@@ -508,6 +508,12 @@ export const guardDecisions = pgTable('guard_decisions', {
   // failed         — bad signature, malformed token, or aud mismatch
   // unknown_issuer — iss not in DASHCLAW_ALLOWED_ISSUER (when configured)
   verificationStatus: text('verification_status').default('unverified'),
+  // Phase 2b: jti replay-protection outcome (issue #120, designed by @piiiico).
+  // not_applicable | unique | replayed | not_present | unavailable | exp_too_far
+  replayStatus: text('replay_status').default('not_applicable'),
+  // Forensic only — logged on every verified call so reviewers can correlate
+  // replays across windows. Never read for validation.
+  jti: text('jti'),
   decision: text('decision').notNull(),
   reason: text('reason'),
   matchedPolicies: text('matched_policies'),
@@ -516,6 +522,21 @@ export const guardDecisions = pgTable('guard_decisions', {
   actionType: text('action_type'),
   createdAt: timestamp('created_at').defaultNow(),
 });
+
+// Phase 2b: JWT replay log (issue #120). Composite PK reflects RFC 7519 —
+// jti uniqueness is per-issuer, not global. expires_at mirrors JWT exp so
+// rows become purgeable at the same instant the token does. agent_id is
+// forensic-only and never used as a validation key.
+export const jwtReplayLog = pgTable('jwt_replay_log', {
+  issuer: text('issuer').notNull(),
+  jti: text('jti').notNull(),
+  expiresAt: bigint('expires_at', { mode: 'number' }).notNull(),
+  seenAt: bigint('seen_at', { mode: 'number' }).notNull(),
+  agentId: text('agent_id'),
+}, (t) => ({
+  pk: primaryKey({ columns: [t.issuer, t.jti] }),
+  expiresIdx: index('idx_jwt_replay_log_expires').on(t.expiresAt),
+}));
 
 // --- Compliance & Audit ---
 

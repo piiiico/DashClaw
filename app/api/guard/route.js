@@ -11,6 +11,7 @@ import { scanForPromptInjection } from '../../lib/promptInjection.js';
 import { listGuardDecisions } from '../../lib/repositories/guard.repository.js';
 import { isSelfHostModeEnabled } from '../../lib/selfHost.js';
 import { verifyJwt, extractBearerToken } from '../../lib/jwks-verifier.js';
+import { checkAndRecord as checkAndRecordJti } from '../../lib/repositories/jti-replay.repository.js';
 
 /**
  * POST /api/guard — Evaluate guard policies for a proposed action.
@@ -92,8 +93,38 @@ export async function POST(request) {
       }
 
       data.verification_status = verificationResult.verification_status;
+      data.jti = verificationResult.jti || null;
+
+      // Phase 2b: replay-protection check (issue #120, design by @piiiico).
+      // Only verified tokens hit the store — there's no signature trust to
+      // replay without that. The exp_too_far signal flows through verification
+      // status directly (the verifier sets it before any network call).
+      const replayProtection = (process.env.DASHCLAW_JTI_REPLAY_PROTECTION || 'best_effort').toLowerCase();
+      if (verificationResult.verification_status === 'exp_too_far') {
+        data.replay_status = 'exp_too_far';
+      } else if (verificationResult.verification_status === 'verified' && replayProtection !== 'off') {
+        if (!verificationResult.jti) {
+          data.replay_status = 'not_present';
+        } else if (typeof verificationResult.exp !== 'number') {
+          // jti without exp can't be safely TTL'd → treat as not_present so
+          // the store never accumulates rows with no purge horizon.
+          data.replay_status = 'not_present';
+        } else {
+          const sqlForReplay = getSql();
+          data.replay_status = await checkAndRecordJti(sqlForReplay, {
+            jti: verificationResult.jti,
+            issuer: verificationResult.issuer,
+            expiresAt: verificationResult.exp,
+            agentId: verificationResult.agent_id,
+          });
+        }
+      } else {
+        data.replay_status = 'not_applicable';
+      }
     } else {
       data.verification_status = 'unverified';
+      data.replay_status = 'not_applicable';
+      data.jti = null;
     }
 
     const sql = getSql();

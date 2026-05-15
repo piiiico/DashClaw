@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:0581c37e91341053846ce0b6163601ec102d55ea",
+  "timestamp": "sha1:b6917bb952c6e0518e0741694343cf1563b3c065",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -1192,6 +1192,15 @@
       "dynamic_params": [],
       "archived": false,
       "file_path": "app/api/cron/integration-health/route.js"
+    },
+    {
+      "path": "/api/cron/jti-sweep",
+      "methods": [
+        "GET"
+      ],
+      "dynamic_params": [],
+      "archived": false,
+      "file_path": "app/api/cron/jti-sweep/route.js"
     },
     {
       "path": "/api/cron/learning-episodes-backfill",
@@ -2784,6 +2793,7 @@
         "app/api/cron/code-session-cache-crater/route.js",
         "app/api/cron/code-session-weekly-memo/route.js",
         "app/api/cron/integration-health/route.js",
+        "app/api/cron/jti-sweep/route.js",
         "app/api/cron/learning-episodes-backfill/route.js",
         "app/api/cron/learning-recommendations/route.js",
         "app/api/cron/memory-maintenance/route.js",
@@ -3040,6 +3050,23 @@
         "__tests__/unit/hosted/workspace-provision.test.js",
         "app/lib/hosted/flag.js",
         "app/lib/hosted/publicConfig.js"
+      ],
+      "in_env_example": false
+    },
+    {
+      "name": "DASHCLAW_JTI_MAX_TTL_SECONDS",
+      "required": false,
+      "files": [
+        "app/lib/jwks-verifier.js"
+      ],
+      "in_env_example": false
+    },
+    {
+      "name": "DASHCLAW_JTI_REPLAY_PROTECTION",
+      "required": false,
+      "files": [
+        "app/api/guard/route.js",
+        "app/lib/guard.js"
       ],
       "in_env_example": false
     },
@@ -4334,6 +4361,11 @@
     },
     {
       "name": "interactions",
+      "file_path": "schema/schema.js",
+      "domain": null
+    },
+    {
+      "name": "jwt_replay_log",
       "file_path": "schema/schema.js",
       "domain": null
     },

@@ -48,20 +48,20 @@ p.kicker{background:var(--accent-bg);border:1px solid var(--accent-border);borde
 p.kicker b{color:var(--accent-deep)}
 </style></head><body>
 <h1>DashClaw Livingcode Dashboard</h1>
-<div class="sig" id="sig">Shape signature: sha1:0581c37e91341053846ce0b6163601ec102d55ea · signature-stable</div>
+<div class="sig" id="sig">Shape signature: sha1:b6917bb952c6e0518e0741694343cf1563b3c065 · signature-stable</div>
 <div class="grid">
-      <div class="cell"><div class="n">211</div><div class="k">Active routes</div></div>
+      <div class="cell"><div class="n">212</div><div class="k">Active routes</div></div>
       <div class="cell"><div class="n">48</div><div class="k">Archived routes</div></div>
       <div class="cell"><div class="n">4</div><div class="k">Required env vars</div></div>
-      <div class="cell"><div class="n">125</div><div class="k">Optional env vars</div></div>
-      <div class="cell"><div class="n">84</div><div class="k">Tables</div></div>
+      <div class="cell"><div class="n">127</div><div class="k">Optional env vars</div></div>
+      <div class="cell"><div class="n">85</div><div class="k">Tables</div></div>
       <div class="cell"><div class="n">15</div><div class="k">Events</div></div>
       <div class="cell"><div class="n">10</div><div class="k">Signals</div></div>
       <div class="cell"><div class="n">5</div><div class="k">Adapters</div></div>
       <div class="cell"><div class="n">77</div><div class="k">Setting keys</div></div>
 </div>
 
-<section><h2>Shape</h2><details><summary>Tables (84)</summary><table><thead><tr><th>Name</th><th>Domain</th></tr></thead><tbody>    <tr><td><code>action_embeddings</code></td><td class="sig">—</td></tr>
+<section><h2>Shape</h2><details><summary>Tables (85)</summary><table><thead><tr><th>Name</th><th>Domain</th></tr></thead><tbody>    <tr><td><code>action_embeddings</code></td><td class="sig">—</td></tr>
     <tr><td><code>action_records</code></td><td class="sig">governance</td></tr>
     <tr><td><code>activity_logs</code></td><td class="sig">—</td></tr>
     <tr><td><code>agent_connections</code></td><td class="sig">—</td></tr>
@@ -106,6 +106,7 @@ p.kicker b{color:var(--accent-deep)}
     <tr><td><code>health_snapshots</code></td><td class="sig">—</td></tr>
     <tr><td><code>ideas</code></td><td class="sig">—</td></tr>
     <tr><td><code>interactions</code></td><td class="sig">—</td></tr>
+    <tr><td><code>jwt_replay_log</code></td><td class="sig">—</td></tr>
     <tr><td><code>learning_curves</code></td><td class="sig">—</td></tr>
     <tr><td><code>learning_episodes</code></td><td class="sig">—</td></tr>
     <tr><td><code>learning_recommendation_events</code></td><td class="sig">—</td></tr>
@@ -257,7 +258,7 @@ p.kicker b{color:var(--accent-deep)}
 <figure><figcaption>Required env vars over time <span class="sig">(4 → 4)</span></figcaption><svg width="320" height="48" viewBox="0 0 320 48"><polyline fill="none" stroke="var(--accent)" stroke-width="2" points="4.0,44.0 160.0,44.0 316.0,44.0"/></svg></figure>
 <figure><figcaption>Tables over time <span class="sig">(73 → 73)</span></figcaption><svg width="320" height="48" viewBox="0 0 320 48"><polyline fill="none" stroke="var(--accent)" stroke-width="2" points="4.0,44.0 160.0,44.0 316.0,44.0"/></svg></figure></section>
 
-<section><h2>Changed since last snapshot</h2><p class="kicker"><b>20</b> env_vars added, <b>1</b> env_vars removed, <b>36</b> routes added, <b>11</b> tables added since last snapshot.</p><ul class="diff">    <li><code>added</code> <b>routes</b>: /api/actions/[actionId]/outcome <span class="sig">New route: GET, POST</span></li>
+<section><h2>Changed since last snapshot</h2><p class="kicker"><b>22</b> env_vars added, <b>1</b> env_vars removed, <b>37</b> routes added, <b>12</b> tables added since last snapshot.</p><ul class="diff">    <li><code>added</code> <b>routes</b>: /api/actions/[actionId]/outcome <span class="sig">New route: GET, POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/code-sessions/alerts <span class="sig">New route: GET</span></li>
     <li><code>added</code> <b>routes</b>: /api/code-sessions/alerts/read-all <span class="sig">New route: POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/code-sessions/ingest-jsonl <span class="sig">New route: POST</span></li>
@@ -276,6 +277,7 @@ p.kicker b{color:var(--accent-deep)}
     <li><code>added</code> <b>routes</b>: /api/code-sessions/subagent-roi <span class="sig">New route: GET</span></li>
     <li><code>added</code> <b>routes</b>: /api/cron/code-session-cache-crater <span class="sig">New route: GET</span></li>
     <li><code>added</code> <b>routes</b>: /api/cron/code-session-weekly-memo <span class="sig">New route: GET</span></li>
+    <li><code>added</code> <b>routes</b>: /api/cron/jti-sweep <span class="sig">New route: GET</span></li>
     <li><code>added</code> <b>routes</b>: /api/cron/outcome-sweep <span class="sig">New route: GET</span></li>
     <li><code>added</code> <b>routes</b>: /api/discord/interactions <span class="sig">New route: POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/handoffs <span class="sig">New route: POST</span></li>
@@ -296,6 +298,8 @@ p.kicker b{color:var(--accent-deep)}
     <li><code>added</code> <b>env_vars</b>: API_INVENTORY_VERIFIED_DATE <span class="sig">New env var (optional, undocumented)</span></li>
     <li><code>added</code> <b>env_vars</b>: DASHCLAW_ALERTS_DISCORD <span class="sig">New env var (optional, undocumented)</span></li>
     <li><code>added</code> <b>env_vars</b>: DASHCLAW_ALLOWED_ISSUER <span class="sig">New env var (optional, undocumented)</span></li>
+    <li><code>added</code> <b>env_vars</b>: DASHCLAW_JTI_MAX_TTL_SECONDS <span class="sig">New env var (optional, undocumented)</span></li>
+    <li><code>added</code> <b>env_vars</b>: DASHCLAW_JTI_REPLAY_PROTECTION <span class="sig">New env var (optional, undocumented)</span></li>
     <li><code>added</code> <b>env_vars</b>: DASHCLAW_JWT_AUDIENCE <span class="sig">New env var (optional, undocumented)</span></li>
     <li><code>added</code> <b>env_vars</b>: DASHCLAW_MAX_ORG_ATTACHMENT_BYTES <span class="sig">New env var (optional, undocumented)</span></li>
     <li><code>added</code> <b>env_vars</b>: DASHCLAW_NEW_CONNECT_WEBHOOK <span class="sig">New env var (optional, undocumented)</span></li>
@@ -324,6 +328,7 @@ p.kicker b{color:var(--accent-deep)}
     <li><code>added</code> <b>tables</b>: code_session_tool_uses <span class="sig">New table in schema</span></li>
     <li><code>added</code> <b>tables</b>: code_sessions <span class="sig">New table in schema</span></li>
     <li><code>added</code> <b>tables</b>: governed_secrets <span class="sig">New table in schema</span></li>
+    <li><code>added</code> <b>tables</b>: jwt_replay_log <span class="sig">New table in schema</span></li>
     <li><code>added</code> <b>tables</b>: skill_scan_results <span class="sig">New table in schema</span></li></ul></section>
 
 <section class="routes"><h2>Active routes</h2><input id="route-filter" type="search" placeholder="Filter routes…" oninput="var q=this.value.toLowerCase();document.querySelectorAll('section.routes tr[data-path]').forEach(function(r){r.style.display=r.dataset.path.toLowerCase().includes(q)?'':'none';});document.querySelectorAll('section.routes details').forEach(function(d){var visible=d.querySelectorAll("tr[data-path]:not([style*='none'])").length;d.style.display=visible||!q?'':'none';if(q)d.open=true;});"><details><summary>/actions/* (11)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/actions"><td><code>/api/actions</code></td><td>DELETE, GET, POST</td><td class="sig">app/api/actions/route.js</td></tr>
@@ -392,9 +397,10 @@ p.kicker b{color:var(--accent-deep)}
     <tr data-path="/api/compliance/schedules"><td><code>/api/compliance/schedules</code></td><td>GET, POST</td><td class="sig">app/api/compliance/schedules/route.js</td></tr>
     <tr data-path="/api/compliance/schedules/[scheduleId]"><td><code>/api/compliance/schedules/[scheduleId]</code></td><td>DELETE, PATCH</td><td class="sig">app/api/compliance/schedules/[scheduleId]/route.js</td></tr>
     <tr data-path="/api/compliance/trends"><td><code>/api/compliance/trends</code></td><td>GET</td><td class="sig">app/api/compliance/trends/route.js</td></tr></tbody></table></details>
-<details><summary>/cron/* (11)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/cron/code-session-cache-crater"><td><code>/api/cron/code-session-cache-crater</code></td><td>GET</td><td class="sig">app/api/cron/code-session-cache-crater/route.js</td></tr>
+<details><summary>/cron/* (12)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/cron/code-session-cache-crater"><td><code>/api/cron/code-session-cache-crater</code></td><td>GET</td><td class="sig">app/api/cron/code-session-cache-crater/route.js</td></tr>
     <tr data-path="/api/cron/code-session-weekly-memo"><td><code>/api/cron/code-session-weekly-memo</code></td><td>GET</td><td class="sig">app/api/cron/code-session-weekly-memo/route.js</td></tr>
     <tr data-path="/api/cron/integration-health"><td><code>/api/cron/integration-health</code></td><td>GET</td><td class="sig">app/api/cron/integration-health/route.js</td></tr>
+    <tr data-path="/api/cron/jti-sweep"><td><code>/api/cron/jti-sweep</code></td><td>GET</td><td class="sig">app/api/cron/jti-sweep/route.js</td></tr>
     <tr data-path="/api/cron/learning-episodes-backfill"><td><code>/api/cron/learning-episodes-backfill</code></td><td>GET</td><td class="sig">app/api/cron/learning-episodes-backfill/route.js</td></tr>
     <tr data-path="/api/cron/learning-recommendations"><td><code>/api/cron/learning-recommendations</code></td><td>GET</td><td class="sig">app/api/cron/learning-recommendations/route.js</td></tr>
     <tr data-path="/api/cron/memory-maintenance"><td><code>/api/cron/memory-maintenance</code></td><td>GET</td><td class="sig">app/api/cron/memory-maintenance/route.js</td></tr>

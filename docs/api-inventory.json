@@ -46,9 +46,9 @@
     ]
   },
   "summary": {
-    "total_routes": 258,
+    "total_routes": 259,
     "stable_routes": 46,
-    "beta_routes": 23,
+    "beta_routes": 24,
     "experimental_routes": 189
   },
   "routes": [
@@ -1149,6 +1149,15 @@
       "maturity": "beta",
       "matched_prefix": "/api/cron",
       "file": "app/api/cron/integration-health/route.js"
+    },
+    {
+      "path": "/api/cron/jti-sweep",
+      "methods": [
+        "GET"
+      ],
+      "maturity": "beta",
+      "matched_prefix": "/api/cron",
+      "file": "app/api/cron/jti-sweep/route.js"
     },
     {
       "path": "/api/cron/learning-episodes-backfill",

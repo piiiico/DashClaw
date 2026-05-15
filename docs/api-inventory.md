@@ -13,9 +13,9 @@ doc-type: architecture
 
 ## Summary
 
-- Total routes: `258`
+- Total routes: `259`
 - Stable routes: `46`
-- Beta routes: `23`
+- Beta routes: `24`
 - Experimental routes: `189`
 
 ## Routes
@@ -138,6 +138,7 @@ doc-type: architecture
 | `/api/cron/code-session-cache-crater` | `GET` | `beta` | `/api/cron` | `app/api/cron/code-session-cache-crater/route.js` |
 | `/api/cron/code-session-weekly-memo` | `GET` | `beta` | `/api/cron` | `app/api/cron/code-session-weekly-memo/route.js` |
 | `/api/cron/integration-health` | `GET` | `beta` | `/api/cron` | `app/api/cron/integration-health/route.js` |
+| `/api/cron/jti-sweep` | `GET` | `beta` | `/api/cron` | `app/api/cron/jti-sweep/route.js` |
 | `/api/cron/learning-episodes-backfill` | `GET` | `beta` | `/api/cron` | `app/api/cron/learning-episodes-backfill/route.js` |
 | `/api/cron/learning-recommendations` | `GET` | `beta` | `/api/cron` | `app/api/cron/learning-recommendations/route.js` |
 | `/api/cron/memory-maintenance` | `GET` | `beta` | `/api/cron` | `app/api/cron/memory-maintenance/route.js` |

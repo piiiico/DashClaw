@@ -186,6 +186,21 @@ async function verifySignature(key, alg, signingInput, signature) {
 function getAllowedIssuer() { return process.env.DASHCLAW_ALLOWED_ISSUER || null; }
 function getJwtAudience()   { return process.env.DASHCLAW_JWT_AUDIENCE   || null; }
 
+// Phase 2b: cap on accepted `exp`. Tokens with exp more than maxTtl seconds
+// in the future defeat the replay protection (the seen set grows unbounded
+// and forensic value drops). Default 24h matches the Phase 2b design in #120.
+function getMaxTtlSeconds() {
+  const raw = parseInt(process.env.DASHCLAW_JTI_MAX_TTL_SECONDS || '', 10);
+  return Number.isFinite(raw) && raw > 0 ? raw : 86400;
+}
+
+// Allow ±60s clock skew on the exp_too_far gate so a token whose `exp` is
+// exactly the cap doesn't oscillate between accept and reject across servers
+// with slightly different clocks. Conservative default; not configurable
+// because this is the future-direction check (the past-direction exp/nbf
+// checks would need their own skew, scope-limited to this PR).
+const CLOCK_SKEW_SECONDS = 60;
+
 /**
  * Reset module-level cache and circuit breaker state.
  * Exported for unit tests only — do not call in production code.
@@ -198,10 +213,12 @@ export function _resetStateForTesting() {
 
 /**
  * @typedef {Object} JwtVerificationResult
- * @property {'verified'|'unverified'|'expired'|'failed'|'unknown_issuer'} verification_status
+ * @property {'verified'|'unverified'|'expired'|'failed'|'unknown_issuer'|'exp_too_far'} verification_status
  * @property {string|null} agent_id   - JWT `sub` claim (stable agent identity)
  * @property {string|null} agent_name - JWT `agent_name` claim (human label)
  * @property {string|null} issuer     - JWT `iss` claim
+ * @property {string|null} jti        - JWT `jti` claim (Phase 2b replay key)
+ * @property {number|null} exp        - JWT `exp` claim in unix seconds (Phase 2b TTL)
  */
 
 /**
@@ -217,19 +234,23 @@ export function _resetStateForTesting() {
  */
 export async function verifyJwt(token) {
   let issuer = null;
+  let jti = null;
+  let exp = null;
 
   try {
     const { header, payload, signature, signingInput } = parseJwt(token);
     issuer = typeof payload.iss === 'string' ? payload.iss : null;
+    jti = typeof payload.jti === 'string' ? payload.jti : null;
+    exp = typeof payload.exp === 'number' ? payload.exp : null;
 
     // Validate allowed issuer (if configured)
     const allowedIssuer = getAllowedIssuer();
     if (allowedIssuer && issuer !== allowedIssuer) {
-      return { verification_status: 'unknown_issuer', agent_id: null, agent_name: null, issuer };
+      return { verification_status: 'unknown_issuer', agent_id: null, agent_name: null, issuer, jti, exp };
     }
 
     if (!issuer) {
-      return { verification_status: 'failed', agent_id: null, agent_name: null, issuer: null };
+      return { verification_status: 'failed', agent_id: null, agent_name: null, issuer: null, jti, exp };
     }
 
     // Check expiry before hitting JWKS — fast path, no network
@@ -240,6 +261,22 @@ export async function verifyJwt(token) {
         agent_id: payload.sub || null,
         agent_name: payload.agent_name || null,
         issuer,
+        jti,
+        exp,
+      };
+    }
+
+    // Phase 2b: reject tokens with exp more than maxTtl in the future.
+    // A 7-day token defeats replay protection — the seen set explodes and
+    // forensic value drops. ±60s skew so cap-edge tokens don't oscillate.
+    if (typeof payload.exp === 'number' && payload.exp > now + getMaxTtlSeconds() + CLOCK_SKEW_SECONDS) {
+      return {
+        verification_status: 'exp_too_far',
+        agent_id: payload.sub || null,
+        agent_name: payload.agent_name || null,
+        issuer,
+        jti,
+        exp,
       };
     }
 
@@ -252,6 +289,8 @@ export async function verifyJwt(token) {
         agent_id: payload.sub || null,
         agent_name: payload.agent_name || null,
         issuer,
+        jti,
+        exp,
       };
     }
 
@@ -269,14 +308,14 @@ export async function verifyJwt(token) {
       : sigKeys.find((k) => k.alg === header.alg);
 
     if (!jwk) {
-      return { verification_status: 'failed', agent_id: null, agent_name: null, issuer };
+      return { verification_status: 'failed', agent_id: null, agent_name: null, issuer, jti, exp };
     }
 
     // Verify cryptographic signature
     const cryptoKey = await importJwk(jwk, header.alg);
     const valid = await verifySignature(cryptoKey, header.alg, signingInput, signature);
     if (!valid) {
-      return { verification_status: 'failed', agent_id: null, agent_name: null, issuer };
+      return { verification_status: 'failed', agent_id: null, agent_name: null, issuer, jti, exp };
     }
 
     // Validate audience (optional — only when env var is set)
@@ -284,7 +323,7 @@ export async function verifyJwt(token) {
     if (jwtAudience) {
       const aud = Array.isArray(payload.aud) ? payload.aud : [payload.aud];
       if (!aud.includes(jwtAudience)) {
-        return { verification_status: 'failed', agent_id: null, agent_name: null, issuer };
+        return { verification_status: 'failed', agent_id: null, agent_name: null, issuer, jti, exp };
       }
     }
 
@@ -293,6 +332,8 @@ export async function verifyJwt(token) {
       agent_id: payload.sub || null,
       agent_name: payload.agent_name || null,
       issuer,
+      jti,
+      exp,
     };
   } catch (err) {
     // Infrastructure failures → unverified (fail-soft, not failed)
@@ -306,12 +347,12 @@ export async function verifyJwt(token) {
       err.code === 'ECONNRESET' ||
       err.message?.includes('JWKS fetch failed')
     ) {
-      return { verification_status: 'unverified', agent_id: null, agent_name: null, issuer };
+      return { verification_status: 'unverified', agent_id: null, agent_name: null, issuer, jti, exp };
     }
 
     // Token-level errors (bad format, bad signature) → failed
     console.warn('[JWKS] JWT verification failed:', err.message);
-    return { verification_status: 'failed', agent_id: null, agent_name: null, issuer };
+    return { verification_status: 'failed', agent_id: null, agent_name: null, issuer, jti, exp };
   }
 }
 

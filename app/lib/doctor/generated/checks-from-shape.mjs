@@ -51,6 +51,7 @@ const TABLES = [
   "health_snapshots",
   "ideas",
   "interactions",
+  "jwt_replay_log",
   "learning_curves",
   "learning_episodes",
   "learning_recommendation_events",
