@@ -23,8 +23,8 @@ const demoTestEval = {
   action_type: 'deploy',
   decision: 'require_approval',
   action_id: DEMO_TEST_ACTION_ID,
-  reason: 'High-risk production action requires explicit approval per Demo Policy.',
-  matched_policies: ['Demo Production Guard'],
+  reason: '[Demo mode] Sandbox fixture matched this action — this is not a real policy decision. If you see this from a real agent, your DASHCLAW_BASE_URL is pointed at a demo instance.',
+  matched_policies: ['[Demo fixture] Production Guard'],
   risk_score: 85,
   created_at: new Date().toISOString(),
   signals: []
@@ -132,10 +132,10 @@ export function demoCreateAction(fixtures, body) {
       decision: (isSimulator || isDemoAgent || isPipelineBlock) ? 'block' : 'allow',
       reason: isSimulator
         ? 'Risk score 92 exceeds automation threshold for financial operations.'
-        : isDemoAgent ? 'High-risk production action requires explicit approval per Demo Policy.'
+        : isDemoAgent ? '[Demo mode] Sandbox fixture matched this action — this is not a real policy decision. If you see this from a real agent, your DASHCLAW_BASE_URL is pointed at a demo instance.'
         : isPipelineBlock ? `Risk score ${body.risk_score || 94} exceeds org threshold of 75. Policy PRODUCTION_DATA_PROTECTION enforced.`
         : 'Demo mode simulation auto-permitted.',
-      matched_policies: (isSimulator || isDemoAgent) ? ['Demo Production Guard'] : isPipelineBlock ? ['PRODUCTION_DATA_PROTECTION'] : []
+      matched_policies: (isSimulator || isDemoAgent) ? ['[Demo fixture] Production Guard'] : isPipelineBlock ? ['PRODUCTION_DATA_PROTECTION'] : []
     },
     security: { clean: true, findings_count: 0 }
   };
@@ -690,9 +690,9 @@ export function demoGuardPost(fixtures, body) {
     decision: shouldBlock ? 'block' : 'allow',
     action_id: `ar_demo_${Math.random().toString(36).slice(2, 10)}`,
     reason: shouldBlock
-      ? 'High-risk production action requires explicit approval per Demo Policy.'
+      ? '[Demo mode] Sandbox fixture matched this action — this is not a real policy decision. If you see this from a real agent, your DASHCLAW_BASE_URL is pointed at a demo instance.'
       : 'Action permitted under default demo policy.',
-    matched_policies: shouldBlock ? ['Demo Production Guard'] : [],
+    matched_policies: shouldBlock ? ['[Demo fixture] Production Guard'] : [],
     risk_score: riskScore,
     created_at: new Date().toISOString(),
     signals: []
