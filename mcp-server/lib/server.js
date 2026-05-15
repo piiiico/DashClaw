@@ -78,10 +78,21 @@ export function createServer(config = {}) {
         inputSchema: jsonSchemaToInputSchema(toolDef.inputSchema),
       },
       async (args) => {
-        const text = await handler(args);
-        return {
-          content: [{ type: 'text', text }],
-        };
+        // The MCP SDK's registerTool does NOT wrap handler exceptions; an
+        // unhandled throw propagates to the bin's unhandledRejection handler
+        // and tears down the entire stdio server. Catch here and surface as
+        // an MCP error result so the client can recover.
+        try {
+          const text = await handler(args);
+          return {
+            content: [{ type: 'text', text }],
+          };
+        } catch (err) {
+          return {
+            content: [{ type: 'text', text: JSON.stringify({ error: err?.message || String(err) }) }],
+            isError: true,
+          };
+        }
       }
     );
   }

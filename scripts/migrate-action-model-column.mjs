@@ -17,6 +17,12 @@
  * Idempotent: safe to run multiple times.
  */
 
+// CLAUDE.md: every entry point must surface async rejections.
+process.on("unhandledRejection", (reason) => {
+  console.error("Unhandled Rejection:", reason);
+  process.exit(1);
+});
+
 import './_load-env.mjs';
 import { createSqlFromEnv } from './_db.mjs';
 

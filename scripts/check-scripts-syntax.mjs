@@ -30,19 +30,37 @@ function collectScriptFiles(dir) {
 
 function checkFileSyntax(filePath) {
   const extension = path.extname(filePath);
-  const sourceType = extension === '.mjs' ? 'module' : 'script';
+  // .mjs is always ESM. .js defaults to CommonJS in this repo (no
+  // "type":"module" in package.json), but a handful of legacy scripts
+  // were authored with `import` statements; try ESM as a fallback so
+  // those don't false-positive while still catching real syntax errors.
+  const primarySourceType = extension === '.mjs' ? 'module' : 'script';
+  const fallbackSourceType = extension === '.mjs' ? null : 'module';
 
+  let code;
   try {
-    const code = readFileSync(filePath, 'utf8');
-    acorn.parse(code, {
-      ecmaVersion: 'latest',
-      sourceType,
-      allowHashBang: true,
-    });
-    return { ok: true };
+    code = readFileSync(filePath, 'utf8');
   } catch (error) {
     return { ok: false, stderr: error.message };
   }
+
+  const parseAs = (sourceType) => {
+    try {
+      acorn.parse(code, {
+        ecmaVersion: 'latest',
+        sourceType,
+        allowHashBang: true,
+      });
+      return { ok: true };
+    } catch (error) {
+      return { ok: false, stderr: error.message };
+    }
+  };
+
+  const primary = parseAs(primarySourceType);
+  if (primary.ok || !fallbackSourceType) return primary;
+  const fallback = parseAs(fallbackSourceType);
+  return fallback.ok ? fallback : primary;
 }
 
 const files = collectScriptFiles(SCRIPTS_DIR).sort();

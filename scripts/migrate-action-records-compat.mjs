@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 
+// CLAUDE.md: every entry point must surface async rejections.
+process.on("unhandledRejection", (reason) => {
+  console.error("Unhandled Rejection:", reason);
+  process.exit(1);
+});
+
 import { createSqlFromEnv } from './_db.mjs';
 
 const DATABASE_URL = process.env.DATABASE_URL;

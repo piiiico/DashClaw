@@ -459,7 +459,10 @@ export async function evaluatePolicy(policy, rules, context, sql, orgId, effecti
           };
         }
       } catch (err) {
-        if (err.message.includes('vector') || err.message.includes('does not exist')) {
+        // Use optional chaining: some DB drivers throw plain strings or
+        // objects without `.message`, and `.includes` on undefined would
+        // explode inside the catch instead of skipping the policy.
+        if (err.message?.includes('vector') || err.message?.includes('does not exist')) {
           console.warn('[Guard] pgvector not enabled or table missing. Skipping anomaly detection.');
           return null;
         }

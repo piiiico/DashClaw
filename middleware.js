@@ -1140,6 +1140,11 @@ export async function middleware(request) {
     publicHeaders.set('x-client-ip', ip);
     const response = NextResponse.next({ request: { headers: publicHeaders } });
     for (const [k, v] of Object.entries(getCorsHeaders(request))) response.headers.set(k, v);
+    // Public routes must still get the per-response security headers (X-Frame-Options,
+    // X-Content-Type-Options, X-XSS-Protection, prod HSTS). The earlier extraction
+    // missed this exit path, so /api/health, /api/setup/*, /api/auth, /api/cron,
+    // /api/docs/raw, /api/prompts, and /api/marketing were serving without them.
+    addSecurityHeaders(response, request);
     return response;
   }
 

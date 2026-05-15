@@ -5,6 +5,12 @@
  * Adds cost_estimate to goals and ensures token tables are correctly indexed.
  */
 
+// CLAUDE.md: every entry point must surface async rejections.
+process.on("unhandledRejection", (reason) => {
+  console.error("Unhandled Rejection:", reason);
+  process.exit(1);
+});
+
 import './_load-env.mjs';
 import { createSqlFromEnv } from './_db.mjs';
 

@@ -47,8 +47,6 @@ config.agentId = config.agentId || process.env.DASHCLAW_AGENT_ID;
 
 const { server, client } = createServer(config);
 const transport = new StdioServerTransport();
-await server.connect(transport);
-
 // Auto-derive agent_id from the MCP `initialize` clientInfo when the user
 // hasn't supplied --agent-id or DASHCLAW_AGENT_ID. Without this, every call
 // from Claude Desktop, MCP Inspector, etc. arrives with an empty agent_id and
@@ -57,19 +55,32 @@ await server.connect(transport);
 // connecting client (e.g. "claude-ai" for Claude Desktop, "cursor-vscode" for
 // Cursor) so we use it as a sensible default — explicit configuration still
 // wins, because we only set it when client.agentId is empty.
+//
+// IMPORTANT: install the patch BEFORE server.connect(transport). connect()
+// starts reading stdin synchronously and may dispatch the `initialize`
+// message before our hook is in place; if patched after, agent_id never
+// gets set for the very first session.
 const originalOnMessage = transport.onmessage;
-if (typeof originalOnMessage === 'function') {
-  transport.onmessage = (message) => {
-    if (
-      message?.method === 'initialize' &&
-      !client.agentId &&
-      message.params?.clientInfo?.name
-    ) {
-      client.agentId = String(message.params.clientInfo.name);
-      console.error(`[dashclaw] auto-derived agent_id from MCP clientInfo: ${client.agentId}`);
-    }
-    return originalOnMessage(message);
-  };
+const installAgentIdHook = (base) => (message) => {
+  if (
+    message?.method === 'initialize' &&
+    !client.agentId &&
+    message.params?.clientInfo?.name
+  ) {
+    client.agentId = String(message.params.clientInfo.name);
+    console.error(`[dashclaw] auto-derived agent_id from MCP clientInfo: ${client.agentId}`);
+  }
+  return base ? base(message) : undefined;
+};
+transport.onmessage = installAgentIdHook(originalOnMessage);
+
+await server.connect(transport);
+
+// connect() may have replaced onmessage during handshake setup. Re-wrap
+// post-connect so the hook also fires for any subsequent re-init message.
+if (transport.onmessage !== installAgentIdHook(originalOnMessage)) {
+  const postConnectBase = transport.onmessage;
+  transport.onmessage = installAgentIdHook(postConnectBase);
 }
 
 console.error('@dashclaw/mcp-server running on stdio');

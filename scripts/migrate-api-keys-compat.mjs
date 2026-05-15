@@ -2,6 +2,12 @@
 
 // Compat migration for api_keys. Ported from Elpolini's fork (elpolini/DashClaw commit dbf5463).
 
+// CLAUDE.md: every entry point must surface async rejections.
+process.on("unhandledRejection", (reason) => {
+  console.error("Unhandled Rejection:", reason);
+  process.exit(1);
+});
+
 import { createSqlFromEnv } from './_db.mjs';
 
 const DATABASE_URL = process.env.DATABASE_URL;

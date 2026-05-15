@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useRef } from 'react';
 import { useEffectiveRole } from './useEffectiveRole';
 import { isDemoMode } from '../lib/isDemoMode';

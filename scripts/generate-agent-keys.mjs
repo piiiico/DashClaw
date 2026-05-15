@@ -1,3 +1,9 @@
+// CLAUDE.md: every entry point must surface async rejections.
+process.on("unhandledRejection", (reason) => {
+  console.error("Unhandled Rejection:", reason);
+  process.exit(1);
+});
+
 import { webcrypto } from 'node:crypto';
 
 async function generateIdentity() {
