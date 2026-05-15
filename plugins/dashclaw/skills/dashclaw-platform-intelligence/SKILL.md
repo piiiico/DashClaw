@@ -5,7 +5,7 @@ description: DashClaw platform expert for integration, troubleshooting, and gove
 
 # DashClaw Platform Intelligence
 
-**Shape snapshot:** `sha1:33c994e6ab397d8f7c8cf7103f95793040bb315c`
+**Shape snapshot:** `sha1:ff8fe2ae94728448c14ef4d58a483183e66d5780`
 **This file is auto-generated.** Do not edit by hand — regenerate with:
 
 ```bash
@@ -30,7 +30,7 @@ If the snapshot below disagrees with a live query, **trust the live query**.
 ## At a Glance
 
 - **211** active API routes across **52** categories
-- **4** required + **119** optional environment variables
+- **4** required + **121** optional environment variables
 - **84** database tables
 
 ## API Surface
@@ -407,7 +407,7 @@ If the snapshot below disagrees with a live query, **trust the live query**.
 These must be set — DashClaw will fail to start without them.
 
 - **`DASHCLAW_API_KEY`** - referenced in 71 file(s)
-- **`DATABASE_URL`** - referenced in 86 file(s)
+- **`DATABASE_URL`** - referenced in 87 file(s)
 - **`ENCRYPTION_KEY`** - referenced in 8 file(s)
 - **`NEXTAUTH_SECRET`** - referenced in 6 file(s)
 
@@ -436,6 +436,7 @@ These have fallbacks or only activate specific features.
 - `DASHCLAW_AGENT_ID` *(undocumented)*
 - `DASHCLAW_ALERTS_DISCORD` *(undocumented)*
 - `DASHCLAW_ALERTS_TELEGRAM` *(undocumented)*
+- `DASHCLAW_ALLOWED_ISSUER` *(undocumented)*
 - `DASHCLAW_API_KEY_ORG` *(undocumented)*
 - `DASHCLAW_BASE_URL` *(undocumented)*
 - `DASHCLAW_CLOSED_ENROLLMENT` *(undocumented)*
@@ -444,6 +445,7 @@ These have fallbacks or only activate specific features.
 - `DASHCLAW_DISABLE_RATE_LIMIT` *(undocumented)*
 - `DASHCLAW_GUARD_FALLBACK` *(undocumented)*
 - `DASHCLAW_HOSTED` *(undocumented)*
+- `DASHCLAW_JWT_AUDIENCE` *(undocumented)*
 - `DASHCLAW_LOCAL_ADMIN_PASSWORD` *(undocumented)*
 - `DASHCLAW_MAX_ORG_ATTACHMENT_BYTES` *(undocumented)*
 - `DASHCLAW_MODE` *(undocumented)*

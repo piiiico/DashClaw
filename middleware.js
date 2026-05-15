@@ -507,6 +507,11 @@ export async function middleware(request) {
           status: 'healthy',
           timestamp: new Date().toISOString(),
           version: 'demo',
+          // todo-001: surface demo mode so the Python hook can warn the operator
+          // when DASHCLAW_BASE_URL is misrouted to a sandbox instance. The real
+          // /api/health route also returns this; we mirror it here because the
+          // demo-mode middleware short-circuits before that handler runs.
+          mode: 'demo',
           checks: { demo: { status: 'healthy' } },
         });
       }
