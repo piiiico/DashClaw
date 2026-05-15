@@ -59,6 +59,11 @@ function checkFileSyntax(filePath) {
 
   const primary = parseAs(primarySourceType);
   if (primary.ok || !fallbackSourceType) return primary;
+  // Only fall back to ESM when the primary error is specifically about
+  // import/export — otherwise an unrelated CommonJS syntax error that
+  // happens to also fail an `import` parse would be silently masked
+  // by an ESM parse that also rejects it for the same underlying reason.
+  if (!/import|export/i.test(primary.stderr)) return primary;
   const fallback = parseAs(fallbackSourceType);
   return fallback.ok ? fallback : primary;
 }

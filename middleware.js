@@ -1216,9 +1216,10 @@ export async function middleware(request) {
         requestHeaders.set('x-org-role', role);
         requestHeaders.set('x-user-id', userId);
         const response = NextResponse.next({ request: { headers: requestHeaders } });
-        response.headers.set('X-Content-Type-Options', 'nosniff');
-        response.headers.set('X-Frame-Options', 'DENY');
-        response.headers.set('X-XSS-Protection', '1; mode=block');
+        // Use the canonical helper so HSTS in prod, the /replay/ frame-ancestors
+        // exception, and any future header policy live in one place. The
+        // inline triple-set was missing HSTS for same-origin dashboard calls.
+        addSecurityHeaders(response, request);
         for (const [k, v] of Object.entries(getCorsHeaders(request))) response.headers.set(k, v);
         return response;
       }

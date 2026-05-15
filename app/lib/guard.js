@@ -420,7 +420,7 @@ export async function evaluatePolicy(policy, rules, context, sql, orgId, effecti
         // pgvector not enabled / table missing — skip the policy entirely
         // (mirrors the catch in the similarity query below). Without this
         // wrap the COUNT throws and aborts the whole guard evaluation.
-        if (err.message?.includes('does not exist') || err.message?.includes('vector')) {
+        if (err?.message?.includes('does not exist') || err?.message?.includes('vector')) {
           console.warn('[Guard] action_embeddings missing or pgvector unavailable. Skipping anomaly detection.');
           return null;
         }

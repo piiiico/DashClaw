@@ -72,15 +72,17 @@ const installAgentIdHook = (base) => (message) => {
   }
   return base ? base(message) : undefined;
 };
-transport.onmessage = installAgentIdHook(originalOnMessage);
+const installedHook = installAgentIdHook(originalOnMessage);
+transport.onmessage = installedHook;
 
 await server.connect(transport);
 
-// connect() may have replaced onmessage during handshake setup. Re-wrap
-// post-connect so the hook also fires for any subsequent re-init message.
-if (transport.onmessage !== installAgentIdHook(originalOnMessage)) {
-  const postConnectBase = transport.onmessage;
-  transport.onmessage = installAgentIdHook(postConnectBase);
+// connect() may have replaced onmessage during handshake setup. Cache the
+// installed hook reference for the comparison — using a fresh
+// installAgentIdHook(originalOnMessage) call would create a new function
+// every time and the !== would always be true, double-wrapping the hook.
+if (transport.onmessage !== installedHook) {
+  transport.onmessage = installAgentIdHook(transport.onmessage);
 }
 
 console.error('@dashclaw/mcp-server running on stdio');

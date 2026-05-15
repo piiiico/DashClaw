@@ -276,9 +276,12 @@ async function testDashboardData() {
 
   const res = await sdk.reportTokenUsage(tokenInput);
 
-  // API returns the created snapshot
-  assert(res.snapshot || res.id || res.tokens_in !== undefined || typeof res === 'object',
-    'reportTokenUsage: returns a response object');
+  // Assert no error and at least one expected field — the prior assertion
+  // included `typeof res === 'object'` which made it always true (every
+  // object response, including {error,...}, would pass).
+  assert(res && !res.error, `reportTokenUsage: returned error: ${res?.error}`);
+  assert(res.snapshot || res.id || res.tokens_in !== undefined,
+    'reportTokenUsage: response missing snapshot/id/tokens_in');
 
   // Confirm agent_id injection
   if (res.snapshot) {

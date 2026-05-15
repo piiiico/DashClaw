@@ -182,6 +182,7 @@ export async function listActions(sql, orgId, filters = {}) {
         ${exclude_status && !status ? sql`AND status != ${exclude_status}` : sql``}
         ${action_type ? sql`AND action_type = ${action_type}` : sql``}
         ${parsedRiskMin != null ? sql`AND risk_score >= ${parsedRiskMin}` : sql``}
+        ${outcomeFilter ? sql`AND outcome_status = ${outcomeFilter}` : sql``}
     `,
   ]);
 
