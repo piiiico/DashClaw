@@ -22,6 +22,13 @@ vi.mock('@/lib/db.js', () => ({ getSql: () => mockSql }));
 vi.mock('@/lib/validate', () => ({ validateGuardInput: mockValidateGuardInput }));
 vi.mock('@/lib/guard', () => ({ evaluateGuard: mockEvaluateGuard }));
 vi.mock('@/lib/repositories/guard.repository.js', () => ({ listGuardDecisions: vi.fn() }));
+// Phase 2b: stub the replay store so verified-token tests don't silently
+// hit real checkAndRecord against mockSql (which would return 'replayed'
+// for every call because [] from mock SQL == ON CONFLICT path).
+vi.mock('@/lib/repositories/jti-replay.repository.js', () => ({
+  checkAndRecord: vi.fn(async () => 'unique'),
+  sweep: vi.fn(async () => 0),
+}));
 
 // ─── Generate Ed25519 key pair for tests ────────────────────────────────────
 

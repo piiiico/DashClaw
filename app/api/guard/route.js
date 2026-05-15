@@ -109,6 +109,13 @@ export async function POST(request) {
           // jti without exp can't be safely TTL'd → treat as not_present so
           // the store never accumulates rows with no purge horizon.
           data.replay_status = 'not_present';
+        } else if (!verificationResult.issuer) {
+          // Defense in depth: the verifier currently sets verification_status
+          // to 'failed' when issuer is null, so we should never reach here
+          // with a 'verified' status and null issuer. If a future code path
+          // ever does, treat as not_present rather than throwing INVALID_INPUT
+          // out of the repository (which would surface as an unhandled 500).
+          data.replay_status = 'not_present';
         } else {
           const sqlForReplay = getSql();
           data.replay_status = await checkAndRecordJti(sqlForReplay, {

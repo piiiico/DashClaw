@@ -12,6 +12,15 @@ vi.mock('@/lib/db.js', () => ({ getSql: () => mockSql }));
 vi.mock('@/lib/validate', () => ({ validateGuardInput: mockValidateGuardInput }));
 vi.mock('@/lib/guard', () => ({ evaluateGuard: mockEvaluateGuard }));
 vi.mock('@/lib/repositories/guard.repository.js', () => ({ listGuardDecisions: mockListGuardDecisions }));
+// Phase 2b: stub the replay store. Without this mock the route would call
+// the real checkAndRecord against mockSql, which returns [] for every
+// tagged-template call — turning every "verified" test into a silent
+// 'replayed' result. Mock returns 'unique' so the happy path tests reflect
+// the path users actually take.
+vi.mock('@/lib/repositories/jti-replay.repository.js', () => ({
+  checkAndRecord: vi.fn(async () => 'unique'),
+  sweep: vi.fn(async () => 0),
+}));
 
 import { POST, GET } from '@/api/guard/route.js';
 

@@ -268,9 +268,19 @@ export async function evaluateGuard(orgId, context, sql, options = {}) {
 
   // If the replay pre-check decided to block, override the policy outcome.
   // The policy loop may have already added reasons; we keep them as
-  // forensic context but the headline decision must be `deny`.
-  if (replayBlockReason) {
-    highestDecision = 'deny';
+  // forensic context but the headline decision must be `block`.
+  //
+  // 'block' is the canonical hard-stop in DECISION_SEVERITY (the SDK,
+  // dashboard stats, and webhook escalator all branch on it). 'deny' is
+  // the approvals-flow vocabulary and would silently fall through every
+  // downstream consumer. Use the severity-aware comparison so a future
+  // higher-severity decision wouldn't get downgraded.
+  if (replayBlockReason && DECISION_SEVERITY.block >= DECISION_SEVERITY[highestDecision]) {
+    highestDecision = 'block';
+    reasons.unshift(replayBlockReason);
+  } else if (replayBlockReason) {
+    // Higher-severity decision already in place — keep the policy decision
+    // but still surface the replay reason in the audit trail.
     reasons.unshift(replayBlockReason);
   }
 
