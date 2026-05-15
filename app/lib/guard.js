@@ -82,6 +82,13 @@ function redactAny(value, findings) {
  * @returns {Promise<{ decision, reasons, warnings, matched_policies, risk_score, evaluated_at }>}
  */
 export async function evaluateGuard(orgId, context, sql, options = {}) {
+  // SECURITY: orgId is the tenant boundary. Without this guard a caller bug
+  // that loses orgId (null/undefined/'') would cause Postgres to evaluate
+  // `WHERE org_id = NULL AND ...` which silently returns zero rows — guard
+  // would then approve every action because no policies matched.
+  if (!orgId || typeof orgId !== 'string') {
+    throw new Error('evaluateGuard: orgId is required and must be a string');
+  }
   const allPolicies = await sql`
     SELECT id, name, policy_type, rules, agent_ids
     FROM guard_policies
@@ -393,6 +400,18 @@ export async function evaluatePolicy(policy, rules, context, sql, orgId, effecti
       const agentId = context.agent_id;
       if (!agentId) return null;
 
+      // Skip evaluation until we have at least minHistory baseline samples.
+      // Without this guard the policy would treat the first action as anomalous
+      // (no history → warn) every time, which is the opposite of the intent:
+      // operators set min_history so the baseline is meaningful before the
+      // policy starts firing.
+      const [{ count: historyCount } = { count: 0 }] = await sql`
+        SELECT COUNT(*)::int AS count
+        FROM action_embeddings
+        WHERE org_id = ${orgId} AND agent_id = ${agentId}
+      `;
+      if (historyCount < minHistory) return null;
+
       // 1. Generate embedding for current proposed action
       const embedding = await generateActionEmbedding(context);
       if (!embedding) return null;
@@ -406,14 +425,14 @@ export async function evaluatePolicy(policy, rules, context, sql, orgId, effecti
         ORDER BY similarity DESC
         LIMIT 1
       `;
-      
+
       try {
         const rows = await sql.query(similarityQuery, [JSON.stringify(embedding), orgId, agentId]);
-        
-        // 3. Evaluate anomaly
+
         if (rows.length === 0) {
-          // No history yet
-          return { action: 'warn', reason: 'New agent behavior: No historical data for similarity baseline.' };
+          // Should not happen — the COUNT check above guarantees ≥ minHistory rows.
+          // Treat as null (no opinion) rather than warn to avoid a false signal.
+          return null;
         }
 
         const maxSimilarity = rows[0].similarity;

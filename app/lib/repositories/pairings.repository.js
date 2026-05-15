@@ -66,7 +66,7 @@ export async function approvePairing(sql, orgId, pairingId) {
   return sql`
     UPDATE agent_pairings
     SET status = 'approved', updated_at = CURRENT_TIMESTAMP
-    WHERE org_id = ${orgId} AND id = ${pairingId}
+    WHERE org_id = ${orgId} AND id = ${pairingId} AND status = 'pending'
   `;
 }
 

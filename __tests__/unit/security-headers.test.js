@@ -1,35 +1,16 @@
 /**
- * Security regression tests for HSTS header unification (SEC-02).
- * Covers the addSecurityHeaders function from middleware.js.
+ * Security regression tests for the per-response addSecurityHeaders helper
+ * (middleware.js → app/lib/security-headers.js) and for the static Next.js
+ * security header rules emitted from next.config.js → app/lib/next-config-headers.cjs.
+ *
+ * Both modules were extracted specifically so this test imports the same
+ * code production runs, instead of mirroring an inlined copy that silently
+ * drifts from the real implementation.
  */
 
-import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
-
-// We test addSecurityHeaders by extracting the logic directly,
-// since middleware.js has complex next-auth/neon imports.
-// The function signature: addSecurityHeaders(response, request)
-
-// Inline the function under test (mirrors middleware.js addSecurityHeaders exactly)
-// to avoid complex module graph issues in unit test context.
-function addSecurityHeaders(response, request) {
-  const pathname = request?.nextUrl?.pathname || '';
-  const isPublicReplay = pathname.startsWith('/replay/');
-
-  response.headers.set('X-Content-Type-Options', 'nosniff');
-
-  if (isPublicReplay) {
-    response.headers.delete('X-Frame-Options');
-    response.headers.set('Content-Security-Policy', 'frame-ancestors *;');
-  } else {
-    response.headers.set('X-Frame-Options', 'DENY');
-  }
-
-  response.headers.set('X-XSS-Protection', '1; mode=block');
-  if (process.env.NODE_ENV === 'production') {
-    response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
-  }
-  return response;
-}
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { addSecurityHeaders } from '../../app/lib/security-headers.js';
+import { buildSecurityHeaderRules } from '../../app/lib/next-config-headers.cjs';
 
 function makeTestResponse() {
   const store = new Map();
@@ -44,145 +25,163 @@ function makeTestResponse() {
 }
 
 function makeTestRequest(pathname) {
-  return {
-    nextUrl: { pathname },
-  };
+  return { nextUrl: { pathname } };
 }
 
-describe('addSecurityHeaders', () => {
+function findHeader(rules, key) {
+  return rules[0].headers.find((h) => h.key === key);
+}
+
+describe('addSecurityHeaders (per-response, from middleware.js)', () => {
   const originalNodeEnv = process.env.NODE_ENV;
 
   afterEach(() => {
     process.env.NODE_ENV = originalNodeEnv;
   });
 
-  describe('HSTS header', () => {
-    it('sets HSTS to 2-year max-age with includeSubDomains and preload when NODE_ENV=production', () => {
-      process.env.NODE_ENV = 'production';
+  describe('public replay route', () => {
+    it('removes X-Frame-Options and sets permissive CSP frame-ancestors', () => {
       const response = makeTestResponse();
-      const request = makeTestRequest('/dashboard');
-      addSecurityHeaders(response, request);
-      expect(response.headers.get('Strict-Transport-Security')).toBe(
-        'max-age=63072000; includeSubDomains; preload'
-      );
-    });
-
-    it('does NOT set HSTS when NODE_ENV is not production', () => {
-      process.env.NODE_ENV = 'test';
-      const response = makeTestResponse();
-      const request = makeTestRequest('/dashboard');
-      addSecurityHeaders(response, request);
-      expect(response.headers.has('strict-transport-security')).toBe(false);
-    });
-
-    it('does NOT set HSTS in development mode', () => {
-      process.env.NODE_ENV = 'development';
-      const response = makeTestResponse();
-      const request = makeTestRequest('/dashboard');
-      addSecurityHeaders(response, request);
-      expect(response.headers.has('strict-transport-security')).toBe(false);
-    });
-  });
-
-  describe('X-Frame-Options header', () => {
-    it('sets X-Frame-Options to DENY for non-replay paths', () => {
-      const response = makeTestResponse();
-      const request = makeTestRequest('/decisions');
-      addSecurityHeaders(response, request);
-      expect(response.headers.get('X-Frame-Options')).toBe('DENY');
-    });
-
-    it('sets X-Frame-Options to DENY for root path', () => {
-      const response = makeTestResponse();
-      const request = makeTestRequest('/');
-      addSecurityHeaders(response, request);
-      expect(response.headers.get('X-Frame-Options')).toBe('DENY');
-    });
-
-    it('removes X-Frame-Options for /replay/ paths to allow embedding', () => {
-      const response = makeTestResponse();
-      const request = makeTestRequest('/replay/some-session-id');
-      // Pre-set X-Frame-Options to verify it gets deleted
-      response.headers.set('X-Frame-Options', 'DENY');
-      addSecurityHeaders(response, request);
-      expect(response.headers.has('x-frame-options')).toBe(false);
-    });
-
-    it('sets frame-ancestors CSP for /replay/ paths', () => {
-      const response = makeTestResponse();
-      const request = makeTestRequest('/replay/abc123');
-      addSecurityHeaders(response, request);
+      addSecurityHeaders(response, makeTestRequest('/replay/abc123'));
+      expect(response.headers.has('X-Frame-Options')).toBe(false);
       expect(response.headers.get('Content-Security-Policy')).toBe('frame-ancestors *;');
     });
   });
 
-  describe('LAN self-host (plain HTTP) behavior', () => {
-    const originalNextauthUrl = process.env.NEXTAUTH_URL;
-
-    afterEach(() => {
-      process.env.NEXTAUTH_URL = originalNextauthUrl;
+  describe('non-replay routes', () => {
+    it('sets X-Frame-Options to DENY', () => {
+      const response = makeTestResponse();
+      addSecurityHeaders(response, makeTestRequest('/api/guard'));
+      expect(response.headers.get('X-Frame-Options')).toBe('DENY');
     });
 
-    it('HTTP LAN instance: CSP does not contain upgrade-insecure-requests', async () => {
-      process.env.NEXTAUTH_URL = 'http://192.168.1.50:3000';
-      // Re-import config with the new env value by reading the isTLS logic directly
-      const isTLS = (process.env.NEXTAUTH_URL || '').startsWith('https');
-      const cspParts = [
-        "default-src 'self'",
-        ...(isTLS ? ['upgrade-insecure-requests', 'block-all-mixed-content'] : []),
-      ];
-      const csp = cspParts.join('; ');
+    it('does not set permissive Content-Security-Policy', () => {
+      const response = makeTestResponse();
+      addSecurityHeaders(response, makeTestRequest('/api/guard'));
+      expect(response.headers.get('Content-Security-Policy')).toBeUndefined();
+    });
+  });
+
+  describe('always-on headers', () => {
+    it('sets X-Content-Type-Options to nosniff', () => {
+      const response = makeTestResponse();
+      addSecurityHeaders(response, makeTestRequest('/api/guard'));
+      expect(response.headers.get('X-Content-Type-Options')).toBe('nosniff');
+    });
+
+    it('sets X-XSS-Protection', () => {
+      const response = makeTestResponse();
+      addSecurityHeaders(response, makeTestRequest('/api/guard'));
+      expect(response.headers.get('X-XSS-Protection')).toBe('1; mode=block');
+    });
+  });
+
+  describe('HSTS gating on NODE_ENV', () => {
+    it('sets HSTS in production', () => {
+      process.env.NODE_ENV = 'production';
+      const response = makeTestResponse();
+      addSecurityHeaders(response, makeTestRequest('/api/guard'));
+      expect(response.headers.get('Strict-Transport-Security')).toBe(
+        'max-age=63072000; includeSubDomains; preload',
+      );
+    });
+
+    it('omits HSTS outside production', () => {
+      process.env.NODE_ENV = 'development';
+      const response = makeTestResponse();
+      addSecurityHeaders(response, makeTestRequest('/api/guard'));
+      expect(response.headers.has('Strict-Transport-Security')).toBe(false);
+    });
+  });
+
+  describe('null/undefined request safety', () => {
+    it('does not throw when request is undefined', () => {
+      const response = makeTestResponse();
+      expect(() => addSecurityHeaders(response)).not.toThrow();
+      expect(response.headers.get('X-Frame-Options')).toBe('DENY');
+    });
+
+    it('does not throw when request.nextUrl is missing', () => {
+      const response = makeTestResponse();
+      expect(() => addSecurityHeaders(response, {})).not.toThrow();
+    });
+  });
+});
+
+describe('buildSecurityHeaderRules (static, from next.config.js)', () => {
+  describe('LAN self-host (plain HTTP)', () => {
+    it('CSP omits upgrade-insecure-requests', () => {
+      const rules = buildSecurityHeaderRules({ nextauthUrl: 'http://192.168.1.50:3000' });
+      const csp = findHeader(rules, 'Content-Security-Policy').value;
       expect(csp).not.toContain('upgrade-insecure-requests');
       expect(csp).not.toContain('block-all-mixed-content');
     });
 
-    it('HTTP LAN instance: HSTS header is not included', async () => {
-      process.env.NEXTAUTH_URL = 'http://192.168.1.50:3000';
-      const isTLS = (process.env.NEXTAUTH_URL || '').startsWith('https');
-      const headers = [];
-      if (isTLS) {
-        headers.push({ key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' });
-      }
-      const hasHsts = headers.some(h => h.key === 'Strict-Transport-Security');
-      expect(hasHsts).toBe(false);
-    });
-
-    it('HTTPS instance: CSP contains upgrade-insecure-requests', async () => {
-      process.env.NEXTAUTH_URL = 'https://dashclaw.example.com';
-      const isTLS = (process.env.NEXTAUTH_URL || '').startsWith('https');
-      const cspParts = [
-        "default-src 'self'",
-        ...(isTLS ? ['upgrade-insecure-requests', 'block-all-mixed-content'] : []),
-      ];
-      const csp = cspParts.join('; ');
-      expect(csp).toContain('upgrade-insecure-requests');
-    });
-
-    it('HTTPS instance: HSTS header is included', async () => {
-      process.env.NEXTAUTH_URL = 'https://dashclaw.example.com';
-      const isTLS = (process.env.NEXTAUTH_URL || '').startsWith('https');
-      const headers = [];
-      if (isTLS) {
-        headers.push({ key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' });
-      }
-      const hasHsts = headers.some(h => h.key === 'Strict-Transport-Security');
-      expect(hasHsts).toBe(true);
+    it('does not include HSTS (would lock operator out of plain-HTTP host)', () => {
+      const rules = buildSecurityHeaderRules({ nextauthUrl: 'http://192.168.1.50:3000' });
+      expect(findHeader(rules, 'Strict-Transport-Security')).toBeUndefined();
     });
   });
 
-  describe('other security headers', () => {
-    it('always sets X-Content-Type-Options to nosniff', () => {
-      const response = makeTestResponse();
-      const request = makeTestRequest('/api/guard');
-      addSecurityHeaders(response, request);
-      expect(response.headers.get('X-Content-Type-Options')).toBe('nosniff');
+  describe('TLS-terminated deployment (https)', () => {
+    it('CSP includes upgrade-insecure-requests', () => {
+      const rules = buildSecurityHeaderRules({ nextauthUrl: 'https://dashclaw.example.com' });
+      const csp = findHeader(rules, 'Content-Security-Policy').value;
+      expect(csp).toContain('upgrade-insecure-requests');
+      expect(csp).toContain('block-all-mixed-content');
     });
 
-    it('always sets X-XSS-Protection', () => {
-      const response = makeTestResponse();
-      const request = makeTestRequest('/dashboard');
-      addSecurityHeaders(response, request);
-      expect(response.headers.get('X-XSS-Protection')).toBe('1; mode=block');
+    it('includes HSTS', () => {
+      const rules = buildSecurityHeaderRules({ nextauthUrl: 'https://dashclaw.example.com' });
+      expect(findHeader(rules, 'Strict-Transport-Security').value).toBe(
+        'max-age=63072000; includeSubDomains; preload',
+      );
+    });
+  });
+
+  describe('always-on rules', () => {
+    it('always sets X-Frame-Options to DENY', () => {
+      const rules = buildSecurityHeaderRules({ nextauthUrl: 'https://example.com' });
+      expect(findHeader(rules, 'X-Frame-Options').value).toBe('DENY');
+    });
+
+    it('always sets Referrer-Policy', () => {
+      const rules = buildSecurityHeaderRules({ nextauthUrl: 'http://localhost:3000' });
+      expect(findHeader(rules, 'Referrer-Policy').value).toBe('strict-origin-when-cross-origin');
+    });
+
+    it('always sets Permissions-Policy that disables camera/mic/geo', () => {
+      const rules = buildSecurityHeaderRules({ nextauthUrl: 'http://localhost:3000' });
+      expect(findHeader(rules, 'Permissions-Policy').value).toContain('camera=()');
+      expect(findHeader(rules, 'Permissions-Policy').value).toContain('microphone=()');
+      expect(findHeader(rules, 'Permissions-Policy').value).toContain('geolocation=()');
+    });
+
+    it('CSP forbids inline event handlers (script-src-attr none)', () => {
+      const rules = buildSecurityHeaderRules({ nextauthUrl: 'https://example.com' });
+      const csp = findHeader(rules, 'Content-Security-Policy').value;
+      expect(csp).toContain("script-src-attr 'none'");
+    });
+
+    it('CSP forbids object-src and base-uri', () => {
+      const rules = buildSecurityHeaderRules({ nextauthUrl: 'https://example.com' });
+      const csp = findHeader(rules, 'Content-Security-Policy').value;
+      expect(csp).toContain("object-src 'none'");
+      expect(csp).toContain("base-uri 'none'");
+    });
+  });
+
+  describe('dev vs production', () => {
+    it('dev mode CSP allows unsafe-eval (for hot reload)', () => {
+      const rules = buildSecurityHeaderRules({ nextauthUrl: 'http://localhost:3000', nodeEnv: 'development' });
+      const csp = findHeader(rules, 'Content-Security-Policy').value;
+      expect(csp).toContain("'unsafe-eval'");
+    });
+
+    it('production CSP forbids unsafe-eval', () => {
+      const rules = buildSecurityHeaderRules({ nextauthUrl: 'https://example.com', nodeEnv: 'production' });
+      const csp = findHeader(rules, 'Content-Security-Policy').value;
+      expect(csp).not.toContain("'unsafe-eval'");
     });
   });
 });

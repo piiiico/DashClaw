@@ -327,6 +327,32 @@ export function validatePolicy(body) {
   return result;
 }
 
+// Extract the embedded IPv4 from an IPv4-mapped IPv6 address in either the
+// dotted form (::ffff:192.168.1.1) or the canonical hex form (::ffff:c0a8:101).
+// Node's WHATWG URL parser canonicalizes to hex, so the dotted regex alone
+// is not enough to catch an attacker wrapping a private RFC1918 address.
+function extractIPv4FromMappedV6(host) {
+  const dotted = host.match(/^::ffff:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/i);
+  if (dotted) return dotted[1];
+  const hex = host.match(/^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/i);
+  if (hex) {
+    const high = parseInt(hex[1], 16);
+    const low = parseInt(hex[2], 16);
+    if (high > 0xffff || low > 0xffff) return null;
+    return `${(high >> 8) & 0xff}.${high & 0xff}.${(low >> 8) & 0xff}.${low & 0xff}`;
+  }
+  return null;
+}
+
+const IPV4_PRIVATE_PATTERNS = [
+  /^0\./,
+  /^10\./,
+  /^127\./,
+  /^169\.254\./,
+  /^172\.(1[6-9]|2\d|3[0-1])\./,
+  /^192\.168\./,
+];
+
 /**
  * SECURITY: Centralized SSRF protection for webhooks.
  * Returns null if valid, or a string error message if invalid.
@@ -359,7 +385,15 @@ export function isValidWebhookUrl(url) {
       /^::$/,                            // IPv6 all-zeros (compressed)
       /^(fc|fd)[0-9a-f]{2}:/i,          // fc00::/7 (unique local IPv6)
       /^fe[89ab][0-9a-f]:/i,            // fe80::/10 (link-local IPv6)
-      /^::ffff:127\./i,                  // IPv4-mapped loopback (dotted-decimal)
+      // IPv4-mapped IPv6 (::ffff:x.x.x.x). Cover every private range, not
+      // just loopback — without these, an attacker reaches RFC1918 hosts by
+      // wrapping the address (e.g. https://[::ffff:192.168.1.1]/admin).
+      /^::ffff:0\./i,                    // 0.0.0.0/8 ("this network")
+      /^::ffff:10\./i,                   // 10.0.0.0/8 (private)
+      /^::ffff:127\./i,                  // 127.0.0.0/8 (loopback)
+      /^::ffff:169\.254\./i,             // 169.254.0.0/16 (link-local)
+      /^::ffff:172\.(1[6-9]|2\d|3[0-1])\./i, // 172.16.0.0/12 (private)
+      /^::ffff:192\.168\./i,             // 192.168.0.0/16 (private)
       /^::ffff:7f[0-9a-f]{2}:/i,        // IPv4-mapped loopback (hex, e.g. 7f00:1 = 127.0.1)
       /^::ffff:0:127\./i,                // IPv4-translated loopback
       /^0{0,4}:0{0,4}:0{0,4}:0{0,4}:0{0,4}:0{0,4}:0{0,4}:0*1$/i,  // Full notation ::1
@@ -371,6 +405,15 @@ export function isValidWebhookUrl(url) {
     ];
 
     if (!host || blockedPatterns.some(p => p.test(host))) {
+      return 'URL cannot point to localhost, private networks, or invalid domains';
+    }
+
+    // Defeat IPv4-mapped IPv6 (::ffff:c0a8:101 → 192.168.1.1) by extracting
+    // the embedded IPv4 and rerunning the private-range check against it.
+    // The regex list above catches the dotted form when present; this catches
+    // the hex form Node emits after canonicalization.
+    const mappedV4 = extractIPv4FromMappedV6(host);
+    if (mappedV4 && IPV4_PRIVATE_PATTERNS.some((p) => p.test(mappedV4))) {
       return 'URL cannot point to localhost, private networks, or invalid domains';
     }
 

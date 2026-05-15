@@ -3,6 +3,14 @@
  * Route-sql guardrail: routes import from here instead of writing SQL directly.
  */
 
+// Postgres error code 42P01 = undefined_table. Distinguish "table not yet
+// created" (graceful degrade to empty result) from real DB failures
+// (transient outage, permissions, OOM) which must propagate so they surface
+// in alerting instead of presenting as silently-empty data.
+function isMissingTable(err) {
+  return err?.code === '42P01' || /relation .* does not exist/i.test(err?.message || '');
+}
+
 export async function listScans(sql, orgId, limit = 50) {
   try {
     return await sql`
@@ -12,9 +20,9 @@ export async function listScans(sql, orgId, limit = 50) {
       ORDER BY created_at DESC
       LIMIT ${limit}
     `;
-  } catch {
-    // Table may not exist yet
-    return [];
+  } catch (err) {
+    if (isMissingTable(err)) return [];
+    throw err;
   }
 }
 
@@ -30,8 +38,11 @@ export async function getScanStats(sql, orgId) {
       WHERE org_id = ${orgId}
     `;
     return rows[0] || { total_scans: 0, issues_found: 0, resolved: 0, open: 0 };
-  } catch {
-    return { total_scans: 0, issues_found: 0, resolved: 0, open: 0 };
+  } catch (err) {
+    if (isMissingTable(err)) {
+      return { total_scans: 0, issues_found: 0, resolved: 0, open: 0 };
+    }
+    throw err;
   }
 }
 
@@ -42,8 +53,8 @@ export async function insertScan(sql, orgId, { scanId, agentId, scope, findingsC
       VALUES (${scanId}, ${orgId}, ${agentId}, ${scope}, 'completed', ${findingsCount}, 0, NOW())
     `;
     return true;
-  } catch {
-    // Table may not exist yet
-    return false;
+  } catch (err) {
+    if (isMissingTable(err)) return false;
+    throw err;
   }
 }

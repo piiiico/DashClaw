@@ -172,10 +172,16 @@ async function _anthropicComplete(provider, prompt, model, maxTokens, temperatur
 }
 
 async function _googleComplete(provider, prompt, model, maxTokens, temperature) {
-  const url = `${provider.baseUrl}/models/${model}:generateContent?key=${provider.key}`;
+  // SECURITY: send key as header, not query parameter. Query strings appear
+  // in HTTP access logs, proxy/CDN traces, and any error messages that
+  // include the request URL — exposing the key in places we don't control.
+  const url = `${provider.baseUrl}/models/${model}:generateContent`;
   const res = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'x-goog-api-key': provider.key,
+    },
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: { maxOutputTokens: maxTokens, temperature },

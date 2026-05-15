@@ -65,11 +65,11 @@ describe('isValidWebhookUrl — SSRF protection regression tests', () => {
 
     it('blocks https://[::ffff:192.168.1.1]/hook (IPv4-mapped private)', () => {
       const result = isValidWebhookUrl('https://[::ffff:192.168.1.1]/hook');
-      // The hostname after URL parsing is ::ffff:192.168.1.1 which may or may not be caught
-      // by the fc/fd pattern — but this tests the general SSRF resistance. If it passes,
-      // document it as an edge case; the critical IPv4-mapped loopback is the key test.
-      // This test verifies the behavior is consistent.
-      expect(typeof result === 'string' || result === null).toBe(true);
+      // IPv4-mapped IPv6 addresses must resolve through the same private-IP
+      // check as their bare IPv4 form. Without this, an attacker can target
+      // RFC1918 ranges by wrapping them in ::ffff:.
+      expect(result).not.toBeNull();
+      expect(typeof result).toBe('string');
     });
   });
 

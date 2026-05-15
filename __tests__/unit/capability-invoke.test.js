@@ -1,4 +1,16 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
+
+// Stub the SSRF guard for capability fetches. Production calls real
+// safeUrlWithIps + buildPinnedDispatcher to defend against private-IP
+// targets and DNS rebinding (see capability-invoke.js fix). The unit
+// tests here use fixture URLs (http://localhost, http://example.com)
+// and mock global.fetch — they're not exercising the network or the
+// SSRF guard, so we substitute a no-op resolver.
+vi.mock('../../app/lib/webhooks.js', () => ({
+  safeUrlWithIps: vi.fn(async () => ['93.184.216.34']),
+  buildPinnedDispatcher: vi.fn(() => undefined),
+}));
+
 import {
   invokeCapability,
   resolveAuth,

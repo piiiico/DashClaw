@@ -5,40 +5,31 @@
 
 export const VALID_ROLES = ['admin', 'member'];
 
-/**
- * Ensure invites table exists
- */
 let _tableChecked = false;
 export async function ensureInvitesTable(sql) {
   if (_tableChecked) return;
-  try {
-    await sql`
-      CREATE TABLE IF NOT EXISTS invites (
-        id TEXT PRIMARY KEY,
-        org_id TEXT NOT NULL,
-        email TEXT,
-        role TEXT DEFAULT 'member',
-        token TEXT UNIQUE NOT NULL,
-        invited_by TEXT NOT NULL,
-        status TEXT DEFAULT 'pending',
-        accepted_by TEXT,
-        expires_at TEXT NOT NULL,
-        created_at TEXT NOT NULL
-      )
-    `;
-    await sql`CREATE INDEX IF NOT EXISTS idx_invites_token ON invites(token)`;
-    await sql`CREATE INDEX IF NOT EXISTS idx_invites_org_id ON invites(org_id)`;
-    await sql`CREATE INDEX IF NOT EXISTS idx_invites_status ON invites(status)`;
-    _tableChecked = true;
-  } catch {
-    _tableChecked = true;
-  }
+  await sql`
+    CREATE TABLE IF NOT EXISTS invites (
+      id TEXT PRIMARY KEY,
+      org_id TEXT NOT NULL,
+      email TEXT,
+      role TEXT DEFAULT 'member',
+      token TEXT UNIQUE NOT NULL,
+      invited_by TEXT NOT NULL,
+      status TEXT DEFAULT 'pending',
+      accepted_by TEXT,
+      expires_at TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    )
+  `;
+  await sql`CREATE INDEX IF NOT EXISTS idx_invites_token ON invites(token)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_invites_org_id ON invites(org_id)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_invites_status ON invites(status)`;
+  _tableChecked = true;
 }
 
-/**
- * Create an invite
- */
 export async function createInvite(sql, { orgId, email, role, invitedBy }) {
+  await ensureInvitesTable(sql);
   // Validation
   if (!VALID_ROLES.includes(role)) {
     throw new Error(`Invalid role: ${role}`);
@@ -69,10 +60,8 @@ export async function createInvite(sql, { orgId, email, role, invitedBy }) {
   };
 }
 
-/**
- * List pending invites for an org
- */
 export async function listPendingInvites(sql, orgId) {
+  await ensureInvitesTable(sql);
   const invites = await sql`
     SELECT id, email, role, status, expires_at, created_at
     FROM invites
@@ -85,20 +74,16 @@ export async function listPendingInvites(sql, orgId) {
   return invites;
 }
 
-/**
- * Get invite by ID
- */
 export async function getInviteById(sql, inviteId, orgId) {
+  await ensureInvitesTable(sql);
   const rows = await sql`
     SELECT id, status FROM invites WHERE id = ${inviteId} AND org_id = ${orgId}
   `;
   return rows[0] || null;
 }
 
-/**
- * Revoke an invite
- */
 export async function revokeInvite(sql, inviteId, orgId) {
+  await ensureInvitesTable(sql);
   if (!inviteId || !inviteId.startsWith('inv_')) {
     throw new Error('Valid invite id is required');
   }

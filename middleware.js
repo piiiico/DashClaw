@@ -14,6 +14,7 @@ import {
 } from './app/lib/demo/demoMiddleware.js';
 import { getViewerContextFromCookieHeader } from './app/lib/sessionViewer.mjs';
 import { isSelfHostModeEnabled } from './app/lib/selfHost.js';
+import { addSecurityHeaders } from './app/lib/security-headers.js';
 
 /**
  * Authentication middleware for DashClaw
@@ -56,28 +57,6 @@ function getDashclawMode() {
 
 function isDemoCookieSet(request) {
   return request.cookies.get('dashclaw_demo')?.value === '1';
-}
-
-function addSecurityHeaders(response, request) {
-  const pathname = request?.nextUrl?.pathname || '';
-  const isPublicReplay = pathname.startsWith('/replay/');
-
-  response.headers.set('X-Content-Type-Options', 'nosniff');
-  
-  if (isPublicReplay) {
-    // Allow embedding for public replays
-    response.headers.delete('X-Frame-Options');
-    response.headers.set('Content-Security-Policy', "frame-ancestors *;");
-  } else {
-    response.headers.set('X-Frame-Options', 'DENY');
-  }
-
-  response.headers.set('X-XSS-Protection', '1; mode=block');
-  // SECURITY: Apply HSTS in production to prevent protocol downgrade attacks
-  if (process.env.NODE_ENV === 'production') {
-    response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
-  }
-  return response;
 }
 
 function withCors(request, response) {
@@ -906,7 +885,7 @@ export async function middleware(request) {
             return demoJson(request, result, 200);
           } catch (e) {
             console.error('[DEMO GUARD ERROR]', e);
-            return demoJson(request, { error: `Invalid request body: ${e.message}`, details: e.stack }, 400);
+            return demoJson(request, { error: `Invalid request body: ${e.message}` }, 400);
           }
         }
         return demoJson(request, demoGuard(fixtures, url));

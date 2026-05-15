@@ -147,6 +147,11 @@ describe('POST /api/hosted/workspaces', () => {
   it('returns 429 when IP rate-limited', async () => {
     process.env.DASHCLAW_HOSTED = 'true';
     process.env.HOSTED_PROVISION_MAX_PER_IP_PER_DAY = '1';
+    // The route's clientIp helper now requires TRUST_PROXY to honor
+    // x-forwarded-for (matches middleware.js — prevents IP spoofing on
+    // self-host without a controlled reverse proxy). Production sets this
+    // implicitly via the VERCEL env var; tests have to set it explicitly.
+    process.env.TRUST_PROXY = 'true';
     delete process.env.TURNSTILE_SECRET_KEY;
     routeSqlMock.mockResolvedValueOnce([]);
     routeSqlMock.mockResolvedValueOnce([]);

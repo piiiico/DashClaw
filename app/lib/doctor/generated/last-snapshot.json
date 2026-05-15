@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:b237d9112af9c45f86bcbc79ea7b35431b1cfd95",
+  "timestamp": "sha1:0581c37e91341053846ce0b6163601ec102d55ea",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -3527,16 +3527,15 @@
       "name": "NEXTAUTH_URL",
       "required": false,
       "files": [
-        "__tests__/unit/security-headers.test.js",
         "__tests__/unit/webhooks.approval.test.js",
         "app/api/auth/local/route.js",
         "app/api/team/invite/route.js",
+        "app/lib/next-config-headers.cjs",
         "app/lib/notifications.js",
         "app/lib/webhooks.js",
         "graphify-pilot/app/api/team/invite/route.js",
         "graphify-pilot/app/lib/notifications.js",
         "graphify-pilot/app/lib/webhooks.js",
-        "next.config.js",
         "scripts/patch-demo-capability-endpoints.mjs",
         "scripts/seed-demo-capabilities.mjs",
         "scripts/test-presence.mjs"
@@ -3639,7 +3638,9 @@
         "app/lib/db.js",
         "app/lib/events.js",
         "app/lib/hosted/turnstile.js",
+        "app/lib/next-config-headers.cjs",
         "app/lib/readiness/workflow.mjs",
+        "app/lib/security-headers.js",
         "app/lib/validateEnv.js",
         "graphify-pilot/app/api/auth/config/route.js",
         "graphify-pilot/app/api/auth/local/route.js",
@@ -3650,8 +3651,7 @@
         "graphify-pilot/app/lib/events.js",
         "graphify-pilot/app/lib/readiness/workflow.mjs",
         "graphify-pilot/app/lib/validateEnv.js",
-        "middleware.js",
-        "next.config.js"
+        "middleware.js"
       ],
       "in_env_example": false
     },
@@ -4034,6 +4034,8 @@
       "name": "TRUST_PROXY",
       "required": false,
       "files": [
+        "__tests__/unit/hosted/workspace-provision.test.js",
+        "app/api/hosted/workspaces/route.js",
         "middleware.js"
       ],
       "in_env_example": false
@@ -4070,6 +4072,7 @@
       "name": "VERCEL",
       "required": false,
       "files": [
+        "app/api/hosted/workspaces/route.js",
         "app/layout.js",
         "graphify-pilot/app/layout.js",
         "middleware.js"

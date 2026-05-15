@@ -5,6 +5,7 @@
  */
 
 import { mapRequest, mapResponse } from './mapping.js';
+import { safeUrlWithIps, buildPinnedDispatcher } from './webhooks.js';
 
 export const RISK_SCORE_MAP = {
   low: 20,
@@ -79,14 +80,23 @@ async function singleAttempt({
   const bodylessMethod = normalizedMethod === 'GET' || normalizedMethod === 'HEAD';
 
   try {
+    // SSRF defense: capability endpoints come from operator-configured DB rows
+    // (admins can PATCH them). Validate https://, reject private/loopback IPs,
+    // and pin DNS resolution to a public IP so a rebinding attacker cannot swap
+    // the address mid-flight. Mirrors the pattern used in webhooks.js.
+    const validatedIps = await safeUrlWithIps(endpoint);
+    const dispatcher = buildPinnedDispatcher(validatedIps);
+
     const response = await fetch(endpoint, {
       method: normalizedMethod,
+      redirect: 'manual', // SECURITY: prevent SSRF via redirect chain
       headers: {
         ...(bodylessMethod ? {} : { 'Content-Type': 'application/json' }),
         ...authHeaders,
       },
       ...(bodylessMethod ? {} : { body: JSON.stringify(mappedBody) }),
       signal: controller.signal,
+      dispatcher,
     });
 
     clearTimeout(timer);

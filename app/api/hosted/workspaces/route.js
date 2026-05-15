@@ -24,9 +24,20 @@ export function _resetLimiterForTests() {
 }
 
 function clientIp(request) {
-  const fwd = request.headers.get('x-forwarded-for');
-  if (fwd) return fwd.split(',')[0].trim();
-  return request.headers.get('x-real-ip') || null;
+  // SECURITY: Mirror middleware.js trust-proxy logic. In self-host without
+  // TRUST_PROXY, x-forwarded-for is attacker-controlled and would let any
+  // caller spoof a unique IP per request to bypass the per-IP provisioning
+  // rate limit. On Vercel, VERCEL=1 implies the platform sets the header.
+  const trustProxy = ['1', 'true', 'yes', 'on'].includes(
+    String(process.env.TRUST_PROXY || process.env.VERCEL || '').toLowerCase(),
+  );
+  if (trustProxy) {
+    const fwd = request.headers.get('x-forwarded-for');
+    if (fwd) return fwd.split(',')[0].trim();
+    const real = request.headers.get('x-real-ip');
+    if (real) return real;
+  }
+  return request.ip || null;
 }
 
 function publicEndpoint(request) {
