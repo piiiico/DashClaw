@@ -236,7 +236,10 @@ export async function evaluateGuard(orgId, context, sql, options = {}) {
 
   const verificationStatus = context.verification_status || 'unverified';
 
-  sql`
+  // Fire-and-forget — the response leaves before the audit row commits.
+  // `void` makes the floating-promise intent explicit (matches the
+  // publishOrgEvent pattern below) so static analysis won't flag it.
+  void sql`
     INSERT INTO guard_decisions (id, org_id, agent_id, agent_name, verification_status, decision, reason, matched_policies, context, risk_score, action_type, created_at)
     VALUES (
       ${decisionId},
@@ -405,11 +408,24 @@ export async function evaluatePolicy(policy, rules, context, sql, orgId, effecti
       // (no history → warn) every time, which is the opposite of the intent:
       // operators set min_history so the baseline is meaningful before the
       // policy starts firing.
-      const [{ count: historyCount } = { count: 0 }] = await sql`
-        SELECT COUNT(*)::int AS count
-        FROM action_embeddings
-        WHERE org_id = ${orgId} AND agent_id = ${agentId}
-      `;
+      let historyCount = 0;
+      try {
+        const [{ count } = { count: 0 }] = await sql`
+          SELECT COUNT(*)::int AS count
+          FROM action_embeddings
+          WHERE org_id = ${orgId} AND agent_id = ${agentId}
+        `;
+        historyCount = count ?? 0;
+      } catch (err) {
+        // pgvector not enabled / table missing — skip the policy entirely
+        // (mirrors the catch in the similarity query below). Without this
+        // wrap the COUNT throws and aborts the whole guard evaluation.
+        if (err.message?.includes('does not exist') || err.message?.includes('vector')) {
+          console.warn('[Guard] action_embeddings missing or pgvector unavailable. Skipping anomaly detection.');
+          return null;
+        }
+        throw err;
+      }
       if (historyCount < minHistory) return null;
 
       // 1. Generate embedding for current proposed action

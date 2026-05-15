@@ -54,10 +54,17 @@ export default function NotificationCenter() {
     };
     setNotifications(prev => [newNotif, ...prev].slice(0, 20));
 
-    if (permission === 'granted' && type !== 'info') {
+    // Read live permission off the platform API instead of closing over the
+    // React-state copy: a permission grant that lands between callback
+    // memoization and an event firing would otherwise be missed.
+    const currentPermission =
+      typeof window !== 'undefined' && 'Notification' in window
+        ? Notification.permission
+        : 'denied';
+    if (currentPermission === 'granted' && type !== 'info') {
       new Notification(title, { body: message });
     }
-  }, [permission]);
+  }, []);
 
   // Listen to real-time SSE events for governance notifications
   useRealtime(useCallback((event, payload) => {

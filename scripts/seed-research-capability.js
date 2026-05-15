@@ -14,6 +14,13 @@
  * Idempotent - safe to run multiple times. Skips if capability already exists.
  */
 
+// CLAUDE.md "Node.js Runtime Requirements": every entry point must
+// fail loud on detached promise rejections.
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled Rejection:', reason);
+  process.exit(1);
+});
+
 import { getSql } from '../app/lib/db.js';
 import {
   getCapabilityBySlug,

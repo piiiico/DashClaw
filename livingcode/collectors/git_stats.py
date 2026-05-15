@@ -43,9 +43,11 @@ def collect_git_stats(repo_path: str) -> GitStatsReport:
         last_commit = _run_git(["log", "-1", "--format=%ci", branch], repo_path)
         if last_commit:
             try:
-                commit_date = datetime.fromisoformat(last_commit.replace(" +0000", "+00:00").replace(" -", "-"))
-                if commit_date.tzinfo is None:
-                    commit_date = commit_date.replace(tzinfo=timezone.utc)
+                # `git log --format=%ci` emits "YYYY-MM-DD HH:MM:SS ±HHMM".
+                # The previous string-surgery (`replace(" -", "-")`) corrupted
+                # any timezone offset that wasn't UTC by also rewriting the
+                # space before the date's hyphen-day. strptime is unambiguous.
+                commit_date = datetime.strptime(last_commit, "%Y-%m-%d %H:%M:%S %z")
                 if commit_date > stale_threshold:
                     active_count += 1
                 else:

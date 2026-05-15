@@ -350,7 +350,7 @@ def write_action_id(tool_use_id, action_id):
     """
     path = os.path.join(tempfile.gettempdir(), "dashclaw_last_action_" + tool_use_id)
     try:
-        with open(path, "w") as f:
+        with open(path, "w", encoding="utf-8") as f:
             f.write(action_id)
     except Exception:
         pass

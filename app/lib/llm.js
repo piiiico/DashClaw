@@ -30,9 +30,13 @@ function _detectProvider() {
   if (_providerDetected) return _cachedProvider;
   _providerDetected = true;
 
-  const openaiKey = process.env.GUARD_LLM_KEY || process.env.OPENAI_API_KEY;
-  const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  const googleKey = process.env.GOOGLE_AI_API_KEY;
+  // Trim env-var values: a stray space or accidental wrapping whitespace
+  // would otherwise produce a "configured" provider with a malformed key,
+  // and the request would fail at the upstream API instead of falling
+  // through to the next provider here.
+  const openaiKey = (process.env.GUARD_LLM_KEY || process.env.OPENAI_API_KEY || '').trim();
+  const anthropicKey = (process.env.ANTHROPIC_API_KEY || '').trim();
+  const googleKey = (process.env.GOOGLE_AI_API_KEY || '').trim();
 
   if (openaiKey) {
     _cachedProvider = {

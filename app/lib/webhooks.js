@@ -384,7 +384,15 @@ export async function fireWebhooksForApproval(orgId, eventType, action, sql) {
     };
 
     for (const wh of webhooks) {
-      const events = JSON.parse(wh.events || '["all"]');
+      // Guard the JSON.parse: a single malformed `events` column would
+      // throw and short-circuit all remaining webhooks for this approval.
+      // Mirrors the per-iteration try/catch in fireWebhooksForOrg.
+      let events;
+      try {
+        events = JSON.parse(wh.events || '["all"]');
+      } catch {
+        events = ['all'];
+      }
       if (!events.includes('all') && !events.includes(eventType)) continue;
       deliverWebhook({
         webhookId: wh.id,

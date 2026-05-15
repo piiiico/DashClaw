@@ -28,7 +28,14 @@ export async function isAuthorizedSetupWriter(sql, request) {
 
   try {
     const hash = createHash('sha256').update(token).digest('hex');
-    const rows = await sql`SELECT role FROM api_keys WHERE key_hash = ${hash} LIMIT 1`;
+    // Reject revoked keys: without `revoked_at IS NULL` a previously-issued
+    // admin key that the operator already revoked would still satisfy the
+    // post-init re-migration gate, defeating the whole point of revocation.
+    const rows = await sql`
+      SELECT role FROM api_keys
+      WHERE key_hash = ${hash} AND revoked_at IS NULL
+      LIMIT 1
+    `;
     return rows.length > 0 && rows[0].role === 'admin';
   } catch {
     return false;

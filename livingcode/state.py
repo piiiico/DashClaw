@@ -51,7 +51,9 @@ def write_state_report(repo_path: str, data: dict[str, Any]) -> str:
     reports_dir = Path(repo_path) / ORGANISM_DIR / "state-reports"
     reports_dir.mkdir(parents=True, exist_ok=True)
     filepath = reports_dir / f"{_safe_timestamp()}.json"
-    with open(filepath, "w") as f:
+    # encoding="utf-8" — Windows defaults to cp1252 and corrupts non-ASCII
+    # author names / tags in the report.
+    with open(filepath, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, default=str)
     return str(filepath)
 
@@ -70,7 +72,7 @@ def read_latest_state_report(repo_path: str) -> dict[str, Any] | None:
     files = sorted(reports_dir.glob("*.json"))
     if not files:
         return None
-    with open(files[-1]) as f:
+    with open(files[-1], encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -92,14 +94,14 @@ def read_json_file(path: Path) -> dict[str, Any] | None:
     """Read a JSON file. Returns None if it doesn't exist."""
     if not path.exists():
         return None
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 
 def write_json_file(path: Path, data: dict[str, Any]) -> None:
     """Write a JSON file, creating parent dirs if needed."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w") as f:
+    with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, default=str)
 
 

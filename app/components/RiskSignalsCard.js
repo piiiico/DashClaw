@@ -100,13 +100,16 @@ export default function RiskSignalsCard() {
               description="All clear - no active risk signals"
             />
           ) : (
-            visibleSignals.map((signal, idx) => {
+            visibleSignals.map((signal) => {
               const dotColor = signal.severity === 'red' ? 'bg-status-error' : 'bg-status-warning';
               const titleColor = signal.severity === 'red' ? 'text-error' : 'text-warning';
+              // Stable key — index keys remount every row when the realtime
+              // handler prepends a new signal, losing per-item local state.
+              const key = signal.id ?? `${signal.type}:${signal.agent_id ?? ''}:${signal.label ?? ''}:${signal.detail ?? ''}`;
 
               return (
                 <div
-                  key={idx}
+                  key={key}
                   className="flex items-start gap-3 px-3 py-2.5 rounded-lg bg-surface-tertiary border border-[rgba(255,255,255,0.06)] transition-colors duration-150"
                 >
                   <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${dotColor}`} />

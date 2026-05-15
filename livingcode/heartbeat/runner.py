@@ -41,7 +41,7 @@ def run_heartbeat(repo_path: str, mode: str = "quick") -> dict:
     heartbeats_dir = Path(repo_path) / ".organism" / "heartbeats"
     heartbeats_dir.mkdir(parents=True, exist_ok=True)
     filepath = heartbeats_dir / f"{_safe_timestamp()}.json"
-    with open(filepath, "w") as f:
+    with open(filepath, "w", encoding="utf-8") as f:
         json.dump(heartbeat, f, indent=2)
 
     return heartbeat

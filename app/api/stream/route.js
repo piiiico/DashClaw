@@ -161,7 +161,11 @@ data: ${JSON.stringify(data)}
 
     // SECURITY: Server-side max connection duration to prevent resource exhaustion
     const MAX_SSE_DURATION_MS = 30 * 60 * 1000; // 30 minutes
-    setTimeout(cleanup, MAX_SSE_DURATION_MS);
+    // Capture the timer id so cleanup can clear it on early disconnect —
+    // otherwise every aborted SSE connection leaves a 30-minute pending
+    // timer, which leaks on long-lived (non-Vercel) deployments.
+    const maxDurationTimer = setTimeout(cleanup, MAX_SSE_DURATION_MS);
+    request.signal.addEventListener('abort', () => clearTimeout(maxDurationTimer));
 
     queueMicrotask(() => {
       void startPump();

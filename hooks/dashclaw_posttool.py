@@ -193,7 +193,7 @@ def _read_action_id(tool_use_id):
     """
     path = os.path.join(tempfile.gettempdir(), "dashclaw_last_action_" + tool_use_id)
     try:
-        with open(path, "r") as f:
+        with open(path, "r", encoding="utf-8") as f:
             return f.read().strip() or None
     except Exception:
         return None
@@ -221,9 +221,13 @@ def main():
         sys.exit(0)
 
     # Parse stdin
+    # Read raw bytes and decode as UTF-8 — sys.stdin.read() uses the platform
+    # default (cp1252 on Windows) which corrupts any multi-byte character in
+    # tool output before the JSON parse. Pretool already does this; posttool
+    # was missed.
     try:
-        raw = sys.stdin.read()
-        data = json.loads(raw) if raw.strip() else {}
+        raw = sys.stdin.buffer.read().decode("utf-8-sig").strip()
+        data = json.loads(raw) if raw else {}
     except Exception as e:
         _log("exit_early", "stdin parse failed: " + type(e).__name__)
         sys.exit(0)

@@ -37,7 +37,11 @@ function clientIp(request) {
     const real = request.headers.get('x-real-ip');
     if (real) return real;
   }
-  return request.ip || null;
+  // Sentinel instead of null: the rate limiter short-circuits on falsy
+  // keys, so a deployment that can't resolve an IP would otherwise grant
+  // unlimited provisioning. Sharing a single bucket across unknown-IP
+  // callers caps abuse without breaking legitimate requests.
+  return request.ip || 'unknown';
 }
 
 function publicEndpoint(request) {

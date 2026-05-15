@@ -251,12 +251,18 @@ export default function WorkflowEditor({ steps, onChange, readOnly = false }) {
       position: { x: 100 + Math.random() * 200, y: 100 + Math.random() * 200 },
       data: { label: 'New step', stepType: 'action', description: '' },
     };
-    setNodes((ns) => {
-      const updated = [...ns, newNode];
-      emitChange(updated, edges);
-      return updated;
+    // Read current edges via the functional updater to avoid emitting with a
+    // stale snapshot — `edges` captured in the closure can lag any edge
+    // edit that happened since this callback was last memoized.
+    setEdges((currentEdges) => {
+      setNodes((ns) => {
+        const updated = [...ns, newNode];
+        emitChange(updated, currentEdges);
+        return updated;
+      });
+      return currentEdges;
     });
-  }, [setNodes, edges, emitChange]);
+  }, [setNodes, setEdges, emitChange]);
 
   const onNodeClick = useCallback((_event, node) => {
     setSelectedNode(node);
@@ -267,17 +273,22 @@ export default function WorkflowEditor({ steps, onChange, readOnly = false }) {
 
   const saveNodeEdit = useCallback(() => {
     if (!selectedNode) return;
-    setNodes((ns) => {
-      const updated = ns.map((n) =>
-        n.id === selectedNode.id
-          ? { ...n, data: { ...n.data, label: editLabel, stepType: editType, description: editDesc } }
-          : n
-      );
-      emitChange(updated, edges);
-      return updated;
+    // Same stale-edges rationale as addNode — read current edges via setEdges
+    // identity callback so emitChange always sees the latest snapshot.
+    setEdges((currentEdges) => {
+      setNodes((ns) => {
+        const updated = ns.map((n) =>
+          n.id === selectedNode.id
+            ? { ...n, data: { ...n.data, label: editLabel, stepType: editType, description: editDesc } }
+            : n
+        );
+        emitChange(updated, currentEdges);
+        return updated;
+      });
+      return currentEdges;
     });
     setSelectedNode(null);
-  }, [selectedNode, editLabel, editType, editDesc, setNodes, edges, emitChange]);
+  }, [selectedNode, editLabel, editType, editDesc, setNodes, setEdges, emitChange]);
 
   const deleteSelected = useCallback(() => {
     if (!selectedNode) return;

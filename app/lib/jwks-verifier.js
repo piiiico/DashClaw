@@ -84,7 +84,12 @@ async function fetchJwks(issuer) {
     const body = await res.json();
     const keys = body.keys ?? [];
 
-    jwksCache.set(issuer, { keys, expiresAt: Date.now() + CACHE_TTL_MS });
+    // Don't cache an empty key set: a rolling deploy that briefly returns
+    // no keys would otherwise DoS verification for the cache TTL on every
+    // warm instance with no way to recover short of a redeploy.
+    if (keys.length > 0) {
+      jwksCache.set(issuer, { keys, expiresAt: Date.now() + CACHE_TTL_MS });
+    }
     circuitBreakers.set(issuer, { open: false, openUntil: 0, failures: 0 });
     return keys;
   } catch (err) {
@@ -238,13 +243,30 @@ export async function verifyJwt(token) {
       };
     }
 
+    // Honor `nbf` (not-before): a token issued in advance of its validity
+    // window must be rejected, otherwise an attacker who obtains a
+    // pre-issued token can replay it before the issuer expects it to live.
+    if (typeof payload.nbf === 'number' && payload.nbf > now) {
+      return {
+        verification_status: 'failed',
+        agent_id: payload.sub || null,
+        agent_name: payload.agent_name || null,
+        issuer,
+      };
+    }
+
     // Fetch JWKS (cached; circuit breaker on repeated failures)
     const keys = await fetchJwks(issuer);
 
-    // Find the correct key — prefer matching by kid, fall back to alg/use
+    // Filter to verification-capable keys before matching. JWKS may include
+    // encryption-only keys (`use: 'enc'`); selecting one of those by kid
+    // would still pass to importJwk and could verify with an unintended key.
+    const sigKeys = keys.filter((k) => k.use === 'sig' || !k.use);
+
+    // Find the correct key — prefer matching by kid, fall back to alg.
     const jwk = header.kid
-      ? keys.find((k) => k.kid === header.kid)
-      : keys.find((k) => k.alg === header.alg || k.use === 'sig');
+      ? sigKeys.find((k) => k.kid === header.kid)
+      : sigKeys.find((k) => k.alg === header.alg);
 
     if (!jwk) {
       return { verification_status: 'failed', agent_id: null, agent_name: null, issuer };

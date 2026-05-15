@@ -66,7 +66,7 @@ function withCors(request, response) {
 
 function demoJson(request, payload, status = 200) {
   const response = NextResponse.json(payload, { status });
-  addSecurityHeaders(response);
+  addSecurityHeaders(response, request);
   withCors(request, response);
   return response;
 }
@@ -388,7 +388,7 @@ export async function middleware(request) {
       });
     }
     
-    addSecurityHeaders(response);
+    addSecurityHeaders(response, request);
     return response;
   }
 
@@ -429,7 +429,7 @@ export async function middleware(request) {
       // handler; it validates allowlisted event names and writes to Redis.
       if (pathname.startsWith('/api/marketing/')) {
         const response = NextResponse.next();
-        addSecurityHeaders(response);
+        addSecurityHeaders(response, request);
         withCors(request, response);
         return response;
       }
@@ -460,7 +460,7 @@ export async function middleware(request) {
       // Allow NextAuth internals and raw markdown passthrough (these do not write data).
       if (pathname.startsWith('/api/auth') || pathname.startsWith('/api/docs/raw')) {
         const response = NextResponse.next();
-        addSecurityHeaders(response);
+        addSecurityHeaders(response, request);
         withCors(request, response);
         return response;
       }
@@ -475,7 +475,7 @@ export async function middleware(request) {
         requestHeaders.set('x-org-id', 'org_demo');
         requestHeaders.set('x-org-role', 'admin');
         const response = NextResponse.next({ request: { headers: requestHeaders } });
-        addSecurityHeaders(response);
+        addSecurityHeaders(response, request);
         withCors(request, response);
         return response;
       }
@@ -715,7 +715,7 @@ export async function middleware(request) {
           status: 200,
           headers: { 'Content-Type': 'text/markdown; charset=utf-8' },
         });
-        addSecurityHeaders(response);
+        addSecurityHeaders(response, request);
         withCors(request, response);
         return response;
       }

@@ -158,13 +158,14 @@ export default function OnboardingChecklist() {
   if (!status || !status.onboarding_required) return null;
 
   const steps = status.steps;
+  const TOTAL_STEPS = 5;
   const completedCount =
     (steps.workspace_created ? 1 : 0) +
     (steps.api_key_exists ? 1 : 0) +
     (steps.api_key_exists ? 1 : 0) + // install is "done" once key exists (static step)
     (steps.api_key_exists ? 1 : 0) + // bootstrap is "done" once key exists (static step)
     (steps.first_action_sent || actionDetected ? 1 : 0);
-  const progress = Math.round((completedCount / 5) * 100);
+  const progress = Math.round((completedCount / TOTAL_STEPS) * 100);
 
   // Determine current active step
   let activeStep = 'workspace';
@@ -208,7 +209,7 @@ await claw.createAction({
             <span className="text-sm font-medium text-secondary uppercase tracking-wider">Getting Started</span>
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant="brand">{completedCount} of 4 complete</Badge>
+            <Badge variant="brand">{completedCount} of {TOTAL_STEPS} complete</Badge>
             <button
               onClick={handleDismiss}
               className="p-1 rounded text-disabled hover:text-secondary hover:bg-white/5 transition-colors"

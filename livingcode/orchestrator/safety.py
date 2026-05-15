@@ -39,6 +39,12 @@ def is_cycle_locked(repo_path: str) -> bool:
         started_at = datetime.fromisoformat(started) if started else None
     except (TypeError, ValueError):
         started_at = None
+    # Normalize to timezone-aware UTC. Lock files written by a process on
+    # an older Python (or where the writer dropped tzinfo) parse as naive,
+    # and `now - started_at` would raise TypeError mid-cycle — silently
+    # aborting the lifecycle.
+    if started_at is not None and started_at.tzinfo is None:
+        started_at = started_at.replace(tzinfo=timezone.utc)
     now = datetime.now(timezone.utc)
     if started_at is None or (now - started_at).total_seconds() > STALE_LOCK_AGE_SECONDS:
         try:

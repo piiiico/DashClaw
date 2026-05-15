@@ -48,7 +48,7 @@ def collect_dependency_health(repo_path: str) -> DependencyHealthReport:
     pkg_path = Path(repo_path) / "package.json"
     js_deps = 0
     if pkg_path.exists():
-        with open(pkg_path) as f:
+        with open(pkg_path, encoding="utf-8") as f:
             pkg = json.load(f)
         js_deps = len(pkg.get("dependencies", {})) + len(pkg.get("devDependencies", {}))
 

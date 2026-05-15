@@ -14,7 +14,11 @@ export default function FleetPresenceCard() {
   const [agents, setAgents] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchAgents = async () => {
+  // useCallback so handleRealtime closes over a stable reference rather than
+  // capturing the inaugural fetchAgents — without this, the realtime handler
+  // would keep calling whichever fetchAgents identity existed when it was
+  // first memoized.
+  const fetchAgents = useCallback(async () => {
     try {
       const res = await fetch('/api/agents');
       if (res.ok) {
@@ -26,19 +30,19 @@ export default function FleetPresenceCard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchAgents();
     const interval = setInterval(fetchAgents, 60000); // Poll once a minute as fallback
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchAgents]);
 
   const handleRealtime = useCallback((event) => {
     if (event === 'agent.heartbeat' || event === 'action.created') {
       fetchAgents();
     }
-  }, []);
+  }, [fetchAgents]);
   useRealtime(handleRealtime);
 
   if (loading) return <CardSkeleton />;

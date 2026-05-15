@@ -1,29 +1,33 @@
 'use client';
 
 import { useState } from 'react';
-import { 
-  Bot, Shield, Database, ArrowRight, Play, 
-  CheckCircle2, XCircle, Clock, Activity, 
+import {
+  Bot, Shield, Database, ArrowRight, Play,
+  CheckCircle2, XCircle, Clock, Activity,
   Terminal, ShieldCheck, ShieldAlert, Cpu
 } from 'lucide-react';
 
 export default function GuardSimulation() {
   const [step, setStep] = useState('idle'); // idle, requesting, evaluating, approval, finished
   const [decision, setDecision] = useState(null); // allowed, blocked
+  const [isPending, setIsPending] = useState(false);
 
-  // Logic for the simulation "Action"
-  async function runSimulationAction() {
-    setStep('requesting');
-    await new Promise(r => setTimeout(r, 800));
-    
-    setStep('evaluating');
-    await new Promise(r => setTimeout(r, 1200));
-    
-    setStep('approval');
-    return null;
+  // Drive the marketing-page simulation. useActionState was used here but it
+  // is a React 19 API and the project is on React 18; the import was missing
+  // and the component crashed with a ReferenceError on every visit.
+  async function startSimulation() {
+    if (isPending) return;
+    setIsPending(true);
+    try {
+      setStep('requesting');
+      await new Promise((r) => setTimeout(r, 800));
+      setStep('evaluating');
+      await new Promise((r) => setTimeout(r, 1200));
+      setStep('approval');
+    } finally {
+      setIsPending(false);
+    }
   }
-
-  const [, startSimulation, isPending] = useActionState(runSimulationAction, null);
 
   const handleDecision = (type) => {
     setDecision(type);
