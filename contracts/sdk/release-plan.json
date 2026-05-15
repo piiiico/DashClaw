@@ -1,14 +1,14 @@
 {
   "node": {
-    "current_version": "2.12.0",
+    "current_version": "2.13.0",
     "next_bump": "patch",
-    "reason": "Durable execution finality wrappers: reportActionOutcome, getActionOutcome, reportActionSuccess/Failure/Partial, deriveIdempotencyKey",
-    "domains": ["actions.outcome", "actions.idempotency"]
+    "reason": "Phase 2 agent identity (#104): authToken constructor param attaches Authorization: Bearer on every request; server returns verification_status enum (verified|unverified|expired|failed|unknown_issuer) on guard responses. Additive — no breaking changes.",
+    "domains": ["agent.identity", "guard.verification"]
   },
   "python": {
     "current_version": "2.12.0",
-    "next_bump": "patch",
-    "reason": "Durable execution finality wrappers (snake_case): report_action_outcome, get_action_outcome, report_action_success/failure/partial, derive_idempotency_key",
+    "next_bump": "minor",
+    "reason": "Phase 2 parity gap: server supports JWKS-verified bearer tokens but Python SDK has no auth_token constructor param yet. Bump when auth_token is added.",
     "domains": ["actions.outcome", "actions.idempotency"]
   }
 }
