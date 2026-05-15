@@ -218,7 +218,10 @@ export default function Sidebar() {
       <div className="border-t border-border px-4 py-3">
         {!collapsed && (
           <div className="space-y-1">
-            <div className="text-[11px] tabular-nums text-tertiary">DashClaw v{process.env.NEXT_PUBLIC_DASHCLAW_VERSION || '2.13.0'}</div>
+            {/* Version comes from next.config.js → injected at build time
+                from package.json — never hardcode here. If it ever renders
+                empty, the build env injection broke. */}
+            <div className="text-[11px] tabular-nums text-tertiary">DashClaw v{process.env.NEXT_PUBLIC_DASHCLAW_VERSION}</div>
             <div className="text-[11px] text-tertiary">
               Powered by{' '}
               <Link href="/practical-systems" className="text-secondary transition-colors hover:text-brand">

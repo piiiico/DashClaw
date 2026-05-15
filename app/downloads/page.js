@@ -172,7 +172,7 @@ export default function DownloadsPage() {
           <div className="mb-6">
             <DownloadCard
               name="dashclaw-governance-plugin"
-              role="Full plugin bundle in one zip — the three plugin manifests (Claude Code / Codex / Hermes), MCP configs, both skills, assets, and PLUGIN_PARITY.md. Drop into your agent's plugin directory or extract for inspection. Manifest version v2.14.0."
+              role={`Full plugin bundle in one zip — the three plugin manifests (Claude Code / Codex / Hermes), MCP configs, both skills, assets, and PLUGIN_PARITY.md. Drop into your agent's plugin directory or extract for inspection. Manifest version v${process.env.NEXT_PUBLIC_PLUGIN_MANIFEST_VERSION}.`}
               sizeLabel="manifests + skills + MCP configs"
               primaryHref="/downloads/dashclaw-governance-plugin.zip"
               primaryLabel="dashclaw-governance-plugin.zip"
@@ -338,7 +338,7 @@ hermes dashclaw doctor`}
               <p className="text-xs text-text-secondary leading-relaxed mb-3">
                 Canonical 87-method surface across core governance, durable finality, scoring, learning, messaging, handoffs, scanning, threads, sessions, and the execution-studio domains.
               </p>
-              <CommandBlock label="Install (v2.12.0)">{`npm install dashclaw`}</CommandBlock>
+              <CommandBlock label={`Install (v${process.env.NEXT_PUBLIC_SDK_NODE_VERSION})`}>{`npm install dashclaw`}</CommandBlock>
             </div>
             <div className="rounded-xl border border-border bg-surface-secondary p-5">
               <div className="flex items-baseline justify-between gap-4 mb-3 flex-wrap">
@@ -356,7 +356,7 @@ hermes dashclaw doctor`}
               <p className="text-xs text-text-secondary leading-relaxed mb-3">
                 Broader Python surface (235 methods) with framework integrations: LangChain callback handler, CrewAI task instrumentation, AutoGen conversation monitoring.
               </p>
-              <CommandBlock label="Install (v2.12.0)">{`pip install dashclaw`}</CommandBlock>
+              <CommandBlock label={`Install (v${process.env.NEXT_PUBLIC_SDK_PYTHON_VERSION})`}>{`pip install dashclaw`}</CommandBlock>
             </div>
           </div>
         </section>

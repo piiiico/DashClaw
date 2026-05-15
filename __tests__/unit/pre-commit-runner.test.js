@@ -7,11 +7,11 @@ describe('runPreCommitChecks', () => {
     const result = runPreCommitChecks({ execImpl });
 
     expect(result.success).toBe(true);
-    expect(result.steps).toHaveLength(5);
+    expect(result.steps).toHaveLength(6);
     expect(result.steps.every((s) => s.success)).toBe(true);
 
     // Verify the correct commands were invoked in order
-    expect(execImpl).toHaveBeenCalledTimes(5);
+    expect(execImpl).toHaveBeenCalledTimes(6);
     expect(execImpl.mock.calls[0][1]).toContain('scripts/generate-api-inventory.mjs');
     expect(execImpl.mock.calls[1][1]).toContain('scripts/generate-openapi.mjs');
     expect(execImpl.mock.calls[2][1]).toContain('scripts/livingcode-refresh.mjs');
@@ -25,10 +25,19 @@ describe('runPreCommitChecks', () => {
       'public/downloads/dashclaw-platform-intelligence',
       'public/downloads/dashclaw-platform-intelligence.zip',
       'public/downloads/dashclaw-platform-intelligence.zip.manifest',
+      'public/downloads/dashclaw-claude-code-hooks.zip',
+      'public/downloads/dashclaw-claude-code-hooks.zip.manifest',
+      'public/downloads/dashclaw-governance.zip',
+      'public/downloads/dashclaw-governance.zip.manifest',
+      'public/downloads/dashclaw-governance-plugin.zip',
+      'public/downloads/dashclaw-governance-plugin.zip.manifest',
+      'plugins/dashclaw/skills/dashclaw-platform-intelligence',
+      'plugins/dashclaw/skills/dashclaw-governance',
       'mcp-server/lib/routes-inventory.generated.json',
       'public/livingcode/index.html',
     ]);
-    expect(execImpl.mock.calls[4][1]).toContain('--mode=warn');
+    expect(execImpl.mock.calls[4][1]).toContain('scripts/check-version-hardcodes.mjs');
+    expect(execImpl.mock.calls[5][1]).toContain('--mode=warn');
   });
 
   it('succeeds when contracts check warns but does not fail the hook', () => {
@@ -41,7 +50,7 @@ describe('runPreCommitChecks', () => {
     const result = runPreCommitChecks({ execImpl });
 
     expect(result.success).toBe(true);
-    expect(result.steps).toHaveLength(5);
+    expect(result.steps).toHaveLength(6);
 
     const contractsStep = result.steps.find((s) => s.id === 'contracts-check');
     expect(contractsStep.success).toBe(false);

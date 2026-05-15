@@ -35,9 +35,31 @@ const STEPS = [
       'public/downloads/dashclaw-platform-intelligence',
       'public/downloads/dashclaw-platform-intelligence.zip',
       'public/downloads/dashclaw-platform-intelligence.zip.manifest',
+      // Bundle zips that livingcode-refresh regenerates from sources but were
+      // previously NOT auto-staged — meaning every commit that touched
+      // hooks/, plugins/dashclaw/, or governance source files left the zip
+      // stale on origin (caught in 2026-05-15 audit, see commit 1eaff4c5).
+      'public/downloads/dashclaw-claude-code-hooks.zip',
+      'public/downloads/dashclaw-claude-code-hooks.zip.manifest',
+      'public/downloads/dashclaw-governance.zip',
+      'public/downloads/dashclaw-governance.zip.manifest',
+      'public/downloads/dashclaw-governance-plugin.zip',
+      'public/downloads/dashclaw-governance-plugin.zip.manifest',
+      'plugins/dashclaw/skills/dashclaw-platform-intelligence',
+      'plugins/dashclaw/skills/dashclaw-governance',
       'mcp-server/lib/routes-inventory.generated.json',
       'public/livingcode/index.html',
     ],
+    failHook: true,
+  },
+  {
+    // Block commits that introduce hardcoded version literals in user-facing
+    // code. UI / SDK source must derive versions from package.json /
+    // pyproject.toml / plugin.json — see scripts/check-version-hardcodes.mjs
+    // for the canonical list and allowed-file allowlist.
+    id: 'version-hardcodes',
+    label: 'Check for hardcoded version literals',
+    command: [process.execPath, 'scripts/check-version-hardcodes.mjs'],
     failHook: true,
   },
   {

@@ -1,6 +1,10 @@
 /**
- * DashClaw SDK v2.12.0 (Stable Runtime API)
+ * DashClaw SDK (Stable Runtime API)
  * Focused governance runtime client for AI agents.
+ *
+ * Version is the single source of truth in sdk/package.json — never
+ * hardcoded here, in the README header, or in app/ pages. Consumers
+ * read it at runtime via `import pkg from 'dashclaw/package.json'`.
  */
 
 import { createHash } from 'crypto';

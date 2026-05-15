@@ -5,7 +5,7 @@ last-verified: 2026-05-14
 doc-type: architecture
 ---
 
-# DashClaw Project Details (v2.14.0 Governance Runtime)
+# DashClaw Project Details (Governance Runtime)
 
 DashClaw is decision infrastructure for AI agents. It provides the governance layer between agents and external systems: policy evaluation before execution, human approval when needed, durable action records, terminal outcome tracking, and evidence that operators can audit later.
 

@@ -5,10 +5,12 @@ import { NextResponse } from 'next/server';
 import { DashClawClient } from '../../../mcp-server/lib/client.js';
 import { TOOL_DEFINITIONS, createToolHandlers } from '../../../mcp-server/lib/tools.js';
 import { RESOURCE_DEFINITIONS, createResourceHandlers } from '../../../mcp-server/lib/resources.js';
+// Single source of truth for the MCP server version — never hardcode here.
+import mcpServerPkg from '../../../mcp-server/package.json' with { type: 'json' };
 
 const SERVER_INFO = {
   name: '@dashclaw/mcp-server',
-  version: '1.0.2',
+  version: mcpServerPkg.version,
 };
 
 const PROTOCOL_VERSION = '2025-03-26';

@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:ff8fe2ae94728448c14ef4d58a483183e66d5780",
+  "timestamp": "sha1:b237d9112af9c45f86bcbc79ea7b35431b1cfd95",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -3544,6 +3544,14 @@
       "in_env_example": true
     },
     {
+      "name": "NEXT_PUBLIC_",
+      "required": false,
+      "files": [
+        "scripts/check-version-hardcodes.mjs"
+      ],
+      "in_env_example": false
+    },
+    {
       "name": "NEXT_PUBLIC_APP_URL",
       "required": false,
       "files": [
@@ -3579,6 +3587,32 @@
       "files": [
         "app/layout.js",
         "graphify-pilot/app/layout.js"
+      ],
+      "in_env_example": false
+    },
+    {
+      "name": "NEXT_PUBLIC_PLUGIN_MANIFEST_VERSION",
+      "required": false,
+      "files": [
+        "app/downloads/page.js"
+      ],
+      "in_env_example": false
+    },
+    {
+      "name": "NEXT_PUBLIC_SDK_NODE_VERSION",
+      "required": false,
+      "files": [
+        "app/docs/page.js",
+        "app/downloads/page.js"
+      ],
+      "in_env_example": false
+    },
+    {
+      "name": "NEXT_PUBLIC_SDK_PYTHON_VERSION",
+      "required": false,
+      "files": [
+        "app/docs/page.js",
+        "app/downloads/page.js"
       ],
       "in_env_example": false
     },

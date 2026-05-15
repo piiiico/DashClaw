@@ -1,9 +1,28 @@
 /** @type {import('next').NextConfig} */
+
+// Single source of truth for displayed version strings. Each entry derives
+// from its package's authoritative manifest so a version bump never requires
+// hand-editing UI copy. NEVER hardcode versions in app/ — read from these.
+const PYPROJECT_VERSION_RE = /^version\s*=\s*"([^"]+)"/m;
+const pyprojectMatch = require('fs')
+  .readFileSync(require('path').join(__dirname, 'sdk-python', 'pyproject.toml'), 'utf8')
+  .match(PYPROJECT_VERSION_RE);
+if (!pyprojectMatch) {
+  throw new Error('Could not parse version from sdk-python/pyproject.toml — UI version strings cannot resolve');
+}
+
 const nextConfig = {
   output: 'standalone',
   productionBrowserSourceMaps: false,
   env: {
+    // Platform version — surfaced in the Sidebar build stamp.
     NEXT_PUBLIC_DASHCLAW_VERSION: require('./package.json').version,
+    // Node SDK published to npm — surfaced in /docs and /downloads install copy.
+    NEXT_PUBLIC_SDK_NODE_VERSION: require('./sdk/package.json').version,
+    // Python SDK published to PyPI — surfaced in /docs and /downloads install copy.
+    NEXT_PUBLIC_SDK_PYTHON_VERSION: pyprojectMatch[1],
+    // Plugin bundle manifest version — surfaced in /downloads bundle description.
+    NEXT_PUBLIC_PLUGIN_MANIFEST_VERSION: require('./plugins/dashclaw/.claude-plugin/plugin.json').version,
   },
   images: {
     remotePatterns: [

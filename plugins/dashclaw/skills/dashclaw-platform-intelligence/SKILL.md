@@ -5,7 +5,7 @@ description: DashClaw platform expert for integration, troubleshooting, and gove
 
 # DashClaw Platform Intelligence
 
-**Shape snapshot:** `sha1:ff8fe2ae94728448c14ef4d58a483183e66d5780`
+**Shape snapshot:** `sha1:b237d9112af9c45f86bcbc79ea7b35431b1cfd95`
 **This file is auto-generated.** Do not edit by hand — regenerate with:
 
 ```bash
@@ -30,7 +30,7 @@ If the snapshot below disagrees with a live query, **trust the live query**.
 ## At a Glance
 
 - **211** active API routes across **52** categories
-- **4** required + **121** optional environment variables
+- **4** required + **125** optional environment variables
 - **84** database tables
 
 ## API Surface
@@ -483,10 +483,14 @@ These have fallbacks or only activate specific features.
 - `INTEGRATION_DATABASE_URL` *(undocumented)*
 - `MOONSHOT_API_KEY` *(undocumented)*
 - `NEXTAUTH_URL`
+- `NEXT_PUBLIC_` *(undocumented)*
 - `NEXT_PUBLIC_APP_URL` *(undocumented)*
 - `NEXT_PUBLIC_DASHCLAW_MODE` *(undocumented)*
 - `NEXT_PUBLIC_DASHCLAW_VERSION` *(undocumented)*
 - `NEXT_PUBLIC_ENABLE_VERCEL_ANALYTICS` *(undocumented)*
+- `NEXT_PUBLIC_PLUGIN_MANIFEST_VERSION` *(undocumented)*
+- `NEXT_PUBLIC_SDK_NODE_VERSION` *(undocumented)*
+- `NEXT_PUBLIC_SDK_PYTHON_VERSION` *(undocumented)*
 - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` *(undocumented)*
 - `NODE_ENV` *(undocumented)*
 - `OIDC_AUTHORIZATION_URL` *(undocumented)*

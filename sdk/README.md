@@ -1,4 +1,4 @@
-# DashClaw SDK (v2.12.0)
+# DashClaw SDK
 
 **Minimal governance runtime for AI agents.**
 
@@ -251,7 +251,7 @@ See:
 
 ---
 
-## SDK Surface Area (v2.12.0)
+## SDK Surface Area
 
 The v2 SDK exposes the stable governance runtime plus promoted execution domains in the canonical Node client:
 
