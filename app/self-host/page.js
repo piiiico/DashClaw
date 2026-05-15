@@ -173,7 +173,7 @@ dashclaw doctor`}</pre>
         <div className="max-w-5xl mx-auto py-12">
           <h2 className="text-2xl font-bold tracking-tight mb-2">What you just deployed</h2>
           <p className="text-text-secondary mb-8">
-            Your DashClaw instance ships with 173 governance routes across 44 categories. Every feature works out of the box -- no LLM API key required.
+            Your DashClaw instance ships with 259 governance API routes. Every feature works out of the box -- no LLM API key required.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -226,7 +226,7 @@ dashclaw doctor`}</pre>
               {
                 category: 'Compliance & Audit',
                 features: [
-                  'SOC 2, NIST AI RMF, EU AI Act, ISO 42001 mapping',
+                  'GDPR, SOC 2, NIST AI RMF, ISO 27001, IMDA Agentic mapping',
                   'One-click compliance export bundles',
                   'Evidence packaging (guard decisions + action records)',
                   'Scheduled recurring exports on cron',
@@ -298,7 +298,7 @@ dashclaw doctor`}</pre>
             <div>
               <h2 className="text-lg font-semibold text-text-primary">DashClaw Platform Skill</h2>
               <p className="text-sm text-text-secondary leading-relaxed mt-1">
-                Skills are an open standard for giving agents specialized capabilities. Any agent that supports the skill framework can load this skill and become a DashClaw platform expert -- with knowledge of 173 governance routes across 44 categories.
+                Skills are an open standard for giving agents specialized capabilities. Any agent that supports the skill framework can load this skill and become a DashClaw platform expert -- with searchable knowledge of every route, env var, and schema field in your instance.
               </p>
               <p className="text-sm text-text-secondary leading-relaxed mt-2">
                 Works with Claude Code, and the growing ecosystem of skill-compatible agents.
@@ -314,7 +314,7 @@ dashclaw doctor`}</pre>
                 <li>Designs guard policies for cost ceilings, risk thresholds, and action allowlists</li>
                 <li>Configures evaluation scorers to track output quality (5 built-in types)</li>
                 <li>Sets up prompt template registries with version control and rollback</li>
-                <li>Generates compliance export bundles for SOC 2, NIST AI RMF, EU AI Act</li>
+                <li>Generates compliance export bundles for GDPR, SOC 2, NIST AI RMF, ISO 27001, IMDA Agentic</li>
                 <li>Configures behavioral drift detection with statistical baselines</li>
                 <li>Sets up learning analytics to track agent velocity and maturity</li>
                 <li>Troubleshoots 401, 403, 429, and 503 errors with guided diagnostics</li>
@@ -324,47 +324,21 @@ dashclaw doctor`}</pre>
               <h3 className="text-sm font-semibold text-text-primary mb-2">What&apos;s inside</h3>
               <pre className="text-xs text-text-secondary font-mono overflow-x-auto leading-relaxed">
 {`dashclaw-platform-intelligence/
-├── SKILL.md                          # 15 guided workflows (v2.3)
+├── SKILL.md                          # Auto-generated shape snapshot
 ├── scripts/
 │   ├── validate-integration.mjs      # End-to-end connectivity test
-│   ├── diagnose.mjs                  # 5-phase platform diagnostics
+│   ├── diagnose.mjs                  # Diagnostic info collector
 │   └── bootstrap-agent-quick.mjs     # Agent workspace importer
 └── references/
-    ├── api-surface.md                # 173 routes, 44 categories
+    ├── api-surface.md                # Curated route catalog by domain
     ├── platform-knowledge.md         # Architecture, auth chain, ID prefixes
-    └── troubleshooting.md            # Error resolution guide`}</pre>
+    └── troubleshooting.md            # 401/403/429/503 resolution guide`}</pre>
             </div>
           </div>
 
-          <h3 className="text-sm font-semibold text-text-primary mt-8 mb-3">Skill workflows</h3>
-          <p className="text-xs text-text-secondary mb-4">
-            The skill includes 15 guided workflows. Your agent picks the right one from the decision tree based on what you ask:
+          <p className="text-xs text-text-secondary mb-6 leading-relaxed">
+            <code className="font-mono text-text-primary">SKILL.md</code> is regenerated from the live shape, so the agent always has the current API surface. When the snapshot might be stale, the skill instructs the agent to run a live query (<code className="font-mono text-text-primary">python -m livingcode query routes</code>, <code className="font-mono text-text-primary">env</code>, <code className="font-mono text-text-primary">tables</code>) against your instance and trust that result.
           </p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
-            {[
-              { title: 'Instrument My Agent', desc: 'Full SDK integration with action recording and guard checks' },
-              { title: 'Configure Evaluations', desc: '5 scorer types: regex, keywords, numeric range, custom, LLM judge' },
-              { title: 'Manage Prompts', desc: 'Template registry with mustache variables and version history' },
-              { title: 'Collect Feedback', desc: 'Structured ratings with auto-sentiment and auto-tagging' },
-              { title: 'Export Compliance', desc: 'Multi-framework bundles with evidence packaging' },
-              { title: 'Monitor Drift', desc: 'Statistical baselines and z-score deviation alerts' },
-              { title: 'Track Learning', desc: 'Velocity scoring and 6-level maturity model' },
-              { title: 'Configure Scoring', desc: 'Weighted quality profiles and risk templates' },
-              { title: 'Design Policies', desc: 'Guard rules for cost ceilings and risk thresholds' },
-              { title: 'Bootstrap Agent', desc: 'Auto-discover and import existing agent workspace data' },
-              { title: 'Add a Capability', desc: 'Full-stack scaffold guide for adding new API routes' },
-              { title: 'Generate Client', desc: 'Generate a DashClaw SDK in any language from OpenAPI' },
-              { title: 'CLI Approval Channel', desc: 'Approve and deny agent actions from the terminal with dashclaw approvals' },
-              { title: 'Claude Code Hooks', desc: 'Govern Claude Code tool calls via PreToolUse and PostToolUse lifecycle hooks' },
-              { title: 'Troubleshoot', desc: 'Guided error resolution for auth and rate limits' },
-            ].map((item) => (
-              <div key={item.title} className="p-3 rounded-lg bg-surface-primary border border-border">
-                <h4 className="text-xs font-medium text-text-primary">{item.title}</h4>
-                <p className="text-[10px] text-text-tertiary mt-1 leading-relaxed">{item.desc}</p>
-              </div>
-            ))}
-          </div>
 
           <div className="rounded-lg bg-surface-primary border border-border p-4 mb-5">
             <h3 className="text-sm font-semibold text-text-primary mb-3">Setup</h3>
@@ -383,7 +357,6 @@ dashclaw doctor`}</pre>
             >
               <Download size={16} /> Download Skill
             </a>
-            <span className="text-xs text-text-tertiary">~32 KB · v2.3 · includes CLI approval channel and Claude Code hooks</span>
           </div>
         </div>
 
@@ -432,20 +405,10 @@ dashclaw doctor`}</pre>
             <div className="min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <span className="w-6 h-6 rounded-full bg-brand/20 text-brand text-xs font-bold flex items-center justify-center">6</span>
-                <h2 className="text-base font-semibold text-text-primary">Optional: enable verified agents (one-click pairing)</h2>
+                <h2 className="text-base font-semibold text-text-primary">Optional: enable verified agents</h2>
               </div>
-              <p className="text-sm text-text-secondary leading-relaxed">If you want cryptographic identity binding, your agent generates a keypair and prints a one-click pairing URL. You approve once (or approve-all).</p>
+              <p className="text-sm text-text-secondary leading-relaxed">For cryptographic identity binding, set <code className="font-mono text-text-primary">ENFORCE_AGENT_SIGNATURES=true</code> on the dashboard host. The Python SDK&apos;s <code className="font-mono text-text-primary">create_pairing_from_private_jwk()</code> helper generates a keypair and registers the public key via <code className="font-mono text-text-primary">POST /api/pairings</code>; an admin then approves the pairing in the dashboard before the agent&apos;s signed actions are accepted.</p>
             </div>
-          </div>
-          <div className="mt-4">
-            <CopyableCodeBlock title="Agent environment (verified mode)" copyText={`DASHCLAW_PRIVATE_KEY_PATH=./secrets/cinder-private.jwk\nENFORCE_AGENT_SIGNATURES=true`}>{`# Optional: sign actions with a private key
-DASHCLAW_PRIVATE_KEY_PATH=./secrets/cinder-private.jwk
-
-# Optional: server-side enforcement (set on the dashboard host)
-ENFORCE_AGENT_SIGNATURES=true`}</CopyableCodeBlock>
-            <p className="mt-3 text-sm text-text-secondary">
-              The goal is: no manual public key uploads. Pairing registers the matching public key automatically.
-            </p>
           </div>
         </div>
       </section>
