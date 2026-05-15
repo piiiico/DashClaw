@@ -1176,14 +1176,15 @@ export async function middleware(request) {
           { status: 503 }
         );
       }
-      // Dev mode: allow through with default org
+      // Dev mode: allow through with default org. Use the canonical
+      // helper instead of hand-rolling — keeps every exit path on a
+      // single source of truth so future header additions land here too.
+      // (HSTS won't apply in dev because addSecurityHeaders gates it on
+      // NODE_ENV=production; that's fine — dev runs over plain HTTP.)
       requestHeaders.set('x-org-id', 'org_default');
       requestHeaders.set('x-org-role', 'admin');
       const response = NextResponse.next({ request: { headers: requestHeaders } });
-      response.headers.set('X-Content-Type-Options', 'nosniff');
-      response.headers.set('X-Frame-Options', 'DENY');
-      response.headers.set('X-XSS-Protection', '1; mode=block');
-      response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
+      addSecurityHeaders(response, request);
       for (const [k, v] of Object.entries(getCorsHeaders(request))) response.headers.set(k, v);
       return response;
     }
