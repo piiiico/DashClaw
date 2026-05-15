@@ -91,7 +91,8 @@ describe('/api/guard', () => {
       }));
       expect(mockEvaluateGuard).toHaveBeenCalledWith(
         'org_1',
-        { action_type: 'read' },
+        // verification_status defaults to 'unverified' when no Authorization header is provided (Phase 2)
+        { action_type: 'read', verification_status: 'unverified' },
         mockSql,
         expect.objectContaining({ includeSignals: true })
       );
@@ -105,7 +106,13 @@ describe('/api/guard', () => {
         headers: { 'x-org-id': 'org_42' },
         body: { action_type: 'deploy', risk_score: 50 },
       }));
-      expect(mockEvaluateGuard).toHaveBeenCalledWith('org_42', { action_type: 'deploy', risk_score: 50 }, mockSql, expect.any(Object));
+      expect(mockEvaluateGuard).toHaveBeenCalledWith(
+        'org_42',
+        // verification_status defaults to 'unverified' when no Authorization header is provided (Phase 2)
+        { action_type: 'deploy', risk_score: 50, verification_status: 'unverified' },
+        mockSql,
+        expect.any(Object),
+      );
     });
 
     it('returns 500 on internal error', async () => {

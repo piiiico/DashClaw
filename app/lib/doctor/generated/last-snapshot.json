@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:5dc280f182c5506c449abdc4cd0a3f6aaa1822ff",
+  "timestamp": "sha1:ff8fe2ae94728448c14ef4d58a483183e66d5780",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -2836,6 +2836,15 @@
       "in_env_example": false
     },
     {
+      "name": "DASHCLAW_ALLOWED_ISSUER",
+      "required": false,
+      "files": [
+        "__tests__/unit/guard-jwks-verification.test.js",
+        "app/lib/jwks-verifier.js"
+      ],
+      "in_env_example": false
+    },
+    {
       "name": "DASHCLAW_API_KEY",
       "required": true,
       "files": [
@@ -3035,6 +3044,15 @@
       "in_env_example": false
     },
     {
+      "name": "DASHCLAW_JWT_AUDIENCE",
+      "required": false,
+      "files": [
+        "__tests__/unit/guard-jwks-verification.test.js",
+        "app/lib/jwks-verifier.js"
+      ],
+      "in_env_example": false
+    },
+    {
       "name": "DASHCLAW_LOCAL_ADMIN_PASSWORD",
       "required": false,
       "files": [
@@ -3058,6 +3076,7 @@
       "required": false,
       "files": [
         "__tests__/unit/guard-agent-attribution.test.js",
+        "__tests__/unit/guard-jwks-verification.test.js",
         "__tests__/unit/guard.route.test.js",
         "__tests__/unit/health.route.test.js",
         "app/api/health/route.js",
@@ -3129,6 +3148,7 @@
         "__tests__/unit/cron-outcome-sweep.route.test.js",
         "__tests__/unit/cron-routing-maintenance.route.test.js",
         "__tests__/unit/guard-agent-attribution.test.js",
+        "__tests__/unit/guard-jwks-verification.test.js",
         "__tests__/unit/guard.route.test.js",
         "__tests__/unit/health-tables.test.js",
         "__tests__/unit/health.route.test.js",
