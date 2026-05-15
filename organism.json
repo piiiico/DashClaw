@@ -49,6 +49,7 @@
     "openapi:check",
     "api:inventory:check",
     "route-sql:check",
+    "version:check",
     "reliability:ws1:check",
     "security-scan",
     "test",

@@ -43,6 +43,9 @@ jobs:
       - name: Check route-level SQL guardrail
         run: npm run route-sql:check
 
+      - name: Check version-string drift in user-facing code
+        run: npm run version:check
+
       - name: Check contract convergence
         run: npm run contracts:check
 
