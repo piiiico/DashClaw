@@ -51,6 +51,16 @@ async function exportJwk(publicKey) {
 const mockFetch = vi.fn();
 vi.stubGlobal('fetch', mockFetch);
 
+// Stub dns.lookup so the SSRF check in fetchJwks doesn't try to resolve
+// `idp.example.com` (which would NXDOMAIN and fail-soft to 'unverified',
+// breaking happy-path tests). Returns a public IP for any hostname.
+vi.mock('node:dns/promises', () => ({
+  default: {
+    lookup: vi.fn(async () => [{ address: '93.184.216.34', family: 4 }]),
+  },
+  lookup: vi.fn(async () => [{ address: '93.184.216.34', family: 4 }]),
+}));
+
 import { verifyJwt, extractBearerToken, _resetStateForTesting } from '@/lib/jwks-verifier.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

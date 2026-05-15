@@ -18,6 +18,8 @@
  *   - Any network/outage error → unverified (not the token's fault)
  */
 
+import { assertSafeFetchUrl } from './url-safety.js';
+
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 const CB_FAILURE_THRESHOLD = 3;
 const CB_OPEN_MS = 30_000; // 30 s
@@ -52,6 +54,14 @@ async function fetchJwks(issuer) {
   }
 
   const jwksUrl = `${issuer}/.well-known/jwks.json`;
+
+  // SSRF defense: a malicious or compromised JWT can set `iss` to any URL.
+  // assertSafeFetchUrl rejects http://, private/reserved IPs (loopback,
+  // RFC1918, link-local 169.254.x.x for cloud metadata, etc.), and DNS
+  // rebinding. Throws with code 'UNSAFE_URL' which the catch block in
+  // verifyJwt treats as a network-class failure → fail-soft to 'unverified'.
+  await assertSafeFetchUrl(jwksUrl);
+
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT_MS);
 
@@ -254,6 +264,7 @@ export async function verifyJwt(token) {
     // These are not the token's fault; the issuer is temporarily unavailable.
     if (
       err.code === 'CIRCUIT_OPEN' ||
+      err.code === 'UNSAFE_URL' ||
       err.name === 'AbortError' ||
       err.code === 'ECONNREFUSED' ||
       err.code === 'ENOTFOUND' ||
