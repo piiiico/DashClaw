@@ -604,7 +604,7 @@ npm run livingcode:refresh`}</CodeBlock>
             <h2 className="text-2xl font-bold tracking-tight mb-2">Constructor</h2>
             <DocsCodeTabs
               nodeSnippet={`const claw = new DashClaw({ baseUrl, apiKey, agentId, agentName, authToken });`}
-              pythonSnippet='claw = DashClaw(base_url="...", api_key="...", agent_id="...", agent_name="...")'
+              pythonSnippet='claw = DashClaw(base_url="...", api_key="...", agent_id="...", agent_name="...", auth_token="...")'
             />
             <div className="mt-6">
               <ParamTable params={[
@@ -612,7 +612,7 @@ npm run livingcode:refresh`}</CodeBlock>
                 { name: 'apiKey / api_key', type: 'string', required: true, desc: 'API Key' },
                 { name: 'agentId / agent_id', type: 'string', required: true, desc: 'Unique Agent ID' },
                 { name: 'agentName / agent_name', type: 'string', required: false, desc: 'Human-readable agent label stored in audit trail for attribution. Automatically included on guard() calls if not overridden.' },
-                { name: 'authToken (Node only)', type: 'string', required: false, desc: 'Phase 2 — JWT bearer token from your OIDC provider. When set, the server verifies the signature via JWKS and returns verification_status on every guard response; the JWT sub claim overrides agentId in the audit record. Python SDK parity pending. See docs/agent-identity.md.' },
+                { name: 'authToken / auth_token', type: 'string', required: false, desc: 'Phase 2 — JWT bearer token from your OIDC provider. When set, the server verifies the signature via JWKS and returns verification_status on every guard response; the JWT sub claim overrides agent_id in the audit record. See docs/agent-identity.md.' },
               ]} />
             </div>
           </section>

@@ -39,6 +39,7 @@ class DashClaw:
         api_key,
         agent_id,
         agent_name=None,
+        auth_token=None,
         swarm_id=None,
         guard_mode="off",
         guard_callback=None,
@@ -59,6 +60,12 @@ class DashClaw:
         self.api_key = api_key
         self.agent_id = agent_id
         self.agent_name = agent_name
+        # Phase 2 (#104): JWT bearer token for cryptographic agent attribution.
+        # When set, every request includes Authorization: Bearer <token>; the
+        # server verifies via JWKS and returns verification_status. The JWT sub
+        # claim overrides agent_id in the audit record on successful verification.
+        # Mirrors Node SDK's authToken constructor option.
+        self.auth_token = auth_token
         self.swarm_id = swarm_id
         self.guard_mode = guard_mode
         self.guard_callback = guard_callback
@@ -93,9 +100,11 @@ class DashClaw:
         url = f"{self.base_url}{path}"
         headers = {
             "Content-Type": "application/json",
-            "x-api-key": self.api_key
+            "x-api-key": self.api_key,
         }
-        
+        if self.auth_token:
+            headers["Authorization"] = f"Bearer {self.auth_token}"
+
         data = None
         payload = json_payload if json_payload is not None else body
         if payload is not None:
@@ -1168,11 +1177,31 @@ class DashClaw:
     # --- Category 13: Policy Enforcement (Guard) ---
 
     def guard(self, context):
-        """Can I do X?"""
+        """Can I do X?
+
+        Returns a guard decision dict with at minimum:
+            decision         : 'allow' | 'block' | 'require_approval' | 'warn'
+            action_id        : str
+            reason           : str | None
+            signals          : list[str]
+            verification_status : 'verified' | 'unverified' | 'expired'
+                                | 'failed' | 'unknown_issuer'
+            agent_id         : str | None  (JWT sub when verified, else body value)
+            agent_name       : str | None
+
+        Phase 2 (#104): pass `auth_token` to the constructor to attach a JWT
+        bearer token; the server verifies it via JWKS and the JWT sub claim
+        overrides `agent_id` in the audit record on success. See
+        docs/agent-identity.md.
+        """
         payload = {
             **context,
-            "agent_id": context.get("agent_id", self.agent_id)
+            "agent_id": context.get("agent_id", self.agent_id),
         }
+        # Phase 1 parity with Node SDK: include agent_name from the constructor
+        # for audit attribution if the caller didn't supply one in `context`.
+        if context.get("agent_name") is None and self.agent_name:
+            payload["agent_name"] = self.agent_name
         return self._request("/api/guard", "POST", json=payload)
 
     def get_guard_decisions(self, decision=None, limit=20, offset=0, agent_id=None):

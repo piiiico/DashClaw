@@ -529,5 +529,97 @@ class TestApprovalDeniedError(unittest.TestCase):
         self.assertIsNone(err.decision)
 
 
+# ---------------------------------------------------------------------------
+# Phase 2 agent identity (#104) — auth_token + agent_name auto-include parity
+# ---------------------------------------------------------------------------
+
+class TestPhase2AuthToken(unittest.TestCase):
+    """Mirrors Node SDK's authToken behavior. The header itself is verified by
+    a separate test that patches urllib.request.urlopen so the real _request
+    code path runs (see TestPhase2BearerHeader below)."""
+
+    def test_auth_token_defaults_to_none(self):
+        client = RecordingDashClaw()
+        self.assertIsNone(client.auth_token)
+
+    def test_stores_auth_token_when_provided(self):
+        client = RecordingDashClaw(auth_token="eyJhbGciOiJFZERTQSJ9.x.y")
+        self.assertEqual(client.auth_token, "eyJhbGciOiJFZERTQSJ9.x.y")
+
+
+class TestPhase1AgentNameAutoInclude(unittest.TestCase):
+    """Phase 1 parity gap closed alongside Phase 2 — Python now matches
+    Node SDK's auto-include of agent_name from the constructor on guard()."""
+
+    def test_guard_auto_includes_agent_name_from_constructor(self):
+        client = RecordingDashClaw(agent_name="my-worker")
+        client.guard({"action_type": "deploy"})
+
+        body = client.calls[-1]["body"]
+        self.assertEqual(body["agent_name"], "my-worker")
+        self.assertEqual(body["agent_id"], "agent-1")
+
+    def test_caller_agent_name_overrides_constructor(self):
+        client = RecordingDashClaw(agent_name="constructor-name")
+        client.guard({"action_type": "deploy", "agent_name": "call-site-name"})
+
+        body = client.calls[-1]["body"]
+        self.assertEqual(body["agent_name"], "call-site-name")
+
+    def test_no_agent_name_emitted_when_neither_set(self):
+        client = RecordingDashClaw()  # no agent_name in constructor
+        client.guard({"action_type": "deploy"})
+
+        body = client.calls[-1]["body"]
+        self.assertNotIn("agent_name", body)
+
+
+class TestPhase2BearerHeader(unittest.TestCase):
+    """Verifies the actual _request code path adds Authorization: Bearer.
+    Patches urllib.request.urlopen so we test header construction without
+    going through RecordingDashClaw (which overrides _request entirely)."""
+
+    def _capture_headers(self, client, path="/api/health"):
+        from unittest import mock
+        captured = {}
+
+        class _FakeResponse:
+            def __enter__(self_inner):
+                return self_inner
+            def __exit__(self_inner, *a):
+                return False
+            def read(self_inner):
+                return b"{}"
+
+        def _fake_urlopen(req, timeout=None):
+            captured["headers"] = dict(req.header_items())
+            return _FakeResponse()
+
+        with mock.patch("urllib.request.urlopen", side_effect=_fake_urlopen):
+            client._request(path, method="GET")
+        return captured["headers"]
+
+    def test_no_authorization_header_when_auth_token_unset(self):
+        client = DashClaw(
+            base_url="https://example.test",
+            api_key="key-1",
+            agent_id="agent-1",
+        )
+        headers = self._capture_headers(client)
+        self.assertNotIn("Authorization", headers)
+
+    def test_bearer_header_set_when_auth_token_provided(self):
+        client = DashClaw(
+            base_url="https://example.test",
+            api_key="key-1",
+            agent_id="agent-1",
+            auth_token="eyJhbGciOiJFZERTQSJ9.x.y",
+        )
+        headers = self._capture_headers(client)
+        self.assertEqual(headers["Authorization"], "Bearer eyJhbGciOiJFZERTQSJ9.x.y")
+        # x-api-key still sent — Bearer is additive, not a replacement
+        self.assertEqual(headers["X-api-key"], "key-1")
+
+
 if __name__ == "__main__":
     unittest.main()

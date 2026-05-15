@@ -6,9 +6,9 @@
     "domains": ["agent.identity", "guard.verification"]
   },
   "python": {
-    "current_version": "2.12.0",
-    "next_bump": "minor",
-    "reason": "Phase 2 parity gap: server supports JWKS-verified bearer tokens but Python SDK has no auth_token constructor param yet. Bump when auth_token is added.",
-    "domains": ["actions.outcome", "actions.idempotency"]
+    "current_version": "2.13.0",
+    "next_bump": "patch",
+    "reason": "Phase 2 agent identity (#104) — at parity with Node SDK. auth_token constructor param attaches Authorization: Bearer on every request; agent_name auto-includes from constructor on guard() (Phase 1 parity also closed). Server returns verification_status enum on guard responses. Additive — no breaking changes.",
+    "domains": ["agent.identity", "guard.verification"]
   }
 }

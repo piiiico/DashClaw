@@ -36,8 +36,14 @@ claw = DashClaw(
     api_key="your-api-key",                # Required (v2)
     agent_id="my-python-agent",            # Required (v2)
     agent_name="My Python Agent",          # Optional (v2) — stored in audit trail for attribution
+    auth_token="<your-jwt-from-your-idp>", # Optional (v2 / Phase 2) — JWT bearer token. Server verifies via JWKS; on success the JWT sub claim overrides agent_id in the audit record. See docs/agent-identity.md.
 )
 ```
+
+Every `guard()` response now includes a `verification_status` field:
+`verified` | `unverified` | `expired` | `failed` | `unknown_issuer`. Without
+`auth_token`, requests resolve to `unverified` (Phase 1 trust-on-assertion is
+the fallback).
 
 ### Full constructor (v1 extended parameters)
 
