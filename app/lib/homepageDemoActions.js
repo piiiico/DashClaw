@@ -121,7 +121,7 @@ export function getHomepageDemoActions(resolution) {
       action_type: review.actionType,
       declared_goal: review.declaredGoal,
       reasoning:
-        'High-risk production action. Demo Production Guard policy requires explicit human approval before the deploy command is executed.',
+        'High-risk production action. [Demo fixture] Production Guard policy requires explicit human approval before the deploy command is executed.',
       authorization_scope: 'ci-pipeline, production-deploy',
       status: reviewStatus,
       outcome_status: reviewOutcome,
@@ -161,7 +161,7 @@ export function getHomepageDemoActions(resolution) {
       tokens_out: 0,
       duration_ms: 180,
       output_summary:
-        'Blocked by Demo Production Guard. Irreversible delete on production data requires explicit approval.',
+        'Blocked by [Demo fixture] Production Guard. Irreversible delete on production data requires explicit approval.',
       error_message:
         'Blocked by policy PRODUCTION_DATA_PROTECTION. Irreversible operation on customer data requires explicit approval.',
       timestamp_start: new Date(now - 1 * minute).toISOString(),
