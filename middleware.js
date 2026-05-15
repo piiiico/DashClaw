@@ -1259,9 +1259,7 @@ export async function middleware(request) {
       requestHeaders.set('x-org-role', 'admin');
 
       const response = NextResponse.next({ request: { headers: requestHeaders } });
-      response.headers.set('X-Content-Type-Options', 'nosniff');
-      response.headers.set('X-Frame-Options', 'DENY');
-      response.headers.set('X-XSS-Protection', '1; mode=block');
+      addSecurityHeaders(response, request);
       for (const [k, v] of Object.entries(getCorsHeaders(request))) response.headers.set(k, v);
       return response;
     }
@@ -1292,18 +1290,14 @@ export async function middleware(request) {
     }
 
     const response = NextResponse.next({ request: { headers: requestHeaders } });
-    response.headers.set('X-Content-Type-Options', 'nosniff');
-    response.headers.set('X-Frame-Options', 'DENY');
-    response.headers.set('X-XSS-Protection', '1; mode=block');
+    addSecurityHeaders(response, request);
     for (const [k, v] of Object.entries(getCorsHeaders(request))) response.headers.set(k, v);
     return response;
   }
 
   // Non-protected API routes: add security headers + CORS
   const response = NextResponse.next({ request: { headers: strippedApiRequestHeaders } });
-  response.headers.set('X-Content-Type-Options', 'nosniff');
-  response.headers.set('X-Frame-Options', 'DENY');
-  response.headers.set('X-XSS-Protection', '1; mode=block');
+  addSecurityHeaders(response, request);
   for (const [k, v] of Object.entries(getCorsHeaders(request))) response.headers.set(k, v);
 
   return response;
