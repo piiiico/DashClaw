@@ -71,6 +71,17 @@ function demoJson(request, payload, status = 200) {
   return response;
 }
 
+// Use for every error rejection from middleware so the per-response headers
+// are always applied. Bare `NextResponse.json()` returns leak the gap of
+// missing X-Frame-Options / X-Content-Type-Options / X-XSS-Protection / HSTS
+// on every 4xx/5xx the auth path emits. Accepts ResponseInit so callers can
+// pass status + extra headers (e.g. Retry-After).
+function securedJson(request, payload, init = {}) {
+  const response = NextResponse.json(payload, init);
+  addSecurityHeaders(response, request);
+  return response;
+}
+
 function parseUrl(request) {
   return new URL(request.url);
 }
@@ -1104,7 +1115,7 @@ export async function middleware(request) {
   const rateLimitKey = `${ip}:${pathname}`;
   if (!(await checkRateLimit(rateLimitKey))) {
     console.warn(`[SECURITY] Rate limit exceeded for ${ip}: ${pathname}`);
-    return NextResponse.json(
+    return securedJson(request,
       { error: 'Rate limit exceeded. Please slow down.' },
       { status: 429, headers: { 'Retry-After': '60' } }
     );
@@ -1127,7 +1138,7 @@ export async function middleware(request) {
   if (writeMethod) {
     const contentLength = parseInt(request.headers.get('content-length') || '0', 10);
     if (contentLength > maxBodyBytes) {
-      return NextResponse.json(
+      return securedJson(request,
         { error: 'Request body too large', maxBytes: maxBodyBytes },
         { status: 413 }
       );
@@ -1171,7 +1182,7 @@ export async function middleware(request) {
       // SECURITY: Fail closed if not strictly in development mode
       if (process.env.NODE_ENV !== 'development') {
         console.warn('[SECURITY] DASHCLAW_API_KEY not set - blocking API access.');
-        return NextResponse.json(
+        return securedJson(request,
           { error: 'Server misconfigured: set DASHCLAW_API_KEY to protect /api/* endpoints.' },
           { status: 503 }
         );
@@ -1203,7 +1214,7 @@ export async function middleware(request) {
         if (!sessionToken) {
           const localSession = await getLocalAdminSession(request);
           if (!localSession) {
-            return NextResponse.json({ error: 'Unauthorized - Session required' }, { status: 401 });
+            return securedJson(request, { error: 'Unauthorized - Session required' }, { status: 401 });
           }
           sessionToken = localSession;
         }
@@ -1226,7 +1237,7 @@ export async function middleware(request) {
       }
 
       console.warn('[SECURITY] Missing API key on cross-origin API request.');
-      return NextResponse.json(
+      return securedJson(request,
         { error: 'Unauthorized - Invalid or missing API key' },
         { status: 401 }
       );
@@ -1241,7 +1252,7 @@ export async function middleware(request) {
       if (!orgExists) {
         console.error('[SECURITY] DASHCLAW_API_KEY_ORG is set to a value that does not exist in the organizations table. Run migrations or create the org.');
         // SECURITY: Do not leak the configured org ID to the client or logs.
-        return NextResponse.json(
+        return securedJson(request,
           {
             error: 'Database not initialized. Redeploy to trigger auto-migration, or POST to /api/setup/migrate.',
             code: 'SCHEMA_NOT_INITIALIZED',
@@ -1271,7 +1282,7 @@ export async function middleware(request) {
 
     if (!resolved) {
       console.warn(`[SECURITY] Unauthorized API access attempt: ${pathname} from ${ip}`);
-      return NextResponse.json(
+      return securedJson(request,
         { error: 'Unauthorized - Invalid or missing API key' },
         { status: 401 }
       );
@@ -1282,12 +1293,12 @@ export async function middleware(request) {
 
     const trialBlock = enforceHostedTrial(resolved);
     if (trialBlock) {
-      return NextResponse.json(trialBlock.body, { status: trialBlock.status });
+      return securedJson(request, trialBlock.body, { status: trialBlock.status });
     }
 
     // SECURITY: Enforce readonly semantics for API keys.
     if (request.method !== 'GET' && request.method !== 'HEAD' && resolved.role === 'readonly') {
-      return NextResponse.json({ error: 'Forbidden - readonly API key' }, { status: 403 });
+      return securedJson(request, { error: 'Forbidden - readonly API key' }, { status: 403 });
     }
 
     const response = NextResponse.next({ request: { headers: requestHeaders } });
