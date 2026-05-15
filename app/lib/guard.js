@@ -91,13 +91,18 @@ export async function evaluateGuard(orgId, context, sql, options = {}) {
   }
 
   // Phase 2b (issue #120, design by @piiiico): block replays before policy
-  // evaluation so the audit row records exactly why this call was denied.
-  //   - replayed    → always deny (any protection mode but 'off' would
+  // evaluation so the audit row records exactly why this call was blocked.
+  //   - replayed    → always block (any protection mode but 'off' would
   //                   have produced this, so blocking is the correct fail
   //                   shape regardless of mode)
-  //   - unavailable → deny only when DASHCLAW_JTI_REPLAY_PROTECTION=required
+  //   - unavailable → block only when DASHCLAW_JTI_REPLAY_PROTECTION=required
   //                   (best_effort default keeps Phase 2's fail-soft posture)
-  //   - exp_too_far → deny: token outside the configured TTL cap
+  //   - not_present → block only when DASHCLAW_JTI_REPLAY_PROTECTION=required
+  //                   (closes the "hostile IdP strips jti" attack vector that
+  //                   the docs explicitly call out as required mode's reason
+  //                   to exist; without this branch required wouldn't honor
+  //                   its own promise)
+  //   - exp_too_far → always block: token outside the configured TTL cap
   //
   // The route layer (app/api/guard/route.js) populates context.replay_status
   // and context.jti by calling jti-replay.repository before us. We never
@@ -111,6 +116,21 @@ export async function evaluateGuard(orgId, context, sql, options = {}) {
     replayBlockReason = `Token exp exceeds the configured max TTL (DASHCLAW_JTI_MAX_TTL_SECONDS).`;
   } else if (replayStatusEarly === 'unavailable' && replayProtection === 'required') {
     replayBlockReason = `Replay store unreachable and DASHCLAW_JTI_REPLAY_PROTECTION=required.`;
+  } else if (replayStatusEarly === 'not_present' && replayProtection === 'required') {
+    replayBlockReason = `Verified token has no jti claim and DASHCLAW_JTI_REPLAY_PROTECTION=required.`;
+  }
+  if (replayBlockReason) {
+    // Operator-visible signal so prod logs surface attacks in real time
+    // without requiring a SQL query against guard_decisions. Includes the
+    // jti so log correlation across windows is possible; the jti itself is
+    // not sensitive (it's a public RFC 7519 claim).
+    console.warn('[Guard] Replay-protection block:', {
+      reason: replayBlockReason,
+      replay_status: replayStatusEarly,
+      jti: context.jti || null,
+      agent_id: context.agent_id || null,
+      org_id: orgId,
+    });
   }
 
   const allPolicies = await sql`

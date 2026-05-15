@@ -43,16 +43,17 @@ plus a "seen set" closes that gap.
    the `jwt_replay_log` table, keyed by `(issuer, jti)`.
 3. A returned row means **first use**; an empty result means **replay detected**.
 4. The outcome is recorded in `guard_decisions.replay_status` alongside
-   `verification_status`. Replays force `decision = 'deny'`.
+   `verification_status`. Replays force `decision = 'block'`.
 
 ### replay_status enum
 
 | Value            | Meaning                                                          |
 |------------------|------------------------------------------------------------------|
-| `not_applicable` | No JWT, or token was not `verified` (legacy / Phase 1 path)      |
+| `not_applicable` | No JWT (Phase 1 / legacy path)                                   |
+| `disabled`       | Verified JWT but `DASHCLAW_JTI_REPLAY_PROTECTION=off`            |
 | `unique`         | First time this `(issuer, jti)` was seen → guard proceeds        |
-| `replayed`       | Same `(issuer, jti)` seen before → guard denies                  |
-| `not_present`    | Verified token did not include a `jti` claim                     |
+| `replayed`       | Same `(issuer, jti)` seen before → guard blocks                  |
+| `not_present`    | Verified token did not include a `jti` claim (or jti > 1024 chars) |
 | `unavailable`    | Replay store unreachable                                         |
 | `exp_too_far`    | Token `exp` exceeds the configured TTL cap                       |
 
@@ -62,17 +63,19 @@ Set `DASHCLAW_JTI_REPLAY_PROTECTION` to one of:
 
 | Mode          | `replayed` | `not_present` | `unavailable` |
 |---------------|------------|---------------|---------------|
-| `off`         | allow      | allow         | allow (skipped)|
-| `best_effort` | **deny**   | allow         | allow         |
-| `required`    | **deny**   | **deny**      | **deny**      |
+| `off`         | allow      | allow         | allow (skipped) |
+| `best_effort` | **block**  | allow         | allow         |
+| `required`    | **block**  | **block**     | **block**     |
 
 `best_effort` is the default and matches Phase 2's fail-soft posture. `required`
 is for adversarial deployments where any uncertainty must fail closed.
 
 > **Security note** — In `best_effort` mode, an issuer that doesn't emit `jti`
-> (or strips it under attack) bypasses replay protection entirely. If your
-> threat model includes a hostile or misconfigured IdP, run `required` and
-> make sure your IdP always emits `jti`.
+> (or strips it under attack) bypasses replay protection entirely. `required`
+> mode closes that gap by denying any verified token that lacks a `jti`. If
+> your threat model includes a hostile or misconfigured IdP, run `required`
+> and make sure your IdP always emits `jti` so legitimate traffic isn't
+> impacted.
 
 ### Storage and sweep
 

@@ -9,7 +9,7 @@
  *
  * That mirrors Postgres ON CONFLICT DO NOTHING RETURNING behavior.
  */
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   checkAndRecord,
   sweep,
@@ -125,6 +125,20 @@ describe('jti-replay repository (Phase 2b)', () => {
   });
 
   describe('sweep', () => {
+    let randomSpy;
+
+    beforeEach(() => {
+      // Stub Math.random so the 1% probabilistic in-line sweep inside
+      // checkAndRecord never fires during these tests. Without this, any
+      // run that happens to roll < 0.01 deletes the expired rows mid-setup
+      // and the explicit sweep then has nothing to find — flaky.
+      randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    });
+
+    afterEach(() => {
+      randomSpy.mockRestore();
+    });
+
     it('deletes only rows with expires_at < now', async () => {
       const now = Math.floor(Date.now() / 1000);
       // Two expired, one fresh
@@ -146,6 +160,25 @@ describe('jti-replay repository (Phase 2b)', () => {
       await checkAndRecord(sql, { jti: 'a', issuer: 'i', expiresAt: now + 1000 });
       const deleted = await sweep(sql);
       expect(deleted).toBe(0);
+    });
+  });
+
+  describe('checkAndRecord — oversized jti', () => {
+    it('throws OVERSIZED_JTI when jti exceeds 1024 chars', async () => {
+      const longJti = 'a'.repeat(1025);
+      await expect(
+        checkAndRecord(sql, { jti: longJti, issuer: 'iss', expiresAt: 9999999999 }),
+      ).rejects.toMatchObject({ code: 'OVERSIZED_JTI' });
+    });
+
+    it('accepts jti exactly at the 1024-char limit', async () => {
+      const okJti = 'a'.repeat(1024);
+      const result = await checkAndRecord(sql, {
+        jti: okJti,
+        issuer: 'iss',
+        expiresAt: 9999999999,
+      });
+      expect(result).toBe('unique');
     });
   });
 });

@@ -507,9 +507,12 @@ export const guardDecisions = pgTable('guard_decisions', {
   // expired        — JWT signature valid but exp < now
   // failed         — bad signature, malformed token, or aud mismatch
   // unknown_issuer — iss not in DASHCLAW_ALLOWED_ISSUER (when configured)
+  // exp_too_far    — exp > now + DASHCLAW_JTI_MAX_TTL_SECONDS (Phase 2b)
   verificationStatus: text('verification_status').default('unverified'),
   // Phase 2b: jti replay-protection outcome (issue #120, designed by @piiiico).
-  // not_applicable | unique | replayed | not_present | unavailable | exp_too_far
+  // Possible values:
+  //   not_applicable | unique | replayed | not_present | unavailable
+  //   exp_too_far    | disabled (verified token but DASHCLAW_JTI_REPLAY_PROTECTION=off)
   replayStatus: text('replay_status').default('not_applicable'),
   // Forensic only — logged on every verified call so reviewers can correlate
   // replays across windows. Never read for validation.

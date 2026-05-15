@@ -17,6 +17,13 @@
 // /api/cron/jti-sweep is the belt-and-suspenders for low-traffic periods.
 const SWEEP_PROBABILITY = 0.01;
 
+// Cap on the jti claim length we'll persist. RFC 7519 leaves jti format
+// unspecified — UUIDs are ~36 chars, opaque random ~64. 1024 is a generous
+// upper bound that catches a misconfigured / hostile issuer that emits
+// arbitrary-length values to bloat the store. Caller treats overflow as
+// `not_present` (same fail-soft path as a missing jti claim).
+const MAX_JTI_LENGTH = 1024;
+
 let _tableChecked = false;
 async function ensureTable(sql) {
   if (_tableChecked) return;
@@ -58,6 +65,15 @@ export async function checkAndRecord(sql, { jti, issuer, expiresAt, agentId }) {
     err.code = 'INVALID_INPUT';
     throw err;
   }
+  // Reject oversized jti before hitting Postgres — TEXT is unbounded server-
+  // side, so without this guard a malicious IdP could persist multi-MB rows.
+  // Caller (route.js) maps OVERSIZED_JTI to 'not_present' so the verified
+  // token still reaches the guard, just without replay-store accounting.
+  if (jti.length > MAX_JTI_LENGTH) {
+    const err = new Error(`checkAndRecord: jti exceeds ${MAX_JTI_LENGTH} chars (got ${jti.length})`);
+    err.code = 'OVERSIZED_JTI';
+    throw err;
+  }
 
   try {
     await ensureTable(sql);
@@ -97,10 +113,14 @@ export async function checkAndRecord(sql, { jti, issuer, expiresAt, agentId }) {
 export async function sweep(sql) {
   await ensureTable(sql);
   const now = Math.floor(Date.now() / 1000);
+  // RETURNING 1 instead of RETURNING jti — after an extended cron outage the
+  // table can hold millions of expired rows; shipping all jti strings over
+  // the wire just to discard them is wasteful. The 1-byte sentinel keeps
+  // the deleted.length count without the network cost.
   const deleted = await sql`
     DELETE FROM jwt_replay_log
     WHERE expires_at < ${now}
-    RETURNING jti
+    RETURNING 1
   `;
   return deleted.length;
 }

@@ -36,7 +36,7 @@ import { checkAndRecord as checkAndRecordJti } from '../../lib/repositories/jti-
  *   On issuer outage the verifier fails-soft to 'unverified' so a downed
  *   identity provider cannot block agent decisions.
  *
- *   verification_status enum: verified | unverified | expired | failed | unknown_issuer
+ *   verification_status enum: verified | unverified | expired | failed | unknown_issuer | exp_too_far
  *
  * Config (env vars, no YAML needed):
  *   DASHCLAW_ALLOWED_ISSUER  — restrict which JWT issuers are trusted
@@ -68,6 +68,12 @@ export async function POST(request) {
         }, { status: 400 });
       }
     }
+
+    // Hoist sql once — used by the replay check and evaluateGuard. getSql()
+    // returns a cached singleton so calling it twice is harmless, but a
+    // single binding makes the dependency clear and avoids subtle risk if
+    // getSql() ever stops being idempotent (e.g., during hot reload).
+    const sql = getSql();
 
     // Phase 2: JWKS verification — resolve agent identity from JWT bearer token.
     // Fail-soft: infrastructure errors fall back to 'unverified', never 'failed'.
@@ -102,8 +108,25 @@ export async function POST(request) {
       const replayProtection = (process.env.DASHCLAW_JTI_REPLAY_PROTECTION || 'best_effort').toLowerCase();
       if (verificationResult.verification_status === 'exp_too_far') {
         data.replay_status = 'exp_too_far';
-      } else if (verificationResult.verification_status === 'verified' && replayProtection !== 'off') {
+      } else if (verificationResult.verification_status === 'verified' && replayProtection === 'off') {
+        // Distinct from `not_applicable` so the audit trail can tell apart
+        // "Phase 1 path / no JWT" from "verified JWT but operator opted out
+        // of replay protection." Same allow-everything outcome, different
+        // forensic story during incident review.
+        data.replay_status = 'disabled';
+      } else if (verificationResult.verification_status === 'verified') {
+        // Length cap matches the repository's MAX_JTI_LENGTH (1024). Catching
+        // it here too means a hostile-IdP-issued multi-MB jti never reaches
+        // the store at all and never throws OVERSIZED_JTI. Boundary
+        // validation > deep validation.
+        const oversizedJti = typeof verificationResult.jti === 'string' && verificationResult.jti.length > 1024;
         if (!verificationResult.jti) {
+          data.replay_status = 'not_present';
+        } else if (oversizedJti) {
+          console.warn('[Guard] Oversized jti rejected from replay store', {
+            jti_length: verificationResult.jti.length,
+            issuer: verificationResult.issuer,
+          });
           data.replay_status = 'not_present';
         } else if (typeof verificationResult.exp !== 'number') {
           // jti without exp can't be safely TTL'd → treat as not_present so
@@ -117,8 +140,7 @@ export async function POST(request) {
           // out of the repository (which would surface as an unhandled 500).
           data.replay_status = 'not_present';
         } else {
-          const sqlForReplay = getSql();
-          data.replay_status = await checkAndRecordJti(sqlForReplay, {
+          data.replay_status = await checkAndRecordJti(sql, {
             jti: verificationResult.jti,
             issuer: verificationResult.issuer,
             expiresAt: verificationResult.exp,
@@ -134,7 +156,6 @@ export async function POST(request) {
       data.jti = null;
     }
 
-    const sql = getSql();
     const includeSignals = request.nextUrl.searchParams.get('include_signals') === 'true';
 
     let computeSignalsFn = null;
