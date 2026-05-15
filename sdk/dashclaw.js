@@ -28,8 +28,12 @@ class DashClaw {
    * @param {string} options.apiKey - API key for authentication
    * @param {string} options.agentId - Unique identifier for this agent
    * @param {string} [options.agentName] - Human-readable label for this agent (stored in audit trail)
+   * @param {string} [options.authToken] - Phase 2: JWT bearer token from your OIDC provider.
+   *   When set, DashClaw server verifies the token via JWKS and returns `verification_status`
+   *   in every guard response. The JWT `sub` claim overrides agentId in the audit record
+   *   when verification succeeds — cryptographic proof beats self-assertion.
    */
-  constructor({ baseUrl, apiKey, agentId, agentName }) {
+  constructor({ baseUrl, apiKey, agentId, agentName, authToken }) {
     if (!baseUrl) throw new Error('baseUrl is required');
     if (!apiKey) throw new Error('apiKey is required');
     if (!agentId) throw new Error('agentId is required');
@@ -38,6 +42,7 @@ class DashClaw {
     this.apiKey = apiKey;
     this.agentId = agentId;
     this.agentName = agentName || null;
+    this.authToken = authToken || null;
 
     this.execution = {
       capabilities: {
@@ -63,7 +68,8 @@ class DashClaw {
 
     const headers = {
       'Content-Type': 'application/json',
-      'x-api-key': this.apiKey
+      'x-api-key': this.apiKey,
+      ...(this.authToken ? { 'Authorization': `Bearer ${this.authToken}` } : {}),
     };
 
     const res = await fetch(url, {
@@ -94,7 +100,23 @@ class DashClaw {
   /**
    * POST /api/guard — "Can I do X?"
    * @param {Object} context
-   * @returns {Promise<{decision: 'allow'|'block'|'require_approval', action_id: string, reason: string, signals: string[]}>}
+   * @returns {Promise<{
+   *   decision: 'allow'|'block'|'require_approval'|'warn',
+   *   action_id: string,
+   *   reason: string,
+   *   signals: string[],
+   *   verification_status: 'verified'|'unverified'|'expired'|'failed'|'unknown_issuer',
+   *   agent_id: string|null,
+   *   agent_name: string|null,
+   * }>}
+   *
+   * `verification_status` reflects whether the JWT bearer token (if provided
+   * via the `authToken` constructor option) was cryptographically verified:
+   *   verified       — signature valid; audit entry anchored to JWT sub
+   *   unverified     — no token, or issuer temporarily unreachable (fail-soft)
+   *   expired        — token expired; consider refreshing before next call
+   *   failed         — bad signature, malformed token, or audience mismatch
+   *   unknown_issuer — issuer not in DASHCLAW_ALLOWED_ISSUER (server config)
    */
   async guard(context) {
     return this._request('/api/guard', 'POST', {

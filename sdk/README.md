@@ -34,6 +34,10 @@ const claw = new DashClaw({
   apiKey: process.env.DASHCLAW_API_KEY,
   agentId: 'my-agent',
   agentName: 'My Agent',  // optional — stored in audit trail for attribution
+  // Phase 2 (optional): attach a JWT from your OIDC provider for cryptographic
+  // attribution. When set, the server verifies the signature via JWKS and the
+  // JWT sub claim overrides agentId in the audit record.
+  // authToken: process.env.MY_AGENT_JWT,
 });
 
 // 1. Ask permission
@@ -252,7 +256,7 @@ See:
 The v2 SDK exposes the stable governance runtime plus promoted execution domains in the canonical Node client:
 
 ### Core Runtime
-- `guard(context)` -- Policy evaluation ("Can I do X?"). Returns `risk_score` (server-computed) and `agent_risk_score` (raw agent value). Automatically includes `agent_name` from the constructor if not overridden in the call context.
+- `guard(context)` -- Policy evaluation ("Can I do X?"). Returns `risk_score` (server-computed), `agent_risk_score` (raw agent value), and `verification_status` (`verified` | `unverified` | `expired` | `failed` | `unknown_issuer`). Automatically includes `agent_name` from the constructor if not overridden in the call context. Pass `authToken` in the constructor to enable JWKS-backed cryptographic attribution (Phase 2 — see `docs/agent-identity.md`).
 - `createAction(action)` -- Lifecycle tracking ("I am doing X"). Accepts optional `idempotency_key`; on collision returns the existing row with `{ idempotent_replay: true }` instead of inserting a duplicate.
 - `updateOutcome(id, outcome)` -- Result recording ("X finished with Y"). `outcome` accepts `status`, `output_summary`, `side_effects`, `artifacts_created`, `error_message`, `duration_ms`, `tokens_in`, `tokens_out`, `model`, `cost_estimate`. When `tokens_in` / `tokens_out` are reported without an explicit `cost_estimate`, the server derives cost from `model` using the configured pricing table.
 - `recordAssumption(assumption)` -- Integrity tracking ("I believe Z while doing X")

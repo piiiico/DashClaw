@@ -227,13 +227,16 @@ export async function evaluateGuard(orgId, context, sql, options = {}) {
     console.warn(`[Guard] Redacted ${dlpFindings.length} sensitive pattern(s) from guard_decisions.context before storing.`);
   }
 
+  const verificationStatus = context.verification_status || 'unverified';
+
   sql`
-    INSERT INTO guard_decisions (id, org_id, agent_id, agent_name, decision, reason, matched_policies, context, risk_score, action_type, created_at)
+    INSERT INTO guard_decisions (id, org_id, agent_id, agent_name, verification_status, decision, reason, matched_policies, context, risk_score, action_type, created_at)
     VALUES (
       ${decisionId},
       ${orgId},
       ${context.agent_id || null},
       ${context.agent_name || null},
+      ${verificationStatus},
       ${highestDecision},
       ${reasons.join('; ') || null},
       ${JSON.stringify(matchedPolicies)},
@@ -253,6 +256,7 @@ export async function evaluateGuard(orgId, context, sql, options = {}) {
       org_id: orgId,
       agent_id: context.agent_id || null,
       agent_name: context.agent_name || null,
+      verification_status: verificationStatus,
       decision: highestDecision,
       reason: reasons.join('; ') || null,
       matched_policies: matchedPolicies,
@@ -299,6 +303,9 @@ export async function evaluateGuard(orgId, context, sql, options = {}) {
     matched_policies: matchedPolicies,
     risk_score: adjustedRiskScore,
     agent_risk_score: agentRiskScore,
+    verification_status: verificationStatus,
+    agent_id: context.agent_id || null,
+    agent_name: context.agent_name || null,
     evaluated_at,
     learning: learningContext || undefined,
     ...(recovery ? { recovery } : {}),
