@@ -16,10 +16,19 @@ const { version } = require('../../../package.json');
  * Returns system health status for monitoring
  */
 export async function GET() {
+  // todo-001: surface demo-mode so the Python hook can warn the operator when
+  // DASHCLAW_BASE_URL points at a sandbox instance (a stale env var silently
+  // routed real agent traffic to a demo container, where fixture blocks looked
+  // indistinguishable from real policy decisions). Either env var counts —
+  // `DASHCLAW_MODE` is the canonical server signal (see app/lib/selfHost.js)
+  // and `NEXT_PUBLIC_DASHCLAW_MODE` is what the browser-side isDemoMode() uses.
+  const isDemo = process.env.DASHCLAW_MODE === 'demo'
+    || process.env.NEXT_PUBLIC_DASHCLAW_MODE === 'demo';
   const health = {
     status: 'healthy',
     timestamp: new Date().toISOString(),
     version,
+    mode: isDemo ? 'demo' : 'live',
     checks: {}
   };
 

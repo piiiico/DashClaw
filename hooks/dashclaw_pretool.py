@@ -10,6 +10,7 @@ Exit codes:
   2 - Block the tool (Claude Code shows stderr to user)
 """
 
+import hashlib
 import json
 import os
 import re
@@ -85,6 +86,14 @@ PERMISSION_MODE = os.environ.get("DASHCLAW_PERMISSION_MODE") or "danger"
 GUARD_TIMEOUT = float(os.environ.get("DASHCLAW_GUARD_TIMEOUT") or "5")
 APPROVAL_TIMEOUT = float(os.environ.get("DASHCLAW_APPROVAL_TIMEOUT") or "30")
 GUARD_UNAVAILABLE_POLICY = (os.environ.get("DASHCLAW_GUARD_UNAVAILABLE_POLICY") or "block").lower()
+
+# todo-001: one-shot demo-mode probe to surface a misrouted DASHCLAW_BASE_URL
+# (e.g. a stale env var pointing at a local sandbox) before the operator burns
+# 30 minutes debugging fixture decisions as if they were real policies. The
+# probe is cached per-URL so we only pay the HTTP cost once per TTL window;
+# changing BASE_URL forces a fresh check because the cache key includes the URL.
+DEMO_CHECK_TTL_SECONDS = 15 * 60
+DEMO_CHECK_TIMEOUT_SECONDS = 0.5
 
 # ---------------------------------------------------------------------------
 # Intent-to-action_type mapping
@@ -585,6 +594,75 @@ def handle_guard_unavailable(context, tool_use_id):
 
 
 # ---------------------------------------------------------------------------
+# Demo-mode startup warning (todo-001)
+# ---------------------------------------------------------------------------
+
+def _demo_check_cache_path():
+    url_hash = hashlib.sha256(BASE_URL.encode("utf-8")).hexdigest()[:16]
+    return os.path.join(tempfile.gettempdir(), "dashclaw_health_check_" + url_hash)
+
+
+def _read_demo_check_cache(path):
+    """Return cached mode if fresh; None if missing, expired, or unreadable."""
+    try:
+        with open(path, encoding="utf-8") as f:
+            ts_line, mode_line = f.read().strip().split("\n", 1)
+        if time.time() - float(ts_line) < DEMO_CHECK_TTL_SECONDS:
+            return mode_line.strip()
+    except Exception:
+        pass
+    return None
+
+
+def _write_demo_check_cache(path, mode):
+    """Best-effort cache write; failures are silent (warning still surfaces)."""
+    try:
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(str(time.time()) + "\n" + mode + "\n")
+    except Exception:
+        pass
+
+
+def _probe_health_mode():
+    """GET /api/health (no auth, no retries). Return mode string or None."""
+    try:
+        req = urllib.request.Request(
+            BASE_URL + "/api/health",
+            headers={"User-Agent": "dashclaw-hook-demo-check/1"},
+        )
+        with urllib.request.urlopen(req, timeout=DEMO_CHECK_TIMEOUT_SECONDS) as resp:
+            payload = json.loads(resp.read().decode("utf-8"))
+            mode = payload.get("mode")
+            return mode if isinstance(mode, str) else "unknown"
+    except Exception:
+        return None
+
+
+def _maybe_warn_demo_mode():
+    """Surface a one-shot stderr warning when BASE_URL is in demo mode.
+
+    Cache hit -> no warning (we already warned this cycle when the cache was
+    written). Cache miss -> probe; if mode=='demo', warn. Any probe failure
+    stays silent so a transient health blip does not add hook noise."""
+    if not BASE_URL:
+        return
+    cache_path = _demo_check_cache_path()
+    if _read_demo_check_cache(cache_path) is not None:
+        return
+
+    mode = _probe_health_mode()
+    if mode is None:
+        return
+
+    _write_demo_check_cache(cache_path, mode)
+
+    if mode == "demo":
+        log("[DashClaw] ⚠ DASHCLAW_BASE_URL points to a demo-mode instance (" + BASE_URL + ").")
+        log("           Governance decisions will come from fixture data, not your real policies.")
+        log("           Set DASHCLAW_BASE_URL to your real instance to dogfood properly.")
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -592,6 +670,10 @@ def main():
     # Exit silently if DashClaw is not configured
     if not BASE_URL or not API_KEY:
         sys.exit(0)
+
+    # Surface a warning if the configured instance is in demo mode (todo-001).
+    # Non-blocking: never exits or alters enforcement, only writes to stderr.
+    _maybe_warn_demo_mode()
 
     # Parse stdin -- read as raw bytes and decode as UTF-8 to handle
     # Windows PowerShell which pipes UTF-8 BOM bytes through cp1252 stdin

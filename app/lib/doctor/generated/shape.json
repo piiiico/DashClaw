@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:33c994e6ab397d8f7c8cf7103f95793040bb315c",
+  "timestamp": "sha1:5dc280f182c5506c449abdc4cd0a3f6aaa1822ff",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -3059,6 +3059,8 @@
       "files": [
         "__tests__/unit/guard-agent-attribution.test.js",
         "__tests__/unit/guard.route.test.js",
+        "__tests__/unit/health.route.test.js",
+        "app/api/health/route.js",
         "app/api/setup/ping/route.js",
         "app/lib/selfHost.js",
         "app/settings/page.js",
@@ -3534,6 +3536,8 @@
       "name": "NEXT_PUBLIC_DASHCLAW_MODE",
       "required": false,
       "files": [
+        "__tests__/unit/health.route.test.js",
+        "app/api/health/route.js",
         "app/components/UserMenu.js",
         "app/lib/isDemoMode.js",
         "graphify-pilot/app/components/UserMenu.js",

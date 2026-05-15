@@ -113,6 +113,35 @@ describe('/api/health GET', () => {
     expect(data.version).toBeDefined();
   });
 
+  it('reports mode=live when neither demo env var is set', async () => {
+    delete process.env.DASHCLAW_MODE;
+    delete process.env.NEXT_PUBLIC_DASHCLAW_MODE;
+
+    const res = await GET(makeRequest('http://localhost/api/health', {}));
+    const data = await res.json();
+    expect(data.mode).toBe('live');
+  });
+
+  it('reports mode=demo when DASHCLAW_MODE=demo (server signal)', async () => {
+    process.env.DASHCLAW_MODE = 'demo';
+
+    const res = await GET(makeRequest('http://localhost/api/health', {}));
+    const data = await res.json();
+    expect(data.mode).toBe('demo');
+
+    delete process.env.DASHCLAW_MODE;
+  });
+
+  it('reports mode=demo when NEXT_PUBLIC_DASHCLAW_MODE=demo (browser-aligned signal)', async () => {
+    process.env.NEXT_PUBLIC_DASHCLAW_MODE = 'demo';
+
+    const res = await GET(makeRequest('http://localhost/api/health', {}));
+    const data = await res.json();
+    expect(data.mode).toBe('demo');
+
+    delete process.env.NEXT_PUBLIC_DASHCLAW_MODE;
+  });
+
   it('degrades gracefully when realtime health check throws', async () => {
     mockGetRealtimeHealth.mockRejectedValue(new Error('redis timeout'));
 
