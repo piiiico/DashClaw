@@ -291,40 +291,6 @@ await claw.createAction({ /* ... */, idempotency_key: key });
 
 ---
 
-## Platform overview
-
-Every screenshot below is a live surface in the running app, not a marketing render.
-
-<div align="center">
-
-**Mission Control.** Strategic posture, decision stream, and live intervention feed.
-
-<img src="public/images/screenshots/Mission Control.png" alt="Mission Control" width="1000" />
-
-<br /><br />
-
-**Approval Queue.** Human-in-the-loop intervention with risk score, matched policies, and one-click allow or deny.
-
-<img src="public/images/screenshots/Approvals.png" alt="Approval Queue" width="1000" />
-
-<br /><br />
-
-**Policy Builder.** Declarative shields that govern agent behavior before actions execute.
-
-<img src="public/images/screenshots/Policies.png" alt="Policy Builder" width="1000" />
-
-<br /><br />
-
-**Assumption Tracking.** Every action carries its declared assumptions. Drift checks surface when an assumption is invalidated by later evidence.
-
-<img src="public/images/screenshots/Assumptions.png" alt="Assumption Tracking" width="1000" />
-
-</div>
-
-> **Asset note for maintainers.** The four screenshots above are current. Other surfaces with usable assets in [`public/images/screenshots/`](public/images/screenshots/) include Decisions, Agents, Signals, Activity, Compliance, Audit Log, Analytics, Webhooks, Integrations, and Settings. The hero screencast (`demo-gif2.gif`) currently has no destination URL; remove or repoint when a fresh recording exists.
-
----
-
 ## Safety and governance model
 
 DashClaw is not observability. It is control before execution. The model:

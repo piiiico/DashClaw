@@ -118,21 +118,6 @@ class TestCodeQualityCollector(unittest.TestCase):
             result = collect_code_quality(self.tmpdir, max_file_length=300)
         self.assertEqual(result.todo_count, 1)
 
-    def test_todo_count_skips_graphify_pilot_snapshot(self):
-        """graphify-pilot/ is a snapshot, not live code. Its TODOs are
-        duplicates of the live tree and shouldn't be counted twice."""
-        from livingcode.collectors.code_quality import collect_code_quality
-        snap_dir = Path(self.tmpdir) / "graphify-pilot" / "app"
-        snap_dir.mkdir(parents=True)
-        (snap_dir / "old.js").write_text("// TODO: snapshot\n// TODO: still snapshot\n")
-        live_dir = Path(self.tmpdir) / "app"
-        live_dir.mkdir()
-        (live_dir / "live.js").write_text("// TODO: real\n")
-        with patch("livingcode.collectors.code_quality._run_lint") as mock_lint:
-            mock_lint.return_value = "pass"
-            result = collect_code_quality(self.tmpdir, max_file_length=300)
-        self.assertEqual(result.todo_count, 1)
-
 
 if __name__ == "__main__":
     unittest.main()

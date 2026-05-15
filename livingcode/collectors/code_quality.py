@@ -13,9 +13,6 @@ SKIP_DIRS = {
     "__pycache__",
     ".organism",
     "coverage",
-    # Snapshot, not live code — surfacing its TODOs as actionable creates
-    # false planner work items that regenerate every cycle.
-    "graphify-pilot",
 }
 CODE_EXTENSIONS = {".js", ".ts", ".jsx", ".tsx"}
 PYTHON_EXTENSIONS = {".py"}

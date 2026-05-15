@@ -1,1 +1,0 @@
-{"nodes": [{"id": "slack", "label": "slack.js", "file_type": "code", "source_file": "app\\lib\\notification-adapters\\slack.js", "source_location": "L1"}], "edges": []}

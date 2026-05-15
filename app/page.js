@@ -3,14 +3,12 @@ import { ShieldAlert, ArrowRight, Terminal, BookOpen, Package, Scale, FileCheck,
 import DashClawLogo from './components/DashClawLogo';
 import PublicNavbar from './components/PublicNavbar';
 import PublicFooter from './components/PublicFooter';
-import HeroScreenshot from './components/HeroScreenshot';
 import InlineCopyCommand from './components/InlineCopyCommand';
 import LiveDemo from './components/LiveDemo';
 import UseCases from './components/UseCases';
 import TrackedLink from './components/TrackedLink';
 import MarketingViewObserver from './components/MarketingViewObserver';
 import SetupBanner from './components/SetupBanner';
-import { allScreenshots } from './screenshotData';
 
 import {
   coreFeatures,
@@ -863,39 +861,7 @@ if (decision === "allow") {
         </div>
       </section>
 
-      {/* ── 8. Mission Control ── */}
-      <section className="py-20 px-6 border-t border-border bg-surface-primary">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 items-center">
-            <div className="lg:col-span-2">
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary">Operational visibility for agent fleets</h2>
-              <p className="mt-4 text-text-secondary leading-relaxed">
-                Once decisions are governed, Mission Control provides the operational visibility required to run fleets at scale.
-              </p>
-              <div className="mt-8 space-y-4 text-text-secondary leading-relaxed">
-                <p className="text-sm font-semibold text-text-primary">Live operational data:</p>
-                <ul className="space-y-1.5 list-disc list-inside text-sm">
-                  <li>live actions</li>
-                  <li>policy decisions</li>
-                  <li>pending approvals</li>
-                  <li>integrity signals</li>
-                  <li>agent health</li>
-                </ul>
-              </div>
-            </div>
-            <div className="lg:col-span-3">
-              <HeroScreenshot
-                src="/images/screenshots/Mission Control.png"
-                alt="DashClaw Mission Control - strategic overview of your agent fleet"
-                className="shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_30px_90px_rgba(0,0,0,0.55)]"
-                items={allScreenshots}
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 9. Bottom CTA ── */}
+      {/* ── 8. Bottom CTA ── */}
       <section className="py-20 px-6 border-t border-border">
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">

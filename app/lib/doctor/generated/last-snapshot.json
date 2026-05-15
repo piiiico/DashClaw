@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:b6917bb952c6e0518e0741694343cf1563b3c065",
+  "timestamp": "sha1:076d739c0a9241bfd87599f8497c51ae7054dc5f",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -2640,9 +2640,7 @@
       "files": [
         "__tests__/unit/agents.repository.test.js",
         "app/api/agents/route.js",
-        "app/lib/repositories/agents.repository.js",
-        "graphify-pilot/app/api/agents/route.js",
-        "graphify-pilot/app/lib/repositories/agents.repository.js"
+        "app/lib/repositories/agents.repository.js"
       ],
       "in_env_example": false
     },
@@ -2658,8 +2656,7 @@
       "name": "AGENT_PRIVATE_KEY_JWK",
       "required": false,
       "files": [
-        "app/lib/connectGuide.js",
-        "graphify-pilot/app/lib/connectGuide.js"
+        "app/lib/connectGuide.js"
       ],
       "in_env_example": false
     },
@@ -2667,8 +2664,7 @@
       "name": "ALERT_FROM_EMAIL",
       "required": false,
       "files": [
-        "app/lib/notifications.js",
-        "graphify-pilot/app/lib/notifications.js"
+        "app/lib/notifications.js"
       ],
       "in_env_example": false
     },
@@ -2676,7 +2672,6 @@
       "name": "ALLOWED_ORIGIN",
       "required": false,
       "files": [
-        "graphify-pilot/app/lib/validateEnv.js",
         "middleware.js"
       ],
       "in_env_example": false
@@ -2687,7 +2682,6 @@
       "files": [
         "app/lib/llm.js",
         "examples/claude-code-review-agent/index.js",
-        "graphify-pilot/app/lib/llm.js",
         "scripts/upload-skill.mjs"
       ],
       "in_env_example": false
@@ -2802,15 +2796,7 @@
         "app/api/cron/reset-meters/route.js",
         "app/api/cron/routing-maintenance/route.js",
         "app/api/cron/signals/route.js",
-        "app/api/hosted/cleanup/route.js",
-        "graphify-pilot/app/api/cron/integration-health/route.js",
-        "graphify-pilot/app/api/cron/learning-episodes-backfill/route.js",
-        "graphify-pilot/app/api/cron/learning-recommendations/route.js",
-        "graphify-pilot/app/api/cron/memory-maintenance/route.js",
-        "graphify-pilot/app/api/cron/policy-suggestions/route.js",
-        "graphify-pilot/app/api/cron/routing-maintenance/route.js",
-        "graphify-pilot/app/api/cron/signals/route.js",
-        "graphify-pilot/app/lib/validateEnv.js"
+        "app/api/hosted/cleanup/route.js"
       ],
       "in_env_example": false
     },
@@ -2821,7 +2807,6 @@
         "app/lib/connectPrompt.js",
         "app/self-host/SetupTabs.js",
         "examples/first-governed-action.js",
-        "graphify-pilot/app/lib/connectPrompt.js",
         "mcp-server/bin/dashclaw-mcp.js",
         "scripts/test-sdk-live.mjs"
       ],
@@ -2887,21 +2872,6 @@
         "examples/openai-deploy-pipeline/index.js",
         "examples/openai-governed-agent/index.js",
         "examples/swarm-research-task.js",
-        "graphify-pilot/app/api/setup/migrate/route.js",
-        "graphify-pilot/app/api/setup/ping/route.js",
-        "graphify-pilot/app/components/OnboardingChecklist.js",
-        "graphify-pilot/app/components/QuickStart.js",
-        "graphify-pilot/app/docs/page.js",
-        "graphify-pilot/app/guides/openai-agents-sdk/page.js",
-        "graphify-pilot/app/landingData.js",
-        "graphify-pilot/app/lib/connectGuide.js",
-        "graphify-pilot/app/lib/connectPrompt.js",
-        "graphify-pilot/app/lib/demo/fixtures/journey-agents.js",
-        "graphify-pilot/app/lib/demo/fixtures/persona-agents.js",
-        "graphify-pilot/app/lib/demo/fixtures/tutorial-threads.js",
-        "graphify-pilot/app/lib/readiness/sdkCheck.mjs",
-        "graphify-pilot/app/lib/validateEnv.js",
-        "graphify-pilot/app/self-host/SetupTabs.js",
         "mcp-server/bin/dashclaw-mcp.js",
         "middleware.js",
         "plugins/dashclaw/skills/dashclaw-platform-intelligence/scripts/bootstrap-agent-quick.mjs",
@@ -2938,7 +2908,6 @@
       "files": [
         "app/api/auth/local/route.js",
         "app/api/setup/migrate/route.js",
-        "graphify-pilot/app/api/setup/migrate/route.js",
         "middleware.js",
         "scripts/auto-migrate.mjs",
         "scripts/migrate-multi-tenant.mjs"
@@ -2968,15 +2937,6 @@
         "examples/openai-deploy-pipeline/index.js",
         "examples/openai-governed-agent/index.js",
         "examples/swarm-research-task.js",
-        "graphify-pilot/app/components/QuickStart.js",
-        "graphify-pilot/app/docs/page.js",
-        "graphify-pilot/app/guides/openai-agents-sdk/page.js",
-        "graphify-pilot/app/landingData.js",
-        "graphify-pilot/app/lib/connectGuide.js",
-        "graphify-pilot/app/lib/demo/fixtures/journey-agents.js",
-        "graphify-pilot/app/lib/demo/fixtures/persona-agents.js",
-        "graphify-pilot/app/self-host/SetupTabs.js",
-        "graphify-pilot/app/settings/components/ConnectNextStepPanel.js",
         "packages/openclaw-plugin/src/index.ts",
         "plugins/dashclaw/skills/dashclaw-platform-intelligence/scripts/bootstrap-agent-quick.mjs",
         "plugins/dashclaw/skills/dashclaw-platform-intelligence/scripts/diagnose.mjs",
@@ -2995,8 +2955,7 @@
       "required": false,
       "files": [
         "__tests__/unit/actions.route.test.js",
-        "app/api/actions/route.js",
-        "graphify-pilot/app/api/actions/route.js"
+        "app/api/actions/route.js"
       ],
       "in_env_example": false
     },
@@ -3005,7 +2964,6 @@
       "required": false,
       "files": [
         "app/lib/db.js",
-        "graphify-pilot/app/lib/db.js",
         "middleware.js",
         "scripts/_db.mjs"
       ],
@@ -3016,7 +2974,6 @@
       "required": false,
       "files": [
         "app/lib/db.js",
-        "graphify-pilot/app/lib/db.js",
         "scripts/_db.mjs"
       ],
       "in_env_example": false
@@ -3033,8 +2990,7 @@
       "name": "DASHCLAW_GUARD_FALLBACK",
       "required": false,
       "files": [
-        "app/lib/guard.js",
-        "graphify-pilot/app/lib/guard.js"
+        "app/lib/guard.js"
       ],
       "in_env_example": false
     },
@@ -3084,9 +3040,7 @@
       "required": false,
       "files": [
         "app/api/auth/local/route.js",
-        "app/login/page.js",
-        "graphify-pilot/app/api/auth/local/route.js",
-        "graphify-pilot/app/login/page.js"
+        "app/login/page.js"
       ],
       "in_env_example": false
     },
@@ -3110,8 +3064,6 @@
         "app/api/setup/ping/route.js",
         "app/lib/selfHost.js",
         "app/settings/page.js",
-        "graphify-pilot/app/api/setup/ping/route.js",
-        "graphify-pilot/app/settings/page.js",
         "middleware.js"
       ],
       "in_env_example": false
@@ -3206,11 +3158,6 @@
         "app/lib/db.js",
         "app/lib/validateEnv.js",
         "drizzle.config.js",
-        "graphify-pilot/app/api/security/status/route.js",
-        "graphify-pilot/app/api/setup/migrate/route.js",
-        "graphify-pilot/app/lib/auth.js",
-        "graphify-pilot/app/lib/db.js",
-        "graphify-pilot/app/lib/validateEnv.js",
         "middleware.js",
         "scripts/_db.mjs",
         "scripts/auto-migrate.mjs",
@@ -3256,9 +3203,7 @@
       "required": false,
       "files": [
         "app/lib/guard.js",
-        "app/lib/validateEnv.js",
-        "graphify-pilot/app/lib/guard.js",
-        "graphify-pilot/app/lib/validateEnv.js"
+        "app/lib/validateEnv.js"
       ],
       "in_env_example": false
     },
@@ -3309,11 +3254,7 @@
         "__tests__/unit/security-status.route.test.js",
         "app/api/security/status/route.js",
         "app/api/settings/route.js",
-        "app/lib/encryption.js",
-        "graphify-pilot/app/api/security/status/route.js",
-        "graphify-pilot/app/api/settings/route.js",
-        "graphify-pilot/app/lib/encryption.js",
-        "graphify-pilot/app/lib/validateEnv.js"
+        "app/lib/encryption.js"
       ],
       "in_env_example": true
     },
@@ -3322,8 +3263,7 @@
       "required": false,
       "files": [
         "__tests__/unit/actions.route.test.js",
-        "app/api/actions/route.js",
-        "graphify-pilot/app/api/actions/route.js"
+        "app/api/actions/route.js"
       ],
       "in_env_example": false
     },
@@ -3331,8 +3271,7 @@
       "name": "GITHUB_CLIENT_ID",
       "required": false,
       "files": [
-        "app/lib/auth.js",
-        "graphify-pilot/app/lib/auth.js"
+        "app/lib/auth.js"
       ],
       "in_env_example": false
     },
@@ -3340,8 +3279,7 @@
       "name": "GITHUB_CLIENT_SECRET",
       "required": false,
       "files": [
-        "app/lib/auth.js",
-        "graphify-pilot/app/lib/auth.js"
+        "app/lib/auth.js"
       ],
       "in_env_example": false
     },
@@ -3349,8 +3287,7 @@
       "name": "GITHUB_ID",
       "required": false,
       "files": [
-        "app/lib/auth.js",
-        "graphify-pilot/app/lib/auth.js"
+        "app/lib/auth.js"
       ],
       "in_env_example": false
     },
@@ -3374,8 +3311,7 @@
       "name": "GITHUB_SECRET",
       "required": false,
       "files": [
-        "app/lib/auth.js",
-        "graphify-pilot/app/lib/auth.js"
+        "app/lib/auth.js"
       ],
       "in_env_example": false
     },
@@ -3391,8 +3327,7 @@
       "name": "GOOGLE_AI_API_KEY",
       "required": false,
       "files": [
-        "app/lib/llm.js",
-        "graphify-pilot/app/lib/llm.js"
+        "app/lib/llm.js"
       ],
       "in_env_example": false
     },
@@ -3400,8 +3335,7 @@
       "name": "GOOGLE_CLIENT_ID",
       "required": false,
       "files": [
-        "app/lib/auth.js",
-        "graphify-pilot/app/lib/auth.js"
+        "app/lib/auth.js"
       ],
       "in_env_example": false
     },
@@ -3409,8 +3343,7 @@
       "name": "GOOGLE_CLIENT_SECRET",
       "required": false,
       "files": [
-        "app/lib/auth.js",
-        "graphify-pilot/app/lib/auth.js"
+        "app/lib/auth.js"
       ],
       "in_env_example": false
     },
@@ -3418,8 +3351,7 @@
       "name": "GOOGLE_ID",
       "required": false,
       "files": [
-        "app/lib/auth.js",
-        "graphify-pilot/app/lib/auth.js"
+        "app/lib/auth.js"
       ],
       "in_env_example": false
     },
@@ -3427,8 +3359,7 @@
       "name": "GOOGLE_SECRET",
       "required": false,
       "files": [
-        "app/lib/auth.js",
-        "graphify-pilot/app/lib/auth.js"
+        "app/lib/auth.js"
       ],
       "in_env_example": false
     },
@@ -3436,8 +3367,7 @@
       "name": "GUARD_LLM_BASE_URL",
       "required": false,
       "files": [
-        "app/lib/llm.js",
-        "graphify-pilot/app/lib/llm.js"
+        "app/lib/llm.js"
       ],
       "in_env_example": false
     },
@@ -3450,9 +3380,6 @@
         "app/lib/guard.js",
         "app/lib/knowledge-ingest.js",
         "app/lib/llm.js",
-        "graphify-pilot/app/lib/embeddings.js",
-        "graphify-pilot/app/lib/knowledge-ingest.js",
-        "graphify-pilot/app/lib/llm.js",
         "scripts/test-semantic-guard.mjs"
       ],
       "in_env_example": false
@@ -3461,8 +3388,7 @@
       "name": "GUARD_LLM_MODEL",
       "required": false,
       "files": [
-        "app/lib/llm.js",
-        "graphify-pilot/app/lib/llm.js"
+        "app/lib/llm.js"
       ],
       "in_env_example": false
     },
@@ -3470,8 +3396,7 @@
       "name": "GUARD_WEBHOOK_SECRET",
       "required": false,
       "files": [
-        "app/lib/webhooks.js",
-        "graphify-pilot/app/lib/webhooks.js"
+        "app/lib/webhooks.js"
       ],
       "in_env_example": false
     },
@@ -3544,8 +3469,6 @@
         "__tests__/unit/health-tables.test.js",
         "__tests__/unit/health.route.test.js",
         "app/api/auth/local/route.js",
-        "graphify-pilot/app/api/auth/local/route.js",
-        "graphify-pilot/app/lib/validateEnv.js",
         "middleware.js"
       ],
       "in_env_example": true
@@ -3560,9 +3483,6 @@
         "app/lib/next-config-headers.cjs",
         "app/lib/notifications.js",
         "app/lib/webhooks.js",
-        "graphify-pilot/app/api/team/invite/route.js",
-        "graphify-pilot/app/lib/notifications.js",
-        "graphify-pilot/app/lib/webhooks.js",
         "scripts/patch-demo-capability-endpoints.mjs",
         "scripts/seed-demo-capabilities.mjs",
         "scripts/test-presence.mjs"
@@ -3593,9 +3513,7 @@
         "__tests__/unit/health.route.test.js",
         "app/api/health/route.js",
         "app/components/UserMenu.js",
-        "app/lib/isDemoMode.js",
-        "graphify-pilot/app/components/UserMenu.js",
-        "graphify-pilot/app/lib/isDemoMode.js"
+        "app/lib/isDemoMode.js"
       ],
       "in_env_example": false
     },
@@ -3611,8 +3529,7 @@
       "name": "NEXT_PUBLIC_ENABLE_VERCEL_ANALYTICS",
       "required": false,
       "files": [
-        "app/layout.js",
-        "graphify-pilot/app/layout.js"
+        "app/layout.js"
       ],
       "in_env_example": false
     },
@@ -3669,15 +3586,6 @@
         "app/lib/readiness/workflow.mjs",
         "app/lib/security-headers.js",
         "app/lib/validateEnv.js",
-        "graphify-pilot/app/api/auth/config/route.js",
-        "graphify-pilot/app/api/auth/local/route.js",
-        "graphify-pilot/app/api/health/route.js",
-        "graphify-pilot/app/api/settings/route.js",
-        "graphify-pilot/app/lib/auth.js",
-        "graphify-pilot/app/lib/db.js",
-        "graphify-pilot/app/lib/events.js",
-        "graphify-pilot/app/lib/readiness/workflow.mjs",
-        "graphify-pilot/app/lib/validateEnv.js",
         "middleware.js"
       ],
       "in_env_example": false
@@ -3687,9 +3595,7 @@
       "required": false,
       "files": [
         "app/lib/auth.js",
-        "app/lib/validateEnv.js",
-        "graphify-pilot/app/lib/auth.js",
-        "graphify-pilot/app/lib/validateEnv.js"
+        "app/lib/validateEnv.js"
       ],
       "in_env_example": false
     },
@@ -3698,9 +3604,7 @@
       "required": false,
       "files": [
         "app/lib/auth.js",
-        "app/lib/validateEnv.js",
-        "graphify-pilot/app/lib/auth.js",
-        "graphify-pilot/app/lib/validateEnv.js"
+        "app/lib/validateEnv.js"
       ],
       "in_env_example": false
     },
@@ -3709,9 +3613,7 @@
       "required": false,
       "files": [
         "app/lib/auth.js",
-        "app/lib/validateEnv.js",
-        "graphify-pilot/app/lib/auth.js",
-        "graphify-pilot/app/lib/validateEnv.js"
+        "app/lib/validateEnv.js"
       ],
       "in_env_example": false
     },
@@ -3719,8 +3621,7 @@
       "name": "OIDC_DISPLAY_NAME",
       "required": false,
       "files": [
-        "app/lib/auth.js",
-        "graphify-pilot/app/lib/auth.js"
+        "app/lib/auth.js"
       ],
       "in_env_example": false
     },
@@ -3729,9 +3630,7 @@
       "required": false,
       "files": [
         "app/lib/auth.js",
-        "app/lib/validateEnv.js",
-        "graphify-pilot/app/lib/auth.js",
-        "graphify-pilot/app/lib/validateEnv.js"
+        "app/lib/validateEnv.js"
       ],
       "in_env_example": false
     },
@@ -3740,9 +3639,7 @@
       "required": false,
       "files": [
         "app/lib/auth.js",
-        "app/lib/validateEnv.js",
-        "graphify-pilot/app/lib/auth.js",
-        "graphify-pilot/app/lib/validateEnv.js"
+        "app/lib/validateEnv.js"
       ],
       "in_env_example": false
     },
@@ -3751,9 +3648,7 @@
       "required": false,
       "files": [
         "app/lib/auth.js",
-        "app/lib/validateEnv.js",
-        "graphify-pilot/app/lib/auth.js",
-        "graphify-pilot/app/lib/validateEnv.js"
+        "app/lib/validateEnv.js"
       ],
       "in_env_example": false
     },
@@ -3766,10 +3661,7 @@
         "app/lib/knowledge-ingest.js",
         "app/lib/llm.js",
         "examples/openai-deploy-pipeline/index.js",
-        "examples/openai-governed-agent/index.js",
-        "graphify-pilot/app/lib/embeddings.js",
-        "graphify-pilot/app/lib/knowledge-ingest.js",
-        "graphify-pilot/app/lib/llm.js"
+        "examples/openai-governed-agent/index.js"
       ],
       "in_env_example": false
     },
@@ -3830,8 +3722,7 @@
       "name": "REALTIME_BACKEND",
       "required": false,
       "files": [
-        "app/lib/events.js",
-        "graphify-pilot/app/lib/events.js"
+        "app/lib/events.js"
       ],
       "in_env_example": false
     },
@@ -3839,8 +3730,7 @@
       "name": "REALTIME_ENFORCE_REDIS",
       "required": false,
       "files": [
-        "app/lib/events.js",
-        "graphify-pilot/app/lib/events.js"
+        "app/lib/events.js"
       ],
       "in_env_example": false
     },
@@ -3848,8 +3738,7 @@
       "name": "REALTIME_MAX_LISTENERS",
       "required": false,
       "files": [
-        "app/lib/events.js",
-        "graphify-pilot/app/lib/events.js"
+        "app/lib/events.js"
       ],
       "in_env_example": false
     },
@@ -3857,8 +3746,7 @@
       "name": "REALTIME_MEMORY_MAX_LISTENERS",
       "required": false,
       "files": [
-        "app/lib/events.js",
-        "graphify-pilot/app/lib/events.js"
+        "app/lib/events.js"
       ],
       "in_env_example": false
     },
@@ -3868,7 +3756,6 @@
       "files": [
         "app/lib/events.js",
         "app/lib/marketingEvents.js",
-        "graphify-pilot/app/lib/events.js",
         "scripts/export-marketing-events.mjs"
       ],
       "in_env_example": false
@@ -3877,8 +3764,7 @@
       "name": "REALTIME_REPLAY_MAX_EVENTS",
       "required": false,
       "files": [
-        "app/lib/events.js",
-        "graphify-pilot/app/lib/events.js"
+        "app/lib/events.js"
       ],
       "in_env_example": false
     },
@@ -3886,8 +3772,7 @@
       "name": "REALTIME_REPLAY_WINDOW_SECONDS",
       "required": false,
       "files": [
-        "app/lib/events.js",
-        "graphify-pilot/app/lib/events.js"
+        "app/lib/events.js"
       ],
       "in_env_example": false
     },
@@ -3897,7 +3782,6 @@
       "files": [
         "app/lib/events.js",
         "app/lib/marketingEvents.js",
-        "graphify-pilot/app/lib/events.js",
         "scripts/export-marketing-events.mjs"
       ],
       "in_env_example": false
@@ -3924,8 +3808,7 @@
       "name": "RESEND_API_KEY",
       "required": false,
       "files": [
-        "app/lib/notifications.js",
-        "graphify-pilot/app/lib/notifications.js"
+        "app/lib/notifications.js"
       ],
       "in_env_example": false
     },
@@ -3986,8 +3869,7 @@
         "app/api/billing/checkout/route.js",
         "app/api/billing/portal/route.js",
         "app/api/usage/route.js",
-        "app/api/webhooks/stripe/route.js",
-        "graphify-pilot/app/api/usage/route.js"
+        "app/api/webhooks/stripe/route.js"
       ],
       "in_env_example": false
     },
@@ -4101,7 +3983,6 @@
       "files": [
         "app/api/hosted/workspaces/route.js",
         "app/layout.js",
-        "graphify-pilot/app/layout.js",
         "middleware.js"
       ],
       "in_env_example": false
@@ -4112,8 +3993,7 @@
       "files": [
         "__tests__/unit/webhooks.approval.test.js",
         "app/api/mcp/route.js",
-        "app/lib/webhooks.js",
-        "graphify-pilot/app/lib/webhooks.js"
+        "app/lib/webhooks.js"
       ],
       "in_env_example": false
     },
@@ -4123,9 +4003,7 @@
       "files": [
         "__tests__/unit/security-status.route.test.js",
         "app/api/security/status/route.js",
-        "app/lib/validate.js",
-        "graphify-pilot/app/api/security/status/route.js",
-        "graphify-pilot/app/lib/validate.js"
+        "app/lib/validate.js"
       ],
       "in_env_example": false
     },

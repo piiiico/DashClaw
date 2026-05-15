@@ -10,6 +10,5 @@ test-results/
 .fuzz-report/
 .hypothesis/
 
-# Graphify snapshot — read-only mirror
-graphify-pilot/
+# Graphify generated output — read-only
 graphify-out/
