@@ -13,10 +13,12 @@ DashClaw ships two independently versioned artifacts from this repo:
   libraries. Current: **2.18.0**. This is the version of the DashClaw instance
   you deploy to Vercel. Governance features, UI changes, new API routes, and
   database migrations land on this track.
-- **SDK** — the `dashclaw` npm package published from `sdk/`. Current:
-  **2.12.0**. This is what agents install with `npm install dashclaw`. Entries
-  on this track are prefixed `## SDK [x.y.z]` so they don't visually collide
-  with platform entries.
+- **SDK** — the `dashclaw` npm package published from `sdk/` and the
+  `dashclaw` PyPI package published from `sdk-python/`. Current:
+  **2.13.0** on both registries (Phase 2 agent identity). This is what
+  agents install with `npm install dashclaw` or `pip install dashclaw`.
+  Entries on this track are prefixed `## SDK [x.y.z]` so they don't
+  visually collide with platform entries.
 
 Entries are listed newest-first by **release date**, not by version number,
 which is why SDK 2.11.1 (2026-04-11) appears above platform 2.13.1
@@ -26,6 +28,69 @@ Plugin and tooling entries (e.g. `@dashclaw/openclaw-plugin`, `@dashclaw/cli`)
 are prefixed with the package name.
 
 ## [Unreleased]
+
+### Phase 2 agent identity — JWKS verification + `verification_status` (#104)
+
+Cryptographic agent attribution layered on top of Phase 1 trust-on-assertion.
+Originally PR #104 by @piiiico, rebased and merged on 2026-05-14 (`fb464879`,
+`4b552f4e`). Provider-agnostic OIDC bearer tokens; fail-soft on JWKS outage;
+JWT `sub` claim overrides body `agent_id` on successful verification (proof
+beats self-assertion). See `docs/agent-identity.md` for the full setup guide.
+
+- **Server**: `app/lib/jwks-verifier.js` (EdDSA / RS256–512 / ES256–512,
+  1-hour JWKS cache per issuer, 30 s circuit breaker, 5 s fetch timeout).
+  `/api/guard` now extracts `Authorization: Bearer <JWT>`, verifies via JWKS,
+  and returns `verification_status: 'verified' | 'unverified' | 'expired' |
+  'failed' | 'unknown_issuer'` on every response. Two new env vars (no YAML):
+  `DASHCLAW_ALLOWED_ISSUER` (restrict trusted issuers) and
+  `DASHCLAW_JWT_AUDIENCE` (validate `aud` claim).
+- **Schema**: `drizzle/0008_guard_decisions_verification_status.sql` adds the
+  `verification_status` column with `DEFAULT 'unverified'` (idempotent
+  `ADD COLUMN IF NOT EXISTS`; existing rows valid without backfill).
+- **Tests**: 20 unit tests in `__tests__/unit/guard-jwks-verification.test.js`
+  using real Ed25519 keys + in-memory JWKS fixtures (no AgentLair dep).
+- **Docs**: `docs/agent-identity.md` (140 lines, with Keycloak / Auth0 /
+  AgentLair examples). `docs/sdk-parity.md` updated to "full parity".
+
+### `/api/health` exposes `mode` field (todo-001)
+
+Health endpoint now returns `mode: 'demo' | 'live'` derived from
+`DASHCLAW_MODE` or `NEXT_PUBLIC_DASHCLAW_MODE`. The middleware short-circuit
+that intercepts `/api/health` in demo mode also includes the field
+(`middleware.js` — caught by post-merge audit; without this the Python hook
+warning would never have fired against actual demo instances).
+
+### Hook startup warning when `DASHCLAW_BASE_URL` points to demo (todo-001)
+
+`hooks/dashclaw_pretool.py` does a 500 ms `GET /api/health` on first
+invocation per `BASE_URL` (cached 15 min, per-URL key), and prints a
+prominent stderr warning when `mode: 'demo'` is detected. Closes a
+~30-minute debugging cliff: stale env vars silently routing real Claude
+Code traffic to a local sandbox container, where fixture blocks looked
+indistinguishable from real policy decisions. Cache hits are silent; probe
+failures stay silent (no noise on transient outages); never blocks
+enforcement. 4 regression tests in `hooks/tests/test_pretool_demo_mode_warning.py`
+spin up an in-process HTTP server fixture.
+
+### Demo policy fixture rename — unambiguous sandbox label (todo-002)
+
+`app/lib/demo/demoMiddleware.js` and `app/lib/homepageDemoActions.js`:
+`'Demo Production Guard'` → `'[Demo fixture] Production Guard'`. The old
+label was indistinguishable from a real user-defined policy at first glance
+— a real user (todo-002 source conversation) deleted their actual policies
+trying to clear what looked like a real block. Reason text now leads with
+`[Demo mode]` and tells the operator to repoint `DASHCLAW_BASE_URL` if a
+real agent saw it.
+
+### Livingcode pre-commit gotcha — known issue
+
+`scripts/livingcode-refresh.mjs` regenerates derivative artifacts (zip
+bundles, plugin SKILL.md, generated/) but does not `git add` them, so
+pre-commit refresh produces dirty-but-uncommitted files. Today's audit
+re-staged the stale `dashclaw-claude-code-hooks.zip`,
+`dashclaw-governance-plugin.zip`, and plugin SKILL.md (`1eaff4c5`). The
+zip hadn't been refreshed in committed form since `d23ccb45`. Worth a
+follow-up to make the refresh stage its own outputs.
 
 ### `@dashclaw/mcp-server@1.0.2` — server-configured agent_id wins over LLM input
 
@@ -633,6 +698,51 @@ Ported the AgentLens (`C:\Projects\RevenueGoalExperiment-V3`) algorithmic core i
 - **Optimal Files** — 10 modules under `optimal-files/`. `analyze.js` and `bundle.js` refactored per A4: dependency-injected aggregates (`projectMedianCost`, `similarSessionCount`), `projectFiles` map instead of fs probes, and an `existingPaths: Set<string>` argument for `overwriteRisk` instead of `fs.existsSync`. `writeBundleSelections` is now the pure `planBundleSelections`; the original side-effecting `applyBundlePlan` and `listGeneratedFiles` moved to a CLI-only `optimal-files/apply.js`. `previewBundleMerge` takes an `existingContent` string parameter.
 
 The new tree imports as `@/lib/claude-code/...` thanks to the existing vitest alias. No schema changes, no API routes, no UI yet — those land in Phases 2 onwards.
+
+## SDK [2.13.0] - 2026-05-15 — Phase 2 agent identity (`authToken` / `auth_token`)
+
+First SDK release that ships the Phase 2 agent-identity client surface.
+Pairs with the [Unreleased] platform Phase 2 entry above. Published to
+both **npm** (`dashclaw@2.13.0`) and **PyPI** (`dashclaw==2.13.0`) on
+2026-05-15.
+
+### Added (Node — `sdk/dashclaw.js`)
+
+- **`authToken` constructor option** — pass a JWT bearer token from your
+  OIDC provider (Keycloak, Auth0, AgentLair, or any compatible issuer).
+  When set, every outbound request includes `Authorization: Bearer
+  <token>`. The server verifies via JWKS and the JWT `sub` claim
+  overrides `agentId` in the audit record on successful verification.
+- **`guard()` response shape extended** — now includes `verification_status`
+  (`verified` | `unverified` | `expired` | `failed` | `unknown_issuer`),
+  `agent_id`, and `agent_name`. JSDoc updated.
+
+### Added (Python — `sdk-python/dashclaw/client.py`)
+
+- **`auth_token` constructor parameter** (mirrors Node `authToken`).
+- **`agent_name` auto-include on `guard()`** — when the constructor sets
+  `agent_name` and the per-call `context` doesn't, the SDK now appends
+  it to the payload. Closes a Phase 1 parity gap that pre-dated #104
+  (Node SDK already did this).
+- **`guard()` docstring** documents the `verification_status` enum and
+  points at `docs/agent-identity.md`.
+- 7 new unit tests in `sdk-python/tests/test_sdk_v2_surface.py` —
+  constructor storage, agent_name auto-include behavior, and a
+  `urllib.request.urlopen` patch that captures real headers to verify
+  the Bearer token is sent (and that `x-api-key` still goes alongside,
+  not in place of).
+
+### Notes for SDK consumers
+
+- Phase 1 trust-on-assertion (passing `agentId` / `agent_name` in the
+  constructor or per-call body) keeps working unchanged. Phase 2 is
+  fully additive — no breaking changes.
+- Without `authToken` / `auth_token`, every guard response now carries
+  `verification_status: 'unverified'`. That's the correct "no token
+  presented" signal, not an error.
+- On JWKS outage the server fails-soft to `'unverified'` (not `'failed'`)
+  so a downed identity provider can never block agent decisions. Phase 1
+  body-field attribution is the fallback.
 
 ## SDK [2.12.0] - 2026-05-13 — Durable execution finality wrappers
 
