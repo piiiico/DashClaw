@@ -6,9 +6,9 @@
  * Defends against SSRF to internal services (cloud metadata endpoints,
  * loopback, RFC1918 private networks, link-local) and DNS rebinding.
  *
- * Sister implementation in `app/api/settings/test/route.js` exists for
- * historical reasons; future work should migrate that to import from
- * here. This module is the canonical source.
+ * Used by `app/api/settings/test/route.js` (connection tests) and
+ * `app/lib/jwks-verifier.js` (JWT issuer JWKS fetch). This is the
+ * single source of truth — never copy/paste the regex elsewhere.
  */
 
 import dnsModule from 'node:dns/promises';
@@ -86,4 +86,23 @@ export async function assertSafeFetchUrl(url, { dnsLookup = dnsModule.lookup } =
       throw err;
     }
   }
+}
+
+/**
+ * Drop-in replacement for `fetch()` that validates the URL via
+ * `assertSafeFetchUrl` first and disables auto-redirect (so a 30x
+ * response can't redirect to a private host that bypasses the check).
+ *
+ * Throws `code: 'UNSAFE_URL'` on any safety failure; otherwise returns
+ * a Response object identical to native fetch.
+ *
+ * @param {string} url
+ * @param {RequestInit & { dnsLookup?: typeof dnsModule.lookup }} [options]
+ */
+export async function safeFetch(url, { dnsLookup, ...fetchOptions } = {}) {
+  await assertSafeFetchUrl(url, { dnsLookup });
+  return fetch(url, {
+    redirect: 'manual', // Defense: prevent SSRF via redirect chain
+    ...fetchOptions,
+  });
 }

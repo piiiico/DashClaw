@@ -16,6 +16,19 @@
  *     during open state tokens → unverified (fail-soft, not failed)
  *   - Fetch timeout: 5 s (AbortController)
  *   - Any network/outage error → unverified (not the token's fault)
+ *   - SSRF defense: `iss` → `{iss}/.well-known/jwks.json` is validated
+ *     by app/lib/url-safety.js before any outbound fetch (no http://,
+ *     no private IPs, no DNS rebinding). UNSAFE_URL → unverified.
+ *
+ * Cache scope (intentional):
+ *   This is a per-process Map. On Vercel each warm serverless instance
+ *   gets its own cache — the "1-hour cache" is really "1-hour per warm
+ *   instance." That's the right tradeoff at current scale: zero added
+ *   infrastructure, zero blast-radius if cache poisoning ever happens,
+ *   acceptable hit-rate when traffic keeps instances warm. Migrate to
+ *   Vercel KV / Redis ONLY when (a) JWKS endpoints become a measurable
+ *   cost or latency source, OR (b) we need consistent revocation
+ *   semantics across instances. Until then, per-instance is correct.
  */
 
 import { assertSafeFetchUrl } from './url-safety.js';

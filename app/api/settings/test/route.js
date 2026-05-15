@@ -1,19 +1,17 @@
 import { NextResponse } from 'next/server';
 import { neon } from '@neondatabase/serverless';
-import dns from 'node:dns/promises';
 import { getDefaultProviderModel } from '../../../lib/providers/providerRegistry.js';
+// SSRF defense lives in the shared module — never duplicate the regex here.
+import { isPrivateIP, assertSafeFetchUrl, safeFetch as safeBaseFetch } from '../../../lib/url-safety.js';
 
 export const dynamic = 'force-dynamic';
 
-// SECURITY: Allowlist of domains for SSRF prevention
+// SECURITY: Allowlist of domain patterns for credential validation. The
+// SSRF host check itself runs through assertSafeFetchUrl in safeFetch below.
 const ALLOWED_URL_PATTERNS = {
   DATABASE_URL: /^postgres(ql)?:\/\/[^@]+@[^/]*\.neon\.tech\//,
   SUPABASE_URL: /^https:\/\/[a-z0-9]+\.supabase\.co$/,
 };
-
-function isPrivateIP(hostname) {
-  return /^(127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.|0\.|localhost|::1|\[::1\])/i.test(hostname);
-}
 
 function validateUrl(url, type) {
   if (!url || typeof url !== 'string') return false;
@@ -30,22 +28,25 @@ function validateUrl(url, type) {
 }
 
 /**
- * SECURITY: Standardized fetch wrapper for connection tests to prevent SSRF via redirects.
+ * SECURITY: Standardized fetch wrapper for connection tests. Delegates the
+ * generic SSRF defense (HTTPS / private-IP / DNS rebinding / manual redirect)
+ * to app/lib/url-safety.js's safeFetch, then layers the connection-test-
+ * specific Discord webhook allowlist on top. Errors are normalized to the
+ * legacy "Internal or private URLs are not allowed" / HTTPS messages so
+ * existing UI strings keep matching.
  */
 async function safeFetch(url, options = {}) {
-  // Enforce HTTPS
-  if (!url.startsWith('https://')) {
+  let parsed;
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new Error('Connection test URLs must use HTTPS');
+  }
+  if (parsed.protocol !== 'https:') {
     throw new Error('Connection test URLs must use HTTPS');
   }
 
-  // Parse and check for private IPs
-  const parsed = new URL(url);
-  if (isPrivateIP(parsed.hostname)) {
-    throw new Error('Internal or private URLs are not allowed');
-  }
-
-  // Integration-specific allow-listing to further reduce SSRF risk.
-  // Currently used by Discord to ensure only official webhook endpoints are contacted.
+  // Integration-specific allow-listing — currently only Discord webhooks.
   const { context, ...fetchOptions } = options;
   if (context && context.integration === 'discord') {
     const isDiscordHost = parsed.hostname === 'discord.com';
@@ -55,20 +56,16 @@ async function safeFetch(url, options = {}) {
     }
   }
 
-  // DNS rebinding / DNS alias protection: resolve hostname to all IPs and check each
-  const addresses = await dns.lookup(parsed.hostname, { all: true });
-  for (const { address } of addresses) {
-    if (isPrivateIP(address)) {
+  try {
+    return await safeBaseFetch(url, fetchOptions);
+  } catch (err) {
+    // Map UNSAFE_URL → the legacy connection-test error message so existing
+    // UI strings + tests don't break on the wording change.
+    if (err.code === 'UNSAFE_URL') {
       throw new Error('Internal or private URLs are not allowed');
     }
+    throw err;
   }
-
-  // Validation passed — fetch the original URL so TLS SNI works correctly.
-  // (Replacing hostname with IP would break TLS cert verification.)
-  return fetch(url, {
-    ...fetchOptions,
-    redirect: 'manual', // Prevent SSRF via redirects
-  });
 }
 
 // POST - Test a connection with provided credentials (admin only)
