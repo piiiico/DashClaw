@@ -469,7 +469,14 @@ export async function middleware(request) {
       }
 
       // Allow NextAuth internals and raw markdown passthrough (these do not write data).
-      if (pathname.startsWith('/api/auth') || pathname.startsWith('/api/docs/raw')) {
+      // /api/prompts/{server-setup,agent-connect}/raw serve static markdown for the
+      // "Copy ... Prompt" buttons on /self-host and should work identically in demo.
+      if (
+        pathname.startsWith('/api/auth') ||
+        pathname.startsWith('/api/docs/raw') ||
+        pathname === '/api/prompts/server-setup/raw' ||
+        pathname === '/api/prompts/agent-connect/raw'
+      ) {
         const response = NextResponse.next();
         addSecurityHeaders(response, request);
         withCors(request, response);

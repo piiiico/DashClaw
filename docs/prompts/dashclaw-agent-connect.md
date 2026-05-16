@@ -128,7 +128,7 @@ If the user wants cryptographic verification, do NOT make them copy/paste PEMs.
 High-level flow:
 1. Agent has (or generates) a private key locally.
 2. Agent creates a pairing request and prints a one-click approval URL.
-3. User clicks approve (or bulk approves in `/pairings`).
+3. User clicks approve (or bulk approves pending pairings in `/identities`).
 4. DashClaw stores the public key, and the agent's signed actions become `verified`.
 
 Node example (private JWK in memory).
@@ -160,4 +160,4 @@ After approval, send a signed action and confirm the dashboard marks it verified
 Best practice:
 - Keep one shared `DASHCLAW_API_KEY` per workspace.
 - Use a unique `DASHCLAW_AGENT_ID` per agent process.
-- Use the Pairings inbox (`/pairings`) to approve many agents quickly.
+- Use the Identities inbox (`/identities`) to approve many pending pairings quickly.

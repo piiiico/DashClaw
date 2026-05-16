@@ -84,7 +84,7 @@ npm run dev
 
 Note: `npm run dev` uses Turbopack and is for development. For production, run `npm run build` followed by `npm start`.
 
-Open `http://localhost:3000` -- redirects to login. Sign in with GitHub.
+Open `http://localhost:3000` -- redirects to login. Sign in with the method you set up in Step 4 (admin password or GitHub).
 
 ## Step 6: Capture The Two Values Agents Need
 
