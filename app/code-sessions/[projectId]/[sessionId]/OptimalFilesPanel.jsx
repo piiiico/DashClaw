@@ -24,7 +24,8 @@ function groupMetaFor(group) {
 
 // Server-side allowlist mirror — keep in sync with
 // app/api/code-sessions/sessions/[sessionId]/optimal-files/manifest/route.js
-const ALLOWED_PREFIXES = ['CLAUDE.md', '.claude/agentlens/', '.claude/rules/', '.claude/hooks/', '.claude/skills/'];
+// `.claude/agentlens/` is the legacy prefix, kept for backward-compat.
+const ALLOWED_PREFIXES = ['CLAUDE.md', '.claude/dashclaw/', '.claude/agentlens/', '.claude/rules/', '.claude/hooks/', '.claude/skills/'];
 
 function isManifestablePath(p) {
   if (!p) return false;

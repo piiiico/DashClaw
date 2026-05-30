@@ -15,7 +15,9 @@ import {
   saveManifest,
 } from '../../../../../../lib/repositories/code-sessions.repository.js';
 
-const ALLOWED_PREFIXES = ['CLAUDE.md', '.claude/agentlens/', '.claude/rules/', '.claude/hooks/', '.claude/skills/'];
+// `.claude/agentlens/` is the legacy (pre-rename) prefix, kept so manifests
+// minted by an older client still apply within their 24h TTL.
+const ALLOWED_PREFIXES = ['CLAUDE.md', '.claude/dashclaw/', '.claude/agentlens/', '.claude/rules/', '.claude/hooks/', '.claude/skills/'];
 
 function isAllowedPath(p) {
   if (!p) return false;

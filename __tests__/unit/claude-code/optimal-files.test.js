@@ -233,7 +233,7 @@ note: not a secret
     });
     const a = analyzeSession({ ...fix, projectFiles: fix.projectFiles });
     const out = generateRecipe(a);
-    expect(out.path).toMatch(/^\.claude\/agentlens\/recipes\//);
+    expect(out.path).toMatch(/^\.claude\/dashclaw\/recipes\//);
     expect(out.content).toMatch(/Recommended starting prompt/);
     expect(out.content).toMatch(/Verification gates/);
     expect(out.content).toMatch(/npm test/);
@@ -373,7 +373,7 @@ note: not a secret
     }
   });
 
-  it('listGeneratedFiles returns only known agentlens paths', () => {
+  it('listGeneratedFiles returns only known generated paths', () => {
     const cwd = tmpDir('list');
     try {
       fs.writeFileSync(path.join(cwd, 'CLAUDE.md'), 'x');

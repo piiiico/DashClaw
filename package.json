@@ -31,6 +31,7 @@
     "route-sql:baseline:generate": "node scripts/generate-route-sql-baseline.mjs",
     "route-sql:check": "node scripts/check-route-sql-guard.mjs",
     "version:check": "node scripts/check-version-hardcodes.mjs",
+    "sdk:count": "node scripts/count-sdk-methods.mjs",
     "pricing:refresh": "node scripts/refresh-model-pricing.mjs",
     "pricing:refresh:apply": "node scripts/refresh-model-pricing.mjs --apply",
     "hooks:install": "node scripts/install-hooks.mjs",

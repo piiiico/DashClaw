@@ -1,5 +1,5 @@
 /**
- * Detailed per-session context pack — `.claude/agentlens/session-notes/`.
+ * Detailed per-session context pack — `.claude/dashclaw/session-notes/`.
  * The warehouse the root CLAUDE.md deliberately keeps slim.
  *
  * Ported from AgentLens (`src/optimal-files/session-pack.js`). Pure.
@@ -133,7 +133,7 @@ export function generateSessionPack(analysis) {
   lines.push(`Review before committing.`);
 
   return {
-    path: `.claude/agentlens/session-notes/${sid}.md`,
+    path: `.claude/dashclaw/session-notes/${sid}.md`,
     kind: 'session-pack',
     title: 'Session context pack',
     content: lines.join('\n') + '\n',

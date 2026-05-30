@@ -85,10 +85,10 @@ export function generateRootClaudeMd(analysis) {
   lines.push('');
 
   lines.push(`## Deeper context`);
-  lines.push(`- Session notes: \`.claude/agentlens/session-notes/\` — detail per session, not for root memory.`);
+  lines.push(`- Session notes: \`.claude/dashclaw/session-notes/\` — detail per session, not for root memory.`);
   lines.push(`- Path rules:    \`.claude/rules/\` — rules scoped to specific subtrees.`);
   lines.push(`- Hooks:         \`.claude/hooks/\` — guard scripts; review before activating in \`settings.json\`.`);
-  lines.push(`- Recipes:       \`.claude/agentlens/recipes/\` — next-session starting prompts.`);
+  lines.push(`- Recipes:       \`.claude/dashclaw/recipes/\` — next-session starting prompts.`);
   lines.push('');
 
   lines.push(`---`);
@@ -101,7 +101,7 @@ export function generateRootClaudeMd(analysis) {
   if (out.length > MAX_LINES_HARD) {
     out = out.slice(0, MAX_LINES_HARD - 2);
     out.push('');
-    out.push(`<!-- truncated to keep CLAUDE.md under ${MAX_LINES_HARD} lines; see .claude/agentlens/session-notes/ for detail -->`);
+    out.push(`<!-- truncated to keep CLAUDE.md under ${MAX_LINES_HARD} lines; see .claude/dashclaw/session-notes/ for detail -->`);
   }
 
   return {

@@ -1,6 +1,6 @@
 /**
  * Per-project "how to start the next session" recipe at
- * .claude/agentlens/recipes/<slug>.md.
+ * .claude/dashclaw/recipes/<slug>.md.
  *
  * Ported from AgentLens (`src/optimal-files/recipe.js`). Pure.
  */
@@ -65,7 +65,7 @@ export function generateRecipe(analysis) {
   lines.push(`Recipes are for next-session improvement, not permanent repo memory. Edit or delete freely.`);
 
   return {
-    path: `.claude/agentlens/recipes/${recipeName}.md`,
+    path: `.claude/dashclaw/recipes/${recipeName}.md`,
     kind: 'recipe',
     title: 'Next-session recipe',
     content: lines.join('\n') + '\n',
@@ -81,7 +81,7 @@ function buildPrompt(a) {
   const out = [];
   out.push(`Resume work on ${slug}.`);
   out.push('');
-  out.push(`Start by reading the root CLAUDE.md (if present) and the previous session note at .claude/agentlens/session-notes/${a.session && a.session.session_uuid}.md (if present).`);
+  out.push(`Start by reading the root CLAUDE.md (if present) and the previous session note at .claude/dashclaw/session-notes/${a.session && a.session.session_uuid}.md (if present).`);
   if (a.reads.length) {
     out.push('');
     out.push(`Then open these files in order:`);

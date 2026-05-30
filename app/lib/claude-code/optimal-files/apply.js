@@ -150,6 +150,10 @@ export function listGeneratedFiles(projectCwd) {
   const out = [];
   const candidates = [
     'CLAUDE.md',
+    '.claude/dashclaw/session-notes',
+    '.claude/dashclaw/recipes',
+    // Legacy (pre-rename) locations — still discovered so files written by an
+    // older client version remain visible.
     '.claude/agentlens/session-notes',
     '.claude/agentlens/recipes',
     '.claude/rules',
