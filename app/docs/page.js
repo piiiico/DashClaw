@@ -1237,7 +1237,41 @@ if not result["clean"]:
               <h2 className="text-2xl font-bold tracking-tight">Agent Identity</h2>
             </div>
             <p className="text-sm text-text-secondary mb-6 leading-relaxed">
-              Enroll agents via public-key pairing and manage approved identities. Pairing requests are created by agents; approval is an admin action. Once approved, the agent&apos;s public key is registered as a trusted identity for signature verification.
+              DashClaw verifies <em>which agent</em> took each action on three independent axes, each returned on the guard response and recorded in the decisions ledger. The current path is JWKS-verified JWTs (Phase&nbsp;2&nbsp;/&nbsp;2b&nbsp;/&nbsp;2c); the public-key pairing API further down remains for older (v1) integrations. Full setup guide:{' '}
+              <a href="https://github.com/ucsandman/DashClaw/blob/main/docs/agent-identity.md" className="text-brand hover:underline">docs/agent-identity.md</a>.
+            </p>
+
+            <h3 className="text-lg font-semibold tracking-tight mt-8 mb-2">JWKS verification (Phase 2 / 2b / 2c)</h3>
+            <p className="text-sm text-text-secondary mb-4 leading-relaxed">
+              Attach an OIDC bearer token (or pass <code className="text-brand">authToken</code> to the SDK constructor). DashClaw fetches the issuer&apos;s keys from its <code className="text-brand">/.well-known/jwks.json</code>, verifies the signature (EdDSA, RS256&ndash;512, ES256&ndash;512), and on success overrides any body-supplied <code className="text-brand">agent_id</code> with the token&apos;s <code className="text-brand">sub</code> — proof beats self-assertion. A downed issuer fails soft to <code className="text-brand">unverified</code> and never blocks a decision.
+            </p>
+            <CodeBlock title="Guard with a verified identity">
+{`import { DashClaw } from 'dashclaw';
+
+const claw = new DashClaw({
+  baseUrl: process.env.DASHCLAW_BASE_URL,
+  apiKey: process.env.DASHCLAW_API_KEY,
+  authToken: agentJwt,          // OIDC bearer token minted by your IdP
+});
+
+const { decision, verification_status } = await claw.guard({
+  action_type: 'deploy', risk_score: 80,
+});
+// verification_status: 'verified' | 'unverified' | 'expired'
+//                    | 'failed' | 'unknown_issuer' | 'exp_too_far'`}
+            </CodeBlock>
+            <p className="text-sm text-text-secondary mt-4 mb-2 leading-relaxed">
+              Three independent axes travel back on the response, each in its own field so a downed issuer or absent claim degrades gracefully instead of hard-failing:
+            </p>
+            <ul className="text-sm text-text-secondary mb-4 leading-relaxed list-disc pl-5 space-y-1">
+              <li><strong>Phase 2 — <code className="text-brand">verification_status</code></strong>: who signed the token. Configure trust with <code className="text-brand">DASHCLAW_ALLOWED_ISSUER</code> and <code className="text-brand">DASHCLAW_JWT_AUDIENCE</code>.</li>
+              <li><strong>Phase 2b — <code className="text-brand">replay_status</code></strong>: whether the token was reused. <code className="text-brand">DASHCLAW_JTI_REPLAY_PROTECTION</code> (<code>off</code> / <code>best_effort</code> / <code>required</code>, default <code>best_effort</code>) blocks a replayed <code className="text-brand">jti</code>.</li>
+              <li><strong>Phase 2c — <code className="text-brand">act_status</code></strong>: whether the token is bound to <em>this</em> call. <code className="text-brand">DASHCLAW_ACT_BINDING</code> (default <code>off</code>) compares the request against the token&apos;s <code className="text-brand">urn:dashclaw:act-binding</code> claim.</li>
+            </ul>
+
+            <h3 className="text-lg font-semibold tracking-tight mt-10 mb-2">Legacy (v1): public-key pairing</h3>
+            <p className="text-sm text-text-secondary mb-6 leading-relaxed">
+              Predates JWKS verification and is retained for older integrations. Enroll agents via public-key pairing and manage approved identities. Pairing requests are created by agents; approval is an admin action. Once approved, the agent&apos;s public key is registered as a trusted identity for signature verification.
             </p>
 
             <MethodEntry

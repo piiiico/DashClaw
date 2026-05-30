@@ -46,11 +46,11 @@ To get started with the codebase:
 
 6.  **Run Migrations** (idempotent, safe to re-run):
     ```bash
-    node scripts/_run-with-env.mjs scripts/migrate-multi-tenant.mjs
-    node scripts/_run-with-env.mjs scripts/migrate-cost-analytics.mjs
-    node scripts/_run-with-env.mjs scripts/migrate-identity-binding.mjs
-    node scripts/_run-with-env.mjs scripts/migrate-capabilities.mjs
+    npm run db:migrate
     ```
+    This runs `scripts/auto-migrate.mjs`, which auto-loads `.env.local` and
+    applies every `drizzle/*.sql` migration in order. Run it after pulling any
+    change that touches `schema/schema.js` or `drizzle/`.
 
 ## Project Structure
 

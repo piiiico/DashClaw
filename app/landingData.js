@@ -49,10 +49,10 @@ export const platformFeatures = [
   { icon: Radio, title: 'Behavioral Drift Detection', description: 'Detect when agent reasoning deviates from verified baselines. Catch "hallucinated intent" before it results in a blocked action.' },
   { icon: Download, title: 'Compliance Export Bundles', description: 'Framework mapping, gap analysis, evidence capture, and audit-ready exports for serious governance workflows.' },
   { icon: SlidersHorizontal, title: 'Scoring Profiles', description: 'User-defined weighted quality scoring with auto-calibration from real data. Replace hardcoded agent risk numbers with transparent rules.' },
-  { icon: DashClawLogo, title: 'Verified Agent Identity', description: 'Know which agent took which action. RSA signature verification ensures accountability at every step of the decision lifecycle.' },
+  { icon: DashClawLogo, title: 'Verified Agent Identity', description: 'Know which agent took which action. JWKS-verified OIDC bearer tokens (EdDSA, RSA, ECDSA) with replay protection and per-call action binding — cryptographic attribution, not self-assertion.' },
   { icon: Terminal, title: 'CLI Approval Channel', description: 'Approve or deny agent actions from the terminal without opening a browser. Works with Claude Code, Codex, Hermes Agent, Gemini CLI, and any terminal-first workflow.' },
   { icon: Webhook, title: 'Coding-agent Hooks', description: 'Govern Claude Code, Codex, and Hermes Agent tool calls via shared field-compatible hook schemas. No SDK instrumentation required. Hermes additionally exposes pre_llm_call (per-turn context injection), post_llm_call (live ingest), transform_tool_result (secret redaction), and subagent_stop (delegate_task ROI).' },
-  { icon: Network, title: 'MCP Server', description: 'Connect any MCP client to DashClaw governance with one config line. 23 tools and 4 resources over stdio or Streamable HTTP. Works with Claude Code, Claude Desktop, and Managed Agents.' },
+  { icon: Network, title: 'MCP Server', description: 'Connect any MCP client to DashClaw governance with one config line. 23 tools and 6 resources over stdio or Streamable HTTP. Works with Claude Code, Claude Desktop, and Managed Agents.' },
   { icon: FolderKanban, title: 'Execution Studio', description: 'Workflow templates, capability registry, knowledge collections, and model strategies. Chain governed actions into multi-step pipelines with conditional execution and resume-from-checkpoint.' },
 ];
 
@@ -103,7 +103,7 @@ export const frameworkQuickstarts = [
     }
   }
 }
-// 23 governance tools + 4 resources
+// 23 governance tools + 6 resources
 // No SDK. No code changes.`
   },
   {
@@ -125,7 +125,7 @@ decision = claw.guard(
     risk_score=82
 )
 
-if decision == "allowed":
+if decision["decision"] == "allow":
     run_agent_tool()`
   },
   {
@@ -139,7 +139,7 @@ decision = claw.guard(
     risk_score=88
 )
 
-if decision == "allowed":
+if decision["decision"] == "allow":
     crew.kickoff()`
   },
   {
@@ -159,7 +159,7 @@ const { decision } = await claw.guard({
   riskScore: 90
 })
 
-if (decision === 'allowed') {
+if (decision === 'allow') {
   await openai.chat.completions.create(...)
 }`
   },
@@ -250,7 +250,7 @@ export const agentToolCategories = [
   { title: 'Decision Ledger', desc: 'Immutable record of every agent intent and outcome. Prove accountability.', example: 'claw.createAction({ goal: "Database cleanup" })' },
   { title: 'Risk Monitoring', desc: 'Automatic detection of risky behavior patterns across your agent fleet.', example: 'signal: autonomy_spike detected for agent-1' },
   { title: 'Compliance Evidence', desc: 'Mapping guard decisions to SOC 2 and ISO controls for audit readiness.', example: 'Generating cryptographically signed proof...' },
-  { icon: DashClawLogo, title: 'Verified Identity', desc: 'RSA signature verification ensures only trusted agents can interact with your systems.', example: 'Identity verified for agent: deploy-bot-4' },
+  { icon: DashClawLogo, title: 'Verified Identity', desc: 'JWKS-verified agent identity — only cryptographically attested agents interact with your systems.', example: 'Identity verified for agent: deploy-bot-4' },
 ];
 
 export const platformCoverage = [

@@ -29,6 +29,62 @@ are prefixed with the package name.
 
 ## [Unreleased]
 
+### Phase 2c action binding — `act_status` + `urn:dashclaw:act-binding` (#121)
+
+Narrows *what* a single verified token can do: an issuer commits the token to one
+intended `(action, target, goal)` tuple at mint time, and the guard records whether
+the incoming call matches — so a token minted to `read` one record can't be
+repurposed to `delete` a different one (the prompt-injected / over-broad-token
+threat). Design by @piiiico, scoped + corrected in review; merged 2026-05-30
+(`b4c33c72`). Audit tripwire + opt-in block, defaulting `off`.
+
+- **Server**: `app/lib/act-binding.js` is the single source of truth for
+  canonicalization (a constrained RFC 8785 / JCS profile — string-forced,
+  NFC-normalized, lexicographic keys) and the SHA-256 digest. Claim name is
+  `urn:dashclaw:act-binding` (a URN, deliberately *not* `act`, to avoid the
+  RFC 8693 actor-claim collision). The verifier (`jwks-verifier.js`) surfaces
+  `act` + `act_typ_supported`; the guard (`guard.js`) resolves `act_status` ∈
+  `not_applicable | match | mismatch | not_present | unsupported_typ |
+  ctx_incomplete` over the **raw** request context and persists it.
+- **Modes**: `DASHCLAW_ACT_BINDING=off|best_effort|required` (default `off` —
+  needs issuer cooperation that doesn't exist yet) and
+  `DASHCLAW_ACT_BINDING_TYP` (accepted `typ` allowlist). `mismatch` blocks under
+  `best_effort`+`required`; `not_present`/`unsupported_typ`/`ctx_incomplete`
+  block only under `required`. Status is recorded in **every** mode, including
+  `off`, so operators can see when an issuer starts minting bindings.
+- **Schema**: `drizzle/0012_guard_decisions_act_binding.sql` adds `act_status`
+  (`DEFAULT 'not_applicable'`) + `act_hash` (claim-side digest only — the
+  unfakeable half; never recomputed over the redacted context) plus a partial
+  index on `act_status = 'mismatch'`. New optional `target` guard-input field.
+- **Tests**: `__tests__/unit/act-binding.test.js` (canonicalization determinism +
+  NFC, digest, parse, full `resolveActStatus` matrix) plus verifier + guard-engine
+  block-wiring coverage.
+- **Docs**: `docs/agent-identity.md` Phase 2c section (claim shape, canonicalization,
+  `act_status` enum, mode matrix).
+
+### Phase 2b jti replay protection — `replay_status` (#120)
+
+Closes the capture-and-replay gap left by Phase 2 (signature-only verification):
+a `verified` token captured inside its `exp` window can otherwise be replayed.
+Design by @piiiico; merged 2026-05-15 (`b5aadac3`). Adds `jti` + a per-issuer
+seen-set; first use is `unique`, a second use is `replayed`.
+
+- **Server**: `app/lib/repositories/jti-replay.repository.js` — Postgres
+  `jwt_replay_log`, composite PK `(issuer, jti)`, race-free
+  `ON CONFLICT DO NOTHING RETURNING jti` check-and-record, 1% in-line sweep +
+  `/api/cron/jti-sweep`. `/api/guard` returns `replay_status` ∈
+  `not_applicable | disabled | unique | replayed | not_present | unavailable |
+  exp_too_far`. The verifier also rejects tokens whose `exp` is more than the
+  cap into the future (`exp_too_far`), defeating unbounded seen-sets.
+- **Modes**: `DASHCLAW_JTI_REPLAY_PROTECTION=off|best_effort|required`
+  (default `best_effort`); `DASHCLAW_JTI_MAX_TTL_SECONDS` (default 86400).
+  `replayed`/`exp_too_far` always block; `unavailable`/`not_present` block only
+  under `required` (closes the "hostile IdP strips jti" vector).
+- **Schema**: `drizzle/0010_jti_replay_protection.sql` (the `jwt_replay_log`
+  table + `replay_status`/`jti` columns on `guard_decisions`) and
+  `drizzle/0011_*` (forensic partial index on `replay_status = 'replayed'`).
+- **Docs**: `docs/agent-identity.md` Phase 2b section (modes, sweep, storage).
+
 ### Phase 2 agent identity — JWKS verification + `verification_status` (#104)
 
 Cryptographic agent attribution layered on top of Phase 1 trust-on-assertion.

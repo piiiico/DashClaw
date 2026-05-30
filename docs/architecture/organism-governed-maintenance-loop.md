@@ -75,33 +75,35 @@ Does not own:
 - protected-path changes without approval
 - broad refactors without explicit human judgment
 
-## Daily operating rhythm
+## Operating rhythm
 
-### Recommended automated morning run
-The automated daily run should execute only:
+### Automated cadence (weekly, not daily)
+The only scheduled, unattended automation is **weekly**:
+
+- **Cloud weekly-digest routine (Mondays).** Runs `sense` + snapshot, writes a health digest to `.organism/digests/<date>.md`, and opens a PR on `claude/weekly-digest-<date>`. It lives in the Anthropic Routines panel; the repo versions only the prompt (`docs/internal/routines/weekly-digest-prompt.md`).
+- **GitHub Actions crons.** `code-session-weekly-memo` (Mon 04:00 UTC), `refresh-model-pricing` (Sun 05:00 UTC), and `code-session-cache-crater`.
+
+Operators can run the read-only passes locally at any cadence:
 
 1. `python -m livingcode sense`
 2. `python -m livingcode plan`
 3. `python -m livingcode review`
 
-Recommended cadence:
-- once daily
-- around 8:00 AM local time
-
-Automation: handled by the cloud weekly-digest routine (writes to `.organism/digests/`). The previous local Windows scheduled-task wrapper has been retired.
+There is **no daily automation** — the earlier local Windows scheduled-task wrapper and the per-day livingcode script were both retired.
 
 ### Why `cycle` is excluded from unattended automation
 `cycle` is a higher-order orchestration path and should remain manual until the governance and executor boundaries are proven stable. For now, unattended automation should observe, plan, and review only.
 
-## Daily interpretation pass
+## Interpretation pass
 
-After the automated run, MoltFire should inspect:
-- latest `state-reports/`
-- latest `backlog/`
-- latest `cycle-history/`
-- `cycle-counter.json`
-- `consecutive-failures.json`
+After a run, the maintainer (or the weekly routine) inspects:
+- latest `.organism/digests/` and `.organism/backlog/` (both committed)
+- `.organism/cycle-counter.json` and `.organism/consecutive-failures.json`
 - any trend shifts in structural debt or CI posture
+
+Note: `state-reports/`, `cycle-history/`, and `heartbeats/` under `.organism/` are
+gitignored runtime state. They materialize only on a machine that has actually run
+`sense`/`cycle` locally and are absent on a fresh clone — do not assume they exist.
 
 Then summarize the organism in four buckets:
 

@@ -551,7 +551,7 @@ if (decision === "allow") {
                 
                 <div className="mt-6 text-text-tertiary">{'// 3. Follow the decision'}</div>
                 <div className="text-text-secondary">
-                  <span className="text-purple-400">if</span> (decision === <span className="text-success">&apos;allowed&apos;</span>) {'{'}
+                  <span className="text-purple-400">if</span> (decision === <span className="text-success">&apos;allow&apos;</span>) {'{'}
                 </div>
                 <div className="text-text-secondary pl-4 text-text-tertiary">
                   {'// execute real-world action'}
@@ -687,7 +687,7 @@ if (decision === "allow") {
                   {
                     label: 'Zero code',
                     title: 'MCP server',
-                    desc: 'Any MCP-compatible client (Claude Code, Claude Desktop, Managed Agents) gets governance via 23 tools and 4 resources. No SDK, no hooks.',
+                    desc: 'Any MCP-compatible client (Claude Code, Claude Desktop, Managed Agents) gets governance via 23 tools and 6 resources. No SDK, no hooks.',
                     example: 'npx @dashclaw/mcp-server --url ... --key ...',
                     href: '/docs#mcp-server',
                   },

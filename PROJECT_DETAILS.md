@@ -1,7 +1,7 @@
 ---
 source-of-truth: true
 owner: API Governance Lead
-last-verified: 2026-05-14
+last-verified: 2026-05-30
 doc-type: architecture
 ---
 
@@ -25,7 +25,7 @@ Generated inventories remain authoritative for generated facts:
 | SDK parity by domain | `docs/sdk-parity.md` |
 | Durable execution finality spec | `docs/architecture/durable-execution-finality.md` |
 
-As of this verification, generated API inventory reports **259 routes**: **46 stable**, **23 beta**, **190 experimental**.
+As of this verification, generated API inventory reports **259 routes**: **46 stable**, **24 beta**, **189 experimental**.
 
 ## Product boundary
 
@@ -139,6 +139,35 @@ Durable finality closes the gap between "this action was approved" and "this act
 
 Vercel Hobby cron runs the sweep daily. Operators who need tighter detection can run the same endpoint externally at their own cadence with `Authorization: Bearer $CRON_SECRET`, or use Vercel Pro with an hourly cron.
 
+## Agent identity (Phase 2 / 2b / 2c)
+
+`/api/guard` resolves agent identity on three independent axes, each recorded on
+its own column of `guard_decisions` and returned on the guard response. None
+overloads `verification_status`; an absent or invalid token always fails soft to
+the Phase 1 trust-on-assertion path (body `agent_id`), never blocking on
+infrastructure failure. Full setup guide: `docs/agent-identity.md`.
+
+| Phase | Question | Column | Mechanism |
+|:---|:---|:---|:---|
+| **2 — verification** | *Who* signed the token? | `verification_status` | `app/lib/jwks-verifier.js` verifies an `Authorization: Bearer <JWT>` against the issuer's JWKS (`{iss}/.well-known/jwks.json`, cached 1 h, 30 s circuit breaker, SSRF-guarded). EdDSA / RS256–512 / ES256–512. On `verified`, JWT `sub` overrides body `agent_id`. Values: `verified | unverified | expired | failed | unknown_issuer | exp_too_far`. |
+| **2b — replay** | Has this token been *reused*? | `replay_status` | `app/lib/repositories/jti-replay.repository.js` records `(issuer, jti)` in `jwt_replay_log` (race-free `ON CONFLICT DO NOTHING`). First use `unique`, second `replayed`. Values: `not_applicable | disabled | unique | replayed | not_present | unavailable | exp_too_far`. |
+| **2c — binding** | Is this token bound to *this* call? | `act_status` | `app/lib/act-binding.js` recomputes a SHA-256 over the canonical `(action, target, goal)` tuple and compares it to the token's `urn:dashclaw:act-binding` claim. Values: `not_applicable | match | mismatch | not_present | unsupported_typ | ctx_incomplete`. |
+
+Enforcement is mode-gated and fails open by default so the runtime records before
+it blocks:
+
+| Env var | Modes | Default | Blocks on |
+|:---|:---|:---|:---|
+| `DASHCLAW_ALLOWED_ISSUER` / `DASHCLAW_JWT_AUDIENCE` | (set / unset) | unset = any | restrict trusted issuers / validate `aud` |
+| `DASHCLAW_JTI_REPLAY_PROTECTION` | `off` / `best_effort` / `required` | `best_effort` | `replayed`/`exp_too_far` always; `unavailable`/`not_present` only under `required` |
+| `DASHCLAW_JTI_MAX_TTL_SECONDS` | integer | `86400` | rejects tokens whose `exp` exceeds the cap (`exp_too_far`) |
+| `DASHCLAW_ACT_BINDING` | `off` / `best_effort` / `required` | `off` | `mismatch` under `best_effort`+`required`; `not_present`/`unsupported_typ`/`ctx_incomplete` only under `required` |
+| `DASHCLAW_ACT_BINDING_TYP` | csv | `action-binding/v1` | accepted binding `typ` allowlist |
+
+Schema: `drizzle/0008` (verification), `0010`/`0011` (replay), `0012` (action
+binding). The legacy public-key pairing flow (`/api/pairings`, RSA) remains for
+older integrations but is no longer the primary identity surface.
+
 ## Integration model
 
 DashClaw is intentionally multi-surface. Claude Code hooks are one strong integration path, not the product identity.
@@ -146,7 +175,7 @@ DashClaw is intentionally multi-surface. Claude Code hooks are one strong integr
 | Path | Best for | Artifact |
 |:---|:---|:---|
 | MCP server | MCP-capable agents, Claude Desktop/Code, managed agents, remote tool access | `@dashclaw/mcp-server`, `POST /api/mcp` |
-| Node SDK | JavaScript/TypeScript agents and apps | `sdk/dashclaw.js`, npm package `dashclaw` version `2.12.0` |
+| Node SDK | JavaScript/TypeScript agents and apps | `sdk/dashclaw.js`, npm package `dashclaw` version `2.13.0` |
 | Python SDK | Python agents and backend workflows | `sdk-python/dashclaw/client.py` |
 | Claude Code hooks | Coding-agent tool governance without per-call SDK code | `hooks/`, `npm run hooks:install`, `plugins/dashclaw/.claude-plugin/` |
 | Codex plugin | Codex coding-agent governance via field-compatible hook schema | `cli/lib/codex/`, `dashclaw install codex`, `plugins/dashclaw/.codex-plugin/` |
@@ -164,7 +193,7 @@ DashClaw ships two Node SDK entry points and a Python SDK.
 
 | Surface | Entry point | Version or role |
 |:---|:---|:---|
-| Canonical Node SDK | `import { DashClaw } from 'dashclaw'` from `sdk/dashclaw.js` | npm package `dashclaw` version `2.12.0`; primary SDK for new work. |
+| Canonical Node SDK | `import { DashClaw } from 'dashclaw'` from `sdk/dashclaw.js` | npm package `dashclaw` version `2.13.0`; primary SDK for new work. |
 | Legacy Node SDK | `import { DashClaw } from 'dashclaw/legacy'` from `sdk/legacy/dashclaw-v1.js` | Compatibility layer for older integrations. |
 | Python SDK | `sdk-python/dashclaw/client.py` | Broad Python surface with route-contract parity for critical domains. |
 

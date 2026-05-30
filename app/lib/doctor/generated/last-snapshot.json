@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:fec4da98452ea3192d01e828906c70dfac1802e4",
+  "timestamp": "sha1:3e5757a62cac30abfef8ef0589b3c6b0ad6a607d",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -2690,6 +2690,7 @@
       "name": "API_INVENTORY_VERIFIED_DATE",
       "required": false,
       "files": [
+        "scripts/check-api-inventory-diff.mjs",
         "scripts/generate-api-inventory.mjs"
       ],
       "in_env_example": false

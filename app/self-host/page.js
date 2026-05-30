@@ -253,7 +253,7 @@ dashclaw doctor`}</pre>
               {
                 category: 'Security',
                 features: [
-                  'Verified agent identity (RSA signatures)',
+                  'Verified agent identity (JWKS / JWT verification)',
                   'Automatic secret redaction',
                   'Assumption tracking and drift reports',
                   'Content scanning for sensitive data',

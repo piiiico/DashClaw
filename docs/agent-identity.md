@@ -223,7 +223,7 @@ issuer and does not validate the audience — useful during development.
 | `agent_name` | No       | Human-readable label in audit entries     |
 | `aud`        | No       | Validated when `DASHCLAW_JWT_AUDIENCE` set |
 | `exp`        | No       | Checked before JWKS fetch (fast path)     |
-| `jti`        | No       | Replay-protection (future Phase 2b)       |
+| `jti`        | No       | Replay-protection key (Phase 2b, shipped) |
 
 ## Supported algorithms
 

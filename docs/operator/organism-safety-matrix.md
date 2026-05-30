@@ -75,7 +75,7 @@ Changes under these paths are never auto-safe.
 - `.github/workflows/**`
 
 ### Hard-protected directories
-- `.organism/**`
+- `.organism/**` — **except** `.organism/digests/` and `.organism/backlog/`, which are committed organism-authored state that the weekly-digest routine and the livingcode planner are designed to write. The blanket block applies to everything else under `.organism/`.
 - `app/api/**`
 - `app/actions/**`
 - `app/(dashboard)/**`
@@ -121,7 +121,7 @@ Escalate for approval before execution if any of the following are true:
 
 These actions are forbidden for autonomous governed maintenance:
 - Editing `organism.json`
-- Editing anything under `.organism/`
+- Editing anything under `.organism/` by hand or via the maintenance loop (the weekly-digest routine and the livingcode planner own `.organism/digests/` and `.organism/backlog/` respectively — those write paths are the system's, not a maintainer's)
 - Deleting files or folders
 - Running archive cleanup
 - Changing auth flows

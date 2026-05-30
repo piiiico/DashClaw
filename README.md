@@ -37,6 +37,7 @@
 | | |
 |---|---|
 | **Intercept** | Risky agent actions are evaluated before they execute. Block, warn, or hold for approval, by policy. |
+| **Verify identity** | Agents authenticate with JWKS-verified OIDC bearer tokens (EdDSA / RSA / ECDSA). Replay protection rejects reused tokens; optional action binding scopes a token to one intended call. Cryptographic attribution, not self-assertion. |
 | **Enforce** | Declarative policies (risk thresholds, deploy gates, capability access rules, semantic checks) run on every action. |
 | **Approve** | Pending approvals route to a dashboard queue, the CLI inbox, a mobile PWA, Telegram, or Discord, with one-tap allow or deny. |
 | **Record** | Every action becomes a replayable decision record: declared goal, reasoning, risk score, matched policies, assumptions, evidence. |
@@ -91,7 +92,7 @@ For Claude Code specifically, the hook installer alone (without the plugin) gove
 
 ### 2. MCP server (zero code, any MCP host)
 
-[`@dashclaw/mcp-server`](./mcp-server) exposes **23 governance MCP tools** across 7 groups — core governance, optimal files, session continuity, credential hygiene, skill safety, open loops, learning + retrospection — plus 4 read-only resources (`dashclaw://policies`, `dashclaw://capabilities`, `dashclaw://agent/{agent_id}/history`, `dashclaw://status`).
+[`@dashclaw/mcp-server`](./mcp-server) exposes **23 governance MCP tools** across 7 groups — core governance, optimal files, session continuity, credential hygiene, skill safety, open loops, learning + retrospection — plus 6 read-only resources (`dashclaw://policies`, `dashclaw://capabilities`, `dashclaw://agent/{agent_id}/history`, `dashclaw://status`, `dashclaw://code-sessions/projects`, `dashclaw://code-sessions/sessions/{session_id}`).
 
 **Stdio (Claude Code, Claude Desktop, any stdio MCP client):**
 
@@ -166,7 +167,7 @@ It intercepts every tool-use call (`before_tool_call`, `llm_output`, `after_tool
 
 ### 5. Direct REST API and webhooks
 
-Every governance primitive is reachable as HTTP. The stable contract is pinned in [`docs/openapi/critical-stable.openapi.json`](./docs/openapi/critical-stable.openapi.json); the full inventory (**259 routes**: 46 stable, 23 beta, 190 experimental) is at [`docs/api-inventory.md`](./docs/api-inventory.md). Webhook events include `signal.detected`, `decision.created`, `action.created`, `lost_confirmation`, and the rest of the catalog — configurable per org.
+Every governance primitive is reachable as HTTP. The stable contract is pinned in [`docs/openapi/critical-stable.openapi.json`](./docs/openapi/critical-stable.openapi.json); the full inventory (**259 routes**: 46 stable, 24 beta, 189 experimental) is at [`docs/api-inventory.md`](./docs/api-inventory.md). Webhook events include `signal.detected`, `decision.created`, `action.created`, `lost_confirmation`, and the rest of the catalog — configurable per org.
 
 ### 6. Skills — governance protocol + live platform reference
 
@@ -301,6 +302,7 @@ DashClaw is not observability. It is control before execution. The model:
 4. **Outcomes are durable.** The five-state finality machine guarantees no silent double-execute on retry, and the sweep catches lost confirmations.
 5. **Evidence is exportable.** Compliance evidence bundles (signed manifests, JSON exports) are produced from real action records, not synthetic fixtures.
 6. **Prompt injection scanning is on by default.** Declared goals are scanned for injection patterns. Hits are blocked at guard time.
+7. **Agent identity is cryptographically verified.** Agents may present a JWKS-verified JWT instead of self-asserting `agent_id`. DashClaw checks the signature against the issuer's published keys (EdDSA / RSA / ECDSA), rejects replayed tokens, and can bind a token to its intended action — the verified `sub` overrides any body-supplied `agent_id`. Fail-soft: a downed issuer never blocks a decision. See [`docs/agent-identity.md`](./docs/agent-identity.md).
 
 The full architecture map lives in [`PROJECT_DETAILS.md`](./PROJECT_DETAILS.md). The runtime API contract is in [`docs/architecture/runtime-api.md`](./docs/architecture/runtime-api.md).
 
@@ -341,6 +343,7 @@ The full architecture map lives in [`PROJECT_DETAILS.md`](./PROJECT_DETAILS.md).
 - [Node SDK reference](./sdk/README.md): canonical reference for the `dashclaw` npm package.
 - [Python SDK reference](./sdk-python/README.md): same surface, snake_case.
 - [SDK parity matrix](./docs/sdk-parity.md): Node v2 vs Python coverage.
+- [Agent identity guide](./docs/agent-identity.md): JWKS verification, replay protection, and action binding (Phase 2 / 2b / 2c).
 - [Runtime API contract](./docs/architecture/runtime-api.md): minimal core governance endpoints.
 - [API inventory](./docs/api-inventory.md): full route list with maturity tier.
 - [Durable execution finality spec](./docs/architecture/durable-execution-finality.md): five-state machine, sweep, idempotency.

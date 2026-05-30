@@ -5,7 +5,7 @@ description: DashClaw platform expert for integration, troubleshooting, and gove
 
 # DashClaw Platform Intelligence
 
-**Shape snapshot:** `sha1:fec4da98452ea3192d01e828906c70dfac1802e4`
+**Shape snapshot:** `sha1:3e5757a62cac30abfef8ef0589b3c6b0ad6a607d`
 **This file is auto-generated.** Do not edit by hand — regenerate with:
 
 ```bash
