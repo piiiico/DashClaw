@@ -93,7 +93,7 @@ const navItems = [
   { href: '#quick-start', label: 'Quick Start' },
   { href: '#mcp-server', label: 'MCP Server' },
   { href: '#mcp-tools', label: 'Tools (23)', indent: true },
-  { href: '#mcp-resources', label: 'Resources (4)', indent: true },
+  { href: '#mcp-resources', label: 'Resources (6)', indent: true },
   { href: '#mcp-config', label: 'Configuration', indent: true },
   { href: '#cli-and-doctor', label: 'CLI & Doctor' },
   { href: '#dashclaw-doctor', label: 'dashclaw doctor', indent: true },
@@ -156,6 +156,10 @@ const navItems = [
   { href: '#analytics', label: 'Analytics' },
   { href: '#guard-decisions', label: 'Guard Decisions', indent: true },
   { href: '#agent-profile', label: 'Agent Profile', indent: true },
+  { href: '#code-sessions', label: 'Code Sessions' },
+  { href: '#code-sessions-ingest', label: 'Ingest transcripts', indent: true },
+  { href: '#code-sessions-optimal-files', label: 'Optimal Files', indent: true },
+  { href: '#code-sessions-analytics', label: 'Cost & signals', indent: true },
   { href: '#hosted-provisioning', label: 'Hosted Provisioning (operator)' },
   { href: '#hosted-workspaces-post', label: 'POST /workspaces', indent: true },
   { href: '#hosted-workspaces-get', label: 'GET /workspaces/:id', indent: true },
@@ -1960,6 +1964,123 @@ const { agent, trust, signals, assumptions_summary } = await res.json();
                 }
               />
             </div>
+          </section>
+
+          {/* ── Code Sessions ── */}
+          <section id="code-sessions" className="scroll-mt-20 pt-12 border-t border-border">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-8 h-8 rounded-lg bg-brand-subtle flex items-center justify-center">
+                <Terminal size={16} className="text-brand" />
+              </div>
+              <h2 className="text-2xl font-bold tracking-tight">Code Sessions</h2>
+              <span className="text-[10px] uppercase tracking-wider text-brand border border-brand/40 rounded px-1.5 py-0.5">Beta</span>
+            </div>
+            <p className="text-sm text-text-secondary mb-6 leading-relaxed">
+              Ingest Claude Code (and Codex) transcripts, price the spend with cache-aware accounting, surface optimizer signals (stuck loops, cache crater, context gaps), and distill a session into an <strong>Optimal Files</strong> bundle — a root <code className="text-brand">CLAUDE.md</code>, path-scoped rules, hooks, and skill packs you apply locally. The canonical parser runs server-side, so clients never parse transcripts; all routes are experimental.
+            </p>
+
+            <h3 id="code-sessions-ingest" className="scroll-mt-20 text-lg font-semibold tracking-tight mt-8 mb-2">Ingest transcripts</h3>
+            <p className="text-sm text-text-secondary mb-3 leading-relaxed">
+              Three ways in, all landing on the same server-side parser:
+            </p>
+            <ul className="text-sm text-text-secondary mb-4 leading-relaxed list-disc pl-5 space-y-1">
+              <li><strong>Stop-hook (live).</strong> Set <code className="text-brand">DASHCLAW_CODE_SESSIONS_ENABLED=1</code> for the Claude Code hooks. After each turn the reporter POSTs the JSONL delta with <code>source_host: &apos;hook&apos;</code> — fail-silent if the instance is unreachable.</li>
+              <li><strong>CLI backfill.</strong> <code className="text-brand">dashclaw code ingest [--dry-run]</code> walks <code>~/.claude/projects</code>; <code className="text-brand">dashclaw code ingest-codex</code> walks <code>~/.codex/sessions</code>. Files over 1&nbsp;MB are gzip+base64 compressed automatically.</li>
+              <li><strong>Direct API.</strong> <code>POST /api/code-sessions/ingest-jsonl</code> (below), or <code>POST /api/code-sessions/ingest-live</code> for per-turn incremental append with <code>finalize: true</code> to close the session.</li>
+            </ul>
+            <MethodEntry
+              id="ingestJsonl"
+              signature="POST /api/code-sessions/ingest-jsonl"
+              description="Ingest a Claude Code JSONL transcript (or a delta). The server dedups duplicate usage fragments (Claude Code repeats one model request across many rows), computes cache-aware cost, and runs optimizer + alert detection. Accepts raw lines or a gzip+base64 payload (50 MB decompressed cap, 200k lines)."
+              params={[
+                { name: 'project', type: 'object', required: true, desc: '{ slug, source_host: "hook" | "jsonl" }' },
+                { name: 'jsonl_lines', type: 'string[]', required: false, desc: 'Raw JSONL lines. Either this or compressed_jsonl is required.' },
+                { name: 'compressed_jsonl', type: 'string', required: false, desc: 'base64(gzip(jsonl)) alternative for large transcripts.' },
+                { name: 'session_uuid', type: 'string', required: false, desc: 'Validated against the parser-derived uuid; mismatch is rejected.' },
+                { name: 'tool_use_action_map', type: 'object', required: false, desc: 'Maps tool_use ids to governed action_ids (the governance bridge).' },
+              ]}
+              returns="{ project: { id, slug }, session: { session_uuid, inserted_messages, inserted_tool_uses, signals_inserted, alerts_inserted }, parser: { jsonl_records, model_requests, duplicate_fragments_skipped } }"
+              example={
+                <CodeBlock title="Ingest a transcript via the API">
+{`// Backfill is easiest via the CLI: dashclaw code ingest
+// Direct API — you supply the raw JSONL lines:
+const res = await fetch(baseUrl + '/api/code-sessions/ingest-jsonl', {
+  method: 'POST',
+  headers: { 'x-api-key': apiKey, 'content-type': 'application/json' },
+  body: JSON.stringify({
+    project: { slug: 'my-repo', source_host: 'jsonl' },
+    jsonl_lines: lines,        // string[] — or compressed_jsonl (base64 gzip)
+  }),
+});
+const { session, parser } = await res.json();
+// parser.duplicate_fragments_skipped = the cache-aware dedup that
+// prevents the Nx cost over-count from repeated usage fragments`}
+                </CodeBlock>
+              }
+            />
+
+            <h3 id="code-sessions-optimal-files" className="scroll-mt-20 text-lg font-semibold tracking-tight mt-10 mb-2">Optimal Files</h3>
+            <p className="text-sm text-text-secondary mb-4 leading-relaxed">
+              Distill a session into a curated config bundle (root <code className="text-brand">CLAUDE.md</code>, path-scoped rules, hooks, skill candidates), persist the selected files as a manifest, then apply it to disk with the CLI. The server cannot read your filesystem, so generation is preview-only until you apply; every file is secret-redacted before it leaves the server.
+            </p>
+            <MethodEntry
+              id="optimalFilesPreview"
+              signature="POST /api/code-sessions/sessions/:sessionId/optimal-files/preview"
+              description="Generate the candidate file bundle for a session (read-only). Each file carries a kind, a commit recommendation, a secret-scan result, and an overwrite_risk of 'unknown' (the server can't see your working tree)."
+              returns="{ session_id, bundle: [{ path, kind, title, content, commit_recommendation, secret_scan, overwrite_risk }], groups, analysis }"
+              example={
+                <CodeBlock title="Preview the bundle">
+{`const res = await fetch(
+  baseUrl + '/api/code-sessions/sessions/' + sessionId + '/optimal-files/preview',
+  { method: 'POST', headers: { 'x-api-key': apiKey } }
+);
+const { bundle } = await res.json();   // every file already secret-redacted`}
+                </CodeBlock>
+              }
+            />
+            <MethodEntry
+              id="optimalFilesManifest"
+              signature="POST /api/code-sessions/sessions/:sessionId/optimal-files/manifest"
+              description="Persist a chosen subset of the bundle as an apply-able manifest (24 h TTL, strict path allowlist: CLAUDE.md, .claude/rules/, .claude/hooks/, .claude/skills/). Returns a ready-to-run apply command."
+              params={[
+                { name: 'selections', type: 'Array<{ path }>', required: true, desc: 'Paths chosen from the preview bundle. Paths outside the allowlist are rejected.' },
+              ]}
+              returns="{ manifest_id, expires_at, apply_command }"
+              example={
+                <CodeBlock title="Persist a manifest, then apply it locally">
+{`const res = await fetch(
+  baseUrl + '/api/code-sessions/sessions/' + sessionId + '/optimal-files/manifest',
+  {
+    method: 'POST',
+    headers: { 'x-api-key': apiKey, 'content-type': 'application/json' },
+    body: JSON.stringify({
+      selections: [{ path: 'CLAUDE.md' }, { path: '.claude/rules/testing.md' }],
+    }),
+  }
+);
+const { manifest_id, apply_command } = await res.json();
+// apply_command, e.g.:  dashclaw code apply <manifest_id> --dest=. --yes`}
+                </CodeBlock>
+              }
+            />
+
+            <h3 id="code-sessions-analytics" className="scroll-mt-20 text-lg font-semibold tracking-tight mt-10 mb-2">Cost, signals &amp; retrospection</h3>
+            <p className="text-sm text-text-secondary mb-3 leading-relaxed">
+              Read surfaces over ingested sessions (all <code>GET</code> unless noted, <code>x-api-key</code> required):
+            </p>
+            <ul className="text-sm text-text-secondary mb-4 leading-relaxed list-disc pl-5 space-y-1">
+              <li><code className="text-brand">/api/code-sessions/projects</code> — projects with per-project cost rollups.</li>
+              <li><code className="text-brand">/api/code-sessions/projects/:projectId/sessions</code> — sessions for a project.</li>
+              <li><code className="text-brand">/api/code-sessions/sessions/:sessionId</code> — token in/out + cache breakdown, cache-hit %, and cost reconciliation (flags a ≥2× divergence from Mission Control pricing).</li>
+              <li><code className="text-brand">/api/code-sessions/sessions/:sessionId/autopsy</code> — outcome classification (completed / thrashed / fell_back_to_rules / timed_out / aborted) and where the spend went by tool category.</li>
+              <li><code className="text-brand">/api/code-sessions/subagent-roi</code> — keep / trim / drop per subagent by success-rate and cost-per-success.</li>
+              <li><code className="text-brand">/api/code-sessions/memos</code> + <code>POST /memos/regenerate</code> — weekly spend memo (7-day vs prior-7-day).</li>
+              <li><code className="text-brand">/api/code-sessions/alerts</code> + <code>POST /alerts/read-all</code> — cost-anomaly / cache-crater / stuck-loop alerts.</li>
+              <li><code className="text-brand">/api/learning/code-signals</code> — optimizer findings aggregated into the learning loop.</li>
+            </ul>
+            <p className="text-sm text-text-secondary mb-2 leading-relaxed">
+              Also exposed over MCP — tools <code className="text-brand">dashclaw_optimal_files_preview</code> + <code className="text-brand">dashclaw_optimal_files_manifest</code>, and resources <code className="text-brand">dashclaw://code-sessions/projects</code> + <code className="text-brand">{'dashclaw://code-sessions/sessions/{session_id}'}</code>. The dashboard view is at <code className="text-brand">/code-sessions</code>.
+            </p>
           </section>
 
           {/* ── Hosted Provisioning (operator) ── */}
