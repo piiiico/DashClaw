@@ -31,13 +31,25 @@ function normalize(str) {
 async function main() {
   const rootDir = process.cwd();
   const inventory = await generateApiInventory(rootDir);
-  const expectedJson = serializeApiInventoryJson(inventory);
-  const expectedMd = serializeApiInventoryMarkdown(inventory);
 
   const jsonPath = getInventoryJsonPath(rootDir);
   const mdPath = getInventoryMarkdownPath(rootDir);
   const actualJson = await readOrNull(jsonPath);
   const actualMd = await readOrNull(mdPath);
+
+  // The Markdown artifact's `last-verified` date records WHEN it was last
+  // regenerated, not WHAT routes exist — it is metadata, not inventory content.
+  // The generator stamps it with the current date, so comparing a freshly
+  // generated artifact against the committed one reports spurious drift on every
+  // day after the artifact was committed (this reddened CI daily). Pin the
+  // expected output to the committed date so only real structural changes fail.
+  const committedVerified = actualMd?.match(/^last-verified:\s*(\d{4}-\d{2}-\d{2})\s*$/m)?.[1];
+  if (committedVerified) {
+    process.env.API_INVENTORY_VERIFIED_DATE = committedVerified;
+  }
+
+  const expectedJson = serializeApiInventoryJson(inventory);
+  const expectedMd = serializeApiInventoryMarkdown(inventory);
 
   const issues = [];
   if (actualJson == null) {
