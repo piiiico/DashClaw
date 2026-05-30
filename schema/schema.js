@@ -517,6 +517,15 @@ export const guardDecisions = pgTable('guard_decisions', {
   // Forensic only — logged on every verified call so reviewers can correlate
   // replays across windows. Never read for validation.
   jti: text('jti'),
+  // Phase 2c: action-binding outcome (issue #121, designed by @piiiico). Own
+  // axis like replay_status — never overloads verification_status. Possible
+  // values:
+  //   not_applicable | match | mismatch | not_present | unsupported_typ
+  //   ctx_incomplete
+  actStatus: text('act_status').default('not_applicable'),
+  // Forensic only — the claim-side digest the token committed to (the
+  // unfakeable half). Null when no binding claim was present.
+  actHash: text('act_hash'),
   decision: text('decision').notNull(),
   reason: text('reason'),
   matchedPolicies: text('matched_policies'),

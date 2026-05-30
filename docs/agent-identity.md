@@ -96,6 +96,82 @@ DASHCLAW_JTI_REPLAY_PROTECTION=best_effort   # off | best_effort | required
 DASHCLAW_JTI_MAX_TTL_SECONDS=86400           # cap on accepted exp (24h default)
 ```
 
+## Phase 2c: action binding
+
+Phase 2 verifies *who* signed a token. Phase 2b stops *reusing* one. Phase 2c
+narrows *what* a single token can do: an issuer commits the token to one
+intended `(action, target, goal)` tuple at mint time, and the guard records
+whether the incoming call matches — so a token minted to `read` a record can't
+be silently repurposed to `delete` a different one (e.g. by a prompt-injected
+agent holding an over-broad token).
+
+> **Position note.** `/api/guard` is an advisory decision point, not an inline
+> enforcement point — it does not sit in the data path to the resource. So
+> act-binding's primary value here is an **audit tripwire** ("this verified
+> token's declared intent doesn't match the call it showed up on") plus an
+> **opt-in block** for agents that voluntarily consult the guard. It is not a
+> substitute for the resource server validating the binding itself.
+
+### The binding claim
+
+A namespaced claim — deliberately **not** `act`, which RFC 8693 reserves for a
+nested actor object (`act.sub`) that a hash-shaped payload would corrupt for any
+8693-aware verifier:
+
+```json
+"urn:dashclaw:act-binding": {
+  "typ":  "action-binding/v1",
+  "hash": "sha256:<base64url-digest>"
+}
+```
+
+`hash` is a SHA-256 over the canonical tuple the issuer committed the token to.
+Canonicalization is a constrained [RFC 8785 (JCS)](https://www.rfc-editor.org/rfc/rfc8785)
+profile: the three values are forced to strings, NFC-normalized, and serialized
+with lexicographically ordered keys and no whitespace. Both the issuer and
+DashClaw go through `app/lib/act-binding.js` so the bytes can't drift.
+
+The guard hashes the incoming request context — `action_type` → `action`,
+`target` → `target`, `declared_goal` → `goal` — and compares. (`target` is a new
+optional guard-input field; the binding tuple needs a resource.)
+
+### act_status enum
+
+| Value             | Meaning                                                          |
+|-------------------|-----------------------------------------------------------------|
+| `not_applicable`  | No verified token (Phase 1 / unverified path)                   |
+| `match`           | Claim present, digest matches the call                          |
+| `mismatch`        | Claim present, digest does **not** match → guard can block      |
+| `not_present`     | Verified token carried no binding claim                         |
+| `unsupported_typ` | Binding `typ` not in `DASHCLAW_ACT_BINDING_TYP`                 |
+| `ctx_incomplete`  | Request lacked `action`/`target`/`goal` to compute the digest   |
+
+`act_status` is recorded on `guard_decisions` in **every** mode, including
+`off` — that's the point: it's the observable that tells an operator their
+issuer has started minting bindings and it's safe to enable enforcement.
+`act_hash` logs the claim-side digest only (the unfakeable half).
+
+### Modes
+
+| Mode          | `mismatch` | `not_present` | `unsupported_typ` | `ctx_incomplete` |
+|---------------|------------|---------------|-------------------|------------------|
+| `off`         | record     | record        | record            | record           |
+| `best_effort` | **block**  | record        | record            | record           |
+| `required`    | **block**  | **block**     | **block**         | **block**        |
+
+Default is `off` (not `best_effort` like replay): act-binding needs issuer
+cooperation that doesn't exist yet, so anything stricter would tag every
+legitimate verified token `not_present` for zero security gain until issuers
+mint the claim. `best_effort` only ever blocks a *positive* mismatch, so it's
+safe to enable before every token carries a binding.
+
+### Configuration
+
+```bash
+DASHCLAW_ACT_BINDING=off                       # off | best_effort | required
+DASHCLAW_ACT_BINDING_TYP=action-binding/v1     # accepted typ list (comma-separated)
+```
+
 ## Resilience
 
 DashClaw uses a fail-soft model: if the JWKS endpoint is unreachable or slow,

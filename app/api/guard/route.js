@@ -12,6 +12,7 @@ import { listGuardDecisions } from '../../lib/repositories/guard.repository.js';
 import { isSelfHostModeEnabled } from '../../lib/selfHost.js';
 import { verifyJwt, extractBearerToken } from '../../lib/jwks-verifier.js';
 import { checkAndRecord as checkAndRecordJti } from '../../lib/repositories/jti-replay.repository.js';
+import { resolveActStatus } from '../../lib/act-binding.js';
 
 /**
  * POST /api/guard — Evaluate guard policies for a proposed action.
@@ -150,10 +151,23 @@ export async function POST(request) {
       } else {
         data.replay_status = 'not_applicable';
       }
+
+      // Phase 2c: action-binding status (issue #121). Its own axis, like
+      // replay_status — never overloads verification_status. Computed for
+      // verified tokens in EVERY mode (off included): even an operator running
+      // DASHCLAW_ACT_BINDING=off gets the `match` signal that tells them their
+      // issuer started minting bindings and it's safe to flip to required.
+      // resolveActStatus returns 'not_applicable' for any non-verified token,
+      // and hashes the raw request context (pre-redaction) so legitimate
+      // matches whose goal contains a redactable pattern still compare.
+      data.act_status = resolveActStatus(verificationResult, data);
+      data.act_hash = verificationResult.act?.hash || null;
     } else {
       data.verification_status = 'unverified';
       data.replay_status = 'not_applicable';
       data.jti = null;
+      data.act_status = 'not_applicable';
+      data.act_hash = null;
     }
 
     const includeSignals = request.nextUrl.searchParams.get('include_signals') === 'true';

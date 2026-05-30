@@ -298,3 +298,47 @@ describe('evaluateGuard', () => {
     expect(result.agent_risk_score).toBeNull();
   });
 });
+
+// --- Phase 2c: action-binding block wiring (issue #121) ---
+
+describe('evaluateGuard — action binding', () => {
+  afterEach(() => { delete process.env.DASHCLAW_ACT_BINDING; });
+
+  it('blocks a mismatch under best_effort and records act_status on the row', async () => {
+    process.env.DASHCLAW_ACT_BINDING = 'best_effort';
+    const sql = makeSql([]);
+    const result = await evaluateGuard('org_1', { action_type: 'read', act_status: 'mismatch' }, sql);
+    expect(result.decision).toBe('block');
+    expect(result.reasons.some(r => r.includes('Action-binding mismatch'))).toBe(true);
+  });
+
+  it('does NOT block a mismatch when mode is off (records only)', async () => {
+    process.env.DASHCLAW_ACT_BINDING = 'off';
+    const sql = makeSql([]);
+    const result = await evaluateGuard('org_1', { action_type: 'read', act_status: 'mismatch' }, sql);
+    expect(result.decision).toBe('allow');
+    expect(result.reasons.some(r => r.includes('Action-binding'))).toBe(false);
+  });
+
+  it('blocks not_present under required', async () => {
+    process.env.DASHCLAW_ACT_BINDING = 'required';
+    const sql = makeSql([]);
+    const result = await evaluateGuard('org_1', { action_type: 'read', act_status: 'not_present' }, sql);
+    expect(result.decision).toBe('block');
+    expect(result.reasons.some(r => r.includes('not_present'))).toBe(true);
+  });
+
+  it('does NOT block not_present under best_effort', async () => {
+    process.env.DASHCLAW_ACT_BINDING = 'best_effort';
+    const sql = makeSql([]);
+    const result = await evaluateGuard('org_1', { action_type: 'read', act_status: 'not_present' }, sql);
+    expect(result.decision).toBe('allow');
+  });
+
+  it('allows a match even under required', async () => {
+    process.env.DASHCLAW_ACT_BINDING = 'required';
+    const sql = makeSql([]);
+    const result = await evaluateGuard('org_1', { action_type: 'read', act_status: 'match' }, sql);
+    expect(result.decision).toBe('allow');
+  });
+});

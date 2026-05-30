@@ -32,6 +32,7 @@
  */
 
 import { assertSafeFetchUrl } from './url-safety.js';
+import { parseActBinding } from './act-binding.js';
 
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 const CB_FAILURE_THRESHOLD = 3;
@@ -219,6 +220,12 @@ export function _resetStateForTesting() {
  * @property {string|null} issuer     - JWT `iss` claim
  * @property {string|null} jti        - JWT `jti` claim (Phase 2b replay key)
  * @property {number|null} exp        - JWT `exp` claim in unix seconds (Phase 2b TTL)
+ * @property {{ typ: string, hash: string }|null} [act] - Phase 2c action-binding
+ *   claim (`urn:dashclaw:act-binding`), parsed only on the `verified` path
+ *   (undefined on every other path — the guard reads it solely after confirming
+ *   `verified`). null when the claim is absent or malformed.
+ * @property {boolean} [act_typ_supported] - whether `act.typ` is in
+ *   DASHCLAW_ACT_BINDING_TYP. Present only on the `verified` path.
  */
 
 /**
@@ -327,6 +334,12 @@ export async function verifyJwt(token) {
       }
     }
 
+    // Phase 2c (issue #121): extract the action-binding claim now that the
+    // signature is trusted. The guard recomputes the digest from request
+    // context one layer up and decides match/mismatch — the verifier only
+    // parses and signals whether it understood the `typ`.
+    const { act, actTypSupported } = parseActBinding(payload);
+
     return {
       verification_status: 'verified',
       agent_id: payload.sub || null,
@@ -334,6 +347,8 @@ export async function verifyJwt(token) {
       issuer,
       jti,
       exp,
+      act,
+      act_typ_supported: actTypSupported,
     };
   } catch (err) {
     // Infrastructure failures → unverified (fail-soft, not failed)

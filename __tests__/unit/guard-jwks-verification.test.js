@@ -69,6 +69,7 @@ vi.mock('node:dns/promises', () => ({
 }));
 
 import { verifyJwt, extractBearerToken, _resetStateForTesting } from '@/lib/jwks-verifier.js';
+import { ACT_BINDING_CLAIM } from '@/lib/act-binding.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -130,6 +131,28 @@ describe('verifyJwt — JWKS verification (Phase 2)', () => {
     expect(result.agent_id).toBe('agt_abc123');
     expect(result.agent_name).toBe('test-worker');
     expect(result.issuer).toBe(ISSUER);
+  });
+
+  it('surfaces the Phase 2c action-binding claim on a verified token', async () => {
+    mockJwksResponse(pubJwk);
+    const token = await sign(keyPair.privateKey, validPayload({
+      [ACT_BINDING_CLAIM]: { typ: 'action-binding/v1', hash: 'sha256:abc123' },
+    }));
+    const result = await verifyJwt(token);
+
+    expect(result.verification_status).toBe('verified');
+    expect(result.act).toEqual({ typ: 'action-binding/v1', hash: 'sha256:abc123' });
+    expect(result.act_typ_supported).toBe(true);
+  });
+
+  it('reports act=null and act_typ_supported=false when a verified token has no binding', async () => {
+    mockJwksResponse(pubJwk);
+    const token = await sign(keyPair.privateKey, validPayload());
+    const result = await verifyJwt(token);
+
+    expect(result.verification_status).toBe('verified');
+    expect(result.act).toBeNull();
+    expect(result.act_typ_supported).toBe(false);
   });
 
   it('returns expired for a JWT whose exp is in the past', async () => {

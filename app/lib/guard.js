@@ -12,6 +12,7 @@ import { scanForPromptInjection } from './promptInjection.js';
 import { EVENTS, publishOrgEvent } from './events.js';
 import { getLearningContext } from './learning-context.js';
 import { evaluateRecoveryRecipes } from './recovery.js';
+import { getActBindingMode } from './act-binding.js';
 
 const DECISION_SEVERITY = { allow: 0, warn: 1, require_approval: 2, block: 3 };
 
@@ -128,6 +129,39 @@ export async function evaluateGuard(orgId, context, sql, options = {}) {
       reason: replayBlockReason,
       replay_status: replayStatusEarly,
       jti: context.jti || null,
+      agent_id: context.agent_id || null,
+      org_id: orgId,
+    });
+  }
+
+  // Phase 2c (issue #121, design by @piiiico): action-binding block decision.
+  // Mirrors replay_status exactly — its own axis, decided here at the audit
+  // boundary, never re-checked. The status itself was computed in the route
+  // (it needs the request context); this only maps that status to a block.
+  //   - mismatch         → block under best_effort + required (a positive
+  //                        mismatch is safe to enforce even before all tokens
+  //                        carry bindings; it only fires when a binding WAS
+  //                        present and the call didn't match it)
+  //   - not_present /
+  //     unsupported_typ /
+  //     ctx_incomplete   → block only under `required` (operator has opted in,
+  //                        knowing their issuer mints the claim)
+  //   - match / not_applicable → never block
+  const actBindingMode = getActBindingMode();
+  const actStatusEarly = context.act_status || 'not_applicable';
+  let actBlockReason = null;
+  if (actBindingMode !== 'off' && actStatusEarly === 'mismatch') {
+    actBlockReason = 'Action-binding mismatch: token committed to a different (action, target, goal) than this call.';
+  } else if (
+    actBindingMode === 'required' &&
+    (actStatusEarly === 'not_present' || actStatusEarly === 'unsupported_typ' || actStatusEarly === 'ctx_incomplete')
+  ) {
+    actBlockReason = `Action-binding ${actStatusEarly} and DASHCLAW_ACT_BINDING=required.`;
+  }
+  if (actBlockReason) {
+    console.warn('[Guard] Action-binding block:', {
+      reason: actBlockReason,
+      act_status: actStatusEarly,
       agent_id: context.agent_id || null,
       org_id: orgId,
     });
@@ -285,6 +319,12 @@ export async function evaluateGuard(orgId, context, sql, options = {}) {
   // unique | replayed | not_present | unavailable | exp_too_far.
   const replayStatus = context.replay_status || 'not_applicable';
   const jti = context.jti || null;
+  // Phase 2c (issue #121): action-binding outcome on its own axis. `act_hash`
+  // stores the CLAIM-side digest only (the unfakeable half the token committed
+  // to) — not a hash recomputed over the context, which is redacted below and
+  // so could never be reconstructed from the stored row.
+  const actStatus = context.act_status || 'not_applicable';
+  const actHash = context.act_hash || null;
 
   // If the replay pre-check decided to block, override the policy outcome.
   // The policy loop may have already added reasons; we keep them as
@@ -304,11 +344,21 @@ export async function evaluateGuard(orgId, context, sql, options = {}) {
     reasons.unshift(replayBlockReason);
   }
 
+  // Phase 2c: same override shape as replay — binding evidence forces `block`,
+  // but a higher-severity policy decision is preserved with the reason still
+  // recorded for forensics.
+  if (actBlockReason && DECISION_SEVERITY.block >= DECISION_SEVERITY[highestDecision]) {
+    highestDecision = 'block';
+    reasons.unshift(actBlockReason);
+  } else if (actBlockReason) {
+    reasons.unshift(actBlockReason);
+  }
+
   // Fire-and-forget — the response leaves before the audit row commits.
   // `void` makes the floating-promise intent explicit (matches the
   // publishOrgEvent pattern below) so static analysis won't flag it.
   void sql`
-    INSERT INTO guard_decisions (id, org_id, agent_id, agent_name, verification_status, replay_status, jti, decision, reason, matched_policies, context, risk_score, action_type, created_at)
+    INSERT INTO guard_decisions (id, org_id, agent_id, agent_name, verification_status, replay_status, jti, act_status, act_hash, decision, reason, matched_policies, context, risk_score, action_type, created_at)
     VALUES (
       ${decisionId},
       ${orgId},
@@ -317,6 +367,8 @@ export async function evaluateGuard(orgId, context, sql, options = {}) {
       ${verificationStatus},
       ${replayStatus},
       ${jti},
+      ${actStatus},
+      ${actHash},
       ${highestDecision},
       ${reasons.join('; ') || null},
       ${JSON.stringify(matchedPolicies)},
@@ -339,6 +391,8 @@ export async function evaluateGuard(orgId, context, sql, options = {}) {
       verification_status: verificationStatus,
       replay_status: replayStatus,
       jti,
+      act_status: actStatus,
+      act_hash: actHash,
       decision: highestDecision,
       reason: reasons.join('; ') || null,
       matched_policies: matchedPolicies,

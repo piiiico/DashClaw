@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:076d739c0a9241bfd87599f8497c51ae7054dc5f",
+  "timestamp": "sha1:fec4da98452ea3192d01e828906c70dfac1802e4",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -2797,6 +2797,25 @@
         "app/api/cron/routing-maintenance/route.js",
         "app/api/cron/signals/route.js",
         "app/api/hosted/cleanup/route.js"
+      ],
+      "in_env_example": false
+    },
+    {
+      "name": "DASHCLAW_ACT_BINDING",
+      "required": false,
+      "files": [
+        "__tests__/unit/act-binding.test.js",
+        "__tests__/unit/guard-engine.test.js",
+        "app/lib/act-binding.js"
+      ],
+      "in_env_example": false
+    },
+    {
+      "name": "DASHCLAW_ACT_BINDING_TYP",
+      "required": false,
+      "files": [
+        "__tests__/unit/act-binding.test.js",
+        "app/lib/act-binding.js"
       ],
       "in_env_example": false
     },

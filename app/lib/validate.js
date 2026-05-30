@@ -220,6 +220,11 @@ const GUARD_INPUT_SCHEMA = {
   reversible:      { type: 'boolean' },
   declared_goal:   { type: 'string', maxLength: 2000 },
   intent:          { type: 'string', alias: 'declared_goal' }, // Alias for declared_goal
+  // Phase 2c (issue #121): the resource an action-binding claim commits to.
+  // Optional and only meaningful when DASHCLAW_ACT_BINDING is enabled and the
+  // token carries a `urn:dashclaw:act-binding` claim. Part of the canonical
+  // (action, target, goal) hash tuple.
+  target:          { type: 'string', maxLength: 1024 },
 };
 
 const POLICY_TYPES = ['risk_threshold', 'require_approval', 'block_action_type', 'rate_limit', 'webhook_check', 'behavioral_anomaly', 'semantic_check', 'permission_escalation', 'green_contract', 'branch_freshness'];
