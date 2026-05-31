@@ -68,7 +68,7 @@ export default function WeeklyMemoPanel({ projectId, initialMemo = null }) {
 
         {memo?.body_md ? (
           <>
-            <MarkdownBody>{memo.body_md}</MarkdownBody>
+            <MarkdownBody content={memo.body_md} />
             {memo.created_at && (
               <p className="mt-4 text-[11px] text-tertiary">
                 Generated {new Date(memo.created_at).toLocaleString()}
