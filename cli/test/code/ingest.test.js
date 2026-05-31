@@ -292,8 +292,8 @@ describe('cli code ingest — brotli wire transport for large bodies', () => {
 
   it('sends a small session as plain JSON (no compression header)', async () => {
     const calls = [];
-    const stub = await startBinaryStub(({ gzipped, body }) => {
-      calls.push({ gzipped, lineCount: body?.jsonl_lines?.length });
+    const stub = await startBinaryStub(({ encoding, body }) => {
+      calls.push({ encoding, lineCount: body?.jsonl_lines?.length });
       return { status: 200, body: { project: { id: 'cp', slug: body.project.slug }, session: { id: 'cs', skipped: false } } };
     });
     try {
@@ -305,7 +305,7 @@ describe('cli code ingest — brotli wire transport for large bodies', () => {
         logger: silentLogger,
       });
       assert.ok(results.length >= 1);
-      for (const c of calls) assert.equal(c.gzipped, false, 'small bodies stay plain JSON');
+      for (const c of calls) assert.equal(c.encoding, '', 'small bodies stay plain JSON');
     } finally {
       stub.server.close();
     }
