@@ -73,6 +73,22 @@ export function computeRoi(invocations = []) {
   return rows;
 }
 
+// Filter raw attribution rows to subagent invocations and compute ROI. Shared
+// by the subagent-roi API route and the project-page UI so the keep/trim/drop
+// verdict can never differ between them. Rows are the
+// listSubagentToolUseAttribution shape: { name, cost_usd, duration_ms, success }.
+export function computeRoiFromRows(rows = []) {
+  const invocations = rows
+    .filter(r => SUBAGENT_NAMES.has(r.name))
+    .map(r => ({
+      name: r.name,
+      cost_usd: Number(r.cost_usd) || 0,
+      duration_ms: Number(r.duration_ms) || 0,
+      success: r.success,
+    }));
+  return computeRoi(invocations);
+}
+
 export function recommend({ avgCost, successRate, invocationCount, costPerSuccess }) {
   // No signal: judge purely on cost magnitude.
   if (successRate === null) {
