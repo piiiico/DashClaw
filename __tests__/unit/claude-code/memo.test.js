@@ -81,3 +81,47 @@ describe('claude-code/memo', () => {
     expect(memo.summary.sessions).toBe(0);
   });
 });
+
+describe('generateMemo — Postgres numeric strings (regression for $NaN total spend)', () => {
+  // The Neon HTTP driver returns `numeric` columns as STRINGS. Before the fix,
+  // `reduce((a, s) => a + s.cost_usd, 0)` string-concatenated "0" + "247.49" +
+  // "210.57" -> NaN, surfacing as "Total spend: $NaN" in the memo. Session rows
+  // here use the wire shape (strings for cost/savings, numbers for token ints).
+  const pgSession = (uuid, cost, savings) => ({
+    session_uuid: uuid,
+    cost_usd: cost,            // string, as Postgres numeric arrives
+    cache_savings_usd: savings, // string
+    input_tokens: 1000,
+    output_tokens: 500,
+    cache_read_tokens: 2000,
+    cache_creation_tokens: 100,
+    model_primary: 'claude-opus-4-8',
+    message_count: 7,
+  });
+
+  it('sums string cost_usd values instead of concatenating them to NaN', () => {
+    const memo = generateMemo({
+      project: { id: 'cp_1', slug: 'dashclaw' },
+      sessions: [pgSession('1ac37f63', '247.49', '12.50'), pgSession('63b608e6', '210.57', '8.25')],
+      priorSessions: [],
+      findings: [],
+      stuckLoopTotal: 0,
+    });
+    expect(memo.markdown).not.toContain('$NaN');
+    expect(memo.markdown).toContain('**Total spend:** $458.06');
+    expect(memo.markdown).toContain('cache savings:** $20.75');
+    expect(memo.summary.totalSpend).toBeCloseTo(458.06, 2);
+  });
+
+  it('renders real message counts from string-bearing rows (regression for "0 msgs")', () => {
+    const memo = generateMemo({
+      project: { id: 'cp_1', slug: 'dashclaw' },
+      sessions: [pgSession('1ac37f63', '247.49', '12.50')],
+      priorSessions: [],
+      findings: [],
+      stuckLoopTotal: 0,
+    });
+    expect(memo.markdown).toContain('7 msgs');
+    expect(memo.markdown).not.toContain('0 msgs');
+  });
+});

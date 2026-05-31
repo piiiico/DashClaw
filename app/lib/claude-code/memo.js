@@ -39,21 +39,25 @@ export function generateMemo({
     throw new Error('generateMemo: project.slug is required');
   }
 
-  const totalSpend = sessions.reduce((a, s) => a + (s.cost_usd || 0), 0);
-  const totalCacheSavings = sessions.reduce((a, s) => a + (s.cache_savings_usd || 0), 0);
+  // Postgres `numeric` columns arrive as strings over the Neon HTTP driver, so
+  // `0 + "247.49"` would string-concatenate into NaN. Coerce every accumulated
+  // field with Number() before summing. `integer` columns already come back as
+  // numbers, but Number() is harmless on them and keeps the reducers uniform.
+  const totalSpend = sessions.reduce((a, s) => a + (Number(s.cost_usd) || 0), 0);
+  const totalCacheSavings = sessions.reduce((a, s) => a + (Number(s.cache_savings_usd) || 0), 0);
 
   const totalUsage = sessions.reduce((acc, s) => {
-    acc.input_tokens += s.input_tokens || 0;
-    acc.output_tokens += s.output_tokens || 0;
-    acc.cache_read_tokens += s.cache_read_tokens || 0;
-    acc.cache_creation_tokens += s.cache_creation_tokens || 0;
+    acc.input_tokens += Number(s.input_tokens) || 0;
+    acc.output_tokens += Number(s.output_tokens) || 0;
+    acc.cache_read_tokens += Number(s.cache_read_tokens) || 0;
+    acc.cache_creation_tokens += Number(s.cache_creation_tokens) || 0;
     return acc;
   }, { input_tokens: 0, output_tokens: 0, cache_read_tokens: 0, cache_creation_tokens: 0 });
 
   const priorUsage = priorSessions.reduce((acc, s) => {
-    acc.input_tokens += s.input_tokens || 0;
-    acc.cache_read_tokens += s.cache_read_tokens || 0;
-    acc.cache_creation_tokens += s.cache_creation_tokens || 0;
+    acc.input_tokens += Number(s.input_tokens) || 0;
+    acc.cache_read_tokens += Number(s.cache_read_tokens) || 0;
+    acc.cache_creation_tokens += Number(s.cache_creation_tokens) || 0;
     return acc;
   }, { input_tokens: 0, cache_read_tokens: 0, cache_creation_tokens: 0 });
 

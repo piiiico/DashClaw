@@ -463,7 +463,8 @@ export async function getSimilarSessionCount(sql, orgId, projectId, session) {
 
 export async function getProjectSessionsChronological(sql, orgId, projectId) {
   const rows = await sql`
-    SELECT id, session_uuid, started_at, model_primary, cost_usd,
+    SELECT id, session_uuid, started_at, model_primary, cost_usd, cache_savings_usd,
+           message_count,
            input_tokens, output_tokens, cache_read_tokens, cache_creation_tokens
     FROM code_sessions
     WHERE org_id = ${orgId} AND project_id = ${projectId}
