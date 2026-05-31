@@ -139,6 +139,7 @@ export default async function ProjectSessionsPage({ params }) {
           </tbody>
         </table>
       )}
+      </section>
     </PageLayout>
   );
 }
