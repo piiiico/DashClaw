@@ -1,11 +1,12 @@
 /**
  * Covers the two read-only session routes:
  *   GET /api/code-sessions/sessions/[sessionId]          -> getSessionDetail passthrough
- *   GET /api/code-sessions/sessions/[sessionId]/autopsy  -> buildAutopsy over the detail
+ *   GET /api/code-sessions/sessions/[sessionId]/autopsy  -> buildAutopsyFromDetail(detail)
  *
- * Both depend only on the repository + (for autopsy) the pure claude-code
- * helpers, which we mock so the assertions pin route behavior, not the
- * heuristics inside those libs.
+ * The autopsy route delegates the whole assembly (user turns, final-summary
+ * cue, stuck-loop detection) to the pure helper buildAutopsyFromDetail, so we
+ * mock that helper and assert the route passes the repository detail straight
+ * through and returns its result — route wiring, not the heuristic.
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeRequest } from '../helpers.js';
@@ -14,14 +15,12 @@ const {
   mockSql,
   mockGetOrgId,
   mockGetSessionDetail,
-  mockDetectRepeatedRuns,
-  mockBuildAutopsy,
+  mockBuildAutopsyFromDetail,
 } = vi.hoisted(() => ({
   mockSql: Object.assign(vi.fn(async () => []), { query: vi.fn(async () => []) }),
   mockGetOrgId: vi.fn(),
   mockGetSessionDetail: vi.fn(),
-  mockDetectRepeatedRuns: vi.fn(),
-  mockBuildAutopsy: vi.fn(),
+  mockBuildAutopsyFromDetail: vi.fn(),
 }));
 
 vi.mock('@/lib/db.js', () => ({ getSql: () => mockSql }));
@@ -29,8 +28,7 @@ vi.mock('@/lib/org.js', () => ({ getOrgId: mockGetOrgId }));
 vi.mock('@/lib/repositories/code-sessions.repository.js', () => ({
   getSessionDetail: mockGetSessionDetail,
 }));
-vi.mock('@/lib/claude-code/repeated-runs.js', () => ({ detectRepeatedRuns: mockDetectRepeatedRuns }));
-vi.mock('@/lib/claude-code/goals.js', () => ({ buildAutopsy: mockBuildAutopsy }));
+vi.mock('@/lib/claude-code/goals.js', () => ({ buildAutopsyFromDetail: mockBuildAutopsyFromDetail }));
 
 import { GET as GET_DETAIL } from '@/api/code-sessions/sessions/[sessionId]/route.js';
 import { GET as GET_AUTOPSY } from '@/api/code-sessions/sessions/[sessionId]/autopsy/route.js';
@@ -42,8 +40,7 @@ function ctx(sessionId) {
 beforeEach(() => {
   vi.clearAllMocks();
   mockGetOrgId.mockReturnValue('org_test');
-  mockDetectRepeatedRuns.mockReturnValue([]);
-  mockBuildAutopsy.mockReturnValue({ verdict: 'unknown', goals: [] });
+  mockBuildAutopsyFromDetail.mockReturnValue({ outcome: 'completed', where_money_went: [] });
 });
 
 describe('GET /api/code-sessions/sessions/[sessionId]', () => {
@@ -81,8 +78,8 @@ describe('GET /api/code-sessions/sessions/[sessionId]', () => {
 });
 
 describe('GET /api/code-sessions/sessions/[sessionId]/autopsy', () => {
-  it('builds an autopsy from the session detail', async () => {
-    mockGetSessionDetail.mockResolvedValue({
+  it('passes the session detail to buildAutopsyFromDetail and returns its result', async () => {
+    const detail = {
       session: { id: 'cs_1', session_uuid: 'sess-1' },
       messages: [
         { role: 'user', text_preview: 'fix the build' },
@@ -91,9 +88,10 @@ describe('GET /api/code-sessions/sessions/[sessionId]/autopsy', () => {
       toolUses: [
         { name: 'Bash', request_id: 'R1', target: 'npm test' },
       ],
-    });
-    const autopsy = { verdict: 'success', goals: [{ text: 'fix the build', met: true }] };
-    mockBuildAutopsy.mockReturnValue(autopsy);
+    };
+    mockGetSessionDetail.mockResolvedValue(detail);
+    const autopsy = { outcome: 'completed', goal_text: 'fix the build', where_money_went: [] };
+    mockBuildAutopsyFromDetail.mockReturnValue(autopsy);
 
     const res = await GET_AUTOPSY(
       makeRequest('http://localhost/api/code-sessions/sessions/cs_1/autopsy'),
@@ -102,39 +100,16 @@ describe('GET /api/code-sessions/sessions/[sessionId]/autopsy', () => {
 
     expect(res.status).toBe(200);
     const body = await res.json();
-    expect(body.verdict).toBe('success');
+    expect(body.outcome).toBe('completed');
 
-    // The route extracts user turns + detects a final-summary cue and passes
-    // them into buildAutopsy. Assert the wiring rather than the heuristic.
-    expect(mockBuildAutopsy).toHaveBeenCalledTimes(1);
-    const arg = mockBuildAutopsy.mock.calls[0][0];
-    expect(arg.userTurns).toEqual(['fix the build']);
-    expect(arg.hasFinalSummary).toBe(true); // "all tests pass, done" matches the summary cue
-    expect(arg.toolEvents).toHaveLength(1);
-    expect(arg.toolEvents[0].name).toBe('Bash');
+    // The route is a thin wrapper: fetch detail, hand the whole object to the
+    // shared assembler, return its output. The assembly itself (user turns,
+    // final-summary cue, stuck loops) is unit-tested in goals.js.
+    expect(mockBuildAutopsyFromDetail).toHaveBeenCalledTimes(1);
+    expect(mockBuildAutopsyFromDetail).toHaveBeenCalledWith(detail);
   });
 
-  it('marks hasFinalSummary false when the last assistant turn has no completion cue', async () => {
-    mockGetSessionDetail.mockResolvedValue({
-      session: { id: 'cs_1' },
-      messages: [
-        { role: 'user', text_preview: 'add a feature' },
-        { role: 'assistant', text_preview: 'still working on it' },
-      ],
-      toolUses: [],
-    });
-
-    const res = await GET_AUTOPSY(
-      makeRequest('http://localhost/api/code-sessions/sessions/cs_1/autopsy'),
-      ctx('cs_1'),
-    );
-
-    expect(res.status).toBe(200);
-    const arg = mockBuildAutopsy.mock.calls[0][0];
-    expect(arg.hasFinalSummary).toBe(false);
-  });
-
-  it('returns 404 when the session is not found', async () => {
+  it('returns 404 without building an autopsy when the session is not found', async () => {
     mockGetSessionDetail.mockResolvedValue(null);
 
     const res = await GET_AUTOPSY(
@@ -143,6 +118,6 @@ describe('GET /api/code-sessions/sessions/[sessionId]/autopsy', () => {
     );
 
     expect(res.status).toBe(404);
-    expect(mockBuildAutopsy).not.toHaveBeenCalled();
+    expect(mockBuildAutopsyFromDetail).not.toHaveBeenCalled();
   });
 });

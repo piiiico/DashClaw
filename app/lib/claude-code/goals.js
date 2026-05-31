@@ -1,10 +1,14 @@
 /**
  * /goal outcome classifier and autopsy builder. Pure — no DB, no fs.
  *
- * Ported from AgentLens (`src/goals.js`). The original `buildAutopsyFromDb`
- * helper is dropped — the route layer is responsible for fetching messages
- * and tool_uses from the repository and calling `buildAutopsy(...)`.
+ * Ported from AgentLens (`src/goals.js`). DB access stays in the route/page
+ * layer (fetch messages + tool_uses from the repository); the pure assembly of
+ * those rows into an autopsy lives in `buildAutopsyFromDetail` below, shared by
+ * the autopsy API route and the session-detail UI so the two can never disagree
+ * on the verdict.
  */
+
+import { detectRepeatedRuns } from './repeated-runs.js';
 
 export const OUTCOMES = Object.freeze({
   COMPLETED: 'completed',
@@ -151,4 +155,21 @@ export function buildAutopsy({
     elapsed_ms: elapsedMs,
     where_money_went: topMoneyBuckets(session, toolEvents),
   };
+}
+
+// Cue words that mark a terminal "I'm done" assistant message. Kept module-level
+// so the autopsy API route and the session-detail UI hash the same definition.
+const FINAL_SUMMARY_CUES = /\b(done|completed|shipped|pass(?:ed|ing)?|ready|stopping|all tests|complete)\b/i;
+
+// Assemble an autopsy from already-loaded repository rows (a getSessionDetail
+// result: { session, messages, toolUses }). Pure — no DB or fs. Both the
+// autopsy API route and the session-detail page call this with the same rows,
+// so the rendered verdict always matches the API.
+export function buildAutopsyFromDetail({ session, messages = [], toolUses = [], timeoutMs = null }) {
+  const userTurns = messages.filter(m => m.role === 'user').map(m => m.text_preview || '');
+  const lastAssistant = [...messages].reverse().find(m => m.role === 'assistant');
+  const hasFinalSummary = !!(lastAssistant?.text_preview && FINAL_SUMMARY_CUES.test(lastAssistant.text_preview));
+  const toolEvents = toolUses.map(t => ({ name: t.name, requestId: t.request_id, target: t.target }));
+  const stuckLoops = detectRepeatedRuns(toolEvents).filter(r => r.confidence === 'high');
+  return buildAutopsy({ session, userTurns, stuckLoops, toolEvents, hasFinalSummary, timeoutMs });
 }

@@ -10,11 +10,41 @@ import { estimateCost } from '../../../lib/billing.js';
 import { labelFor, severityRank } from '../../../lib/claude-code/signal-labels.js';
 import PageLayout from '../../../components/PageLayout';
 import OptimalFilesPanel from './OptimalFilesPanel.jsx';
+import { buildAutopsyFromDetail } from '../../../lib/claude-code/goals.js';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 const TIMELINE_DEFAULT_CAP = 50;
+
+// /goal autopsy outcome → verdict-chip tone. Status tokens only (never raw hex),
+// and the label always pairs with the color so the verdict survives a
+// color-blind / WCAG read. Unknown or future outcomes fall back to a neutral
+// chip rather than rendering blank.
+const OUTCOME_META = {
+  completed: { label: 'Completed', cls: 'text-status-success border-status-success/30 bg-status-success/10' },
+  thrashed: { label: 'Thrashed', cls: 'text-status-warning border-status-warning/30 bg-status-warning/10' },
+  fell_back_to_rules: { label: 'Fell back to rules', cls: 'text-status-warning border-status-warning/30 bg-status-warning/10' },
+  timed_out: { label: 'Timed out', cls: 'text-status-warning border-status-warning/30 bg-status-warning/10' },
+  aborted: { label: 'Aborted', cls: 'text-status-error border-status-error/30 bg-status-error/10' },
+};
+
+function OutcomeChip({ outcome }) {
+  const meta = OUTCOME_META[outcome]
+    || { label: outcome || 'unknown', cls: 'text-tertiary border-border bg-surface-tertiary' };
+  return (
+    <span className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${meta.cls}`}>
+      {meta.label}
+    </span>
+  );
+}
+
+function formatElapsed(ms) {
+  const mins = Math.round(ms / 60000);
+  if (mins < 1) return '<1m';
+  if (mins < 60) return `${mins}m`;
+  return `${Math.floor(mins / 60)}h ${mins % 60}m`;
+}
 
 export default async function CodeSessionDetailPage({ params }) {
   const { projectId, sessionId } = await params;
@@ -26,6 +56,9 @@ export default async function CodeSessionDetailPage({ params }) {
   if (!detail) notFound();
   const { session, messages, toolUses } = detail;
   const signals = await listSignalsForSession(sql, orgId, sessionId).catch(() => []);
+  // Same shared assembler the autopsy API route uses, over the rows already
+  // loaded above — the UI verdict can't drift from the API verdict.
+  const autopsy = buildAutopsyFromDetail(detail);
 
   // Mission Control reconciliation per A10: Agent Spend folds cache_read into
   // tokens_in at 10% and prices through the 2-column billing table; session
@@ -135,6 +168,61 @@ export default async function CodeSessionDetailPage({ params }) {
       breadcrumbs={['Code Sessions', session.project_slug || projectId, String(session.session_uuid || '').slice(0, 8)]}
       maturity="beta"
     >
+      {/* /goal autopsy — outcome verdict + where the cost went. Server-rendered
+          from the same getSessionDetail rows the API uses (shared
+          buildAutopsyFromDetail), so the UI verdict always matches the API. */}
+      <section className="mb-8">
+        <div className="rounded-lg border border-border p-4">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+            <h2 className="text-sm font-medium text-tertiary">Autopsy</h2>
+            <OutcomeChip outcome={autopsy.outcome} />
+            <span className="text-xs text-tertiary tabular-nums">
+              {autopsy.turns} turn{autopsy.turns === 1 ? '' : 's'}
+            </span>
+            <span className="text-xs text-tertiary tabular-nums">
+              ${Number(autopsy.cost_usd).toFixed(2)}
+            </span>
+            {autopsy.elapsed_ms != null && (
+              <span className="text-xs text-tertiary">{formatElapsed(autopsy.elapsed_ms)}</span>
+            )}
+          </div>
+
+          {autopsy.goal_text && (
+            <p className="mt-3 text-sm text-secondary">
+              <span className="text-tertiary">Goal · </span>{autopsy.goal_text}
+            </p>
+          )}
+
+          {autopsy.where_money_went?.length > 0 && (
+            <div className="mt-4">
+              <h3 className="text-xs font-medium text-tertiary">Where the cost went</h3>
+              <ul className="mt-2 space-y-1.5">
+                {autopsy.where_money_went.map(b => {
+                  const pct = Math.round((b.share || 0) * 100);
+                  return (
+                    <li key={b.bucket} className="flex items-center gap-3 text-xs">
+                      <span className="w-32 shrink-0 truncate font-mono text-secondary">
+                        {String(b.bucket || '—').replace(':', ' · ')}
+                      </span>
+                      <span className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-surface-tertiary">
+                        <span
+                          className="absolute inset-y-0 left-0 rounded-full bg-white/20"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </span>
+                      <span className="w-9 shrink-0 text-right tabular-nums text-tertiary">{pct}%</span>
+                      <span className="w-16 shrink-0 text-right tabular-nums text-tertiary">
+                        ${Number(b.approxCost || 0).toFixed(2)}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
+        </div>
+      </section>
+
       <section className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
         <div className="rounded-lg border border-border p-4">
           <h2 className="text-sm font-medium text-tertiary">Summary</h2>
