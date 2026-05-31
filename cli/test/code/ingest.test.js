@@ -218,21 +218,22 @@ describe('cli code ingest — runIngest', () => {
   });
 });
 
-describe('cli code ingest — gzip wire transport for large bodies', () => {
-  // Buffer-based stub that inflates an x-dashclaw-encoding: gzip body, mirroring
-  // the server. Proves the CLI sends big sessions as raw gzip (not base64),
-  // which is the fix for the >4.5 MB-after-base64 413s.
+describe('cli code ingest — brotli wire transport for large bodies', () => {
+  // Buffer-based stub that inflates an x-dashclaw-encoding body (br or gzip),
+  // mirroring the server. Proves the CLI sends big sessions compressed (not
+  // base64), which is the fix for the >4.5 MB-after-base64 413s.
   function startBinaryStub(handler) {
     const server = http.createServer((req, res) => {
       const chunks = [];
       req.on('data', (c) => chunks.push(c));
       req.on('end', () => {
         let raw = Buffer.concat(chunks);
-        const gzipped = (req.headers['x-dashclaw-encoding'] || '').toLowerCase() === 'gzip';
-        if (gzipped) raw = zlib.gunzipSync(raw);
+        const encoding = (req.headers['x-dashclaw-encoding'] || '').toLowerCase();
+        if (encoding === 'br') raw = zlib.brotliDecompressSync(raw);
+        else if (encoding === 'gzip') raw = zlib.gunzipSync(raw);
         let parsed = null;
         try { parsed = JSON.parse(raw.toString('utf8')); } catch { /* keep null */ }
-        const reply = handler({ headers: req.headers, gzipped, body: parsed });
+        const reply = handler({ headers: req.headers, encoding, body: parsed });
         res.writeHead(reply.status || 200, { 'content-type': 'application/json' });
         res.end(JSON.stringify(reply.body || {}));
       });
@@ -242,7 +243,7 @@ describe('cli code ingest — gzip wire transport for large bodies', () => {
     });
   }
 
-  it('sends a large session as a gzip body with the custom header, server sees inflated jsonl_lines', async () => {
+  it('sends a large session as a brotli body with the custom header, server sees inflated jsonl_lines', async () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dashclaw-gzip-wire-'));
     const projectDir = path.join(tmpDir, 'big-wire');
     fs.mkdirSync(projectDir);
@@ -250,8 +251,8 @@ describe('cli code ingest — gzip wire transport for large bodies', () => {
     const calls = [];
     let stub;
     try {
-      // ~4 MB of serialized JSON: over the 3 MB GZIP_WIRE_THRESHOLD so the CLI
-      // gzips, but small enough that the inflated body is trivially handled.
+      // ~4 MB of serialized JSON: over the 3 MB WIRE_COMPRESS_THRESHOLD so the
+      // CLI compresses, but small enough that the inflated body is trivial.
       const lines = [];
       for (let i = 0; i < 30000; i++) {
         lines.push(JSON.stringify({
@@ -262,10 +263,10 @@ describe('cli code ingest — gzip wire transport for large bodies', () => {
         }));
       }
       fs.writeFileSync(file, lines.join('\n'), 'utf8');
-      assert.ok(fs.statSync(file).size > 3 * 1024 * 1024, 'fixture must exceed the gzip threshold');
+      assert.ok(fs.statSync(file).size > 3 * 1024 * 1024, 'fixture must exceed the compression threshold');
 
-      stub = await startBinaryStub(({ headers, gzipped, body }) => {
-        calls.push({ gzipped, header: headers['x-dashclaw-encoding'], lineCount: body?.jsonl_lines?.length });
+      stub = await startBinaryStub(({ headers, encoding, body }) => {
+        calls.push({ encoding, header: headers['x-dashclaw-encoding'], lineCount: body?.jsonl_lines?.length });
         return { status: 200, body: { project: { id: 'cp', slug: body.project.slug }, session: { id: 'cs', skipped: false } } };
       });
 
@@ -280,8 +281,8 @@ describe('cli code ingest — gzip wire transport for large bodies', () => {
       assert.equal(results.length, 1);
       assert.equal(results[0].status, 'ingested');
       assert.equal(calls.length, 1);
-      assert.equal(calls[0].gzipped, true, 'large body must be gzip-encoded on the wire');
-      assert.equal(calls[0].header, 'gzip');
+      assert.equal(calls[0].encoding, 'br', 'large body must be brotli-encoded on the wire');
+      assert.equal(calls[0].header, 'br');
       assert.equal(calls[0].lineCount, lines.length, 'server must see every inflated line');
     } finally {
       if (stub) stub.server.close();
@@ -289,7 +290,7 @@ describe('cli code ingest — gzip wire transport for large bodies', () => {
     }
   });
 
-  it('sends a small session as plain JSON (no gzip header)', async () => {
+  it('sends a small session as plain JSON (no compression header)', async () => {
     const calls = [];
     const stub = await startBinaryStub(({ gzipped, body }) => {
       calls.push({ gzipped, lineCount: body?.jsonl_lines?.length });

@@ -4,11 +4,10 @@
 //
 // Stream-reads files line-by-line so a large transcript doesn't have to fit
 // in memory all at once. The body always carries raw `jsonl_lines`; when the
-// serialized request exceeds GZIP_WIRE_THRESHOLD, postIngest gzips the whole
-// envelope on the wire (raw gzip via the `x-dashclaw-encoding: gzip` header,
-// no base64 inflation) to fit Vercel's 4.5 MB per-request body limit. Files
-// above MAX_FILE_BYTES are still skipped — gzip can't rescue arbitrarily
-// large inputs.
+// serialized request exceeds WIRE_COMPRESS_THRESHOLD, postIngest brotli-compresses
+// the whole envelope on the wire (via the `x-dashclaw-encoding: br` header) to fit
+// Vercel's 4.5 MB per-request body limit. Files above MAX_FILE_BYTES are still
+// skipped — compression can't rescue arbitrarily large inputs.
 //
 // Logs per file: { file, posted_lines, status, reason }. NEVER logs raw line
 // content — that would leak the user's transcripts through CI logs.
@@ -20,18 +19,24 @@ import zlib from 'node:zlib';
 import { homedir } from 'node:os';
 
 // Absolute ceiling. Vercel Hobby's 4.5 MB body limit is the binding constraint,
-// but the wire body is now raw gzip (not base64), which compresses our JSONL
-// ~4-5×. A 40 MB raw file gzips to ~8 MB, still over the cap — so 40 MB is the
-// point past which even gzip can't fit a single request. Files larger are
-// skipped with `too_large` (a future change can line-chunk them; none observed
-// in the wild yet — largest seen is 19 MB raw → 3.3 MB gzipped).
+// applied to the *compressed* wire body. Brotli q9 compresses our JSONL ~4×, so
+// typical-density sessions fit in one request up to ~15-17 MB raw (measured: a
+// 13.3 MB raw session → ~3.5 MB brotli). Density varies, so a file between that
+// and MAX_FILE_BYTES can still exceed the cap and 413; line-chunked POST is the
+// documented future path for those. Files above MAX_FILE_BYTES are skipped
+// outright with `too_large` — no compression rescues them.
 const MAX_FILE_BYTES = 40 * 1024 * 1024;
-// Serialized-JSON byte size above which postIngest gzips the request body
-// (custom `x-dashclaw-encoding: gzip` transport). Below this the plain JSON body
-// fits comfortably and we skip the gzip CPU cost for the hot path of small
-// per-session deltas. Set well under Vercel's 4.5 MB cap so the *plain* path is
-// only ever used for bodies that are already safe.
-const GZIP_WIRE_THRESHOLD = 3 * 1024 * 1024;
+// Serialized-JSON byte size above which postIngest brotli-compresses the request
+// body (custom `x-dashclaw-encoding: br` transport). Below this the plain JSON
+// body fits comfortably and we skip the compress CPU cost for the hot path of
+// small per-session deltas. Set well under Vercel's 4.5 MB cap so the *plain*
+// path is only ever used for bodies that are already safe.
+const WIRE_COMPRESS_THRESHOLD = 3 * 1024 * 1024;
+// Brotli quality for the wire body. q9 is the knee of the size/time curve for
+// our payloads (measured on a 14 MB envelope): ~0.8 s at q9 → 3.57 MB, vs q11's
+// ~13 s for only ~0.1 MB less. q10+ cliffs in time for negligible gain; q9
+// still clears Vercel's 4.5 MB cap with ~0.6 MB headroom.
+const BROTLI_QUALITY = 9;
 
 export function defaultClaudeProjectsDir(env = process.env) {
   if (env.CLAUDE_PROJECTS_DIR) return env.CLAUDE_PROJECTS_DIR;
@@ -111,15 +116,24 @@ function sleep(ms) {
 
 async function postIngest(baseUrl, apiKey, body, { fetchImpl = fetch, maxRetries = 4 } = {}) {
   const url = baseUrl.replace(/\/+$/, '') + '/api/code-sessions/ingest-jsonl';
-  // Decide transport once, outside the retry loop: gzip the JSON envelope when
-  // it's large. The custom `x-dashclaw-encoding: gzip` header tells the server
-  // to inflate before parsing. Raw gzip (not base64) keeps the wire body under
-  // Vercel's 4.5 MB cap for the big sessions that previously 413'd.
+  // Decide transport once, outside the retry loop: brotli-compress the JSON
+  // envelope when it's large. The custom `x-dashclaw-encoding: br` header tells
+  // the server to inflate before parsing. Brotli (not gzip) keeps the wire body
+  // under Vercel's 4.5 MB cap for the big sessions that gzip couldn't fit — a
+  // 14 MB envelope is ~4.34 MB gzipped (over the cap) but ~3.5 MB brotli q9.
   const json = JSON.stringify(body);
-  const useGzip = Buffer.byteLength(json, 'utf8') > GZIP_WIRE_THRESHOLD;
-  const requestBody = useGzip ? zlib.gzipSync(json) : json;
+  const jsonBytes = Buffer.byteLength(json, 'utf8');
+  const useCompression = jsonBytes > WIRE_COMPRESS_THRESHOLD;
+  const requestBody = useCompression
+    ? zlib.brotliCompressSync(json, {
+        params: {
+          [zlib.constants.BROTLI_PARAM_QUALITY]: BROTLI_QUALITY,
+          [zlib.constants.BROTLI_PARAM_SIZE_HINT]: jsonBytes,
+        },
+      })
+    : json;
   const headers = { 'content-type': 'application/json', 'x-api-key': apiKey };
-  if (useGzip) headers['x-dashclaw-encoding'] = 'gzip';
+  if (useCompression) headers['x-dashclaw-encoding'] = 'br';
   let lastStatus = 0;
   let lastPayload = null;
   for (let attempt = 0; attempt <= maxRetries; attempt++) {

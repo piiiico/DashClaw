@@ -292,4 +292,62 @@ describe('POST /api/code-sessions/ingest-jsonl', () => {
       expect((await res.json()).error).toBe('gzip_body_decode_failed');
     });
   });
+
+  describe('x-dashclaw-encoding: br raw-body path', () => {
+    // Current CLI wire transport. Brotli fits the big sessions gzip can't: a
+    // ~14 MB envelope is ~4.34 MB gzipped (over Vercel's 4.5 MB cap) but ~3.5 MB
+    // brotli q9. The server must inflate, parse, and run the normal path.
+    function brRequest(envelope, { orgId = 'org_unit_test' } = {}) {
+      const br = zlib.brotliCompressSync(JSON.stringify(envelope));
+      return new Request('http://test/api/code-sessions/ingest-jsonl', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-dashclaw-encoding': 'br',
+          'x-org-id': orgId,
+        },
+        body: br,
+      });
+    }
+
+    it('inflates a brotli body and runs the same path as plain JSON', async () => {
+      const res = await POST(brRequest({
+        project: { slug: 'demo', cwd: 'C:/Projects/Demo', source_host: 'jsonl' },
+        source_file: '/tmp/demo.jsonl',
+        source_mtime: '2026-05-13T12:00:00Z',
+        jsonl_lines: [jsonlRecord()],
+        tool_use_action_map: { tu_1: 'ar_demo_1' },
+      }));
+      expect(res.status).toBe(200);
+      expect(mockUpsertSessionWithChildren).toHaveBeenCalledTimes(1);
+      const [, orgArg, parsed, opts] = mockUpsertSessionWithChildren.mock.calls[0];
+      expect(orgArg).toBe('org_unit_test');
+      expect(parsed.sessionUuid).toBe('sess-abc');
+      expect(opts.toolUseActionMap.tu_1).toBe('ar_demo_1');
+    });
+
+    it('returns 413 when the brotli body inflates past MAX_DECOMPRESSED_BYTES', async () => {
+      const huge = 'x'.repeat(51 * 1024 * 1024);
+      const br = zlib.brotliCompressSync(JSON.stringify({ project: { slug: 'demo' }, blob: huge }));
+      const req = new Request('http://test/api/code-sessions/ingest-jsonl', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-dashclaw-encoding': 'br', 'x-org-id': 'org_unit_test' },
+        body: br,
+      });
+      const res = await POST(req);
+      expect(res.status).toBe(413);
+      expect((await res.json()).error).toBe('gzip_body_too_large_after_decode');
+    });
+
+    it('returns 400 gzip_body_decode_failed on a non-brotli body with the br header', async () => {
+      const req = new Request('http://test/api/code-sessions/ingest-jsonl', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-dashclaw-encoding': 'br', 'x-org-id': 'org_unit_test' },
+        body: Buffer.from('this is not brotli'),
+      });
+      const res = await POST(req);
+      expect(res.status).toBe(400);
+      expect((await res.json()).error).toBe('gzip_body_decode_failed');
+    });
+  });
 });

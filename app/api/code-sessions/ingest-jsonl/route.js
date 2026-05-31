@@ -27,33 +27,37 @@ const MAX_LINES = 200_000;
 const MAX_DECOMPRESSED_BYTES = 50 * 1024 * 1024;
 
 /**
- * Read the request body, transparently inflating a raw-gzip body.
+ * Read the request body, transparently inflating a compressed body.
  *
- * The wire transport for large JSONL is a gzip of the JSON envelope, flagged by
- * the custom `x-dashclaw-encoding: gzip` header. We deliberately do NOT use the
- * standard `Content-Encoding: gzip` — proxies/CDNs (incl. Vercel's edge) may try
- * to auto-decode or re-encode it, which is exactly the ambiguity we want to
- * avoid. A custom header is opaque to every intermediary, so the bytes Vercel
- * counts against its 4.5 MB request-body cap are the gzip bytes (≈3-4 MB for our
- * largest sessions) — base64's +33% inflation, which previously pushed those
- * same sessions over the cap, is gone.
+ * The wire transport for large JSONL is a compressed JSON envelope, flagged by
+ * the custom `x-dashclaw-encoding` header: `br` (brotli, current CLI) or `gzip`
+ * (older CLIs). We deliberately do NOT use the standard `Content-Encoding` —
+ * proxies/CDNs (incl. Vercel's edge) may try to auto-decode or re-encode it,
+ * which is exactly the ambiguity we want to avoid. A custom header is opaque to
+ * every intermediary, so the bytes Vercel counts against its 4.5 MB request-body
+ * cap are the compressed bytes. Brotli matters: our largest real sessions
+ * (~14 MB raw JSONL) gzip to ~4.34 MB — over the cap — but brotli q9 brings the
+ * same envelope to ~3.5 MB, comfortably under.
  *
- * Back-compat: plain JSON (`jsonl_lines`) and base64 (`compressed_jsonl`) bodies
- * still work unchanged — older CLIs and the hook reporter keep functioning.
+ * Back-compat: plain JSON (`jsonl_lines`), base64 (`compressed_jsonl`), and the
+ * older `gzip` wire encoding all still work unchanged.
  */
 async function readRequestBody(request) {
   const enc = (request.headers.get('x-dashclaw-encoding') || '').toLowerCase();
-  if (enc !== 'gzip') {
+  if (enc !== 'gzip' && enc !== 'br') {
     return request.json();
   }
   const compressed = Buffer.from(await request.arrayBuffer());
   let inflated;
   try {
-    inflated = zlib.gunzipSync(compressed, { maxOutputLength: MAX_DECOMPRESSED_BYTES });
+    inflated = enc === 'br'
+      ? zlib.brotliDecompressSync(compressed, { maxOutputLength: MAX_DECOMPRESSED_BYTES })
+      : zlib.gunzipSync(compressed, { maxOutputLength: MAX_DECOMPRESSED_BYTES });
   } catch (err) {
-    // gunzipSync throws a RangeError once output would exceed maxOutputLength —
-    // surface it as the same 413 contract as the base64 path's size guard.
-    const wrapped = new Error('gzip body inflate failed: ' + err.message);
+    // Both gunzipSync and brotliDecompressSync throw ERR_BUFFER_TOO_LARGE once
+    // output would exceed maxOutputLength — surface it as the same 413 contract
+    // as the base64 path's size guard.
+    const wrapped = new Error(enc + ' body inflate failed: ' + err.message);
     if (err.code === 'ERR_BUFFER_TOO_LARGE' || /maxOutputLength|too large/i.test(err.message)) {
       wrapped.code = 'GZIP_TOO_LARGE';
     } else {
