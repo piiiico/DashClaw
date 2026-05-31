@@ -14,11 +14,21 @@
  * --target=<path-to-project-root> (defaults to cwd):
  *   node scripts/install-hooks.mjs --target=/path/to/my-project
  *
+ * Multi-project code-session capture (capture-only):
+ *   node scripts/install-hooks.mjs --global
+ * Installs ONLY a Stop hook into ~/.claude/settings.json that points at THIS
+ * repo's hooks/dashclaw_stop.py by absolute path. Because the hook walks up to
+ * its own .env.local for config, credentials resolve from this repo — no secret
+ * is ever written into global config. Every Claude Code session, in any project,
+ * then ships its transcript to your DashClaw instance. Add --dry-run to preview
+ * or --uninstall to remove.
+ *
  * Idempotent. Safe to re-run after a `git pull` to refresh hooks.
  */
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync, copyFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
+import { homedir } from 'node:os';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 process.on('unhandledRejection', (reason) => {
@@ -31,13 +41,26 @@ const REPO_ROOT = resolve(__dirname, '..');
 const HOOKS_SRC = join(REPO_ROOT, 'hooks');
 
 function parseArgs(argv) {
-  const args = { target: process.cwd() };
+  const args = { target: process.cwd(), global: false, dryRun: false, uninstall: false };
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i];
     if (a.startsWith('--target=')) args.target = resolve(a.slice('--target='.length));
     else if (a === '--target' && i + 1 < argv.length) args.target = resolve(argv[++i]);
+    else if (a === '--global' || a === '-g') args.global = true;
+    else if (a === '--dry-run') args.dryRun = true;
+    else if (a === '--uninstall') args.uninstall = true;
     else if (a === '--help' || a === '-h') {
-      console.log('Usage: node scripts/install-hooks.mjs [--target=<project-root>]');
+      console.log('Usage: node scripts/install-hooks.mjs [options]');
+      console.log('');
+      console.log('  (no args)                Install governance + capture hooks into ./.claude');
+      console.log('  --target=<project-root>  Install into another project checked out alongside DashClaw');
+      console.log('  --global, -g             Install a CAPTURE-ONLY Stop hook into ~/.claude/settings.json');
+      console.log('                           so every project ships its Claude Code sessions to DashClaw.');
+      console.log("                           Points at this repo's hooks/dashclaw_stop.py by absolute path;");
+      console.log("                           credentials resolve from this repo's .env.local, so NO secret");
+      console.log('                           is written into global config.');
+      console.log('  --uninstall              With --global, remove the global capture hook.');
+      console.log('  --dry-run                With --global, print the change without writing.');
       process.exit(0);
     }
   }
@@ -150,8 +173,115 @@ function mergeSettings(targetRoot) {
   return settingsPath;
 }
 
+// ---------------------------------------------------------------------------
+// Global capture-only install (multi-project)
+// ---------------------------------------------------------------------------
+
+// Forward-slash an absolute path so the command works in both PowerShell and
+// POSIX shells (`python "C:/.../dashclaw_stop.py"`).
+const toPosixPath = (p) => p.replace(/\\/g, '/');
+
+// The global Stop hook command. References THIS repo's dashclaw_stop.py by
+// absolute path (not a copy). The hook's own _load_dotenv() then walks one
+// parent up to this repo's .env.local for DASHCLAW_BASE_URL / DASHCLAW_API_KEY /
+// DASHCLAW_CODE_SESSIONS_ENABLED — which is why no secret is written into the
+// global settings file, and why `git pull` upgrades the hook automatically.
+export function globalStopCommand(repoRoot) {
+  return `python "${toPosixPath(join(repoRoot, 'hooks', 'dashclaw_stop.py'))}"`;
+}
+
+// Capture-only: a single Stop entry, no PreToolUse/PostToolUse. Other projects
+// get code-session capture without governance (the Stop hook's _apply() no-ops
+// when there are no pretool action_ids to attribute tokens against).
+export function globalStopBlock(repoRoot) {
+  return [{ hooks: [{ type: 'command', command: globalStopCommand(repoRoot) }] }];
+}
+
+// Pure merge (no FS). Drops prior managed Stop entries first so re-running
+// upgrades cleanly, then appends the capture hook — or, with { remove: true },
+// strips it for uninstall. User-authored Stop hooks and all other events are
+// left untouched.
+export function mergeGlobalStopHook(settings, repoRoot, { remove = false } = {}) {
+  const next = { ...(settings || {}), hooks: { ...((settings && settings.hooks) || {}) } };
+  const existing = Array.isArray(next.hooks.Stop) ? next.hooks.Stop : [];
+  const kept = existing.filter((entry) => {
+    const cmds = (entry.hooks || []).map((h) => h.command || '');
+    return !cmds.some(isManagedHookCommand);
+  });
+  next.hooks.Stop = remove ? kept : [...kept, ...globalStopBlock(repoRoot)];
+  if (next.hooks.Stop.length === 0) delete next.hooks.Stop;
+  return next;
+}
+
+function globalSettingsPath() {
+  return join(homedir(), '.claude', 'settings.json');
+}
+
+function runGlobal({ dryRun, uninstall }) {
+  const settingsPath = globalSettingsPath();
+  let settings = {};
+  if (existsSync(settingsPath)) {
+    try {
+      settings = JSON.parse(readFileSync(settingsPath, 'utf8'));
+    } catch (err) {
+      console.error(`✗ ${settingsPath} exists but isn't valid JSON: ${err.message}`);
+      console.error('  Fix the file by hand or delete it, then re-run.');
+      process.exit(1);
+    }
+  }
+  const merged = mergeGlobalStopHook(settings, REPO_ROOT, { remove: uninstall });
+  const rendered = JSON.stringify(merged, null, 2) + '\n';
+
+  console.log(`Global settings: ${settingsPath}`);
+  console.log(`Repo root:       ${REPO_ROOT}`);
+  console.log('');
+
+  if (uninstall) {
+    if (dryRun) {
+      console.log('[dry-run] Would remove the DashClaw global Stop capture hook. No file written.');
+      return;
+    }
+    ensureDir(dirname(settingsPath));
+    writeFileSync(settingsPath, rendered);
+    console.log('✓ Removed the DashClaw global Stop capture hook.');
+    return;
+  }
+
+  console.log('Capture-only: installs ONLY a Stop hook (no PreToolUse/PostToolUse),');
+  console.log('so every project ships its Claude Code sessions without governance noise.');
+  console.log('');
+  console.log('Stop hook command:');
+  console.log('  ' + globalStopCommand(REPO_ROOT));
+  console.log('');
+  console.log('No secret is written here — the hook reads this repo\'s .env.local:');
+  console.log('  ' + join(REPO_ROOT, '.env.local'));
+  console.log('  (DASHCLAW_BASE_URL, DASHCLAW_API_KEY, DASHCLAW_CODE_SESSIONS_ENABLED)');
+  console.log('');
+
+  if (dryRun) {
+    console.log('[dry-run] Would set hooks.Stop to:');
+    console.log(JSON.stringify(merged.hooks.Stop, null, 2));
+    console.log('');
+    console.log('[dry-run] No file written. Re-run without --dry-run to apply.');
+    return;
+  }
+
+  ensureDir(dirname(settingsPath));
+  writeFileSync(settingsPath, rendered);
+  console.log(`✓ Global Stop capture hook merged into ${settingsPath}`);
+  console.log('');
+  console.log('Open a new Claude Code session in ANY project and that session will');
+  console.log('ship to your DashClaw instance on Stop. Remove anytime with:');
+  console.log('  node scripts/install-hooks.mjs --global --uninstall');
+}
+
 function main() {
-  const { target } = parseArgs(process.argv);
+  const args = parseArgs(process.argv);
+  if (args.global) {
+    runGlobal(args);
+    return;
+  }
+  const { target } = args;
   const hooksDest = join(target, '.claude', 'hooks');
 
   console.log(`Source:  ${HOOKS_SRC}`);

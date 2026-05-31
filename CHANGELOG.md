@@ -29,6 +29,12 @@ are prefixed with the package name.
 
 ## [Unreleased]
 
+### Code Sessions — multi-project live capture (`install-hooks --global`)
+
+`node scripts/install-hooks.mjs --global` registers a capture-only `Stop` hook in `~/.claude/settings.json` so every project on the machine ships Claude Code sessions to DashClaw — not just repos with the hooks installed locally. It points at this repo's `hooks/dashclaw_stop.py` by absolute path, so credentials resolve from this repo's `.env.local` and **no API key is written into global config**; `git pull` upgrades the hook automatically. Capture-only means no `PreToolUse`/`PostToolUse` governance runs for other projects (the Stop hook's token-attribution step no-ops without governed actions). Existing third-party `Stop` hooks are preserved. `--dry-run` previews, `--global --uninstall` removes. Adds 9 unit tests.
+
+- **Docs.** `DASHCLAW_CODE_SESSIONS_ENABLED` is now documented in `.env.example`; `hooks/README.md` gains a global-capture section; and the stale "gzip+base64 / 1 MB" ingest claims in `app/docs`, `cli/README.md`, and the CLI header comment are corrected to the raw-gzip wire transport (`x-dashclaw-encoding: gzip`, 40 MB skip ceiling) shipped earlier in `937bc438`.
+
 ### Phase 2c action binding — `act_status` + `urn:dashclaw:act-binding` (#121)
 
 Narrows *what* a single verified token can do: an issuer commits the token to one

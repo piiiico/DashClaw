@@ -2,10 +2,11 @@
 // /api/code-sessions/ingest-jsonl with source_host='jsonl'. Per A6 in the
 // goal, the CLI does NOT parse — the server runs the canonical parser.
 //
-// Stream-reads files line-by-line so a 30 MB transcript doesn't have to fit
-// in memory all at once. Files larger than COMPRESS_THRESHOLD raw are sent
-// as gzip+base64 (`compressed_jsonl`) instead of a JSON-array
-// (`jsonl_lines`) to fit Vercel's 4.5 MB per-request body limit. Files
+// Stream-reads files line-by-line so a large transcript doesn't have to fit
+// in memory all at once. The body always carries raw `jsonl_lines`; when the
+// serialized request exceeds GZIP_WIRE_THRESHOLD, postIngest gzips the whole
+// envelope on the wire (raw gzip via the `x-dashclaw-encoding: gzip` header,
+// no base64 inflation) to fit Vercel's 4.5 MB per-request body limit. Files
 // above MAX_FILE_BYTES are still skipped — gzip can't rescue arbitrarily
 // large inputs.
 //

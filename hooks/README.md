@@ -95,6 +95,18 @@ node /path/to/DashClaw/scripts/install-hooks.mjs --target=.
 
 This copies all three hook scripts (`dashclaw_pretool.py`, `dashclaw_posttool.py`, `dashclaw_stop.py`) and the vendored `dashclaw_agent_intel/` Python module into `.claude/hooks/`, then merges the matching `PreToolUse` / `PostToolUse` / `Stop` entries into `.claude/settings.json`. Re-run after `git pull` to refresh.
 
+### Global capture across every project (capture-only)
+
+To capture Claude Code sessions from *every* project on your machine — not only those with DashClaw installed locally — register a capture-only Stop hook once:
+
+```bash
+node scripts/install-hooks.mjs --global          # add --dry-run to preview, --uninstall to remove
+```
+
+This adds a single `Stop` entry to `~/.claude/settings.json` pointing at this repo's `hooks/dashclaw_stop.py` by absolute path. It is **capture-only**: no `PreToolUse`/`PostToolUse` governance runs for other projects (the Stop hook's token-attribution step no-ops when there are no governed actions to attribute against). The hook resolves `DASHCLAW_BASE_URL`, `DASHCLAW_API_KEY`, and `DASHCLAW_CODE_SESSIONS_ENABLED` from *this repo's* `.env.local`, so **no secret is written into global config** and `git pull` upgrades the hook automatically. Any third-party Stop hooks you already have are preserved.
+
+Requires `DASHCLAW_CODE_SESSIONS_ENABLED=1` in this repo's `.env.local`.
+
 ### Manual install
 
 ```bash

@@ -86,7 +86,7 @@ dashclaw code apply <manifest-id> --dest=<project-cwd>   # apply an Optimal File
 dashclaw code apply <manifest-id> --dest=<project-cwd> --dry-run
 ```
 
-`ingest` stream-reads each session JSONL line-by-line, gzip+base64-encodes the payload to fit Vercel's 4.5 MB per-request limit, retries 429s and 5xxs with exponential backoff, and throttles 150 ms between POSTs. Files over 30 MB raw are skipped with a `too_large` log entry. Never logs raw transcript content.
+`ingest` stream-reads each session JSONL line-by-line and ships raw lines; large request bodies are gzip-compressed on the wire (raw gzip via the `x-dashclaw-encoding: gzip` header — no base64 inflation) to fit Vercel's 4.5 MB per-request limit. It retries 429s and 5xxs with exponential backoff and throttles 150 ms between POSTs. Files over 40 MB raw are skipped with a `too_large` log entry. Never logs raw transcript content.
 
 `apply` fetches a manifest from `/api/code-sessions/manifests/<id>`, re-runs the secret scan, and writes the bundled files to `--dest`. Existing files get a three-way merge via the section-aware markdown merger; new files are written directly. Refuses any path outside `--dest` (path-traversal guard).
 

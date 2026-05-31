@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { isManagedHookCommand, MANAGED_HOOK_FILES } from '../../scripts/install-hooks.mjs';
+import {
+  isManagedHookCommand,
+  MANAGED_HOOK_FILES,
+  globalStopCommand,
+  globalStopBlock,
+  mergeGlobalStopHook,
+} from '../../scripts/install-hooks.mjs';
 
 /**
  * Tests for the install-hooks.mjs managed-hook whitelist.
@@ -65,5 +71,80 @@ describe('install-hooks isManagedHookCommand', () => {
       'dashclaw_posttool.py',
       'dashclaw_stop.py',
     ]);
+  });
+});
+
+describe('install-hooks global capture (--global)', () => {
+  // Backslashes in the repo root must be forward-slashed in the rendered
+  // command so it runs identically under PowerShell and POSIX shells.
+  const REPO = 'C:\\Projects\\DashClaw';
+  const CMD = 'python "C:/Projects/DashClaw/hooks/dashclaw_stop.py"';
+
+  it('builds a forward-slashed absolute Stop command for this repo', () => {
+    expect(globalStopCommand(REPO)).toBe(CMD);
+  });
+
+  it('produces a command the managed-hook matcher recognises', () => {
+    // So re-running --global upgrades in place instead of stacking duplicates.
+    expect(isManagedHookCommand(globalStopCommand(REPO))).toBe(true);
+  });
+
+  it('is capture-only: one Stop entry, no PreToolUse/PostToolUse', () => {
+    const block = globalStopBlock(REPO);
+    expect(block).toHaveLength(1);
+    expect(block[0].hooks[0].command).toBe(CMD);
+  });
+
+  it('merges into empty settings by creating hooks.Stop', () => {
+    const merged = mergeGlobalStopHook({}, REPO);
+    expect(merged.hooks.Stop).toHaveLength(1);
+    expect(merged.hooks.Stop[0].hooks[0].command).toBe(CMD);
+  });
+
+  it('preserves third-party Stop hooks and other events', () => {
+    // Real-world: the user already runs other observability Stop hooks
+    // (e.g. aline-ai, orca). Those MUST survive a DashClaw install.
+    const existing = {
+      hooks: {
+        PreToolUse: [{ matcher: 'Bash', hooks: [{ type: 'command', command: 'python other_pretool.py' }] }],
+        Stop: [{ hooks: [{ type: 'command', command: 'some-other-observability-hook.cmd' }] }],
+      },
+    };
+    const merged = mergeGlobalStopHook(existing, REPO);
+    expect(merged.hooks.Stop).toHaveLength(2);
+    expect(merged.hooks.Stop[0].hooks[0].command).toBe('some-other-observability-hook.cmd');
+    expect(merged.hooks.Stop[1].hooks[0].command).toBe(CMD);
+    expect(merged.hooks.PreToolUse).toEqual(existing.hooks.PreToolUse);
+  });
+
+  it('is idempotent — re-merging does not duplicate the DashClaw entry', () => {
+    const once = mergeGlobalStopHook({}, REPO);
+    const twice = mergeGlobalStopHook(once, REPO);
+    const dashclawEntries = twice.hooks.Stop.filter(
+      (e) => (e.hooks || []).some((h) => isManagedHookCommand(h.command || '')),
+    );
+    expect(dashclawEntries).toHaveLength(1);
+  });
+
+  it('uninstall removes the DashClaw entry but keeps user hooks', () => {
+    const withUser = { hooks: { Stop: [{ hooks: [{ type: 'command', command: 'user-hook.cmd' }] }] } };
+    const installed = mergeGlobalStopHook(withUser, REPO);
+    expect(installed.hooks.Stop).toHaveLength(2);
+    const removed = mergeGlobalStopHook(installed, REPO, { remove: true });
+    expect(removed.hooks.Stop).toHaveLength(1);
+    expect(removed.hooks.Stop[0].hooks[0].command).toBe('user-hook.cmd');
+  });
+
+  it('uninstall drops the empty Stop key when no hooks remain', () => {
+    const installed = mergeGlobalStopHook({}, REPO);
+    const removed = mergeGlobalStopHook(installed, REPO, { remove: true });
+    expect(removed.hooks.Stop).toBeUndefined();
+  });
+
+  it('does not mutate the input settings object', () => {
+    const input = { hooks: { Stop: [] } };
+    const snapshot = JSON.stringify(input);
+    mergeGlobalStopHook(input, REPO);
+    expect(JSON.stringify(input)).toBe(snapshot);
   });
 });

@@ -1984,14 +1984,14 @@ const { agent, trust, signals, assumptions_summary } = await res.json();
               Three ways in, all landing on the same server-side parser:
             </p>
             <ul className="text-sm text-text-secondary mb-4 leading-relaxed list-disc pl-5 space-y-1">
-              <li><strong>Stop-hook (live).</strong> Set <code className="text-brand">DASHCLAW_CODE_SESSIONS_ENABLED=1</code> for the Claude Code hooks. After each turn the reporter POSTs the JSONL delta with <code>source_host: &apos;hook&apos;</code> — fail-silent if the instance is unreachable.</li>
-              <li><strong>CLI backfill.</strong> <code className="text-brand">dashclaw code ingest [--dry-run]</code> walks <code>~/.claude/projects</code>; <code className="text-brand">dashclaw code ingest-codex</code> walks <code>~/.codex/sessions</code>. Files over 1&nbsp;MB are gzip+base64 compressed automatically.</li>
+              <li><strong>Stop-hook (live).</strong> Set <code className="text-brand">DASHCLAW_CODE_SESSIONS_ENABLED=1</code> for the Claude Code hooks. After each turn the reporter POSTs the JSONL delta with <code>source_host: &apos;hook&apos;</code> — fail-silent if the instance is unreachable. Run <code className="text-brand">node scripts/install-hooks.mjs --global</code> to capture every project on your machine (capture-only; no API key in global config).</li>
+              <li><strong>CLI backfill.</strong> <code className="text-brand">dashclaw code ingest [--dry-run]</code> walks <code>~/.claude/projects</code>; <code className="text-brand">dashclaw code ingest-codex</code> walks <code>~/.codex/sessions</code>. Large transcripts are gzip-compressed on the wire automatically, so real-world sessions stay under the 4.5&nbsp;MB request limit; files over 40&nbsp;MB are skipped.</li>
               <li><strong>Direct API.</strong> <code>POST /api/code-sessions/ingest-jsonl</code> (below), or <code>POST /api/code-sessions/ingest-live</code> for per-turn incremental append with <code>finalize: true</code> to close the session.</li>
             </ul>
             <MethodEntry
               id="ingestJsonl"
               signature="POST /api/code-sessions/ingest-jsonl"
-              description="Ingest a Claude Code JSONL transcript (or a delta). The server dedups duplicate usage fragments (Claude Code repeats one model request across many rows), computes cache-aware cost, and runs optimizer + alert detection. Accepts raw lines or a gzip+base64 payload (50 MB decompressed cap, 200k lines)."
+              description="Ingest a Claude Code JSONL transcript (or a delta). The server dedups duplicate usage fragments (Claude Code repeats one model request across many rows), computes cache-aware cost, and runs optimizer + alert detection. Accepts raw lines, a raw-gzip body (x-dashclaw-encoding: gzip header — the primary path for large transcripts), or a legacy base64 compressed_jsonl field (50 MB decompressed cap, 200k lines)."
               params={[
                 { name: 'project', type: 'object', required: true, desc: '{ slug, source_host: "hook" | "jsonl" }' },
                 { name: 'jsonl_lines', type: 'string[]', required: false, desc: 'Raw JSONL lines. Either this or compressed_jsonl is required.' },
