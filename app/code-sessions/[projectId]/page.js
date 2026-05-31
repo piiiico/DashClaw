@@ -4,9 +4,11 @@ import { getSql } from '../../lib/db.js';
 import {
   listSessions,
   listSubagentToolUseAttribution,
+  listMemos,
 } from '../../lib/repositories/code-sessions.repository.js';
 import { computeRoiFromRows } from '../../lib/claude-code/subagent-roi.js';
 import PageLayout from '../../components/PageLayout';
+import WeeklyMemoPanel from './WeeklyMemoPanel.jsx';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -42,13 +44,16 @@ export default async function ProjectSessionsPage({ params }) {
   const h = await headers();
   const orgId = h.get('x-org-id') || 'org_default';
   const sql = getSql();
-  const [sessions, roiRows] = await Promise.all([
+  const [sessions, roiRows, memos] = await Promise.all([
     listSessions(sql, orgId, projectId, { limit: 100 }),
-    // ROI is a best-effort retrospective; a failure here must not blank the
-    // sessions list, so degrade to an empty ROI table.
+    // ROI + memo are best-effort retrospectives; a failure in either must not
+    // blank the sessions list, so each degrades independently.
     listSubagentToolUseAttribution(sql, orgId, { projectId }).catch(() => []),
+    listMemos(sql, orgId, projectId).catch(() => []),
   ]);
   const roi = computeRoiFromRows(roiRows);
+  // listMemos returns rows ordered iso_week_tag DESC, so [0] is the latest.
+  const latestMemo = memos[0] || null;
 
   return (
     <PageLayout
@@ -57,6 +62,10 @@ export default async function ProjectSessionsPage({ params }) {
       breadcrumbs={['Code Sessions', projectId]}
       maturity="beta"
     >
+      {/* Weekly spend memo — server-seeded with the latest stored memo (Markdown
+          body), with a client Regenerate action. Project-level summary, leads. */}
+      <WeeklyMemoPanel projectId={projectId} initialMemo={latestMemo} />
+
       {/* Subagent ROI — keep/trim/drop per subagent by success rate and
           cost-per-success. Server-rendered via the same computeRoiFromRows the
           /subagent-roi API uses, so the verdict matches the API. Only shown
