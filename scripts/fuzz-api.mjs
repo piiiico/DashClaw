@@ -84,11 +84,15 @@ mkdirSync(REPORT_DIR, { recursive: true });
 // The noisier checks (missing_required_header, status_code_conformance) flag
 // Next.js's default 404-for-unknown-path behavior as a mismatch, which drowns
 // real findings. Enable them with `npm run test:fuzz -- --checks all`.
+// The real API key is kept OUT of the array we log. defaultArgs carries a
+// readable placeholder for the auth header; the real key is injected only into
+// the array handed to spawn, so no key-derived value ever reaches a log sink.
+const API_KEY_HEADER = 'x-api-key:<redacted>';
 const defaultArgs = [
   'run',
   SPEC_PATH,
   '--url', BASE_URL,
-  '--header', `x-api-key:${API_KEY}`,
+  '--header', API_KEY_HEADER,
   '--checks', 'not_a_server_error,response_schema_conformance,content_type_conformance',
   '--max-examples', '30',
   '--workers', '2',
@@ -101,14 +105,15 @@ const defaultArgs = [
 
 // Pass through any extra args after `--` to schemathesis
 const passthrough = process.argv.slice(2);
-const args = [...defaultArgs, ...passthrough];
+
+// displayArgs is safe to log — it only ever contains the placeholder header.
+const displayArgs = [...defaultArgs, ...passthrough];
+// args is what actually runs: swap the placeholder for the real key here only.
+const args = displayArgs.map((a) => (a === API_KEY_HEADER ? `x-api-key:${API_KEY}` : a));
 
 console.log(`[fuzz] base-url: ${BASE_URL}`);
 console.log(`[fuzz] spec:     ${SPEC_PATH}`);
 console.log(`[fuzz] reports:  ${REPORT_DIR}`);
-// Redact any arg carrying the API key to a constant so the secret value never
-// reaches the log — full-arg replacement leaves no tainted substring behind.
-const displayArgs = args.map((a) => (API_KEY && a.includes(API_KEY) ? '<api-key-arg-redacted>' : a));
 console.log(`[fuzz] running:  st ${displayArgs.join(' ')}\n`);
 
 // Spawn without shell: on Windows, shell:true routes through cmd.exe which
