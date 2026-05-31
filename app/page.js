@@ -53,7 +53,7 @@ export default function LandingPage() {
             <TrackedLink
               href="/self-host"
               event="marketing_hero_cta_clicked"
-              className="px-8 py-3 rounded-lg bg-brand text-white text-sm font-bold hover:bg-brand-hover transition-all hover:scale-105 inline-flex items-center gap-2 shadow-xl shadow-brand/20"
+              className="px-8 py-3 rounded-lg bg-brand text-primary text-sm font-bold hover:bg-brand-hover transition-all hover:scale-105 inline-flex items-center gap-2 shadow-xl shadow-brand/20"
             >
               Self host the runtime <ArrowRight size={18} aria-hidden="true" />
             </TrackedLink>
@@ -167,7 +167,7 @@ export default function LandingPage() {
               <div className="flex flex-col gap-2 items-start">
                 <div className="flex items-center gap-2">
                   <div className="text-text-disabled font-mono">→</div>
-                  <div className="px-4 py-2 rounded-lg bg-emerald-950 border border-emerald-800 text-success text-xs font-mono font-bold tracking-wider">
+                  <div className="px-4 py-2 rounded-lg bg-success-subtle border border-status-success/40 text-success text-xs font-mono font-bold tracking-wider">
                     ALLOW
                   </div>
                   <div className="text-text-disabled font-mono">→</div>
@@ -177,7 +177,7 @@ export default function LandingPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="text-text-disabled font-mono">→</div>
-                  <div className="px-4 py-2 rounded-lg bg-red-950 border border-red-900 text-error text-xs font-mono font-bold tracking-wider">
+                  <div className="px-4 py-2 rounded-lg bg-error-subtle border border-status-error/40 text-error text-xs font-mono font-bold tracking-wider">
                     BLOCK
                   </div>
                 </div>
@@ -392,7 +392,7 @@ if (decision === "allow") {
                         <>
                           <div className="flex items-center justify-between mb-2">
                             <span className="text-[10px] font-bold text-text-secondary tracking-tight uppercase">Guard Policy</span>
-                            <span className="px-1.5 py-0.5 rounded bg-status-success/10 border border-green-500/20 text-[8px] text-success font-bold uppercase tracking-tighter">active</span>
+                            <span className="px-1.5 py-0.5 rounded bg-status-success/10 border border-status-success/20 text-[8px] text-success font-bold uppercase tracking-tighter">active</span>
                           </div>
                           <div className="text-[11px] font-bold text-text-primary mb-1 leading-tight">Block if risk &gt; 80</div>
                           <div className="text-[10px] font-mono text-brand mb-2">Risk &gt;= 80 → block</div>
@@ -411,8 +411,8 @@ if (decision === "allow") {
                           <div className="flex justify-between items-center pt-2 border-t border-border-hover/50">
                             <span className="text-[10px] font-bold text-error font-mono">96% RISK</span>
                             <div className="flex gap-1">
-                              <div className="w-3 h-3 rounded bg-status-success/20 border border-green-500/40"></div>
-                              <div className="w-3 h-3 rounded bg-error-subtle border border-error/40"></div>
+                              <div className="w-3 h-3 rounded bg-status-success/20 border border-status-success/40"></div>
+                              <div className="w-3 h-3 rounded bg-error-subtle border border-status-error/40"></div>
                             </div>
                           </div>
                         </>
@@ -422,7 +422,7 @@ if (decision === "allow") {
                         <>
                           <div className="flex items-center justify-between mb-2">
                             <span className="text-[10px] font-bold text-text-secondary tracking-tight uppercase">Execution</span>
-                            <span className="px-1.5 py-0.5 rounded bg-info-subtle border border-blue-500/20 text-[8px] text-info font-bold uppercase tracking-tighter">success</span>
+                            <span className="px-1.5 py-0.5 rounded bg-info-subtle border border-status-info/20 text-[8px] text-info font-bold uppercase tracking-tighter">success</span>
                           </div>
                           <div className="text-[11px] font-bold text-success mb-1 tracking-tight">ACTION SUCCESSFUL</div>
                           <div className="text-[9px] text-text-secondary mb-2 leading-tight italic">Synced 80 rows + 6 calendar events</div>
@@ -436,7 +436,7 @@ if (decision === "allow") {
                         <>
                           <div className="flex items-center justify-between mb-2">
                             <span className="text-[10px] font-bold text-text-secondary tracking-tight uppercase">Decision Proof</span>
-                            <span className="px-1.5 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/20 text-[8px] text-cyan-400 font-bold uppercase tracking-tighter">verified</span>
+                            <span className="px-1.5 py-0.5 rounded bg-info-subtle border border-status-info/20 text-[8px] text-info font-bold uppercase tracking-tighter">verified</span>
                           </div>
                           <div className="text-[11px] font-bold text-text-primary mb-1 leading-tight">Cryptographically Signed</div>
                           <div className="text-[8px] font-mono text-text-tertiary mb-2 truncate">act_1386c4ee-2529-4c79-9455</div>
@@ -871,7 +871,7 @@ if (decision === "allow") {
             DashClaw lets agents move fast without giving up control. Intercept risky actions. Require approval when needed. Prove every decision afterward.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link href="/self-host" className="px-6 py-2.5 rounded-lg bg-brand text-white text-sm font-medium hover:bg-brand-hover transition-colors inline-flex items-center gap-2">
+            <Link href="/self-host" className="px-6 py-2.5 rounded-lg bg-brand text-primary text-sm font-medium hover:bg-brand-hover transition-colors inline-flex items-center gap-2">
               Deploy DashClaw
             </Link>
             <Link href="/demo" className="px-6 py-2.5 rounded-lg bg-surface-tertiary border border-border-hover text-text-secondary text-sm font-medium hover:bg-surface-elevated hover:text-text-primary transition-colors inline-flex items-center gap-2">

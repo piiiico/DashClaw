@@ -3,13 +3,13 @@ import { projectReadinessReport, getReadinessReport } from '../lib/readiness.mjs
 function statusTone(status) {
   switch (status) {
     case 'verified':
-      return 'border-success/40 bg-success-subtle text-emerald-200';
+      return 'border-status-success/40 bg-success-subtle text-success';
     case 'ready_unverified':
-      return 'border-sky-500/40 bg-sky-500/10 text-sky-200';
+      return 'border-status-info/40 bg-info-subtle text-info';
     case 'needs_attention':
-      return 'border-warning/40 bg-warning-subtle text-amber-200';
+      return 'border-status-warning/40 bg-warning-subtle text-warning';
     default:
-      return 'border-error/40 bg-error-subtle text-red-200';
+      return 'border-status-error/40 bg-error-subtle text-error';
   }
 }
 
@@ -37,7 +37,7 @@ function CheckList({ checks = [] }) {
         <li key={check.id} className="rounded-xl border border-white/10 bg-white/5 p-3">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <div className="text-sm font-medium text-white">{check.label}</div>
+              <div className="text-sm font-medium text-primary">{check.label}</div>
               <div className="mt-1 text-sm text-secondary">{check.detail}</div>
               {check.subDetail ? (
                 <div className="mt-2 text-xs text-secondary">{check.subDetail}</div>
@@ -64,7 +64,7 @@ function RecommendationList({ recommendations = [] }) {
       {recommendations.map((step) => (
         <div key={step.id} className="rounded-2xl border border-white/10 bg-white/5 p-4">
           <div className="flex items-center justify-between gap-3">
-            <h3 className="text-base font-semibold text-white">{step.title}</h3>
+            <h3 className="text-base font-semibold text-primary">{step.title}</h3>
             <span className={`text-xs font-semibold uppercase tracking-wide ${checkTone(step.variant === 'error' ? 'fail' : step.variant === 'warn' ? 'warn' : 'info')}`}>
               {step.variant}
             </span>
@@ -109,7 +109,7 @@ export default async function SetupPage() {
             </span>
           </div>
           <div className="space-y-2">
-            <h1 className="text-4xl font-semibold text-white">Deployment truth surface</h1>
+            <h1 className="text-4xl font-semibold text-primary">Deployment truth surface</h1>
             <p className="max-w-3xl text-base text-secondary">{overall.summary}</p>
             <p className="text-sm text-tertiary">Checked at {new Date(view.checkedAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}</p>
           </div>
@@ -118,17 +118,17 @@ export default async function SetupPage() {
         <section className="grid gap-4 md:grid-cols-3">
           <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
             <div className="text-sm text-secondary">Readiness</div>
-            <div className="mt-2 text-2xl font-semibold text-white">{overall.readiness}</div>
+            <div className="mt-2 text-2xl font-semibold text-primary">{overall.readiness}</div>
             <p className="mt-2 text-sm text-secondary">Overall state projected from database, config, auth, deploy, and SDK checks.</p>
           </div>
           <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
             <div className="text-sm text-secondary">Live verification</div>
-            <div className="mt-2 text-2xl font-semibold text-white">{overall.fullyVerified ? 'Attached' : 'Pending'}</div>
+            <div className="mt-2 text-2xl font-semibold text-primary">{overall.fullyVerified ? 'Attached' : 'Pending'}</div>
             <p className="mt-2 text-sm text-secondary">A setup page can be healthy without live proof. Proof becomes attached after a successful validation flow.</p>
           </div>
           <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
             <div className="text-sm text-secondary">Proof artifact</div>
-            <div className="mt-2 text-2xl font-semibold text-white">Ready</div>
+            <div className="mt-2 text-2xl font-semibold text-primary">Ready</div>
             <p className="mt-2 text-sm text-secondary">Use <code>/api/setup/status</code> for machine checks and this page for operator truth.</p>
           </div>
         </section>
@@ -139,7 +139,7 @@ export default async function SetupPage() {
               <article key={section.id} className="rounded-2xl border border-white/10 bg-white/5 p-5">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <h2 className="text-xl font-semibold text-white">{section.title}</h2>
+                    <h2 className="text-xl font-semibold text-primary">{section.title}</h2>
                     <p className="mt-1 text-sm text-secondary">{section.summary}</p>
                   </div>
                   <span className={`text-xs font-semibold uppercase tracking-wide ${checkTone(section.status)}`}>
@@ -158,12 +158,12 @@ export default async function SetupPage() {
 
           <aside className="space-y-6">
             <section className="rounded-2xl border border-white/10 bg-white/5 p-5">
-              <h2 className="text-lg font-semibold text-white">Workflow</h2>
+              <h2 className="text-lg font-semibold text-primary">Workflow</h2>
               <div className="mt-4 space-y-3">
                 {view.workflow.map((step) => (
                   <div key={step.id} className="rounded-xl border border-white/10 bg-primary/40 p-3">
                     <div className="flex items-center justify-between gap-2">
-                      <div className="text-sm font-medium text-white">{step.title}</div>
+                      <div className="text-sm font-medium text-primary">{step.title}</div>
                       <div className={`text-xs font-semibold uppercase tracking-wide ${checkTone(step.status)}`}>{step.status}</div>
                     </div>
                     <p className="mt-2 text-sm text-secondary">{step.summary}</p>
@@ -174,7 +174,7 @@ export default async function SetupPage() {
             </section>
 
             <section className="rounded-2xl border border-white/10 bg-white/5 p-5">
-              <h2 className="text-lg font-semibold text-white">Recommended next steps</h2>
+              <h2 className="text-lg font-semibold text-primary">Recommended next steps</h2>
               <div className="mt-4">
                 <RecommendationList recommendations={view.recommendations} />
               </div>

@@ -369,7 +369,7 @@ except Exception as e:
           <section id="mcp-server" className="scroll-mt-20 py-12 border-b border-border">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-8 h-8 rounded-lg bg-surface-tertiary flex items-center justify-center">
-                <Network size={16} className="text-violet-400" />
+                <Network size={16} className="text-brand" />
               </div>
               <h2 className="text-2xl font-bold tracking-tight">MCP Server</h2>
             </div>
@@ -1395,7 +1395,7 @@ const { identities } = await claw.getIdentities();`}
           <section id="execution-studio" className="scroll-mt-20 pt-12 border-t border-border">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-8 h-8 rounded-lg bg-surface-tertiary flex items-center justify-center">
-                <Network size={16} className="text-purple-400" />
+                <Network size={16} className="text-brand" />
               </div>
               <h2 className="text-2xl font-bold tracking-tight">Execution Studio (HTTP API)</h2>
             </div>
@@ -2181,7 +2181,7 @@ const { manifest_id, apply_command } = await res.json();
 
               {/* Real-Time Events */}
               <section id="real-time-events" className="scroll-mt-20 pt-12">
-                <h3 className="text-lg font-semibold text-text-primary mb-2 font-mono underline decoration-zinc-700 underline-offset-8">Real-Time Events</h3>
+                <h3 className="text-lg font-semibold text-text-primary mb-2 font-mono underline decoration-border-hover underline-offset-8">Real-Time Events</h3>
                 <MethodEntry 
                   id="events" 
                   signature="claw.events(options?)" 
@@ -2207,7 +2207,7 @@ stream
 
               {/* Dashboard Data */}
               <section id="dashboard-data" className="scroll-mt-20 pt-12 border-t border-border">
-                <h3 className="text-lg font-semibold text-text-primary mb-2 font-mono underline decoration-zinc-700 underline-offset-8">Dashboard Data</h3>
+                <h3 className="text-lg font-semibold text-text-primary mb-2 font-mono underline decoration-border-hover underline-offset-8">Dashboard Data</h3>
                 <MethodEntry 
                   id="reportTokenUsage" 
                   signature="claw.reportTokenUsage(usage)" 
@@ -2266,7 +2266,7 @@ const msg = await anthropic.messages.create({
 
               {/* Behavior Guard (v1) */}
               <section id="legacy-guard" className="scroll-mt-20 pt-12 border-t border-border">
-                <h3 className="text-lg font-semibold text-text-primary mb-2 font-mono underline decoration-zinc-700 underline-offset-8">Behavior Guard (v1)</h3>
+                <h3 className="text-lg font-semibold text-text-primary mb-2 font-mono underline decoration-border-hover underline-offset-8">Behavior Guard (v1)</h3>
                 <MethodEntry 
                   id="guard" 
                   signature="claw.guard(context)" 
@@ -2294,7 +2294,7 @@ if (decision.decision === 'block') {
 
               {/* User Preferences */}
               <section id="user-preferences" className="scroll-mt-20 pt-12 border-t border-border">
-                <h3 className="text-lg font-semibold text-text-primary mb-2 font-mono underline decoration-zinc-700 underline-offset-8">User Preferences</h3>
+                <h3 className="text-lg font-semibold text-text-primary mb-2 font-mono underline decoration-border-hover underline-offset-8">User Preferences</h3>
                 <MethodEntry 
                   id="logObservation" 
                   signature="claw.logObservation(obs)" 
@@ -2326,7 +2326,7 @@ if (decision.decision === 'block') {
 
               {/* Security Scanning (legacy) */}
               <section id="legacy-security-scanning" className="scroll-mt-20 pt-12 border-t border-border">
-                <h3 className="text-lg font-semibold text-text-primary mb-2 font-mono underline decoration-zinc-700 underline-offset-8">Security Scanning (Legacy)</h3>
+                <h3 className="text-lg font-semibold text-text-primary mb-2 font-mono underline decoration-border-hover underline-offset-8">Security Scanning (Legacy)</h3>
                 <MethodEntry
                   id="scanContent"
                   signature="claw.scanContent(text, destination?)"
@@ -2346,7 +2346,7 @@ await sendToSlack(redacted_text);`}
 
               {/* Context Manager */}
               <section id="context-manager" className="scroll-mt-20 pt-12 border-t border-border">
-                <h3 className="text-lg font-semibold text-text-primary mb-2 font-mono underline decoration-zinc-700 underline-offset-8">Context Manager</h3>
+                <h3 className="text-lg font-semibold text-text-primary mb-2 font-mono underline decoration-border-hover underline-offset-8">Context Manager</h3>
                 <MethodEntry 
                   id="captureKeyPoint" 
                   signature="claw.captureKeyPoint(point)" 
@@ -2371,7 +2371,7 @@ await sendToSlack(redacted_text);`}
 
               {/* Automation Snippets */}
               <section id="automation-snippets" className="scroll-mt-20 pt-12 border-t border-border">
-                <h3 className="text-lg font-semibold text-text-primary mb-2 font-mono underline decoration-zinc-700 underline-offset-8">Automation Snippets</h3>
+                <h3 className="text-lg font-semibold text-text-primary mb-2 font-mono underline decoration-border-hover underline-offset-8">Automation Snippets</h3>
                 <MethodEntry 
                   id="saveSnippet" 
                   signature="claw.saveSnippet(snippet)" 
@@ -2397,7 +2397,7 @@ await sendToSlack(redacted_text);`}
 
               {/* Compliance Engine (moved from v2) */}
               <section id="compliance-engine" className="scroll-mt-20 pt-12 border-t border-border">
-                <h3 className="text-lg font-semibold text-text-primary mb-2 font-mono underline decoration-zinc-700 underline-offset-8">Compliance Engine</h3>
+                <h3 className="text-lg font-semibold text-text-primary mb-2 font-mono underline decoration-border-hover underline-offset-8">Compliance Engine</h3>
                 <MethodEntry
                   id="mapCompliance"
                   signature="claw.mapCompliance(framework) / claw.map_compliance(framework)"
@@ -2422,7 +2422,7 @@ await sendToSlack(redacted_text);`}
 
               {/* Activity Logs (moved from v2) */}
               <section id="activity-logs" className="scroll-mt-20 pt-12 border-t border-border">
-                <h3 className="text-lg font-semibold text-text-primary mb-2 font-mono underline decoration-zinc-700 underline-offset-8">Activity Logs</h3>
+                <h3 className="text-lg font-semibold text-text-primary mb-2 font-mono underline decoration-border-hover underline-offset-8">Activity Logs</h3>
                 <MethodEntry
                   id="getActivityLogs"
                   signature="claw.getActivityLogs(filters) / claw.get_activity_logs(**filters)"
@@ -2437,7 +2437,7 @@ await sendToSlack(redacted_text);`}
 
               {/* Webhooks (moved from v2) */}
               <section id="webhooks" className="scroll-mt-20 pt-12 border-t border-border">
-                <h3 className="text-lg font-semibold text-text-primary mb-2 font-mono underline decoration-zinc-700 underline-offset-8">Webhooks</h3>
+                <h3 className="text-lg font-semibold text-text-primary mb-2 font-mono underline decoration-border-hover underline-offset-8">Webhooks</h3>
                 <MethodEntry
                   id="createWebhook"
                   signature="claw.createWebhook(url, events) / claw.create_webhook(url, events)"
