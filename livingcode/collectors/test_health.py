@@ -26,8 +26,16 @@ def _run_command(args: list[str], cwd: str) -> tuple[int, str]:
 def _parse_vitest_output(output: str) -> TestSuiteResult:
     """Parse Vitest console output for test counts."""
     total, passed, failed = 0, 0, 0
-    # Pattern: "Tests  3 failed | 104 passed (107)" or "Tests  107 passed (107)"
-    m = re.search(r"Tests\s+(?:(\d+)\s+failed\s+\|\s+)?(\d+)\s+passed\s+\((\d+)\)", output)
+    # Vitest summary line, e.g.:
+    #   "Tests  107 passed (107)"
+    #   "Tests  3 failed | 104 passed (107)"
+    #   "Tests  2178 passed | 5 skipped (2183)"      <- real output
+    #   "Tests  3 failed | 104 passed | 2 skipped (109)"
+    # The trailing "(total)" can be preceded by a "| N skipped" (or other)
+    # segment, so allow any non-greedy run between "passed" and "(total)" rather
+    # than requiring them adjacent — the old adjacency assumption silently
+    # returned 0/0/0 on every run that had skipped tests.
+    m = re.search(r"Tests\s+(?:(\d+)\s+failed\s+\|\s+)?(\d+)\s+passed\b.*?\((\d+)\)", output)
     if m:
         failed = int(m.group(1)) if m.group(1) else 0
         passed = int(m.group(2))

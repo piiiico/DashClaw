@@ -67,6 +67,42 @@ class TestTestHealthCollector(unittest.TestCase):
     @patch("livingcode.collectors.test_health._run_command")
     @patch("livingcode.collectors.test_health._find_untested_routes")
     @patch("livingcode.collectors.test_health._count_test_files")
+    def test_parses_vitest_output_with_skipped(self, mock_count, mock_untested, mock_cmd):
+        # Regression: real vitest summaries carry a "| N skipped" segment between
+        # "passed" and "(total)". The original regex required passed to be
+        # immediately followed by "(total)", so it silently returned 0/0/0 on
+        # every real run (digest showed 0 JS tests while 2178 existed).
+        from livingcode.collectors.test_health import collect_test_health
+        mock_cmd.side_effect = [
+            (0, "Tests  2178 passed | 5 skipped (2183)\nDuration  25.15s"),
+            (0, "12 passed in 3.45s"),
+        ]
+        mock_count.return_value = (260, 900)
+        mock_untested.return_value = []
+        result = collect_test_health("/fake/repo")
+        self.assertEqual(result.js_tests.passed, 2178)
+        self.assertEqual(result.js_tests.failed, 0)
+        self.assertEqual(result.js_tests.total, 2183)
+
+    @patch("livingcode.collectors.test_health._run_command")
+    @patch("livingcode.collectors.test_health._find_untested_routes")
+    @patch("livingcode.collectors.test_health._count_test_files")
+    def test_parses_vitest_output_with_failed_and_skipped(self, mock_count, mock_untested, mock_cmd):
+        from livingcode.collectors.test_health import collect_test_health
+        mock_cmd.side_effect = [
+            (1, "Tests  3 failed | 104 passed | 2 skipped (109)\nDuration  9.0s"),
+            (0, "12 passed in 3.45s"),
+        ]
+        mock_count.return_value = (100, 300)
+        mock_untested.return_value = []
+        result = collect_test_health("/fake/repo")
+        self.assertEqual(result.js_tests.failed, 3)
+        self.assertEqual(result.js_tests.passed, 104)
+        self.assertEqual(result.js_tests.total, 109)
+
+    @patch("livingcode.collectors.test_health._run_command")
+    @patch("livingcode.collectors.test_health._find_untested_routes")
+    @patch("livingcode.collectors.test_health._count_test_files")
     def test_handles_no_python_tests(self, mock_count, mock_untested, mock_cmd):
         from livingcode.collectors.test_health import collect_test_health
         mock_cmd.side_effect = [
