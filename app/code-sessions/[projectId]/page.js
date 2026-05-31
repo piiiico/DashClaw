@@ -4,9 +4,11 @@ import { getSql } from '../../lib/db.js';
 import {
   listSessions,
   listSubagentToolUseAttribution,
+  getLatestMemo,
 } from '../../lib/repositories/code-sessions.repository.js';
 import { computeRoiFromRows } from '../../lib/claude-code/subagent-roi.js';
 import PageLayout from '../../components/PageLayout';
+import WeeklyMemoPanel from './WeeklyMemoPanel.jsx';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -42,11 +44,12 @@ export default async function ProjectSessionsPage({ params }) {
   const h = await headers();
   const orgId = h.get('x-org-id') || 'org_default';
   const sql = getSql();
-  const [sessions, roiRows] = await Promise.all([
+  const [sessions, roiRows, memo] = await Promise.all([
     listSessions(sql, orgId, projectId, { limit: 100 }),
-    // ROI is a best-effort retrospective; a failure here must not blank the
-    // sessions list, so degrade to an empty ROI table.
+    // ROI + memo are best-effort retrospectives; a failure in either must not
+    // blank the sessions list, so each degrades independently.
     listSubagentToolUseAttribution(sql, orgId, { projectId }).catch(() => []),
+    getLatestMemo(sql, orgId, projectId).catch(() => null),
   ]);
   const roi = computeRoiFromRows(roiRows);
 
@@ -57,6 +60,10 @@ export default async function ProjectSessionsPage({ params }) {
       breadcrumbs={['Code Sessions', projectId]}
       maturity="beta"
     >
+      {/* Weekly spend memo — server-seeded with the latest stored memo, with a
+          client Regenerate action. Project-level summary, so it leads. */}
+      <WeeklyMemoPanel projectId={projectId} initialMemo={memo} />
+
       {/* Subagent ROI — keep/trim/drop per subagent by success rate and
           cost-per-success. Server-rendered via the same computeRoiFromRows the
           /subagent-roi API uses, so the verdict matches the API. Only shown
