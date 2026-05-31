@@ -119,7 +119,9 @@ async function resolveApproval(verb, actionId, discordUserId, appId, interaction
 async function editOriginal(appId, interactionToken, content) {
   try {
     await fetch(
-      `${DISCORD_API}/webhooks/${appId}/${interactionToken}/messages/@original`,
+      // Path segments encodeURIComponent'd so a malformed appId/token can never
+      // break out of the path and change the request host (pinned to DISCORD_API).
+      `${DISCORD_API}/webhooks/${encodeURIComponent(appId)}/${encodeURIComponent(interactionToken)}/messages/@original`,
       {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },

@@ -106,7 +106,10 @@ const args = [...defaultArgs, ...passthrough];
 console.log(`[fuzz] base-url: ${BASE_URL}`);
 console.log(`[fuzz] spec:     ${SPEC_PATH}`);
 console.log(`[fuzz] reports:  ${REPORT_DIR}`);
-console.log(`[fuzz] running:  st ${args.map((a) => (a === API_KEY || a.includes(API_KEY) ? a.replace(API_KEY, '***') : a)).join(' ')}\n`);
+// Redact any arg carrying the API key to a constant so the secret value never
+// reaches the log — full-arg replacement leaves no tainted substring behind.
+const displayArgs = args.map((a) => (API_KEY && a.includes(API_KEY) ? '<api-key-arg-redacted>' : a));
+console.log(`[fuzz] running:  st ${displayArgs.join(' ')}\n`);
 
 // Spawn without shell: on Windows, shell:true routes through cmd.exe which
 // mangles the colon in header values even when the value is a single arg.

@@ -32,7 +32,10 @@ function hashSignal(signal) {
     signal.session_id || '',
     signal.provider || '',
   ].join(':');
-  return crypto.createHash('md5').update(parts).digest('hex');
+  // SHA-256 (not MD5): this is a dedup fingerprint, but using a non-broken
+  // digest keeps the codebase free of weak-crypto findings. Truncate to 32 hex
+  // chars so the stored fingerprint length is unchanged from the MD5 era.
+  return crypto.createHash('sha256').update(parts).digest('hex').slice(0, 32);
 }
 
 // GET /api/cron/signals - Vercel Cron handler

@@ -89,7 +89,7 @@ export default function LiveDemo() {
   const [error, setError] = useState(null);
 
   const codePreview = useMemo(() => {
-    const safeGoal = goal.replace(/`/g, '\\`').replace(/\n/g, ' ');
+    const safeGoal = goal.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\n/g, ' ');
     return `await claw.guard({
   agent_id: '${preset.agentId}',
   action_type: '${preset.actionType}',

@@ -107,8 +107,11 @@ const HOOK_BLOCKS = {
 // names (e.g. `my_dashclaw_pretool.py`, `dashclaw_metrics.py`) are NOT
 // silently removed on re-install.
 export const MANAGED_HOOK_FILES = ['dashclaw_pretool.py', 'dashclaw_posttool.py', 'dashclaw_stop.py'];
+// Full regex-escape (every metacharacter incl. backslash), not just '.', so the
+// alternation is always well-formed regardless of the filename contents.
+const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const MANAGED_HOOK_RE = new RegExp(
-  '(^|[\\\\/])(' + MANAGED_HOOK_FILES.map((f) => f.replace(/\./g, '\\.')).join('|') + ')(["\'\\s]|$)'
+  '(^|[\\\\/])(' + MANAGED_HOOK_FILES.map(escapeRe).join('|') + ')(["\'\\s]|$)'
 );
 
 export function isManagedHookCommand(cmd) {

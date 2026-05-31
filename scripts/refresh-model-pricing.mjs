@@ -149,7 +149,7 @@ function formatBillingArray(entries) {
   const lines = entries.map(e => {
     const cols = [
       `pattern: '${e.pattern}'`,
-      `label: '${e.label.replace(/'/g, "\\'")}'`,
+      `label: '${e.label.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`,
       `input: ${e.input}`,
       `output: ${e.output}`,
       `cache_write: ${e.cache_write}`,

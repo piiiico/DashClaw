@@ -215,7 +215,7 @@ export function generateClaudeMd({ session, project, toolEvents, projectCwd, pro
       const status = f.inside
         ? (f.readable ? f.kind : 'inside project, content not supplied')
         : 'outside project root';
-      lines.push(`| \`${f.target.replace(/\|/g, '\\|')}\` | ${f.count} | ${status} |`);
+      lines.push(`| \`${f.target.replace(/\\/g, '\\\\').replace(/\|/g, '\\|')}\` | ${f.count} | ${status} |`);
     }
     lines.push('');
   } else {

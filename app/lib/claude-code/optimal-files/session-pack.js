@@ -145,7 +145,9 @@ export function generateSessionPack(analysis) {
 }
 
 function escapeMd(s) {
-  return String(s || '').replace(/\|/g, '\\|');
+  // Escape backslash first, then the pipe — otherwise a literal '\' in the
+  // input corrupts the markdown table cell (js/incomplete-sanitization).
+  return String(s || '').replace(/\\/g, '\\\\').replace(/\|/g, '\\|');
 }
 
 function shortPath(p) {

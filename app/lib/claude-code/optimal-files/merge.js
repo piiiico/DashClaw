@@ -192,7 +192,13 @@ export function applyMerge(existing, generated, selection) {
         rebuilt.push(s.body.join('\n'));
       }
     }
-    merged = rebuilt.join('\n').replace(/\n+$/, '\n');
+    merged = rebuilt.join('\n');
+    // Collapse a run of trailing newlines to exactly one. Done with a linear
+    // scan rather than /\n+$/, whose unanchored quantifier backtracks
+    // quadratically on attacker-influenced content (js/polynomial-redos).
+    let mEnd = merged.length;
+    while (mEnd > 0 && merged.charCodeAt(mEnd - 1) === 10) mEnd--;
+    if (mEnd < merged.length) merged = merged.slice(0, mEnd) + '\n';
   }
 
   const wholeAdditions = preview.appendSections.filter(s => acceptedHeadings.has(s.heading));
