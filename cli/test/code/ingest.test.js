@@ -66,18 +66,17 @@ describe('cli code ingest — buildIngestPayload', () => {
     assert.equal(typeof payload.body.jsonl_lines[0], 'string');
     assert.ok(payload.body.jsonl_lines.length >= 1);
     assert.deepEqual(payload.body.tool_use_action_map, {});
-    assert.equal(payload.compressed, false);
   });
 
-  it('switches to compressed_jsonl (gzip+base64) for files over the threshold and round-trips', async () => {
+  it('always returns raw jsonl_lines (no base64) even for large files — wire gzip is decided in postIngest', async () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dashclaw-ingest-test-'));
     const projectDir = path.join(tmpDir, 'big-project');
     fs.mkdirSync(projectDir);
     const file = path.join(projectDir, 'session-big.jsonl');
     try {
-      // Synthesize >1 MB of valid JSONL lines. Each line is ~150 bytes; ~10k
-      // lines comfortably crosses the COMPRESS_THRESHOLD without taking long
-      // to write or compress.
+      // Synthesize >1 MB of valid JSONL lines so this comfortably exceeds the
+      // old base64-compression threshold; the new contract is that the logical
+      // payload stays as raw jsonl_lines regardless of size.
       const lines = [];
       for (let i = 0; i < 10000; i++) {
         lines.push(JSON.stringify({
@@ -93,21 +92,11 @@ describe('cli code ingest — buildIngestPayload', () => {
 
       const payload = await buildIngestPayload(file);
 
-      assert.equal(payload.compressed, true);
       assert.equal(payload.body.project.slug, 'big-project');
-      assert.equal(payload.body.jsonl_lines, undefined, 'jsonl_lines should not be set on compressed path');
-      assert.equal(typeof payload.body.compressed_jsonl, 'string');
-      // Sanity: base64-encoded gzip of repetitive JSONL is dramatically
-      // smaller than the raw file.
-      assert.ok(payload.body.compressed_jsonl.length < stat.size,
-        `compressed payload (${payload.body.compressed_jsonl.length}) should be < raw size (${stat.size})`);
-
-      // Round-trip: decompress and verify we get the original lines back.
-      const decoded = zlib.gunzipSync(Buffer.from(payload.body.compressed_jsonl, 'base64')).toString('utf8');
-      const roundTripped = decoded.split('\n').filter(l => l.length > 0);
-      assert.equal(roundTripped.length, lines.length);
-      assert.equal(roundTripped[0], lines[0]);
-      assert.equal(roundTripped[roundTripped.length - 1], lines[lines.length - 1]);
+      assert.ok(Array.isArray(payload.body.jsonl_lines), 'jsonl_lines should be a raw array');
+      assert.equal(payload.body.jsonl_lines.length, lines.length);
+      assert.equal(payload.body.compressed_jsonl, undefined, 'no base64 path anymore');
+      assert.equal(payload.lineCount, lines.length);
     } finally {
       fs.rmSync(tmpDir, { recursive: true, force: true });
     }
@@ -226,5 +215,98 @@ describe('cli code ingest — runIngest', () => {
       logger: silentLogger,
     });
     assert.deepEqual(results, []);
+  });
+});
+
+describe('cli code ingest — gzip wire transport for large bodies', () => {
+  // Buffer-based stub that inflates an x-dashclaw-encoding: gzip body, mirroring
+  // the server. Proves the CLI sends big sessions as raw gzip (not base64),
+  // which is the fix for the >4.5 MB-after-base64 413s.
+  function startBinaryStub(handler) {
+    const server = http.createServer((req, res) => {
+      const chunks = [];
+      req.on('data', (c) => chunks.push(c));
+      req.on('end', () => {
+        let raw = Buffer.concat(chunks);
+        const gzipped = (req.headers['x-dashclaw-encoding'] || '').toLowerCase() === 'gzip';
+        if (gzipped) raw = zlib.gunzipSync(raw);
+        let parsed = null;
+        try { parsed = JSON.parse(raw.toString('utf8')); } catch { /* keep null */ }
+        const reply = handler({ headers: req.headers, gzipped, body: parsed });
+        res.writeHead(reply.status || 200, { 'content-type': 'application/json' });
+        res.end(JSON.stringify(reply.body || {}));
+      });
+    });
+    return new Promise((resolve) => {
+      server.listen(0, '127.0.0.1', () => resolve({ server, baseUrl: `http://127.0.0.1:${server.address().port}` }));
+    });
+  }
+
+  it('sends a large session as a gzip body with the custom header, server sees inflated jsonl_lines', async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dashclaw-gzip-wire-'));
+    const projectDir = path.join(tmpDir, 'big-wire');
+    fs.mkdirSync(projectDir);
+    const file = path.join(projectDir, 'session-big.jsonl');
+    const calls = [];
+    let stub;
+    try {
+      // ~4 MB of serialized JSON: over the 3 MB GZIP_WIRE_THRESHOLD so the CLI
+      // gzips, but small enough that the inflated body is trivially handled.
+      const lines = [];
+      for (let i = 0; i < 30000; i++) {
+        lines.push(JSON.stringify({
+          type: 'assistant',
+          sessionId: 'sess-big',
+          uuid: `u-${i}`,
+          message: { role: 'assistant', content: `line ${i} ${'p'.repeat(100)}` },
+        }));
+      }
+      fs.writeFileSync(file, lines.join('\n'), 'utf8');
+      assert.ok(fs.statSync(file).size > 3 * 1024 * 1024, 'fixture must exceed the gzip threshold');
+
+      stub = await startBinaryStub(({ headers, gzipped, body }) => {
+        calls.push({ gzipped, header: headers['x-dashclaw-encoding'], lineCount: body?.jsonl_lines?.length });
+        return { status: 200, body: { project: { id: 'cp', slug: body.project.slug }, session: { id: 'cs', skipped: false } } };
+      });
+
+      const results = await runIngest({
+        baseUrl: stub.baseUrl,
+        apiKey: 'k-test',
+        projectsDir: tmpDir,
+        fetchImpl: fetch,
+        logger: silentLogger,
+      });
+
+      assert.equal(results.length, 1);
+      assert.equal(results[0].status, 'ingested');
+      assert.equal(calls.length, 1);
+      assert.equal(calls[0].gzipped, true, 'large body must be gzip-encoded on the wire');
+      assert.equal(calls[0].header, 'gzip');
+      assert.equal(calls[0].lineCount, lines.length, 'server must see every inflated line');
+    } finally {
+      if (stub) stub.server.close();
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  it('sends a small session as plain JSON (no gzip header)', async () => {
+    const calls = [];
+    const stub = await startBinaryStub(({ gzipped, body }) => {
+      calls.push({ gzipped, lineCount: body?.jsonl_lines?.length });
+      return { status: 200, body: { project: { id: 'cp', slug: body.project.slug }, session: { id: 'cs', skipped: false } } };
+    });
+    try {
+      const results = await runIngest({
+        baseUrl: stub.baseUrl,
+        apiKey: 'k-test',
+        projectsDir: FIXTURES,
+        fetchImpl: fetch,
+        logger: silentLogger,
+      });
+      assert.ok(results.length >= 1);
+      for (const c of calls) assert.equal(c.gzipped, false, 'small bodies stay plain JSON');
+    } finally {
+      stub.server.close();
+    }
   });
 });

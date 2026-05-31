@@ -21,10 +21,48 @@ import {
 
 const MAX_LINES = 200_000;
 // Cap decompressed payload at 50 MB. Vercel's per-IP body limit is 4.5 MB on
-// Hobby; clients gzip+base64 large JSONL to fit. A 50 MB decompressed ceiling
-// bounds the zip-bomb risk while still covering every JSONL we've seen in the
-// wild (largest observed: 13.7 MB raw → ~2 MB gzipped).
+// Hobby; clients gzip large JSONL to fit. A 50 MB decompressed ceiling bounds
+// the zip-bomb risk while still covering every JSONL we've seen in the wild
+// (largest observed: 19 MB raw → ~3.3 MB gzipped).
 const MAX_DECOMPRESSED_BYTES = 50 * 1024 * 1024;
+
+/**
+ * Read the request body, transparently inflating a raw-gzip body.
+ *
+ * The wire transport for large JSONL is a gzip of the JSON envelope, flagged by
+ * the custom `x-dashclaw-encoding: gzip` header. We deliberately do NOT use the
+ * standard `Content-Encoding: gzip` — proxies/CDNs (incl. Vercel's edge) may try
+ * to auto-decode or re-encode it, which is exactly the ambiguity we want to
+ * avoid. A custom header is opaque to every intermediary, so the bytes Vercel
+ * counts against its 4.5 MB request-body cap are the gzip bytes (≈3-4 MB for our
+ * largest sessions) — base64's +33% inflation, which previously pushed those
+ * same sessions over the cap, is gone.
+ *
+ * Back-compat: plain JSON (`jsonl_lines`) and base64 (`compressed_jsonl`) bodies
+ * still work unchanged — older CLIs and the hook reporter keep functioning.
+ */
+async function readRequestBody(request) {
+  const enc = (request.headers.get('x-dashclaw-encoding') || '').toLowerCase();
+  if (enc !== 'gzip') {
+    return request.json();
+  }
+  const compressed = Buffer.from(await request.arrayBuffer());
+  let inflated;
+  try {
+    inflated = zlib.gunzipSync(compressed, { maxOutputLength: MAX_DECOMPRESSED_BYTES });
+  } catch (err) {
+    // gunzipSync throws a RangeError once output would exceed maxOutputLength —
+    // surface it as the same 413 contract as the base64 path's size guard.
+    const wrapped = new Error('gzip body inflate failed: ' + err.message);
+    if (err.code === 'ERR_BUFFER_TOO_LARGE' || /maxOutputLength|too large/i.test(err.message)) {
+      wrapped.code = 'GZIP_TOO_LARGE';
+    } else {
+      wrapped.code = 'GZIP_DECODE_FAILED';
+    }
+    throw wrapped;
+  }
+  return JSON.parse(inflated.toString('utf8'));
+}
 
 function deriveSlugFromCwd(cwd) {
   if (!cwd) return 'unknown';
@@ -36,8 +74,17 @@ function deriveSlugFromCwd(cwd) {
 export async function POST(request) {
   let body;
   try {
-    body = await request.json();
-  } catch {
+    body = await readRequestBody(request);
+  } catch (err) {
+    if (err.code === 'GZIP_TOO_LARGE') {
+      return NextResponse.json(
+        { error: 'gzip_body_too_large_after_decode', max_bytes: MAX_DECOMPRESSED_BYTES },
+        { status: 413 },
+      );
+    }
+    if (err.code === 'GZIP_DECODE_FAILED') {
+      return NextResponse.json({ error: 'gzip_body_decode_failed', reason: err.message }, { status: 400 });
+    }
     return NextResponse.json({ error: 'invalid_json' }, { status: 400 });
   }
 

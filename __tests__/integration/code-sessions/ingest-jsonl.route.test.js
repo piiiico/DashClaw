@@ -232,4 +232,64 @@ describe('POST /api/code-sessions/ingest-jsonl', () => {
       expect(json.error).toBe('compressed_jsonl_too_large_after_decode');
     });
   });
+
+  describe('x-dashclaw-encoding: gzip raw-body path', () => {
+    // Construct a Request whose body is the gzip of the JSON envelope, flagged
+    // by the custom header — the transport the CLI now uses for large sessions
+    // to dodge base64's +33% (which used to push >9 MB sessions past Vercel's
+    // 4.5 MB cap). The server must inflate, parse, and run the normal path.
+    function gzipRequest(envelope, { orgId = 'org_unit_test' } = {}) {
+      const gz = zlib.gzipSync(JSON.stringify(envelope));
+      return new Request('http://test/api/code-sessions/ingest-jsonl', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-dashclaw-encoding': 'gzip',
+          'x-org-id': orgId,
+        },
+        body: gz,
+      });
+    }
+
+    it('inflates a gzip body and runs the same path as plain JSON', async () => {
+      const res = await POST(gzipRequest({
+        project: { slug: 'demo', cwd: 'C:/Projects/Demo', source_host: 'jsonl' },
+        source_file: '/tmp/demo.jsonl',
+        source_mtime: '2026-05-13T12:00:00Z',
+        jsonl_lines: [jsonlRecord()],
+        tool_use_action_map: { tu_1: 'ar_demo_1' },
+      }));
+      expect(res.status).toBe(200);
+      expect(mockUpsertSessionWithChildren).toHaveBeenCalledTimes(1);
+      const [, orgArg, parsed, opts] = mockUpsertSessionWithChildren.mock.calls[0];
+      expect(orgArg).toBe('org_unit_test');
+      expect(parsed.sessionUuid).toBe('sess-abc');
+      expect(opts.toolUseActionMap.tu_1).toBe('ar_demo_1');
+    });
+
+    it('returns 413 when the gzip body inflates past MAX_DECOMPRESSED_BYTES', async () => {
+      // 51 MB of repetitive content gzips small but inflates past the 50 MB cap.
+      const huge = 'x'.repeat(51 * 1024 * 1024);
+      const gz = zlib.gzipSync(JSON.stringify({ project: { slug: 'demo' }, blob: huge }));
+      const req = new Request('http://test/api/code-sessions/ingest-jsonl', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-dashclaw-encoding': 'gzip', 'x-org-id': 'org_unit_test' },
+        body: gz,
+      });
+      const res = await POST(req);
+      expect(res.status).toBe(413);
+      expect((await res.json()).error).toBe('gzip_body_too_large_after_decode');
+    });
+
+    it('returns 400 gzip_body_decode_failed on a non-gzip body with the gzip header', async () => {
+      const req = new Request('http://test/api/code-sessions/ingest-jsonl', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-dashclaw-encoding': 'gzip', 'x-org-id': 'org_unit_test' },
+        body: Buffer.from('this is not gzip'),
+      });
+      const res = await POST(req);
+      expect(res.status).toBe(400);
+      expect((await res.json()).error).toBe('gzip_body_decode_failed');
+    });
+  });
 });

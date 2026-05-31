@@ -18,15 +18,19 @@ import readline from 'node:readline';
 import zlib from 'node:zlib';
 import { homedir } from 'node:os';
 
-// Absolute ceiling. Vercel Hobby's 4.5 MB body limit is the binding
-// constraint; even at 5× JSONL gzip ratios (typical for highly repetitive
-// `role`/`content` keys), 30 MB raw stays under the limit after
-// base64-inflation. Files larger than this are skipped with `too_large`.
-const MAX_FILE_BYTES = 30 * 1024 * 1024;
-// Files larger than this are compressed before POST. Below this size the
-// JSON-array path is small enough to fit comfortably and avoids the gzip
-// CPU cost for the hot path of small per-session deltas.
-const COMPRESS_THRESHOLD = 1 * 1024 * 1024;
+// Absolute ceiling. Vercel Hobby's 4.5 MB body limit is the binding constraint,
+// but the wire body is now raw gzip (not base64), which compresses our JSONL
+// ~4-5×. A 40 MB raw file gzips to ~8 MB, still over the cap — so 40 MB is the
+// point past which even gzip can't fit a single request. Files larger are
+// skipped with `too_large` (a future change can line-chunk them; none observed
+// in the wild yet — largest seen is 19 MB raw → 3.3 MB gzipped).
+const MAX_FILE_BYTES = 40 * 1024 * 1024;
+// Serialized-JSON byte size above which postIngest gzips the request body
+// (custom `x-dashclaw-encoding: gzip` transport). Below this the plain JSON body
+// fits comfortably and we skip the gzip CPU cost for the hot path of small
+// per-session deltas. Set well under Vercel's 4.5 MB cap so the *plain* path is
+// only ever used for bodies that are already safe.
+const GZIP_WIRE_THRESHOLD = 3 * 1024 * 1024;
 
 export function defaultClaudeProjectsDir(env = process.env) {
   if (env.CLAUDE_PROJECTS_DIR) return env.CLAUDE_PROJECTS_DIR;
@@ -76,7 +80,11 @@ export async function buildIngestPayload(filePath, { cwdOverride = null } = {}) 
   const slug = path.basename(parent);
   const lines = await readLines(filePath);
 
-  const base = {
+  // Always build the logical body with raw `jsonl_lines`. Wire compression is
+  // decided in postIngest (gzip the whole envelope when it's large) rather than
+  // here — keeping payload construction independent of transport means the same
+  // body serializes identically whether or not it ends up gzipped.
+  const body = {
     project: {
       slug,
       cwd: cwdOverride,
@@ -86,28 +94,13 @@ export async function buildIngestPayload(filePath, { cwdOverride = null } = {}) 
     source_file: filePath,
     source_mtime: stat.mtime.toISOString(),
     tool_use_action_map: {},
+    jsonl_lines: lines,
   };
-
-  // Compress large files to fit Vercel's per-request body limit. JSONL is
-  // highly repetitive (`role`, `content`, `message`, `usage` keys repeat
-  // across every record) and compresses ~5× in practice, which is more than
-  // enough headroom up to the MAX_FILE_BYTES ceiling.
-  let body;
-  let compressed = false;
-  if (stat.size > COMPRESS_THRESHOLD) {
-    const raw = lines.join('\n');
-    const gz = zlib.gzipSync(raw);
-    body = { ...base, compressed_jsonl: gz.toString('base64') };
-    compressed = true;
-  } else {
-    body = { ...base, jsonl_lines: lines };
-  }
 
   return {
     body,
     sizeBytes: stat.size,
     lineCount: lines.length,
-    compressed,
   };
 }
 
@@ -117,16 +110,22 @@ function sleep(ms) {
 
 async function postIngest(baseUrl, apiKey, body, { fetchImpl = fetch, maxRetries = 4 } = {}) {
   const url = baseUrl.replace(/\/+$/, '') + '/api/code-sessions/ingest-jsonl';
+  // Decide transport once, outside the retry loop: gzip the JSON envelope when
+  // it's large. The custom `x-dashclaw-encoding: gzip` header tells the server
+  // to inflate before parsing. Raw gzip (not base64) keeps the wire body under
+  // Vercel's 4.5 MB cap for the big sessions that previously 413'd.
+  const json = JSON.stringify(body);
+  const useGzip = Buffer.byteLength(json, 'utf8') > GZIP_WIRE_THRESHOLD;
+  const requestBody = useGzip ? zlib.gzipSync(json) : json;
+  const headers = { 'content-type': 'application/json', 'x-api-key': apiKey };
+  if (useGzip) headers['x-dashclaw-encoding'] = 'gzip';
   let lastStatus = 0;
   let lastPayload = null;
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     const res = await fetchImpl(url, {
       method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'x-api-key': apiKey,
-      },
-      body: JSON.stringify(body),
+      headers,
+      body: requestBody,
     });
     let payload = null;
     try { payload = await res.json(); } catch { /* keep payload null */ }
