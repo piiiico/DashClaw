@@ -10,12 +10,12 @@
       "label": "sql.query call"
     }
   ],
-  "files_scanned": 158,
-  "files_with_direct_sql": 31,
+  "files_scanned": 212,
+  "files_with_direct_sql": 29,
   "totals": {
-    "tagged_template": 79,
-    "query_call": 11,
-    "total": 90
+    "tagged_template": 74,
+    "query_call": 9,
+    "total": 83
   },
   "files": [
     {
@@ -68,21 +68,15 @@
     },
     {
       "file": "app/api/cron/reset-meters/route.js",
-      "tagged_template": 2,
+      "tagged_template": 1,
       "query_call": 0,
-      "total": 2
+      "total": 1
     },
     {
       "file": "app/api/cron/signals/route.js",
       "tagged_template": 4,
       "query_call": 0,
       "total": 4
-    },
-    {
-      "file": "app/api/guard/route.js",
-      "tagged_template": 1,
-      "query_call": 2,
-      "total": 3
     },
     {
       "file": "app/api/keys/route.js",
@@ -92,9 +86,9 @@
     },
     {
       "file": "app/api/learning/route.js",
-      "tagged_template": 4,
+      "tagged_template": 2,
       "query_call": 0,
-      "total": 4
+      "total": 2
     },
     {
       "file": "app/api/operations/summary/route.js",
@@ -197,12 +191,6 @@
       "tagged_template": 5,
       "query_call": 0,
       "total": 5
-    },
-    {
-      "file": "app/api/workflows/templates/[templateId]/execute/route.js",
-      "tagged_template": 1,
-      "query_call": 0,
-      "total": 1
     }
   ]
 }
