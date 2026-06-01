@@ -4,6 +4,7 @@
  */
 
 import { randomUUID } from 'node:crypto';
+import { baseAgentId } from './agent-identity-resolve.js';
 import { deliverGuardWebhook } from './webhooks.js';
 import { checkSemanticGuardrail } from './llm.js';
 import { generateActionEmbedding, isEmbeddingsEnabled } from './embeddings.js';
@@ -646,10 +647,13 @@ export async function evaluatePolicy(policy, rules, context, sql, orgId, effecti
       if (!rules.enforce) return null;
       const toolPerm = context.intel?.tool?.required_permission;
       if (!toolPerm) return null;
+      // A composed sub-agent id (`<parent>:<type>`) inherits the parent's pairing
+      // when it has none of its own; an exact pairing for the sub-agent wins.
+      const pairingBaseId = baseAgentId(context.agent_id) || context.agent_id;
       const [pairing] = await sql`
         SELECT permission_level FROM agent_pairings
-        WHERE org_id = ${orgId} AND agent_id = ${context.agent_id} AND status = 'approved'
-        ORDER BY created_at DESC LIMIT 1
+        WHERE org_id = ${orgId} AND agent_id IN (${context.agent_id}, ${pairingBaseId}) AND status = 'approved'
+        ORDER BY (agent_id = ${context.agent_id}) DESC, created_at DESC LIMIT 1
       `;
       const agentLevel = pairing?.permission_level || 'danger';
       const PERM_RANK = { readonly: 0, workspace_write: 1, danger: 2, prompt: 3, allow: 4 };

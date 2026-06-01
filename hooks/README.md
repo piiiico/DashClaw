@@ -45,7 +45,8 @@ DashClaw governs and records delegated (sub-agent) work end to end on Claude Cod
 
 - **The spawn.** Invoking the `Agent` tool (or legacy `Task`) is a governed `PreToolUse` decision: it hits `/api/guard` and is recorded as an `orchestration` action, so you can see, gate, or require approval for *which* sub-agents get spawned.
 - **The sub-agent's own tool calls.** Claude Code fires `PreToolUse` inside sub-agents (the hook stdin carries `agent_id` and `agent_type`), so a sub-agent's Bash/Edit/Write/MultiEdit calls are evaluated against the same policies as the parent.
-- **Attribution.** Sub-agent actions keep the parent's governed `agent_id` — sub-agents inherit the parent's pairing and permissions, matching Claude Code's own model — and record the sub-agent as provenance: `agent_name` = `<parent>/<agent_type>`, `swarm_id` = the session id (so the spawn and the delegated work group together in the decisions ledger and the Swarm view), and `intel.subagent = { agent_id, agent_type }`.
+- **Attribution.** By default (`DASHCLAW_SUBAGENT_IDENTITY=provenance`) sub-agent actions keep the parent's governed `agent_id` — sub-agents inherit the parent's pairing and permissions, matching Claude Code's own model — and record the sub-agent as provenance: `agent_name` = `<parent>/<agent_type>`, `swarm_id` = the session id (so the spawn and the delegated work group together in the decisions ledger and the Swarm view), and `intel.subagent = { agent_id, agent_type }`.
+- **Distinct fleet identities (opt-in).** Set `DASHCLAW_SUBAGENT_IDENTITY=distinct` to give each sub-agent *type* its own composed `agent_id` (`<parent>:<type>`, e.g. `claude-code:explore`) so it appears as a distinct agent in `/agents`. Governance stays correct: pairing/identity lookups fall back to the base parent, so a sub-agent inherits the parent's permissions unless you pair the sub-agent id explicitly. Design + rollout: `docs/rfcs/2026-06-01-subagent-fleet-identities.md`.
 
 Plugin-defined sub-agents can't carry their own hooks (a Claude Code security restriction), but the session-level matcher above still covers them.
 
@@ -174,6 +175,7 @@ The Stop hook also auto-closes any action still in `status='running'` at turn en
 | `DASHCLAW_BASE_URL` | Yes | -- | URL of your DashClaw instance |
 | `DASHCLAW_API_KEY` | Yes | -- | Operator API key from `/settings` |
 | `DASHCLAW_AGENT_ID` | No | `claude-code` | Identity for this agent in DashClaw |
+| `DASHCLAW_SUBAGENT_IDENTITY` | No | `provenance` | `provenance` records sub-agent identity as provenance (agent_id stays the parent). `distinct` gives each sub-agent type its own composed agent_id (`<parent>:<type>`) so it's a distinct fleet agent; the server falls back to the parent's pairing for permissions. |
 | `DASHCLAW_HOOK_MODE` | No | `enforce` | `enforce` blocks on policy violations. `observe` logs everything but never blocks. |
 | `DASHCLAW_RISK_THRESHOLD` | No | `60` | Commands with risk above this threshold get elevated risk scores |
 | `DASHCLAW_PERMISSION_MODE` | No | `danger` | Permission mode passed to the guard for policy evaluation |

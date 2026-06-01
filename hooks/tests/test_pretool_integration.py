@@ -635,5 +635,26 @@ class TestPretoolIntegration(unittest.TestCase):
         self.assertEqual(body["intel"]["subagent"], {"agent_id": "subagent-abc", "agent_type": "Explore"})
 
 
+    def test_subagent_distinct_mode_emits_composed_agent_id(self):
+        """In distinct mode, a sub-agent's call is attributed to a composed agent_id
+        (<parent>:<agent_type>) so it is a first-class fleet identity; the server
+        falls back to the parent's pairing for permissions."""
+        code, _, _ = _run_hook(
+            {
+                "tool_name": "Bash",
+                "tool_input": {"command": "ls"},
+                "tool_use_id": "tu-025",
+                "session_id": "sess-d",
+                "agent_id": "subagent-xyz",
+                "agent_type": "Explore",
+            },
+            self._env(DASHCLAW_SUBAGENT_IDENTITY="distinct"),
+        )
+        self.assertEqual(code, 0)
+        body = [r for r in self.log.get_all() if r["path"] == "/api/guard"][0]["body"]
+        self.assertEqual(body["agent_id"], "test-agent:explore")
+        self.assertEqual(body["intel"]["subagent"]["agent_type"], "Explore")
+
+
 if __name__ == "__main__":
     unittest.main()

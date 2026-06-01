@@ -86,6 +86,12 @@ PERMISSION_MODE = os.environ.get("DASHCLAW_PERMISSION_MODE") or "danger"
 GUARD_TIMEOUT = float(os.environ.get("DASHCLAW_GUARD_TIMEOUT") or "5")
 APPROVAL_TIMEOUT = float(os.environ.get("DASHCLAW_APPROVAL_TIMEOUT") or "30")
 GUARD_UNAVAILABLE_POLICY = (os.environ.get("DASHCLAW_GUARD_UNAVAILABLE_POLICY") or "block").lower()
+# provenance (default): record sub-agent identity as provenance; the governed
+# agent_id stays the parent. distinct: emit a composed agent_id
+# (<parent>:<agent_type>) so sub-agents are distinct fleet identities (the server
+# falls back to the parent's pairing/permissions). See
+# docs/rfcs/2026-06-01-subagent-fleet-identities.md.
+SUBAGENT_IDENTITY = (os.environ.get("DASHCLAW_SUBAGENT_IDENTITY") or "provenance").lower()
 
 # todo-001: one-shot demo-mode probe to surface a misrouted DASHCLAW_BASE_URL
 # (e.g. a stale env var pointing at a local sandbox) before the operator burns
@@ -366,6 +372,12 @@ def _is_system_path(path: str) -> bool:
         if norm == prefix or norm.startswith(prefix + "/"):
             return True
     return False
+
+
+def _subagent_id_segment(s):
+    """Slugify an agent_type into a safe segment for a `<parent>:<segment>` id."""
+    out = "".join(c if (c.isalnum() or c in "-_") else "-" for c in (s or "").lower())
+    return out.strip("-")[:64] or "subagent"
 
 
 # ---------------------------------------------------------------------------
@@ -770,6 +782,11 @@ def main():
     if (subagent_id or subagent_type or tool_name in ("Agent", "Task")) and _SESSION_ID:
         context["swarm_id"] = _SESSION_ID
     if subagent_id or subagent_type:
+        # In `distinct` mode the sub-agent gets its own composed agent_id so it is a
+        # first-class fleet identity; the server falls back to the parent's pairing
+        # for permission inheritance. Default `provenance` mode keeps agent_id = parent.
+        if SUBAGENT_IDENTITY == "distinct" and subagent_type:
+            context["agent_id"] = "%s:%s" % (AGENT_ID, _subagent_id_segment(subagent_type))
         context["agent_name"] = ("%s/%s" % (AGENT_ID, subagent_type)) if subagent_type else AGENT_ID
         context["trigger"] = "subagent:%s" % (subagent_type or "unknown")
         context["intel"]["subagent"] = {"agent_id": subagent_id, "agent_type": subagent_type}

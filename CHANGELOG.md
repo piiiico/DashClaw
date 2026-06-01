@@ -35,9 +35,10 @@ Delegated work is now first-class in DashClaw. Verified against the Claude Code 
 
 - **Added.** `Agent|Task` is now in the shipped Claude Code `PreToolUse`/`PostToolUse` matcher (installer, template, live `.claude/settings.json`, and the `/guides/claude-code` snippet), so sub-agent spawns are governed decisions recorded as `orchestration` actions. `Task` is registered as an `Agent` classifier alias for pre-2.1.63 sessions.
 - **Added.** A sub-agent's own tool calls are now recorded with provenance. The governed `agent_id` stays the parent (sub-agents inherit the parent's pairing/permissions, matching Claude Code), and the sub-agent is surfaced via `agent_name` (`<parent>/<agent_type>`), `swarm_id` (the session id — grouping the spawn and the delegated work in the decisions ledger and the Swarm view), and `intel.subagent`.
+- **Added (opt-in).** `DASHCLAW_SUBAGENT_IDENTITY=distinct` gives each sub-agent *type* its own composed `agent_id` (`<parent>:<type>`) so sub-agents appear as distinct agents in `/agents`. An always-on, safe server fallback resolves a composed id's pairing/identity to the base parent (`guard.js` permission_escalation + the trust-posture lookups), so permission inheritance is preserved; an exact pairing for the sub-agent wins. Default `provenance` keeps `agent_id`=parent (no behavior change). Design + rollout: `docs/rfcs/2026-06-01-subagent-fleet-identities.md`.
 - **Changed.** The orchestration category records as `action_type: orchestration` instead of the misleading `deploy`.
 - **Docs.** `hooks/README.md` gains a "Sub-agent governance & tracking" section; the routing note reflects the new matcher.
-- **Tests.** 3 Python integration tests (spawn governed, `Task` alias, sub-agent provenance).
+- **Tests.** Python integration tests (spawn governed, `Task` alias, provenance, distinct-mode composed id) + JS pairing/identity fallback (guard pipeline + trust posture) + a `baseAgentId` unit test.
 
 ### External-agent feedback audit — fixes
 

@@ -1,6 +1,6 @@
 # RFC: Distinct sub-agent fleet identities
 
-- **Status:** Draft — needs review + live-instance validation before implementation
+- **Status:** Step 1 (server fallback + hook flag, default `provenance`) **implemented** behind the flag — awaiting live-instance validation before flipping the default to `distinct`
 - **Date:** 2026-06-01
 - **Depends on:** `feat(governance): govern + record Claude Code sub-agents` (commit `a7bbcbc9`)
 
@@ -106,9 +106,9 @@ On a real instance with the flag `distinct`, spawn an `Explore` sub-agent that r
 
 ## Rollout
 
-1. Ship the **server fallback** (always-on, safe) + the **hook flag** defaulting to `provenance` (no behaviour change for existing instances). Tests green.
-2. Operator opts in: `DASHCLAW_SUBAGENT_IDENTITY=distinct`; run the live checklist.
-3. After validation across a couple of instances, flip the default to `distinct` in a minor release with a CHANGELOG note.
+1. ✅ **Done.** Shipped the **server fallback** (always-on, safe) + the **hook flag** defaulting to `provenance` (no behaviour change for existing instances). Tests green.
+2. **← we are here.** Operator opts in: `DASHCLAW_SUBAGENT_IDENTITY=distinct`; run the live checklist above.
+3. After validation across a couple of instances, flip the default to `distinct` in a minor release with a CHANGELOG note. (UI grouping of sub-agents under their parent in `/agents` can land here too.)
 
 ## Open questions
 

@@ -92,4 +92,26 @@ describe('getAgentTrustPosture', () => {
     expect(pairingQuery.text).not.toMatch(/status = 'active'/);
     expect(result.permission_level).toBe('workspace_write');
   });
+
+  it('inherits the base parent pairing/identity for a composed sub-agent id', async () => {
+    const sql = createSqlMock({
+      taggedResponses: [
+        [{ permission_level: 'workspace_write', status: 'approved' }], // parent's pairing
+        [{ agent_id: 'claude-code' }],                                  // parent's identity
+        [{ value: 'true' }],
+        [],
+        [{ approved_count: 0, denied_count: 0, blocks_count: 0 }],
+      ],
+    });
+    const { getAgentTrustPosture } = await import(
+      '../../app/lib/repositories/agents.repository.js'
+    );
+    const result = await getAgentTrustPosture(sql, 'org_test', 'claude-code:explore');
+
+    const pairingQuery = sql.taggedCalls.find((c) => /FROM agent_pairings/.test(c.text));
+    expect(pairingQuery.values).toContain('claude-code:explore');
+    expect(pairingQuery.values).toContain('claude-code'); // base parent included for inheritance
+    expect(result.permission_level).toBe('workspace_write');
+    expect(result.identity_verified).toBe(true);
+  });
 });

@@ -7,6 +7,7 @@
  * learning context, webhooks, LLM) are stubbed.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { baseAgentId } from '@/lib/agent-identity-resolve.js';
 
 // Hoist mocks so they are available before module imports
 const {
@@ -147,6 +148,32 @@ describe('guard pipeline integration', () => {
     // alias of the SAME value (not the action_records id).
     expect(result.decision_id).toMatch(/^act_gd_/);
     expect(result.action_id).toBe(result.decision_id);
+  });
+
+  it('baseAgentId resolves the parent of a composed sub-agent id', () => {
+    expect(baseAgentId('claude-code:explore')).toBe('claude-code');
+    expect(baseAgentId('claude-code')).toBe(null);
+    expect(baseAgentId(undefined)).toBe(null);
+  });
+
+  it('permission escalation: a composed sub-agent id inherits the base parent pairing', async () => {
+    const sql = createMockSql({
+      policies: [makePolicy('gp_sub', 'permission_escalation', { enforce: true })],
+      agentPairing: { permission_level: 'workspace_write' }, // the parent's pairing
+    });
+    const context = {
+      agent_id: 'claude-code:explore', // composed sub-agent id with no pairing of its own
+      action_type: 'deploy',
+      intel: { tool: { required_permission: 'danger' } },
+    };
+    const result = await evaluateGuard('org_1', context, sql);
+    // inherited workspace_write < danger -> escalation blocked using the inherited level
+    expect(result.decision).toBe('block');
+    expect(result.reasons[0]).toContain('workspace_write');
+    // the pairing lookup carried BOTH the composed id and the base parent
+    const pairingCall = sql.calls.find((c) => c.text.includes('agent_pairings') && c.text.includes('permission_level'));
+    expect(pairingCall.values).toContain('claude-code:explore');
+    expect(pairingCall.values).toContain('claude-code');
   });
 
   // 2. permission_escalation: allows when agent has sufficient permission
