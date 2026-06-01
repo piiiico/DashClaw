@@ -48,6 +48,17 @@ export async function PATCH(request, { params }) {
     });
 
     if (!session) {
+      // updateSession returns null both when the session does not exist and when
+      // it exists but is closed (the terminal-state guard rejects updates).
+      // Disambiguate so a closed session gets an accurate 409 instead of a
+      // contradictory 404 (GET still returns the closed session).
+      const existing = await getSession(sql, sessionId, orgId);
+      if (existing) {
+        return NextResponse.json(
+          { error: 'Session is closed and cannot be updated' },
+          { status: 409 }
+        );
+      }
       return NextResponse.json({ error: 'Session not found' }, { status: 404 });
     }
 
