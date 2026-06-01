@@ -6,6 +6,7 @@ import { getSql } from '../../lib/db.js';
 import { getOrgId } from '../../lib/org.js';
 import { enforceFieldLimits } from '../../lib/validate.js';
 import { EVENTS, publishOrgEvent } from '../../lib/events.js';
+import { listDecisions } from '../../lib/repositories/learning.repository.js';
 
 // sql initialized inside handler for serverless compatibility
 
@@ -15,24 +16,19 @@ export async function GET(request) {
     const orgId = getOrgId(request);
     const { searchParams } = new URL(request.url);
     const agentId = searchParams.get('agent_id');
+    const q = searchParams.get('q');
+    const limit = searchParams.get('limit');
 
     const isMissingTable = (err) =>
       String(err?.code || '').includes('42P01') || String(err?.message || '').includes('does not exist');
 
-    // Get decisions (optionally filtered by agent). We use decisions.outcome directly; the outcomes table is optional.
+    // Get decisions (optionally filtered by agent and search text). We use
+    // decisions.outcome directly; the outcomes table is optional. SQL lives in
+    // the learning repository so server-side search stays off the route's
+    // direct-SQL budget.
     let decisions = [];
     try {
-      decisions = agentId
-        ? await sql`
-            SELECT * FROM decisions
-            WHERE org_id = ${orgId} AND agent_id = ${agentId}
-            ORDER BY timestamp DESC LIMIT 20
-          `
-        : await sql`
-            SELECT * FROM decisions
-            WHERE org_id = ${orgId}
-            ORDER BY timestamp DESC LIMIT 20
-          `;
+      decisions = await listDecisions(sql, orgId, { agentId, q, limit });
     } catch (err) {
       if (!isMissingTable(err)) throw err;
       decisions = [];

@@ -60,6 +60,15 @@ describe('/api/learning GET', () => {
     expect(state.lastDecisionValues).toContain('bot1');
   });
 
+  it('applies server-side search (q) and limit to the decisions query', async () => {
+    // q becomes a %needle% ILIKE param and limit is clamped and passed through,
+    // so dashclaw_learning_query can search the full history server-side rather
+    // than filtering only the most-recent 20 client-side.
+    await GET(makeRequest('http://localhost/api/learning?q=cache&limit=5'));
+    expect(state.lastDecisionValues).toContain('%cache%');
+    expect(state.lastDecisionValues).toContain(5);
+  });
+
   it('degrades to empty decisions when the table is missing (no 500)', async () => {
     state.throwMissing = 'decisions';
     const res = await GET(makeRequest('http://localhost/api/learning'));

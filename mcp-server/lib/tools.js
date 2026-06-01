@@ -668,12 +668,16 @@ export function createToolHandlers(client) {
       // recommendations consolidator (a different store with no decision/context
       // text), so a logged decision could never be queried back through it.
       //
-      // The search text and limit are applied client-side: GET /api/learning
-      // does not accept them server-side, so the search window is the server's
-      // most-recent decisions for the agent.
+      // Search text (`q`) and `limit` are passed server-side so the search
+      // window is the full decision history, not just the most-recent 20. The
+      // client-side filter below is kept as a fallback for older DashClaw
+      // instances that ignore these params (they return the recent window, and
+      // we narrow it here).
       const params = new URLSearchParams();
       const aid = agentId(args);
       if (aid) params.set('agent_id', aid);
+      if (args.query) params.set('q', String(args.query));
+      if (Number.isInteger(args.limit) && args.limit > 0) params.set('limit', String(args.limit));
       const res = await client.fetch(`/api/learning?${params}`);
       const data = await res.json();
 
