@@ -65,6 +65,13 @@ export async function PATCH(request, { params }) {
     const { actionId } = await params;
     const body = await request.json();
 
+    // A literal `null` (or non-object) JSON body would otherwise crash on the
+    // body.close_if_running read below and surface as a 500; return the normal
+    // 400 validation response instead.
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json({ error: 'Validation failed', details: ['request body must be a JSON object'] }, { status: 400 });
+    }
+
     // Stop-hook contract — see dashclaw_stop.py. When true, the request's close
     // fields (status/output_summary/timestamp_end) are applied atomically only
     // if the row is still `running`; token fields always apply. This prevents

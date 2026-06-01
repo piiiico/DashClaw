@@ -132,10 +132,16 @@ function validate(body, schema) {
   const errors = [];
   const data = {};
 
+  // A malformed request body can be `null` or a non-object: request.json()
+  // returns the value null for the literal body `null` without throwing. Coerce
+  // to an empty object so required-field checks produce a 400, not a TypeError
+  // that surfaces as a generic 500.
+  const src = (body && typeof body === 'object') ? body : {};
+
   for (const [key, rule] of Object.entries(schema)) {
     // Support both snake_case (schema key) and camelCase (DX preference)
     const camelKey = key.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
-    const value = body[key] !== undefined ? body[key] : body[camelKey];
+    const value = src[key] !== undefined ? src[key] : src[camelKey];
 
     const error = validateField(key, value, rule);
     if (error) {
@@ -239,11 +245,14 @@ const POLICY_SCHEMA = {
 };
 
 export function validateGuardInput(body) {
+  // A null / non-object body must not crash here before validate() runs; coerce
+  // it so the missing-required-field path returns a 400 rather than a 500.
+  const safeBody = (body && typeof body === 'object') ? body : {};
   // Normalize aliases before validation
-  const normalized = { ...body };
-  if (body.action && !body.action_type) normalized.action_type = body.action;
-  if (body.intent && !body.declared_goal) normalized.declared_goal = body.intent;
-  
+  const normalized = { ...safeBody };
+  if (safeBody.action && !safeBody.action_type) normalized.action_type = safeBody.action;
+  if (safeBody.intent && !safeBody.declared_goal) normalized.declared_goal = safeBody.intent;
+
   return validate(normalized, GUARD_INPUT_SCHEMA);
 }
 

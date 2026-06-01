@@ -94,6 +94,16 @@ describe('/api/actions/[actionId]', () => {
       expect(data.details).toContain('status required');
     });
 
+    it('returns 400 (not a 500 crash) for a null JSON body', async () => {
+      // request.json() returns null for the literal body `null`; the route must
+      // not crash on the early body.close_if_running read and 500.
+      const res = await PATCH(req(null), routeCtx);
+      expect(res.status).toBe(400);
+      const data = await res.json();
+      expect(data.error).toBe('Validation failed');
+      expect(mockValidateActionOutcome).not.toHaveBeenCalled();
+    });
+
     it('returns 404 when action not found', async () => {
       mockValidateActionOutcome.mockReturnValue({ valid: true, data: { status: 'completed' }, errors: [] });
       mockUpdateActionOutcome.mockResolvedValue(null);
