@@ -15,8 +15,8 @@ DashClaw ships two independently versioned artifacts from this repo:
   database migrations land on this track.
 - **SDK** — the `dashclaw` npm package published from `sdk/` and the
   `dashclaw` PyPI package published from `sdk-python/`. Current:
-  **2.13.0** on both registries (Phase 2 agent identity). This is what
-  agents install with `npm install dashclaw` or `pip install dashclaw`.
+  **Node 2.13.1** (agent message read-state methods) / **Python 2.13.0**.
+  This is what agents install with `npm install dashclaw` or `pip install dashclaw`.
   Entries on this track are prefixed `## SDK [x.y.z]` so they don't
   visually collide with platform entries.
 
@@ -796,6 +796,19 @@ Ported the AgentLens (`C:\Projects\RevenueGoalExperiment-V3`) algorithmic core i
 - **Optimal Files** — 10 modules under `optimal-files/`. `analyze.js` and `bundle.js` refactored per A4: dependency-injected aggregates (`projectMedianCost`, `similarSessionCount`), `projectFiles` map instead of fs probes, and an `existingPaths: Set<string>` argument for `overwriteRisk` instead of `fs.existsSync`. `writeBundleSelections` is now the pure `planBundleSelections`; the original side-effecting `applyBundlePlan` and `listGeneratedFiles` moved to a CLI-only `optimal-files/apply.js`. `previewBundleMerge` takes an `existingContent` string parameter.
 
 The new tree imports as `@/lib/claude-code/...` thanks to the existing vitest alias. No schema changes, no API routes, no UI yet — those land in Phases 2 onwards.
+
+## SDK [2.13.1] - 2026-06-01 — agent message read-state methods (Node)
+
+Promotes the full agent-message surface to the main Node SDK at parity with the
+live API and the legacy SDK. Node only — the Python SDK already exposes these.
+
+### Added (Node — `sdk/dashclaw.js`)
+
+- `markRead(messageIds)` / `archiveMessages(messageIds)` — `PATCH /api/messages`
+  with `{ message_ids, action: 'read' | 'archive', agent_id }`. Fixes wrappers that
+  called `claw.markRead(...)` and hit "not a function".
+- `getSentMessages(...)`, `getMessages(...)`, `getMessage(messageId)` — read
+  variants completing the surface. Node SDK now exposes 92 public methods (was 87).
 
 ## SDK [2.13.0] - 2026-05-15 — Phase 2 agent identity (`authToken` / `auth_token`)
 

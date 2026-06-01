@@ -1,9 +1,9 @@
 {
   "node": {
-    "current_version": "2.13.0",
-    "next_bump": "patch",
-    "reason": "Adds first-class agent-message read-state methods to the main SDK, at parity with the legacy SDK and the live API: markRead / archiveMessages (PATCH /api/messages, action read|archive) plus getSentMessages / getMessages / getMessage. Additive — no breaking changes.",
-    "domains": ["messaging"]
+    "current_version": "2.13.1",
+    "next_bump": "none",
+    "reason": "Agent message read-state methods (markRead / archiveMessages + getSentMessages / getMessages / getMessage) shipped in 2.13.1. Additive — no breaking changes. No further unreleased SDK changes.",
+    "domains": []
   },
   "python": {
     "current_version": "2.13.0",
