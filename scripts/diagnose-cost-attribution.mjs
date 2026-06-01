@@ -6,8 +6,15 @@
  * Breaks the "tokens → model → cost" pipeline into three visible columns
  * so it's obvious where attribution is dropping:
  *
- *   with_tokens = 0            → plugin older than v1.2.0 or llm_output events
- *                                aren't firing in the OpenClaw runtime
+ *   with_tokens = 0            → agent isn't reporting token usage. Often
+ *                                CORRECT: the agent makes no LLM calls (it
+ *                                records governance/transactional actions like
+ *                                apply/sync/review/finance), or it calls
+ *                                providers directly and bypasses the gateway's
+ *                                llm_output event. A real gap only if this agent
+ *                                SHOULD report (then push tokens via the SDK, or
+ *                                route LLM calls through OpenClaw). Check its
+ *                                action_type before assuming the pipeline broke.
  *   with_tokens > 0, model = 0 → llm_output has no `model` field; set
  *                                DASHCLAW_DEFAULT_MODEL (plugin v1.2.3+) or
  *                                upgrade the runtime
@@ -61,7 +68,7 @@ function pad(s, w) {
 function verdict(row) {
   const { with_tokens, with_model, with_cost } = row;
   if (with_cost > 0 && with_model > 0) return 'OK';
-  if (with_tokens === 0) return 'no tokens — plugin old or llm_output not firing';
+  if (with_tokens === 0) return '0 tokens (often correct: no LLM calls, or direct calls bypass the gateway - check action_type)';
   if (with_model === 0) return 'tokens but no model — set DASHCLAW_DEFAULT_MODEL';
   if (with_cost === 0) return 'model unknown to pricing table — add via Settings';
   return 'unknown';
