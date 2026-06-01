@@ -662,14 +662,32 @@ export function createToolHandlers(client) {
     },
 
     async dashclaw_learning_query(args) {
+      // Query the same store dashclaw_learning_log writes to. POST /api/learning
+      // records decisions into the `decisions` table; GET /api/learning reads
+      // them back. The sibling /api/learning/lessons endpoint is the
+      // recommendations consolidator (a different store with no decision/context
+      // text), so a logged decision could never be queried back through it.
+      //
+      // The search text and limit are applied client-side: GET /api/learning
+      // does not accept them server-side, so the search window is the server's
+      // most-recent decisions for the agent.
       const params = new URLSearchParams();
       const aid = agentId(args);
       if (aid) params.set('agent_id', aid);
-      if (args.query) params.set('q', args.query);
-      if (args.limit) params.set('limit', String(args.limit));
-      const res = await client.fetch(`/api/learning/lessons?${params}`);
+      const res = await client.fetch(`/api/learning?${params}`);
       const data = await res.json();
-      return JSON.stringify(data);
+
+      let decisions = Array.isArray(data?.decisions) ? data.decisions : [];
+      if (args.query) {
+        const needle = String(args.query).toLowerCase();
+        decisions = decisions.filter((d) =>
+          `${d?.decision || ''} ${d?.context || ''}`.toLowerCase().includes(needle),
+        );
+      }
+      const limit = Number.isInteger(args.limit) && args.limit > 0 ? args.limit : 10;
+      decisions = decisions.slice(0, limit);
+
+      return JSON.stringify({ ...data, decisions });
     },
 
     async dashclaw_decisions_recent(args) {

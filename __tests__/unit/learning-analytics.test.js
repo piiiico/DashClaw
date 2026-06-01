@@ -7,7 +7,35 @@ const { mockSql } = vi.hoisted(() => ({
 vi.mock('@/lib/db.js', () => ({ getSql: () => mockSql }));
 vi.mock('@/lib/org.js', () => ({ getOrgId: () => 'org_test' }));
 
-import { getMaturityLevels } from '@/lib/learningAnalytics.js';
+import { getMaturityLevels, getVelocityData, getCurveData } from '@/lib/learningAnalytics.js';
+
+describe('getVelocityData / getCurveData limit guard', () => {
+  beforeEach(() => {
+    mockSql.mockClear();
+  });
+
+  it('velocity: non-numeric ?limit falls back to default 30, never LIMIT NaN', async () => {
+    await getVelocityData({}, { limit: 'abc' });
+    const lim = mockSql.mock.calls[0].at(-1);
+    expect(Number.isNaN(lim)).toBe(false);
+    expect(lim).toBe(30);
+  });
+
+  it('velocity: numeric limit honored and capped at 100', async () => {
+    await getVelocityData({}, { limit: '15' });
+    expect(mockSql.mock.calls[0].at(-1)).toBe(15);
+    mockSql.mockClear();
+    await getVelocityData({}, { limit: '250' });
+    expect(mockSql.mock.calls[0].at(-1)).toBe(100);
+  });
+
+  it('curves: non-numeric ?limit falls back to default 50, never LIMIT NaN', async () => {
+    await getCurveData({}, { limit: 'xyz' });
+    const lim = mockSql.mock.calls[0].at(-1);
+    expect(Number.isNaN(lim)).toBe(false);
+    expect(lim).toBe(50);
+  });
+});
 
 describe('getMaturityLevels', () => {
   it('returns 6 maturity levels in ascending order', () => {

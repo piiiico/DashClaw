@@ -232,7 +232,7 @@ These are optional packages published alongside the core runtime.
 - *Open loops (3):* `dashclaw_loop_add`, `dashclaw_loop_list`, `dashclaw_loop_close`.
 - *Learning + retrospection (3):* `dashclaw_learning_log`, `dashclaw_learning_query`, `dashclaw_decisions_recent`.
 
-**4 resources:** `dashclaw://policies`, `dashclaw://capabilities`, `dashclaw://agent/{agent_id}/history`, `dashclaw://status`.
+**6 resources:** `dashclaw://policies`, `dashclaw://capabilities`, `dashclaw://agent/{agent_id}/history`, `dashclaw://status`, `dashclaw://code-sessions/projects`, `dashclaw://code-sessions/sessions/{session_id}`.
 
 Route inventory for tools is emitted from the shape to `mcp-server/lib/routes-inventory.generated.json` — keep tools and routes in sync.
 

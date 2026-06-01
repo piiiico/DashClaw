@@ -231,7 +231,7 @@ export async function POST(request, { params }) {
           error_message: executeError?.message || String(executeError),
           timestamp_end: failTs,
           duration_ms: Date.now() - Date.parse(timestamp_start),
-        });
+        }, { gateStatus: 'running' });
       } catch (outcomeError) {
         console.error('[WORKFLOW_EXECUTE] failed to mark parent action as failed:', outcomeError?.message);
       }
@@ -246,13 +246,19 @@ export async function POST(request, { params }) {
       ? JSON.stringify(result.result).slice(0, 500)
       : result.error;
 
+    // Gate the terminal write on status='running'. An operator cancel
+    // (POST .../runs/[id]/cancel) flips the parent running->cancelled via CAS
+    // during the up-to-120s execution window; without the gate this write would
+    // clobber the cancel back to completed/failed. The gate matches in the
+    // normal path (the parent stays 'running' until this write), so behavior is
+    // unchanged when no cancel raced.
     await updateActionOutcome(sql, orgId, action_id, {
       status: result.success ? 'completed' : 'failed',
       output_summary: outputSummary,
       error_message: result.success ? null : result.error,
       timestamp_end,
       duration_ms: result.total_elapsed_ms || 0,
-    });
+    }, { gateStatus: 'running' });
 
     // Meter increment (fire-and-forget)
     void Promise.all([

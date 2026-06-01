@@ -105,9 +105,15 @@ describe('/api/actions/[actionId]/outcome POST', () => {
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data.outcome.status).toBe('completed');
+    // The envelope must carry an `action` key: the SSE serializer reads
+    // payload.action, so an envelope without it serializes to `data: null` and
+    // every terminal-outcome frame is dropped by live consumers.
     expect(mockPublishOrgEvent).toHaveBeenCalledWith(
       'action.updated',
-      expect.objectContaining({ orgId: 'org_test', action_id: 'act_1' }),
+      expect.objectContaining({
+        orgId: 'org_test',
+        action: expect.objectContaining({ action_id: 'act_1', status: 'completed' }),
+      }),
     );
   });
 

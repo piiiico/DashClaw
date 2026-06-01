@@ -374,7 +374,7 @@ except Exception as e:
               <h2 className="text-2xl font-bold tracking-tight">MCP Server</h2>
             </div>
             <p className="mt-2 mb-8 text-sm text-text-secondary leading-relaxed">
-              <code className="font-mono text-text-secondary">@dashclaw/mcp-server</code> exposes DashClaw governance over Model Context Protocol. Any MCP-compatible client gets 23 governance tools across 7 groups (core governance, optimal files, session continuity, credential hygiene, skill safety, open loops, learning + retrospection) plus 4 read-only resources.
+              <code className="font-mono text-text-secondary">@dashclaw/mcp-server</code> exposes DashClaw governance over Model Context Protocol. Any MCP-compatible client gets 23 governance tools across 7 groups (core governance, optimal files, session continuity, credential hygiene, skill safety, open loops, learning + retrospection) plus 6 read-only resources.
             </p>
 
             {/* Tools */}
@@ -433,7 +433,7 @@ except Exception as e:
 
             {/* Resources */}
             <div id="mcp-resources" className="scroll-mt-20 mb-10">
-              <h3 className="text-lg font-semibold text-text-primary mb-4">Resources (4)</h3>
+              <h3 className="text-lg font-semibold text-text-primary mb-4">Resources (6)</h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
@@ -448,6 +448,8 @@ except Exception as e:
                       { uri: 'dashclaw://capabilities', desc: 'Available capabilities and health' },
                       { uri: 'dashclaw://agent/{agent_id}/history', desc: 'Recent action history (last 50)' },
                       { uri: 'dashclaw://status', desc: 'Instance health + operational metrics' },
+                      { uri: 'dashclaw://code-sessions/projects', desc: 'Claude Code projects with ingested session data and per-project rollups' },
+                      { uri: 'dashclaw://code-sessions/sessions/{session_id}', desc: 'Full detail for one ingested Code Session (session, messages, tool uses)' },
                     ].map((row) => (
                       <tr key={row.uri} className="border-b border-border">
                         <td className="py-2 pr-4 font-mono text-xs text-brand">{row.uri}</td>

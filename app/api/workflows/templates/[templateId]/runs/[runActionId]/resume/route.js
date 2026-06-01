@@ -172,22 +172,41 @@ export async function POST(request, { params }) {
       return originalPersist(stepData);
     };
 
-    // 7. Execute with resume context
-    const result = await executeWorkflow(
-      sql,
-      orgId,
-      action_id,
-      steps,
-      variables,
-      {
-        strategyConfig: null,
-        agentId,
-        persistStepResult: resumePersist,
-        resumeContext: resumeCtx,
-      },
-    );
+    // 7. Execute with resume context. Mirror the execute route: a throw inside
+    // executeWorkflow (DB write failure mid-run, quota error) must still
+    // transition the parent action out of 'running', otherwise it lingers and
+    // the workflow_stuck signal fires against it on every cron tick.
+    let result;
+    try {
+      result = await executeWorkflow(
+        sql,
+        orgId,
+        action_id,
+        steps,
+        variables,
+        {
+          strategyConfig: null,
+          agentId,
+          persistStepResult: resumePersist,
+          resumeContext: resumeCtx,
+        },
+      );
+    } catch (executeError) {
+      try {
+        await updateActionOutcome(sql, orgId, action_id, {
+          status: 'failed',
+          output_summary: executeError?.message?.slice(0, 500) || 'Workflow resume threw',
+          error_message: executeError?.message || String(executeError),
+          timestamp_end: new Date().toISOString(),
+        }, { gateStatus: 'running' });
+      } catch (outcomeError) {
+        console.error('[WORKFLOW_RESUME] failed to mark parent action as failed:', outcomeError?.message);
+      }
+      throw executeError;
+    }
 
-    // 8. Update parent action outcome via repository (no direct SQL)
+    // 8. Update parent action outcome via repository (no direct SQL). Gated on
+    // status='running' for the same cancel-race reason as the execute route.
     const timestamp_end = new Date().toISOString();
     await updateActionOutcome(sql, orgId, action_id, {
       status: result.success ? 'completed' : 'failed',
@@ -195,7 +214,7 @@ export async function POST(request, { params }) {
       error_message: result.success ? null : result.error,
       timestamp_end,
       duration_ms: result.total_elapsed_ms || 0,
-    });
+    }, { gateStatus: 'running' });
 
     return NextResponse.json({
       success: result.success,

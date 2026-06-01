@@ -1,5 +1,45 @@
 import { describe, it, expect } from 'vitest';
-import { validateActionRecord, isValidWebhookUrl } from '@/lib/validate';
+import { validateActionRecord, validateGuardInput, validateOpenLoop, isValidWebhookUrl } from '@/lib/validate';
+
+describe('validators tolerate a null or non-object body (no 500 crash)', () => {
+  // request.json() returns the value `null` for the literal body `null` without
+  // throwing, so a client POSTing `null` must get a 400 (valid:false), not a
+  // TypeError that surfaces as a generic 500.
+  it('validateActionRecord(null) returns valid:false without throwing', () => {
+    const result = validateActionRecord(null);
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContain('action_type is required');
+  });
+
+  it('validateGuardInput(null) returns valid:false without throwing', () => {
+    const result = validateGuardInput(null);
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContain('action_type is required');
+  });
+
+  it('validateOpenLoop(null) returns valid:false without throwing', () => {
+    expect(() => validateOpenLoop(null)).not.toThrow();
+    expect(validateOpenLoop(null).valid).toBe(false);
+  });
+
+  it('non-object bodies (undefined, primitive) do not throw', () => {
+    expect(() => validateActionRecord(undefined)).not.toThrow();
+    expect(() => validateGuardInput('not an object')).not.toThrow();
+    expect(validateActionRecord(42).valid).toBe(false);
+  });
+
+  it('a present camelCase value is not dropped by an explicit snake_case null', () => {
+    const result = validateActionRecord({
+      agent_id: 'a',
+      action_type: 'deploy',
+      declared_goal: 'g',
+      risk_score: null,
+      riskScore: 80,
+    });
+    expect(result.valid).toBe(true);
+    expect(result.data.risk_score).toBe(80);
+  });
+});
 
 describe('validateActionRecord', () => {
   it('should validate a correct action record', () => {

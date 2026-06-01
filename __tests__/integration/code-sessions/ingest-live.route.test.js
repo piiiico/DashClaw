@@ -189,17 +189,22 @@ describe('POST /api/code-sessions/ingest-live — append path', () => {
 describe('POST /api/code-sessions/ingest-live — finalize path', () => {
   beforeEach(() => {
     mockGetSessionFreshness.mockResolvedValue({ id: 'cs_live_unit', source_mtime: null, parser_version: 2 });
+    // getSessionDetail returns { session, messages, toolUses }, matching the real
+    // repository contract so the test exercises the same shape production runs on.
     mockGetSessionDetail.mockResolvedValue({
-      id: 'cs_live_unit',
-      session_uuid: 'sess-end',
-      model_primary: 'claude-sonnet-4-6',
-      cost_usd: 0.42,
-      input_tokens: 12000,
-      output_tokens: 2200,
-      cache_read_tokens: 50000,
-      cache_creation_tokens: 800,
-      message_count: 6,
-      tool_uses: [
+      session: {
+        id: 'cs_live_unit',
+        session_uuid: 'sess-end',
+        model_primary: 'claude-sonnet-4-6',
+        cost_usd: 0.42,
+        input_tokens: 12000,
+        output_tokens: 2200,
+        cache_read_tokens: 50000,
+        cache_creation_tokens: 800,
+        message_count: 6,
+      },
+      messages: [],
+      toolUses: [
         { name: 'Bash', request_id: 'R1', target: 'ls' },
         { name: 'Bash', request_id: 'R1', target: 'ls' },
         { name: 'Bash', request_id: 'R1', target: 'ls' },
@@ -243,6 +248,18 @@ describe('POST /api/code-sessions/ingest-live — finalize path', () => {
     expect(mockGetSessionDetail).toHaveBeenCalledTimes(1);
     expect(mockRunOptimizer).toHaveBeenCalledTimes(1);
     expect(mockReplaceSignalsForSession).toHaveBeenCalledTimes(1);
+
+    // Regression: the real session fields must reach the optimizer and alert
+    // rules. Before the fix, runFinalize read detail.* off the wrapped object,
+    // so cost_usd/session_uuid/model_primary arrived as 0/undefined.
+    const optArg = mockRunOptimizer.mock.calls[0][0];
+    expect(optArg.session.cost_usd).toBe(0.42);
+    expect(optArg.session.session_uuid).toBe('sess-end');
+    expect(optArg.session.model_primary).toBe('claude-sonnet-4-6');
+    expect(optArg.toolEvents).toHaveLength(4);
+    const alertArg = mockDetectForSession.mock.calls[0][0];
+    expect(alertArg.session.session_uuid).toBe('sess-end');
+    expect(alertArg.session.cost_usd).toBe(0.42);
 
     const signalsCall = mockReplaceSignalsForSession.mock.calls[0];
     expect(signalsCall[1]).toBe('cs_live_unit');

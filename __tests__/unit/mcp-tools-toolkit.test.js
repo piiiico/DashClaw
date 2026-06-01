@@ -83,6 +83,90 @@ describe('MCP toolkit tools', () => {
     expect(captured.body.skill_name).toBe('test');
   });
 
+  it('learning_query GETs /api/learning (the store learning_log feeds), not /api/learning/lessons', async () => {
+    const captured = [];
+    const client = {
+      fetch: async (path) => {
+        captured.push(path);
+        return {
+          ok: true,
+          json: async () => ({
+            decisions: [
+              { decision: 'use neon for db', context: 'serverless', outcome: 'success' },
+              { decision: 'use redis cache', context: 'latency', outcome: 'success' },
+              { decision: 'pick Neon again', context: 'consistency', outcome: 'pending' },
+            ],
+            lessons: [{ id: 'lesson_1' }],
+          }),
+        };
+      },
+    };
+    const handlers = createToolHandlers(client);
+    const out = JSON.parse(await handlers.dashclaw_learning_query({ agent_id: 'hermes', query: 'neon' }));
+
+    expect(captured[0]).toMatch(/\/api\/learning\?/);
+    expect(captured[0]).not.toMatch(/\/api\/learning\/lessons/);
+    expect(captured[0]).toMatch(/agent_id=hermes/);
+    // q matches decision/context case-insensitively: 2 of 3 mention neon
+    expect(out.decisions).toHaveLength(2);
+    expect(out.lessons).toHaveLength(1);
+  });
+
+  it('learning_query honors limit by slicing decisions', async () => {
+    const client = {
+      fetch: async () => ({
+        ok: true,
+        json: async () => ({ decisions: [{ decision: 'a' }, { decision: 'b' }, { decision: 'c' }], lessons: [] }),
+      }),
+    };
+    const handlers = createToolHandlers(client);
+    const out = JSON.parse(await handlers.dashclaw_learning_query({ limit: 2 }));
+    expect(out.decisions).toHaveLength(2);
+  });
+
+  it('server-configured agent_id wins over LLM-supplied agent_id across toolkit handlers (regression for 61d3be25)', async () => {
+    // Governance: a confused or adversarial prompt must not attribute actions
+    // to a different agent than the server is configured with. The guard
+    // handler is covered in mcp-tools.test.js; this locks the same precedence
+    // for the toolkit handlers that resolve agent_id via agentId().
+    const captured = [];
+    const client = {
+      agentId: 'server-agent',
+      fetch: async (path, opts) => {
+        captured.push({ path, body: opts?.body });
+        return { ok: true, status: 200, json: async () => ({}) };
+      },
+    };
+    const handlers = createToolHandlers(client);
+
+    await handlers.dashclaw_loop_list({ agent_id: 'spoofed' });
+    await handlers.dashclaw_learning_query({ agent_id: 'spoofed' });
+    await handlers.dashclaw_decisions_recent({ agent_id: 'spoofed' });
+    await handlers.dashclaw_secret_list({ agent_id: 'spoofed' });
+    for (const c of captured) {
+      expect(c.path).toMatch(/agent_id=server-agent/);
+      expect(c.path).not.toMatch(/spoofed/);
+    }
+
+    captured.length = 0;
+    await handlers.dashclaw_handoff_create({ agent_id: 'spoofed', bundle: { summary: 's' } });
+    expect(JSON.parse(captured[0].body).agent_id).toBe('server-agent');
+  });
+
+  it('toolkit handlers fall back to LLM-supplied agent_id when the server has no default', async () => {
+    const captured = [];
+    const client = {
+      agentId: '',
+      fetch: async (path) => {
+        captured.push(path);
+        return { ok: true, json: async () => ({}) };
+      },
+    };
+    const handlers = createToolHandlers(client);
+    await handlers.dashclaw_loop_list({ agent_id: 'bare-fallback' });
+    expect(captured[0]).toMatch(/agent_id=bare-fallback/);
+  });
+
   it('decisions_recent handler builds query params', async () => {
     let captured = null;
     const client = {

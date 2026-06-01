@@ -66,8 +66,16 @@ class DashClaw {
   async _request(path, method = 'GET', body = null, params = null) {
     let url = `${this.baseUrl}${path}`;
     if (params) {
-      const qs = new URLSearchParams(params).toString();
-      if (qs) url += `?${qs}`;
+      // Skip undefined/null values. Passing them straight into URLSearchParams
+      // serializes the literal strings "undefined"/"null", which the receiving
+      // routes treat as real filter values and match zero rows. Falsy-but-valid
+      // values (0, false, '') are preserved. Mirrors the v1 SDK behavior.
+      const qs = new URLSearchParams();
+      for (const [key, value] of Object.entries(params)) {
+        if (value !== undefined && value !== null) qs.append(key, String(value));
+      }
+      const s = qs.toString();
+      if (s) url += `?${s}`;
     }
 
     const headers = {
@@ -82,7 +90,16 @@ class DashClaw {
       body: body ? JSON.stringify(body) : undefined
     });
 
-    const data = await res.json();
+    // Parse the body defensively. A non-JSON error body (a Vercel 502/504/413
+    // gateway page, a 429 rate-limit page) makes res.json() reject with a
+    // SyntaxError, which would propagate instead of the status-bearing error
+    // below and lose res.status. Fall back to {} so the real status is thrown.
+    let data = {};
+    try {
+      data = await res.json();
+    } catch {
+      data = {};
+    }
 
     if (!res.ok) {
       if (res.status === 403 && data.decision && data.decision.decision === 'block') {
@@ -293,7 +310,12 @@ class DashClaw {
     let printedBlock = false;
 
     while (Date.now() - startTime < timeout) {
-      const { action } = await this._request(`/api/actions/${actionId}`, 'GET');
+      // Return the full GET response (action + open_loops + assumptions +
+      // message_summary) so the polling fallback resolves to the same shape as
+      // the SSE fast-path above and the Python SDK. Returning only { action }
+      // dropped the related collections whenever SSE was unavailable.
+      const result = await this._request(`/api/actions/${actionId}`, 'GET');
+      const action = result.action;
 
       if (!printedBlock) {
         printedBlock = true;
@@ -323,14 +345,14 @@ class DashClaw {
       }
 
       if (action.status === 'pending_approval') wasPending = true;
-      if (action.approved_by) return { action };
+      if (action.approved_by) return result;
       if (action.status === 'failed' || action.status === 'cancelled') {
         throw new ApprovalDeniedError(action.error_message || 'Operator denied the action.', action.status);
       }
       if (wasPending && action.status !== 'pending_approval') {
         throw new Error(`Action ${actionId} left pending_approval state without explicit approval metadata (Status: ${action.status})`);
       }
-      if (!wasPending && action.status === 'running') return { action };
+      if (!wasPending && action.status === 'running') return result;
 
       await new Promise(r => setTimeout(r, interval));
     }

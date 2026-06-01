@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:3e5757a62cac30abfef8ef0589b3c6b0ad6a607d",
+  "timestamp": "sha1:175699a2f86fa82fcbf9df86943cf4db7c440f36",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -3134,6 +3134,7 @@
       "required": true,
       "files": [
         "__tests__/integration/hosted/end-to-end.test.js",
+        "__tests__/unit/actions-loops.route.test.js",
         "__tests__/unit/actions.route.test.js",
         "__tests__/unit/agents-heartbeat.route.test.js",
         "__tests__/unit/agents.route.test.js",
@@ -3159,6 +3160,7 @@
         "__tests__/unit/learning-recommendation-events.route.test.js",
         "__tests__/unit/learning-recommendation-metrics.route.test.js",
         "__tests__/unit/learning-recommendations.route.test.js",
+        "__tests__/unit/learning.route.test.js",
         "__tests__/unit/policies-import.route.test.js",
         "__tests__/unit/policies-proof.route.test.js",
         "__tests__/unit/policies-test.route.test.js",

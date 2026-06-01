@@ -79,6 +79,13 @@ function demoJson(request, payload, status = 200) {
 function securedJson(request, payload, init = {}) {
   const response = NextResponse.json(payload, init);
   addSecurityHeaders(response, request);
+  // Apply the same CORS headers the success/public exit paths set. Without
+  // this, a configured cross-origin browser client can complete the preflight
+  // and read 2xx bodies but a 401/403/429/413/503 is blocked as a CORS error,
+  // so the client cannot read the real status or message. getCorsHeaders only
+  // emits Access-Control-Allow-Origin when ALLOWED_ORIGIN matches, so this does
+  // not widen the allow-list; it only closes the success-vs-error asymmetry.
+  withCors(request, response);
   return response;
 }
 
