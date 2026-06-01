@@ -37,6 +37,8 @@ v2 hooks classify every Claude Code tool into a semantic category and govern bas
 
 Configure which categories are governed via the `DASHCLAW_GOVERNED_CATEGORIES` environment variable (comma-separated list). Unknown tools that do not match any category fail-safe to governed.
 
+> **Claude Code routing note.** Which tool calls actually reach the hook is decided by the `PreToolUse` / `PostToolUse` **matcher** in `.claude/settings.json`, which ships as `Bash|Edit|Write|MultiEdit`. The categories above describe how the intel module *classifies* every tool and which categories are governed *once a call reaches the hook*. Tools outside that matcher — `orchestration` (Agent, Skill), `interactive`, and `mcp` — are **not** routed to the hook by default, so on Claude Code, sub-agent spawns and MCP tool calls are not hook-intercepted out of the box. Govern those via the DashClaw SDK or MCP server, or add the tool names to the matcher. (The Codex and Hermes installers wire their own routing.)
+
 ## Enriched Intel Context
 
 The pretool hook builds an intel dict for every governed tool call and includes it in the guard request. This gives the guard server rich context for policy decisions.
@@ -125,6 +127,8 @@ Then merge the hooks block from `hooks/settings.json` into your `.claude/setting
 cp hooks/settings.json .claude/settings.json
 ```
 
+> The committed `settings.json` template invokes `python`. On Linux/macOS without a `python` shim (e.g. Debian/Ubuntu, which ship only `python3`), change the three commands to `python3` — or just use the one-command installer above, which detects the interpreter automatically.
+
 ### Environment variables
 
 ```bash
@@ -144,6 +148,8 @@ echo '{"tool_name":"Bash","tool_input":{"command":"echo hello"},"tool_use_id":"t
 ```
 
 If DashClaw is reachable, the hook evaluates the command against your guard policies. If not, it exits silently and Claude Code proceeds normally.
+
+> Use `python3` here if your system has no `python` on PATH. The one-command installer writes the correct interpreter into `.claude/settings.json` for you.
 
 ### Token capture (Stop hook)
 
@@ -237,9 +243,9 @@ All tools in governed categories are evaluated against DashClaw policies. With t
 
 - **execution**: Bash, BashBackground. Shell commands are enriched with bash intent classification. Git operations, deployments, infrastructure commands, destructive operations, and HTTP calls get elevated risk scores.
 - **file_io**: Edit, Write, MultiEdit, NotebookEdit. File operations are enriched with security scan results. Sensitive files (`.env`, secrets, credentials), migrations, infrastructure configs, and auth-related files get elevated risk scores.
-- **orchestration**: Agent, Skill, TodoWrite. Subagent and skill invocations are governed to maintain oversight of delegated work.
+- **orchestration**: Agent, Skill, TodoWrite. These are *classified* as governed, but the shipped Claude Code matcher (`Bash|Edit|Write|MultiEdit`) does not route them to the hook — so sub-agent spawns are not hook-intercepted by default (see the routing note under "Tool Governance Scope"). Govern delegated work via the SDK/MCP path, or add the tool names to the matcher.
 - **interactive**: WebFetch, RemoteTrigger. Network-facing interactive tools are governed by default.
-- **mcp**: Any `mcp__*` tool call. MCP tool calls are enriched with server health signals.
+- **mcp**: Any `mcp__*` tool call. Enriched with server health signals when routed to the hook — but, like orchestration, MCP tools sit outside the default matcher, so govern them via the DashClaw MCP server rather than relying on hook interception.
 
 Unknown tools that do not match any configured category fail-safe to governed.
 

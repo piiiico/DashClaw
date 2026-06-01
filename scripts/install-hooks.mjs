@@ -85,45 +85,59 @@ function copyTree(srcDir, destDir) {
   }
 }
 
+// The interpreter baked into the hook commands. Debian/Ubuntu base images ship
+// only `python3` (no `python` shim unless python-is-python3 is installed), so a
+// hardcoded `python` silently disables every governance hook there. The installer
+// runs on the target machine, so we resolve the interpreter at install time.
+// Mirrors cli/lib/codex/install.js, which already branches the same way.
+export function detectPythonCommand() {
+  return process.platform === 'win32' ? 'python' : 'python3';
+}
+
 // Hook commands use $CLAUDE_PROJECT_DIR so they resolve correctly regardless
 // of what subdirectory an agent has cd'd into. Relative paths like
 // `.claude/hooks/dashclaw_pretool.py` break the moment any tool changes cwd
 // mid-session, which silently disables every governance hook.
-const HOOK_BLOCKS = {
-  PreToolUse: [
-    {
-      matcher: 'Bash|Edit|Write|MultiEdit',
-      hooks: [
-        {
-          type: 'command',
-          command: 'python "$CLAUDE_PROJECT_DIR/.claude/hooks/dashclaw_pretool.py"',
-          timeout: 3600000,
-        },
-      ],
-    },
-  ],
-  PostToolUse: [
-    {
-      matcher: 'Bash|Edit|Write|MultiEdit',
-      hooks: [
-        {
-          type: 'command',
-          command: 'python "$CLAUDE_PROJECT_DIR/.claude/hooks/dashclaw_posttool.py"',
-        },
-      ],
-    },
-  ],
-  Stop: [
-    {
-      hooks: [
-        {
-          type: 'command',
-          command: 'python "$CLAUDE_PROJECT_DIR/.claude/hooks/dashclaw_stop.py"',
-        },
-      ],
-    },
-  ],
-};
+//
+// `python` defaults to the literal "python" so the pure render stays deterministic
+// for tests; the install paths below inject detectPythonCommand() for the real machine.
+export function hookBlocks(python = 'python') {
+  return {
+    PreToolUse: [
+      {
+        matcher: 'Bash|Edit|Write|MultiEdit',
+        hooks: [
+          {
+            type: 'command',
+            command: `${python} "$CLAUDE_PROJECT_DIR/.claude/hooks/dashclaw_pretool.py"`,
+            timeout: 3600000,
+          },
+        ],
+      },
+    ],
+    PostToolUse: [
+      {
+        matcher: 'Bash|Edit|Write|MultiEdit',
+        hooks: [
+          {
+            type: 'command',
+            command: `${python} "$CLAUDE_PROJECT_DIR/.claude/hooks/dashclaw_posttool.py"`,
+          },
+        ],
+      },
+    ],
+    Stop: [
+      {
+        hooks: [
+          {
+            type: 'command',
+            command: `${python} "$CLAUDE_PROJECT_DIR/.claude/hooks/dashclaw_stop.py"`,
+          },
+        ],
+      },
+    ],
+  };
+}
 
 // Only these exact filenames are considered managed. We match on
 // path-separator-bounded occurrences so user-authored wrappers with similar
@@ -141,7 +155,7 @@ export function isManagedHookCommand(cmd) {
   return MANAGED_HOOK_RE.test(cmd);
 }
 
-function mergeSettings(targetRoot) {
+function mergeSettings(targetRoot, python = detectPythonCommand()) {
   const settingsPath = join(targetRoot, '.claude', 'settings.json');
   let settings = { hooks: {} };
   if (existsSync(settingsPath)) {
@@ -155,7 +169,7 @@ function mergeSettings(targetRoot) {
   }
   settings.hooks ??= {};
 
-  for (const [event, blocks] of Object.entries(HOOK_BLOCKS)) {
+  for (const [event, blocks] of Object.entries(hookBlocks(python))) {
     const existing = Array.isArray(settings.hooks[event]) ? settings.hooks[event] : [];
     // Drop any prior dashclaw entries (matcher-by-matcher) so re-running
     // upgrades commands cleanly without duplicating. Matches only our exact
@@ -186,29 +200,29 @@ const toPosixPath = (p) => p.replace(/\\/g, '/');
 // parent up to this repo's .env.local for DASHCLAW_BASE_URL / DASHCLAW_API_KEY /
 // DASHCLAW_CODE_SESSIONS_ENABLED — which is why no secret is written into the
 // global settings file, and why `git pull` upgrades the hook automatically.
-export function globalStopCommand(repoRoot) {
-  return `python "${toPosixPath(join(repoRoot, 'hooks', 'dashclaw_stop.py'))}"`;
+export function globalStopCommand(repoRoot, python = 'python') {
+  return `${python} "${toPosixPath(join(repoRoot, 'hooks', 'dashclaw_stop.py'))}"`;
 }
 
 // Capture-only: a single Stop entry, no PreToolUse/PostToolUse. Other projects
 // get code-session capture without governance (the Stop hook's _apply() no-ops
 // when there are no pretool action_ids to attribute tokens against).
-export function globalStopBlock(repoRoot) {
-  return [{ hooks: [{ type: 'command', command: globalStopCommand(repoRoot) }] }];
+export function globalStopBlock(repoRoot, python = 'python') {
+  return [{ hooks: [{ type: 'command', command: globalStopCommand(repoRoot, python) }] }];
 }
 
 // Pure merge (no FS). Drops prior managed Stop entries first so re-running
 // upgrades cleanly, then appends the capture hook — or, with { remove: true },
 // strips it for uninstall. User-authored Stop hooks and all other events are
 // left untouched.
-export function mergeGlobalStopHook(settings, repoRoot, { remove = false } = {}) {
+export function mergeGlobalStopHook(settings, repoRoot, { remove = false, python = 'python' } = {}) {
   const next = { ...(settings || {}), hooks: { ...((settings && settings.hooks) || {}) } };
   const existing = Array.isArray(next.hooks.Stop) ? next.hooks.Stop : [];
   const kept = existing.filter((entry) => {
     const cmds = (entry.hooks || []).map((h) => h.command || '');
     return !cmds.some(isManagedHookCommand);
   });
-  next.hooks.Stop = remove ? kept : [...kept, ...globalStopBlock(repoRoot)];
+  next.hooks.Stop = remove ? kept : [...kept, ...globalStopBlock(repoRoot, python)];
   if (next.hooks.Stop.length === 0) delete next.hooks.Stop;
   return next;
 }
@@ -219,6 +233,7 @@ function globalSettingsPath() {
 
 function runGlobal({ dryRun, uninstall }) {
   const settingsPath = globalSettingsPath();
+  const python = detectPythonCommand();
   let settings = {};
   if (existsSync(settingsPath)) {
     try {
@@ -229,7 +244,7 @@ function runGlobal({ dryRun, uninstall }) {
       process.exit(1);
     }
   }
-  const merged = mergeGlobalStopHook(settings, REPO_ROOT, { remove: uninstall });
+  const merged = mergeGlobalStopHook(settings, REPO_ROOT, { remove: uninstall, python });
   const rendered = JSON.stringify(merged, null, 2) + '\n';
 
   console.log(`Global settings: ${settingsPath}`);
@@ -251,7 +266,7 @@ function runGlobal({ dryRun, uninstall }) {
   console.log('so every project ships its Claude Code sessions without governance noise.');
   console.log('');
   console.log('Stop hook command:');
-  console.log('  ' + globalStopCommand(REPO_ROOT));
+  console.log('  ' + globalStopCommand(REPO_ROOT, python));
   console.log('');
   console.log('No secret is written here — the hook reads this repo\'s .env.local:');
   console.log('  ' + join(REPO_ROOT, '.env.local'));

@@ -5,6 +5,8 @@ import {
   globalStopCommand,
   globalStopBlock,
   mergeGlobalStopHook,
+  detectPythonCommand,
+  hookBlocks,
 } from '../../scripts/install-hooks.mjs';
 
 /**
@@ -146,5 +148,34 @@ describe('install-hooks global capture (--global)', () => {
     const snapshot = JSON.stringify(input);
     mergeGlobalStopHook(input, REPO);
     expect(JSON.stringify(input)).toBe(snapshot);
+  });
+});
+
+describe('install-hooks python interpreter selection (Linux python3 fix)', () => {
+  // Debian/Ubuntu ship only `python3`; a hardcoded `python` silently disables
+  // every governance hook there. The installer resolves the interpreter on the
+  // target machine and bakes it into the settings.json commands.
+  it('detects python3 off-Windows and python on Windows', () => {
+    expect(detectPythonCommand()).toBe(process.platform === 'win32' ? 'python' : 'python3');
+  });
+
+  it('renders pure helpers with the literal "python" by default (deterministic)', () => {
+    expect(globalStopCommand('C:\\Projects\\DashClaw')).toBe('python "C:/Projects/DashClaw/hooks/dashclaw_stop.py"');
+    expect(hookBlocks().PreToolUse[0].hooks[0].command)
+      .toBe('python "$CLAUDE_PROJECT_DIR/.claude/hooks/dashclaw_pretool.py"');
+  });
+
+  it('bakes the chosen interpreter into every hook command when one is passed', () => {
+    expect(globalStopCommand('C:\\Projects\\DashClaw', 'python3'))
+      .toBe('python3 "C:/Projects/DashClaw/hooks/dashclaw_stop.py"');
+    const blocks = hookBlocks('python3');
+    expect(blocks.PreToolUse[0].hooks[0].command).toBe('python3 "$CLAUDE_PROJECT_DIR/.claude/hooks/dashclaw_pretool.py"');
+    expect(blocks.PostToolUse[0].hooks[0].command).toBe('python3 "$CLAUDE_PROJECT_DIR/.claude/hooks/dashclaw_posttool.py"');
+    expect(blocks.Stop[0].hooks[0].command).toBe('python3 "$CLAUDE_PROJECT_DIR/.claude/hooks/dashclaw_stop.py"');
+  });
+
+  it('threads the interpreter through the global Stop merge', () => {
+    const merged = mergeGlobalStopHook({}, 'C:\\Projects\\DashClaw', { python: 'python3' });
+    expect(merged.hooks.Stop[0].hooks[0].command).toBe('python3 "C:/Projects/DashClaw/hooks/dashclaw_stop.py"');
   });
 });

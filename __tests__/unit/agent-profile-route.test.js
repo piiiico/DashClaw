@@ -36,7 +36,7 @@ describe('getAgentTrustPosture', () => {
     const sql = createSqlMock({
       taggedResponses: [
         // agent_pairings
-        [{ permission_level: 'workspace_write', status: 'active' }],
+        [{ permission_level: 'workspace_write', status: 'approved' }],
         // agent_identities
         [{ agent_id: 'agent_1' }],
         // settings
@@ -64,5 +64,32 @@ describe('getAgentTrustPosture', () => {
     expect(result.policies).toHaveLength(2);
     expect(result.approval_record).toEqual({ total: 10, allowed: 8, denied: 2 });
     expect(result.blocks_30d).toBe(1);
+  });
+
+  it("reads the agent's APPROVED pairing, not a never-set 'active' status", async () => {
+    // Regression: the pairing lifecycle is pending -> approved -> expired; no row
+    // is ever status='active'. Querying 'active' (the old literal) meant the Trust
+    // Posture panel always fell back to permission_level 'unknown'. guard.js already
+    // filters 'approved' — this asserts the panel query matches the real lifecycle.
+    const sql = createSqlMock({
+      taggedResponses: [
+        [{ permission_level: 'workspace_write', status: 'approved' }],
+        [{ agent_id: 'agent_1' }],
+        [{ value: 'true' }],
+        [],
+        [{ approved_count: 0, denied_count: 0, blocks_count: 0 }],
+      ],
+    });
+
+    const { getAgentTrustPosture } = await import(
+      '../../app/lib/repositories/agents.repository.js'
+    );
+    const result = await getAgentTrustPosture(sql, 'org_test', 'agent_1');
+
+    const pairingQuery = sql.taggedCalls.find((c) => /FROM agent_pairings/.test(c.text));
+    expect(pairingQuery, 'expected an agent_pairings lookup').toBeTruthy();
+    expect(pairingQuery.text).toMatch(/status = 'approved'/);
+    expect(pairingQuery.text).not.toMatch(/status = 'active'/);
+    expect(result.permission_level).toBe('workspace_write');
   });
 });

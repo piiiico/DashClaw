@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:95cb38dca164da741ea06db9b0404af52002a3b3",
+  "timestamp": "sha1:139c2d6f981e1d8352c09e98f88ae3e0c625f5fb",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -3095,6 +3095,14 @@
         "__tests__/unit/connect-complete-discord-alert.test.js",
         "app/api/actions/route.js",
         "app/lib/notification-adapters/discord.js"
+      ],
+      "in_env_example": false
+    },
+    {
+      "name": "DASHCLAW_PAIRING_TTL_MINUTES",
+      "required": false,
+      "files": [
+        "app/api/pairings/route.js"
       ],
       "in_env_example": false
     },

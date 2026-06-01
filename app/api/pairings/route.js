@@ -28,7 +28,10 @@ export async function POST(request) {
     }
 
     const id = `pair_${crypto.randomUUID()}`;
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+    // TTL is configurable (default 15 min) so admin enrollment flows where the
+    // approver isn't standing by aren't forced into a too-short window.
+    const ttlMinutes = Math.max(1, parseInt(process.env.DASHCLAW_PAIRING_TTL_MINUTES || '15', 10) || 15);
+    const expiresAt = new Date(Date.now() + ttlMinutes * 60 * 1000).toISOString();
 
     const rows = await createPairing(sql, {
       orgId, id, agentId: agent_id, agentName: agent_name,

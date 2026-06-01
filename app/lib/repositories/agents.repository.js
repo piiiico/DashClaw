@@ -370,7 +370,7 @@ export async function getAgentTrustPosture(sql, orgId, agentId) {
   };
 
   const [pairingRows, identityRows, settingsRows, policyRows, actionCountsRows] = await Promise.all([
-    safe(() => sql`SELECT permission_level, status FROM agent_pairings WHERE org_id = ${orgId} AND agent_id = ${agentId} AND status = 'active' LIMIT 1`, []),
+    safe(() => sql`SELECT permission_level, status FROM agent_pairings WHERE org_id = ${orgId} AND agent_id = ${agentId} AND status = 'approved' LIMIT 1`, []),
     safe(() => sql`SELECT agent_id FROM agent_identities WHERE org_id = ${orgId} AND agent_id = ${agentId} LIMIT 1`, []),
     safe(() => sql`SELECT value FROM settings WHERE org_id = ${orgId} AND key = 'ENFORCE_AGENT_SIGNATURES' LIMIT 1`, []),
     safe(() => sql`SELECT id, policy_type, description, agent_ids FROM policies WHERE org_id = ${orgId} AND active = true`, []),

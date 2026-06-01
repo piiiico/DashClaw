@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import Link from 'next/link';
 import { ShieldCheck } from 'lucide-react';
 import { useAgentFilter } from '../lib/AgentFilterContext';
 import { useRealtime } from '../hooks/useRealtime';
@@ -100,10 +101,16 @@ export default function SystemStatusBar() {
         </div>
       </div>
 
-      {/* Total count */}
-      <span className="text-[11px] font-semibold uppercase tracking-[0.14em] tabular-nums text-tertiary">
+      {/* Total count — links to the per-signal breakdown (type, severity, agent,
+          related action) at /security. Stays tertiary/calm per .impeccable.md;
+          brand orange appears only as the focus ring (a "needs you" signal). */}
+      <Link
+        href="/security"
+        title="View the governance signals breakdown — type, severity, agent, and related action"
+        className="rounded-sm text-[11px] font-semibold uppercase tracking-[0.14em] tabular-nums text-tertiary transition-colors hover:text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+      >
         {totalCount} active governance signal{totalCount !== 1 ? 's' : ''}
-      </span>
+      </Link>
     </div>
   );
 }
