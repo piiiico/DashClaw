@@ -132,10 +132,13 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
     }
 
+    // Emit the same { orgId, action } envelope the PATCH route uses so the SSE
+    // serializer (which reads payload.action) sends a populated frame. Without
+    // the action key the frame serialized to `data: null` and every terminal
+    // outcome update was dropped by live consumers.
     void publishOrgEvent(EVENTS.ACTION_UPDATED, {
       orgId,
-      action_id: actionId,
-      outcome: result.outcome,
+      action: { action_id: actionId, ...result.outcome },
     });
 
     return NextResponse.json({
