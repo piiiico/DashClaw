@@ -29,6 +29,16 @@ are prefixed with the package name.
 
 ## [Unreleased]
 
+### Sub-agent governance & tracking (Claude Code)
+
+Delegated work is now first-class in DashClaw. Verified against the Claude Code hooks/sub-agents docs: `PreToolUse` fires for the sub-agent spawn (the `Agent` tool — named `Task` before CC 2.1.63) **and** inside sub-agents.
+
+- **Added.** `Agent|Task` is now in the shipped Claude Code `PreToolUse`/`PostToolUse` matcher (installer, template, live `.claude/settings.json`, and the `/guides/claude-code` snippet), so sub-agent spawns are governed decisions recorded as `orchestration` actions. `Task` is registered as an `Agent` classifier alias for pre-2.1.63 sessions.
+- **Added.** A sub-agent's own tool calls are now recorded with provenance. The governed `agent_id` stays the parent (sub-agents inherit the parent's pairing/permissions, matching Claude Code), and the sub-agent is surfaced via `agent_name` (`<parent>/<agent_type>`), `swarm_id` (the session id — grouping the spawn and the delegated work in the decisions ledger and the Swarm view), and `intel.subagent`.
+- **Changed.** The orchestration category records as `action_type: orchestration` instead of the misleading `deploy`.
+- **Docs.** `hooks/README.md` gains a "Sub-agent governance & tracking" section; the routing note reflects the new matcher.
+- **Tests.** 3 Python integration tests (spawn governed, `Task` alias, sub-agent provenance).
+
 ### External-agent feedback audit — fixes
 
 Fixes verified against an external agent's first-run feedback (each finding was re-checked against the codebase before acting). Every change ships a regression test; full suite green.

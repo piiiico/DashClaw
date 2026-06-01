@@ -23,7 +23,7 @@ export default async function ClaudeCodeGuidePage() {
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Bash|Edit|Write|MultiEdit",
+        "matcher": "Agent|Task|Bash|Edit|Write|MultiEdit",
         "hooks": [
           {
             "type": "command",
@@ -35,7 +35,7 @@ export default async function ClaudeCodeGuidePage() {
     ],
     "PostToolUse": [
       {
-        "matcher": "Bash|Edit|Write|MultiEdit",
+        "matcher": "Agent|Task|Bash|Edit|Write|MultiEdit",
         "hooks": [
           {
             "type": "command",

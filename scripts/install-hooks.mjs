@@ -105,7 +105,7 @@ export function hookBlocks(python = 'python') {
   return {
     PreToolUse: [
       {
-        matcher: 'Bash|Edit|Write|MultiEdit',
+        matcher: 'Agent|Task|Bash|Edit|Write|MultiEdit',
         hooks: [
           {
             type: 'command',
@@ -117,7 +117,7 @@ export function hookBlocks(python = 'python') {
     ],
     PostToolUse: [
       {
-        matcher: 'Bash|Edit|Write|MultiEdit',
+        matcher: 'Agent|Task|Bash|Edit|Write|MultiEdit',
         hooks: [
           {
             type: 'command',

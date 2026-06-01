@@ -577,5 +577,63 @@ class TestPretoolIntegration(unittest.TestCase):
         self.assertGreaterEqual(body["risk_score"], 70)
 
 
+    # -----------------------------------------------------------------------
+    # 16. Sub-agent governance + tracking
+    # -----------------------------------------------------------------------
+
+    def test_agent_spawn_is_governed_and_tagged(self):
+        """Spawning a sub-agent via the Agent tool is itself a governed action,
+        classified as orchestration and tagged into the session swarm."""
+        code, _, _ = _run_hook(
+            {
+                "tool_name": "Agent",
+                "tool_input": {"subagent_type": "Explore", "prompt": "find X"},
+                "tool_use_id": "tu-022",
+                "session_id": "sess-spawn",
+            },
+            self._env(),
+        )
+        self.assertEqual(code, 0)
+        guard_reqs = [r for r in self.log.get_all() if r["path"] == "/api/guard"]
+        self.assertEqual(len(guard_reqs), 1, "Agent spawn should be governed")
+        body = guard_reqs[0]["body"]
+        self.assertEqual(body["tool"]["category"], "orchestration")
+        self.assertEqual(body["action_type"], "orchestration")
+        self.assertEqual(body["swarm_id"], "sess-spawn")
+
+    def test_task_alias_spawn_is_governed(self):
+        """`Task` (pre-2.1.63 name for Agent) is still governed as orchestration."""
+        code, _, _ = _run_hook(
+            {"tool_name": "Task", "tool_input": {"description": "do Y"}, "tool_use_id": "tu-023", "session_id": "s"},
+            self._env(),
+        )
+        self.assertEqual(code, 0)
+        guard_reqs = [r for r in self.log.get_all() if r["path"] == "/api/guard"]
+        self.assertEqual(len(guard_reqs), 1, "Task spawn should be governed")
+        self.assertEqual(guard_reqs[0]["body"]["tool"]["category"], "orchestration")
+
+    def test_subagent_call_records_provenance(self):
+        """A tool call from inside a sub-agent (agent_id/agent_type on stdin) keeps
+        the governed agent_id = the parent, but records the sub-agent as provenance:
+        agent_name, swarm_id, and intel.subagent."""
+        code, _, _ = _run_hook(
+            {
+                "tool_name": "Bash",
+                "tool_input": {"command": "ls"},
+                "tool_use_id": "tu-024",
+                "session_id": "sess-sub",
+                "agent_id": "subagent-abc",
+                "agent_type": "Explore",
+            },
+            self._env(),
+        )
+        self.assertEqual(code, 0)
+        body = [r for r in self.log.get_all() if r["path"] == "/api/guard"][0]["body"]
+        self.assertEqual(body["agent_id"], "test-agent")            # governed identity stays the parent
+        self.assertEqual(body["agent_name"], "test-agent/Explore")  # sub-agent surfaced for the ledger
+        self.assertEqual(body["swarm_id"], "sess-sub")
+        self.assertEqual(body["intel"]["subagent"], {"agent_id": "subagent-abc", "agent_type": "Explore"})
+
+
 if __name__ == "__main__":
     unittest.main()

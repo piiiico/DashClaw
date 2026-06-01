@@ -328,7 +328,7 @@ def _enrich_default(tool_name: str, tool_input: dict, tool_info: dict) -> dict:
     # Map category to a reasonable action_type
     category_action_map = {
         "execution": "security",
-        "orchestration": "deploy",
+        "orchestration": "orchestration",
         "file_io": "apply",
         "interactive": "other",
         "mcp": "api",
@@ -757,6 +757,22 @@ def main():
         },
         "intel": enrichment.get("intel", {}),
     }
+
+    # Sub-agent provenance. Claude Code puts agent_id / agent_type on hook stdin
+    # ONLY when the call fires inside a sub-agent. We keep the governed agent_id =
+    # the configured parent (sub-agents inherit the parent's pairing and policies,
+    # matching Claude Code's own model) and record the sub-agent as provenance
+    # DashClaw persists: a display name, a per-session swarm group, and intel. Spawn
+    # calls (Agent/Task) are also tagged into the session swarm so the delegation
+    # and the delegated work group together in the ledger.
+    subagent_id = data.get("agent_id")
+    subagent_type = data.get("agent_type")
+    if (subagent_id or subagent_type or tool_name in ("Agent", "Task")) and _SESSION_ID:
+        context["swarm_id"] = _SESSION_ID
+    if subagent_id or subagent_type:
+        context["agent_name"] = ("%s/%s" % (AGENT_ID, subagent_type)) if subagent_type else AGENT_ID
+        context["trigger"] = "subagent:%s" % (subagent_type or "unknown")
+        context["intel"]["subagent"] = {"agent_id": subagent_id, "agent_type": subagent_type}
 
     # Step 5: POST /api/guard with enriched context
     guard_resp = guard_check(context)

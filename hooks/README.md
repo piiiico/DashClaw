@@ -37,7 +37,17 @@ v2 hooks classify every Claude Code tool into a semantic category and govern bas
 
 Configure which categories are governed via the `DASHCLAW_GOVERNED_CATEGORIES` environment variable (comma-separated list). Unknown tools that do not match any category fail-safe to governed.
 
-> **Claude Code routing note.** Which tool calls actually reach the hook is decided by the `PreToolUse` / `PostToolUse` **matcher** in `.claude/settings.json`, which ships as `Bash|Edit|Write|MultiEdit`. The categories above describe how the intel module *classifies* every tool and which categories are governed *once a call reaches the hook*. Tools outside that matcher — `orchestration` (Agent, Skill), `interactive`, and `mcp` — are **not** routed to the hook by default, so on Claude Code, sub-agent spawns and MCP tool calls are not hook-intercepted out of the box. Govern those via the DashClaw SDK or MCP server, or add the tool names to the matcher. (The Codex and Hermes installers wire their own routing.)
+> **Claude Code routing note.** Which tool calls reach the hook is decided by the `PreToolUse` / `PostToolUse` **matcher** in `.claude/settings.json`, which ships as `Agent|Task|Bash|Edit|Write|MultiEdit`. So **sub-agent spawns are governed** (the `Agent` tool — named `Task` before Claude Code 2.1.63), alongside Bash and file edits. `PreToolUse` also fires *inside* sub-agents, so a sub-agent's own Bash/Edit/Write calls are governed too and recorded with sub-agent provenance (see "Sub-agent governance & tracking" below). Still outside the default matcher: `Skill`, `interactive`, and `mcp` tools — govern those via the SDK/MCP server or by adding the names to the matcher. (Codex and Hermes installers wire their own routing.)
+
+### Sub-agent governance & tracking
+
+DashClaw governs and records delegated (sub-agent) work end to end on Claude Code:
+
+- **The spawn.** Invoking the `Agent` tool (or legacy `Task`) is a governed `PreToolUse` decision: it hits `/api/guard` and is recorded as an `orchestration` action, so you can see, gate, or require approval for *which* sub-agents get spawned.
+- **The sub-agent's own tool calls.** Claude Code fires `PreToolUse` inside sub-agents (the hook stdin carries `agent_id` and `agent_type`), so a sub-agent's Bash/Edit/Write/MultiEdit calls are evaluated against the same policies as the parent.
+- **Attribution.** Sub-agent actions keep the parent's governed `agent_id` — sub-agents inherit the parent's pairing and permissions, matching Claude Code's own model — and record the sub-agent as provenance: `agent_name` = `<parent>/<agent_type>`, `swarm_id` = the session id (so the spawn and the delegated work group together in the decisions ledger and the Swarm view), and `intel.subagent = { agent_id, agent_type }`.
+
+Plugin-defined sub-agents can't carry their own hooks (a Claude Code security restriction), but the session-level matcher above still covers them.
 
 ## Enriched Intel Context
 
@@ -243,7 +253,7 @@ All tools in governed categories are evaluated against DashClaw policies. With t
 
 - **execution**: Bash, BashBackground. Shell commands are enriched with bash intent classification. Git operations, deployments, infrastructure commands, destructive operations, and HTTP calls get elevated risk scores.
 - **file_io**: Edit, Write, MultiEdit, NotebookEdit. File operations are enriched with security scan results. Sensitive files (`.env`, secrets, credentials), migrations, infrastructure configs, and auth-related files get elevated risk scores.
-- **orchestration**: Agent, Skill, TodoWrite. These are *classified* as governed, but the shipped Claude Code matcher (`Bash|Edit|Write|MultiEdit`) does not route them to the hook — so sub-agent spawns are not hook-intercepted by default (see the routing note under "Tool Governance Scope"). Govern delegated work via the SDK/MCP path, or add the tool names to the matcher.
+- **orchestration**: Agent (plus the legacy `Task` alias), Skill, TodoWrite. The `Agent`/`Task` spawn tools **are** in the shipped matcher, so sub-agent spawns are governed and recorded as `orchestration` actions (see "Sub-agent governance & tracking"). `Skill`/`TodoWrite` are classified but not in the default matcher — add them if you want them intercepted.
 - **interactive**: WebFetch, RemoteTrigger. Network-facing interactive tools are governed by default.
 - **mcp**: Any `mcp__*` tool call. Enriched with server health signals when routed to the hook — but, like orchestration, MCP tools sit outside the default matcher, so govern them via the DashClaw MCP server rather than relying on hook interception.
 
