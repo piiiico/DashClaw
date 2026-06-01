@@ -195,6 +195,30 @@ describe('HITL Approval Flow', () => {
     }
   });
 
+  it('polling fallback returns the full action object (open_loops, assumptions), matching the SSE path', async () => {
+    // GET /api/actions/:id returns { action, open_loops, assumptions,
+    // message_summary }. The polling fallback must resolve to that full shape,
+    // not just { action }, so consumers get the same data whether or not SSE
+    // was available.
+    fetch
+      .mockResolvedValueOnce(sseUnavailable())
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          action: { action_id: 'act_full', status: 'running', approved_by: 'usr_1' },
+          open_loops: [{ id: 'loop_1' }],
+          assumptions: [{ id: 'asm_1' }],
+          message_summary: { count: 2 },
+        }),
+      });
+
+    const result = await claw.waitForApproval('act_full', { interval: 1, timeout: 100 });
+    expect(result.action.approved_by).toBe('usr_1');
+    expect(result.open_loops).toEqual([{ id: 'loop_1' }]);
+    expect(result.assumptions).toEqual([{ id: 'asm_1' }]);
+    expect(result.message_summary).toEqual({ count: 2 });
+  });
+
   it('works with default options when no options object is provided', async () => {
     fetch
       .mockResolvedValueOnce(sseUnavailable())

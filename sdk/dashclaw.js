@@ -310,7 +310,12 @@ class DashClaw {
     let printedBlock = false;
 
     while (Date.now() - startTime < timeout) {
-      const { action } = await this._request(`/api/actions/${actionId}`, 'GET');
+      // Return the full GET response (action + open_loops + assumptions +
+      // message_summary) so the polling fallback resolves to the same shape as
+      // the SSE fast-path above and the Python SDK. Returning only { action }
+      // dropped the related collections whenever SSE was unavailable.
+      const result = await this._request(`/api/actions/${actionId}`, 'GET');
+      const action = result.action;
 
       if (!printedBlock) {
         printedBlock = true;
@@ -340,14 +345,14 @@ class DashClaw {
       }
 
       if (action.status === 'pending_approval') wasPending = true;
-      if (action.approved_by) return { action };
+      if (action.approved_by) return result;
       if (action.status === 'failed' || action.status === 'cancelled') {
         throw new ApprovalDeniedError(action.error_message || 'Operator denied the action.', action.status);
       }
       if (wasPending && action.status !== 'pending_approval') {
         throw new Error(`Action ${actionId} left pending_approval state without explicit approval metadata (Status: ${action.status})`);
       }
-      if (!wasPending && action.status === 'running') return { action };
+      if (!wasPending && action.status === 'running') return result;
 
       await new Promise(r => setTimeout(r, interval));
     }
