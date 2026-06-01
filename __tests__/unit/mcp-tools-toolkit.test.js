@@ -83,6 +83,47 @@ describe('MCP toolkit tools', () => {
     expect(captured.body.skill_name).toBe('test');
   });
 
+  it('learning_query GETs /api/learning (the store learning_log feeds), not /api/learning/lessons', async () => {
+    const captured = [];
+    const client = {
+      fetch: async (path) => {
+        captured.push(path);
+        return {
+          ok: true,
+          json: async () => ({
+            decisions: [
+              { decision: 'use neon for db', context: 'serverless', outcome: 'success' },
+              { decision: 'use redis cache', context: 'latency', outcome: 'success' },
+              { decision: 'pick Neon again', context: 'consistency', outcome: 'pending' },
+            ],
+            lessons: [{ id: 'lesson_1' }],
+          }),
+        };
+      },
+    };
+    const handlers = createToolHandlers(client);
+    const out = JSON.parse(await handlers.dashclaw_learning_query({ agent_id: 'hermes', query: 'neon' }));
+
+    expect(captured[0]).toMatch(/\/api\/learning\?/);
+    expect(captured[0]).not.toMatch(/\/api\/learning\/lessons/);
+    expect(captured[0]).toMatch(/agent_id=hermes/);
+    // q matches decision/context case-insensitively: 2 of 3 mention neon
+    expect(out.decisions).toHaveLength(2);
+    expect(out.lessons).toHaveLength(1);
+  });
+
+  it('learning_query honors limit by slicing decisions', async () => {
+    const client = {
+      fetch: async () => ({
+        ok: true,
+        json: async () => ({ decisions: [{ decision: 'a' }, { decision: 'b' }, { decision: 'c' }], lessons: [] }),
+      }),
+    };
+    const handlers = createToolHandlers(client);
+    const out = JSON.parse(await handlers.dashclaw_learning_query({ limit: 2 }));
+    expect(out.decisions).toHaveLength(2);
+  });
+
   it('decisions_recent handler builds query params', async () => {
     let captured = null;
     const client = {
