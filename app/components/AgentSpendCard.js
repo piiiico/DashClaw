@@ -47,22 +47,28 @@ export default function AgentSpendCard({ agentId }) {
 
   return (
     <div className="space-y-3">
-      <div className="text-[10px] font-semibold uppercase tracking-widest text-tertiary">
+      <div
+        className="text-[10px] font-semibold uppercase tracking-widest text-tertiary"
+        title="Estimated at public API list prices — a what-if cost signal, not your actual subscription bill."
+      >
         Agent Spend (30d)
       </div>
 
       {/* Total spend */}
-      <div className="flex items-baseline gap-2">
-        <div className="text-3xl font-bold tabular-nums text-white">
-          {formatCost(totalCost)}
+      <div>
+        <div className="flex items-baseline gap-2">
+          <div className="text-3xl font-bold tabular-nums text-white">
+            {formatCost(totalCost)}
+          </div>
+          <div
+            className={`flex items-center gap-0.5 text-xs font-medium ${
+              isPositiveTrend ? 'text-success' : 'text-tertiary'
+            }`}
+          >
+            {isPositiveTrend ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+          </div>
         </div>
-        <div
-          className={`flex items-center gap-0.5 text-xs font-medium ${
-            isPositiveTrend ? 'text-success' : 'text-tertiary'
-          }`}
-        >
-          {isPositiveTrend ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-        </div>
+        <div className="mt-0.5 text-[10px] text-disabled">est. at API list prices</div>
       </div>
 
       {/* Sparkline */}
