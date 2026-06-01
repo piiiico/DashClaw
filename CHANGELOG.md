@@ -29,6 +29,18 @@ are prefixed with the package name.
 
 ## [Unreleased]
 
+### Overnight hardening pass (branch `overnight/cleanup-2026-06-01`)
+
+A batch of behavior-preserving bug fixes from an unattended cleanup run. No new routes, SDK methods, or contract changes; each fix ships a regression test and the full suite stays green. See `OVERNIGHT-CLEANUP-REPORT.md` for root-cause detail and the per-fix commits.
+
+- **Fixed (MCP).** `dashclaw_loop_list` no longer returns 500: the `/api/actions/loops` count query was missing the `action_records` join the main query has, so any `agent_id` filter (always sent by a configured server) errored. `dashclaw_learning_query` now reads `/api/learning` (the store `dashclaw_learning_log` writes to) instead of the recommendations consolidator, so logged decisions can be queried back.
+- **Fixed (Node SDK).** `_request` drops `undefined`/`null` query params instead of sending the literal `status=undefined` (a regression from v1 that silently emptied filtered lists); a non-JSON error body (502/504/413/429) now throws a status-bearing error instead of a `SyntaxError`; and `waitForApproval`'s polling fallback returns the same `{ action, open_loops, assumptions, message_summary }` shape as the SSE fast-path.
+- **Fixed (API).** A literal `null` JSON body returns 400 instead of crashing with 500 on validated POST routes; `GET /api/learning/analytics/velocity` and `/curves` no longer return 500 on a non-numeric `?limit`; the live Code Sessions finalize pass reads session fields off the correct `getSessionDetail` shape (the optimizer and alert rules were running on zeroed cost/token data); and the terminal-outcome SSE frame now carries the `action` object (was `data: null`).
+- **Fixed (workflows).** The execute and resume routes gate the parent terminal-outcome write on `status='running'` so a concurrent operator cancel is not clobbered, and resume transitions the parent out of `running` on a throw.
+- **Fixed (middleware).** Auth and rate-limit error responses (401/403/429/503) now carry the same CORS headers their success responses set, so a configured cross-origin browser client can read the real status.
+- **Docs.** MCP read-only resource count corrected from 4 to 6 across the SDK READMEs, the website `/docs` page, `mcp-server/README.md`, and the platform-intelligence reference docs.
+- **Tests.** Added regression coverage for every fix above, plus the middleware API-key auth contract (fast path, slow path, readonly enforcement, cross-origin rejection) and first coverage for `GET /api/learning`.
+
 ### Code Sessions — multi-project live capture (`install-hooks --global`)
 
 `node scripts/install-hooks.mjs --global` registers a capture-only `Stop` hook in `~/.claude/settings.json` so every project on the machine ships Claude Code sessions to DashClaw — not just repos with the hooks installed locally. It points at this repo's `hooks/dashclaw_stop.py` by absolute path, so credentials resolve from this repo's `.env.local` and **no API key is written into global config**; `git pull` upgrades the hook automatically. Capture-only means no `PreToolUse`/`PostToolUse` governance runs for other projects (the Stop hook's token-attribution step no-ops without governed actions). Existing third-party `Stop` hooks are preserved. `--dry-run` previews, `--global --uninstall` removes. Adds 9 unit tests.

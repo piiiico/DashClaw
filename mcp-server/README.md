@@ -1,6 +1,6 @@
 # @dashclaw/mcp-server
 
-MCP server for [DashClaw](https://github.com/ucsandman/DashClaw) governance. Exposes 23 governance tools and 4 read-only resources over [Model Context Protocol](https://modelcontextprotocol.io/). Works with Claude Code, Claude Desktop, Claude Managed Agents, and any MCP-compatible client.
+MCP server for [DashClaw](https://github.com/ucsandman/DashClaw) governance. Exposes 23 governance tools and 6 read-only resources over [Model Context Protocol](https://modelcontextprotocol.io/). Works with Claude Code, Claude Desktop, Claude Managed Agents, and any MCP-compatible client.
 
 ## Quick Start
 
@@ -110,7 +110,7 @@ Grouped by domain. See [`lib/tools.js`](./lib/tools.js) for the canonical defini
 | `dashclaw_learning_query` | Query prior decisions/lessons |
 | `dashclaw_decisions_recent` | Recent governed-action ledger |
 
-## Resources (4)
+## Resources (6)
 
 | URI | Description |
 |---|---|
@@ -118,6 +118,8 @@ Grouped by domain. See [`lib/tools.js`](./lib/tools.js) for the canonical defini
 | `dashclaw://capabilities` | Available capabilities and health |
 | `dashclaw://agent/{agent_id}/history` | Recent action history (last 50) |
 | `dashclaw://status` | Instance health + operational metrics |
+| `dashclaw://code-sessions/projects` | Claude Code projects with ingested session data and per-project rollups |
+| `dashclaw://code-sessions/sessions/{session_id}` | Full detail for one ingested Code Session (session, messages, tool uses) |
 
 ## Configuration
 
