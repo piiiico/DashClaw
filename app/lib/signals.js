@@ -12,6 +12,21 @@
  * @returns {Promise<Array>} signals array
  */
 export async function computeSignals(orgId, filterAgentId, sql) {
+  // Autonomy-spike threshold (decisions/hr) is configurable per org. A fixed
+  // low bar is noise on a busy fleet — claude-code alone runs ~280/hr of normal
+  // tool-call actions. Default 100; override via the
+  // DASHCLAW_AUTONOMY_SPIKE_THRESHOLD org setting. Red fires at 2x the threshold.
+  let spikeThreshold = 100;
+  try {
+    const rows = await sql`
+      SELECT value FROM settings
+      WHERE org_id = ${orgId} AND key = 'DASHCLAW_AUTONOMY_SPIKE_THRESHOLD' AND agent_id IS NULL
+      LIMIT 1
+    `;
+    const n = Number(rows?.[0]?.value);
+    if (Number.isFinite(n) && n >= 1) spikeThreshold = Math.floor(n);
+  } catch { /* settings table optional; keep default */ }
+
   const [autonomySpikes, highImpact, repeatedFailures, staleLoops, assumptionDrift, staleAssumptions, staleRunning, stalePresence, stuckWorkflows, staleApprovals] = await Promise.all([
     sql`
       SELECT agent_id, agent_name, COUNT(*) as action_count,
@@ -20,7 +35,7 @@ export async function computeSignals(orgId, filterAgentId, sql) {
       WHERE timestamp_start::timestamptz > NOW() - INTERVAL '1 hour'
         AND org_id = ${orgId}
       GROUP BY agent_id, agent_name
-      HAVING COUNT(*) > 10
+      HAVING COUNT(*) > ${spikeThreshold}
       ORDER BY action_count DESC
     `,
     sql`
@@ -159,9 +174,9 @@ export async function computeSignals(orgId, filterAgentId, sql) {
   for (const spike of autonomySpikes) {
     signals.push({
       type: 'autonomy_spike',
-      severity: parseInt(spike.action_count, 10) > 20 ? 'red' : 'amber',
+      severity: parseInt(spike.action_count, 10) > spikeThreshold * 2 ? 'red' : 'amber',
       label: `Governance alert: ${spike.agent_name || spike.agent_id} (${spike.action_count} ungoverned decisions/hr)`,
-      detail: `This agent made ${spike.action_count} decisions in the last hour without proportional oversight, exceeding the governance threshold of 10.`,
+      detail: `This agent made ${spike.action_count} decisions in the last hour without proportional oversight, exceeding the governance threshold of ${spikeThreshold}.`,
       help: 'High decision frequency without oversight may indicate ungoverned autonomy. Review recent decisions and enforce policy throttling.',
       agent_id: spike.agent_id,
       detected_at: spike.last_seen || null,

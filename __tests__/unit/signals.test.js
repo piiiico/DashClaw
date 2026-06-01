@@ -1,10 +1,16 @@
 import { describe, it, expect, vi } from 'vitest';
 import { computeSignals } from '@/lib/signals.js';
 
-function createSignalSqlMock(responses) {
-  // computeSignals calls sql as tagged template 7 times in Promise.all
+function createSignalSqlMock(responses, { spikeThreshold = null } = {}) {
+  // computeSignals first reads the autonomy-spike threshold setting, then runs
+  // the signal queries. The config read is recognized by text and answered
+  // separately so the signal-query responses stay index-aligned.
   let callIndex = 0;
   return (strings, ...values) => {
+    const text = strings.join(' ');
+    if (text.includes('DASHCLAW_AUTONOMY_SPIKE_THRESHOLD')) {
+      return Promise.resolve(spikeThreshold == null ? [] : [{ value: String(spikeThreshold) }]);
+    }
     const result = responses[callIndex] || [];
     callIndex++;
     return Promise.resolve(result);
@@ -20,7 +26,7 @@ describe('computeSignals', () => {
 
   it('detects autonomy_spike with amber severity', async () => {
     const sql = createSignalSqlMock([
-      [{ agent_id: 'a1', agent_name: 'Bot', action_count: '15' }],
+      [{ agent_id: 'a1', agent_name: 'Bot', action_count: '150' }],
       [], [], [], [], [], [],
     ]);
     const signals = await computeSignals('org_1', null, sql);
@@ -30,13 +36,26 @@ describe('computeSignals', () => {
     expect(signals[0].agent_id).toBe('a1');
   });
 
-  it('detects autonomy_spike with red severity for >20 actions', async () => {
+  it('detects autonomy_spike with red severity above 2x the threshold', async () => {
     const sql = createSignalSqlMock([
-      [{ agent_id: 'a1', agent_name: 'Bot', action_count: '25' }],
+      [{ agent_id: 'a1', agent_name: 'Bot', action_count: '250' }],
       [], [], [], [], [], [],
     ]);
     const signals = await computeSignals('org_1', null, sql);
     expect(signals[0].severity).toBe('red');
+  });
+
+  it('autonomy_spike threshold is configurable via org setting', async () => {
+    // With the threshold set to 25, 60 decisions/hr is red (> 2x) and the detail
+    // reflects the configured value, not the default 100.
+    const sql = createSignalSqlMock(
+      [[{ agent_id: 'a1', agent_name: 'Bot', action_count: '60' }], [], [], [], [], [], []],
+      { spikeThreshold: 25 },
+    );
+    const signals = await computeSignals('org_1', null, sql);
+    expect(signals[0].type).toBe('autonomy_spike');
+    expect(signals[0].severity).toBe('red');
+    expect(signals[0].detail).toContain('threshold of 25');
   });
 
   it('detects high_impact_low_oversight with amber severity', async () => {
@@ -53,7 +72,7 @@ describe('computeSignals', () => {
   it('propagates source timestamps to detected_at (no Date.now fabrication)', async () => {
     const t = '2026-04-08T14:00:00.000Z';
     const sql = createSignalSqlMock([
-      [{ agent_id: 'a1', agent_name: 'Bot', action_count: '15', last_seen: t }],
+      [{ agent_id: 'a1', agent_name: 'Bot', action_count: '150', last_seen: t }],
       [{ action_id: 'act_1', agent_id: 'a1', agent_name: 'Bot', declared_goal: 'X', risk_score: '95', action_type: 'd', timestamp_start: t }],
       [{ agent_id: 'a2', agent_name: 'Bot', failure_count: '4', last_seen: t }],
       [], [{ agent_id: 'a3', agent_name: 'Bot', invalidation_count: '3', last_seen: t }], [], [],
@@ -132,8 +151,8 @@ describe('computeSignals', () => {
   it('filters by agent_id', async () => {
     const sql = createSignalSqlMock([
       [
-        { agent_id: 'a1', agent_name: 'Bot1', action_count: '15' },
-        { agent_id: 'a2', agent_name: 'Bot2', action_count: '12' },
+        { agent_id: 'a1', agent_name: 'Bot1', action_count: '150' },
+        { agent_id: 'a2', agent_name: 'Bot2', action_count: '120' },
       ],
       [], [], [], [], [], [],
     ]);
@@ -144,7 +163,7 @@ describe('computeSignals', () => {
 
   it('sorts red before amber', async () => {
     const sql = createSignalSqlMock([
-      [{ agent_id: 'a1', agent_name: 'Bot1', action_count: '15' }],  // amber
+      [{ agent_id: 'a1', agent_name: 'Bot1', action_count: '150' }],  // amber
       [{ action_id: 'act_1', agent_id: 'a1', agent_name: 'Bot1', declared_goal: 'X', risk_score: '95', action_type: 'deploy' }],  // red
       [], [], [], [], [],
     ]);
