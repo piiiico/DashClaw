@@ -29,6 +29,19 @@ are prefixed with the package name.
 
 ## [Unreleased]
 
+### External-agent feedback audit — fixes
+
+Fixes verified against an external agent's first-run feedback (each finding was re-checked against the codebase before acting). Every change ships a regression test; full suite green.
+
+- **Changed (risk scoring) — operators read this.** Bash commands are no longer floored at the Bash tool's base risk of **70**. The per-command classifier is now authoritative for recognized intents, so read-only shell scores low (`echo hello` / `ls` → 5, `curl` → 40) instead of a flat 70 — **risk-threshold policies will see materially lower scores for benign shell commands.** Safety is preserved where the floor actually mattered: a shell redirection counts as a write (≥35), a redirect into a protected system path (e.g. `echo x > /etc/passwd`) escalates to ≥75, and `unknown`/unparseable commands keep the 70 floor.
+- **Added.** `guard()` results now expose `decision_id` — the canonical name for the guard-evaluation id (`act_gd_*`). The existing `decision.action_id` is retained as a **deprecated alias** of the same value (slated for removal in a future major). Use `decision_id` from `guard()` and the `action_id` from `createAction()` for follow-up calls.
+- **Added.** Pairing-request TTL is configurable via `DASHCLAW_PAIRING_TTL_MINUTES` (default 15, unchanged).
+- **Added.** Predictive risk tags the zero-history cold-start adjustment with `basis: 'no_history'` (vs `'history'`) so the fixed `+5` prior isn't mistaken for a learned signal.
+- **Fixed.** The agent Trust Posture panel showed `permission_level: unknown` for every agent — `getAgentTrustPosture` filtered `agent_pairings` on the never-set status `'active'` instead of `'approved'` (the real pairing lifecycle).
+- **Fixed (installer).** `scripts/install-hooks.mjs` resolves `python` vs `python3` at install time. Debian/Ubuntu ship only `python3`, so the hardcoded `python` silently disabled every governance hook there.
+- **Docs.** Main README gains a hook-install "verify it fires" smoke test; `agent-identity.md` now leads with enrollment (pairing + JWKS paths); new `docs/operator/mission-control-reference.md` badge/counter legend; the `/identities` empty state points to the real enroll path; `hooks/README.md` no longer overstates governance scope (the shipped Claude Code matcher is `Bash|Edit|Write|MultiEdit`, so sub-agent spawns and MCP calls are **not** hook-intercepted by default); and the stale `(extensions)` / "AI Safety Research" route-group tree in `FULL_CONTEXT.md` is corrected to reality.
+- **Tests.** Regression coverage for the Trust Posture query, interpreter detection, the Bash scoring change (3 Python integration tests), the `decision_id` alias, and the predictive-risk `basis` field.
+
 ### Overnight hardening pass (branch `overnight/cleanup-2026-06-01`)
 
 A batch of behavior-preserving bug fixes from an unattended cleanup run. No new routes, SDK methods, or contract changes; each fix ships a regression test and the full suite stays green. See `OVERNIGHT-CLEANUP-REPORT.md` for root-cause detail and the per-fix commits.
