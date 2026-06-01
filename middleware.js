@@ -37,7 +37,14 @@ const PUBLIC_ROUTES = [
   '/api/discord/interactions',  // auth: Ed25519 signature + user_id allowlist (in route)
   // Public read-only content endpoints
   '/api/docs/raw',
-  '/api/prompts',
+  // Only the static-markdown /raw endpoints are public (the "Copy ... Prompt"
+  // buttons on the public /self-host page fetch them unauthenticated). A bare
+  // '/api/prompts' prefix here previously exposed the entire prompts API —
+  // templates (incl. POST/PATCH/DELETE), versions, render, runs, stats — with
+  // no API key. Those are now default-deny.
+  '/api/prompts/server-setup/raw',
+  '/api/prompts/agent-connect/raw',
+  '/api/prompts/sdk-coverage/raw',
   '/api/marketing',  // anonymous funnel telemetry. Route validates allowlisted events, rate limit + 2 MB body cap still apply.
   '/practical-systems',
   '/replay',

@@ -84,4 +84,17 @@ describe('middleware API-key auth', () => {
     const res = await middleware(req('/api/health'));
     expect(res.status).toBe(200);
   });
+
+  it('prompts CRUD surface requires auth: /api/prompts/templates without a key is 401', async () => {
+    // Regression: a bare '/api/prompts' in PUBLIC_ROUTES used to expose the whole
+    // prompts API (templates/render/runs/stats/versions) with no API key. Only the
+    // static-markdown /raw endpoints should be public.
+    const res = await middleware(req('/api/prompts/templates', { headers: { origin: 'https://other.example' } }));
+    expect(res.status).toBe(401);
+  });
+
+  it('prompts static markdown stays public: /api/prompts/server-setup/raw needs no key', async () => {
+    const res = await middleware(req('/api/prompts/server-setup/raw'));
+    expect(res.status).toBe(200);
+  });
 });
