@@ -36,7 +36,13 @@ async function runFinalize(sql, orgId, sessionUuid, projectId) {
   const detail = await getSessionDetail(sql, orgId, fresh.id);
   if (!detail) return { found: false };
 
-  const toolEvents = (detail.tool_uses || detail.toolUses || []).map(t => ({
+  // getSessionDetail returns { session, messages, toolUses }. Read the session
+  // row off detail.session (every sibling route destructures the same way).
+  // Reading detail.* directly left cost/tokens/uuid undefined, so the optimizer
+  // and alert rules silently ran on zeroed data for hook-ingested sessions.
+  const { session, toolUses } = detail;
+
+  const toolEvents = (toolUses || []).map(t => ({
     name: t.name,
     requestId: t.request_id || t.requestId,
     target: t.target,
@@ -45,15 +51,15 @@ async function runFinalize(sql, orgId, sessionUuid, projectId) {
   const stuckLoops = repeatedRuns.filter(r => r.confidence === 'high');
 
   const sessionForRules = {
-    id: detail.id,
-    session_uuid: detail.session_uuid,
-    model_primary: detail.model_primary,
-    cost_usd: Number(detail.cost_usd) || 0,
-    input_tokens: detail.input_tokens || 0,
-    output_tokens: detail.output_tokens || 0,
-    cache_read_tokens: detail.cache_read_tokens || 0,
-    cache_creation_tokens: detail.cache_creation_tokens || 0,
-    message_count: detail.message_count || 0,
+    id: session.id,
+    session_uuid: session.session_uuid,
+    model_primary: session.model_primary,
+    cost_usd: Number(session.cost_usd) || 0,
+    input_tokens: session.input_tokens || 0,
+    output_tokens: session.output_tokens || 0,
+    cache_read_tokens: session.cache_read_tokens || 0,
+    cache_creation_tokens: session.cache_creation_tokens || 0,
+    message_count: session.message_count || 0,
   };
 
   const projectSessions = await getProjectSessionsChronological(sql, orgId, projectId);
@@ -81,7 +87,7 @@ async function runFinalize(sql, orgId, sessionUuid, projectId) {
   const allProjects = await listProjects(sql, orgId);
   const projectsWithRecentSessions = allProjects.filter(p => Number(p.session_count) > 0).length;
   const alerts = detectForSession({
-    session: { session_uuid: detail.session_uuid, cost_usd: sessionForRules.cost_usd },
+    session: { session_uuid: session.session_uuid, cost_usd: sessionForRules.cost_usd },
     priorSessions,
     stuckLoopCount: stuckLoops.length,
     projectSessionCount: projectsWithRecentSessions,
