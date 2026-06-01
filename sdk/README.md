@@ -604,7 +604,7 @@ If your agent supports Model Context Protocol (Claude Code, Claude Desktop, Mana
 - **Open loops (3):** `dashclaw_loop_add`, `dashclaw_loop_list`, `dashclaw_loop_close` — action-scoped commitments (the "I will X later" tracker).
 - **Learning + retrospection (3):** `dashclaw_learning_log`, `dashclaw_learning_query`, `dashclaw_decisions_recent` — log + query non-obvious decisions; recent governed-action ledger.
 
-**4 resources:** `dashclaw://policies`, `dashclaw://capabilities`, `dashclaw://agent/{agent_id}/history`, `dashclaw://status`.
+**6 resources:** `dashclaw://policies`, `dashclaw://capabilities`, `dashclaw://agent/{agent_id}/history`, `dashclaw://status`, `dashclaw://code-sessions/projects`, `dashclaw://code-sessions/sessions/{session_id}`.
 
 ### Agent runtime endpoints (server-side, no SDK wrapper)
 
