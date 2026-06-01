@@ -1,4 +1,10 @@
-# DashClaw
+# DashClaw - Product Direction (archived 2026-06-01)
+
+> Archived from the retired `.planning/` v1.0 GSD milestone (discovery 2026-04-11).
+> Preserved for its decisions, rationale, and out-of-scope record - the durable
+> "why" behind the product. The rest of that milestone (ROADMAP, REQUIREMENTS,
+> per-phase plans, the April codebase snapshot) was retired and lives in git
+> history under `.planning/`. Current canonical system map: `PROJECT_DETAILS.md`.
 
 ## What This Is
 
@@ -36,7 +42,7 @@ Brownfield baseline: the runtime below has shipped and is running at v2 — but 
 - [ ] **Policy rules for coding agents.** Allow git commits silently, always block `rm -rf` and mass file deletion, ask for network calls, log everything. A small, opinionated default policy pack that ships with the Claude Code integration
 - [ ] **Remote approval via Discord (then Slack, then email/SMS).** Approve/deny from your phone in under 10 seconds while you're away from the terminal. Discord first because it's what Wes already uses
 - [ ] **Audit trail UI for "what did my agent do today / this week."** A timeline of commands, file edits, approvals, denials — readable by humans, not just a decision ledger for auditors
-- [ ] **Reach out to the 4 real users identified in `.planning/research/SIGNAL.md`** (Lief, Elpolini, Jory Irving, Jasmeet Sidhu). Thank them, ask what they're building, interview 1–2 of them. First-ever user research pass for DashClaw
+- [ ] **Reach out to the 4 real users identified in `docs/research/2026-04-user-signal.md`** (Lief, Elpolini, Jory Irving, Jasmeet Sidhu). Thank them, ask what they're building, interview 1–2 of them. First-ever user research pass for DashClaw
 - [ ] **Fix the activation-failure blockers from SIGNAL.md**: `lucide-react` build error (#71), 502 on docs (#31), CSP/HSTS breaking LAN login (from Lief's fork), migration churn (from Elpolini's fork). Plug the leaky bucket *in parallel* with building the beachhead — not before, not after
 - [ ] **Closed-loop growth flywheel: DashClaw-governed AI agents that grow DashClaw.** A small research agent that scans HN/Twitter/Reddit/GitHub for Claude Code complaints and surfaces leads. A content agent that drafts developer-facing content. All running through DashClaw, all publicly visible, all part of the story
 - [x] **Open source, no paid tier (2026-05-14):** DashClaw is a free open-source project for governing AI agents. The earlier "50-integration trigger" monetization commitment (formerly Plan 03-03 MON-01) was retracted along with the `/pricing` page, the public counter API, the monetization repository, the launch drafts, and the related tests. `requireTier()` in `app/lib/org.js` is preserved as a no-op shim so the seven routes that historically called it stay type-compatible without a sweep. If a future build re-introduces tiers, restore the original `{ free: 0, pro: 1 }` rank ladder and the 403 branch.
@@ -46,7 +52,7 @@ Brownfield baseline: the runtime below has shipped and is running at v2 — but 
 
 <!-- Every one of these was considered in the 2026-04-11 discovery session and rejected. Reasons included to prevent re-adding. -->
 
-- **Homelab / self-host identity** — Rejected 2026-04-11. Real users *did* skew self-host (Lief, Elpolini, Jory, Jasmeet in `.planning/research/SIGNAL.md`), but founder does not resonate with the identity and would not evangelize it. Positioning the founder doesn't believe in is dead on arrival. We still *support* self-host technically (keep the Docker path, keep Lief's CSP fixes) but we don't *lead* with it
+- **Homelab / self-host identity** — Rejected 2026-04-11. Real users *did* skew self-host (Lief, Elpolini, Jory, Jasmeet in `docs/research/2026-04-user-signal.md`), but founder does not resonate with the identity and would not evangelize it. Positioning the founder doesn't believe in is dead on arrival. We still *support* self-host technically (keep the Docker path, keep Lief's CSP fixes) but we don't *lead* with it
 - **Enterprise security / compliance as the primary frame** — Rejected 2026-04-11. Sales motion unsuitable for solo indie dev. SOC2 / procurement cycles take quarters. We keep the audit-trail capability (it's useful for everyone) but we stop leading with compliance language
 - **OpenClaw-specific positioning** — Rejected 2026-04-11. The `oc_` API key prefix and `OpenClawAgent = DashClaw` alias were naming homage (Wes liked Peter's "Claw"), not integration. OpenClaw community is 350k stars but founder views it as "one niche." We stay framework-agnostic; Claude Code is the beachhead because of distribution and dogfood, not because Claude Code is an identity
 - **VC-scale growth** — Out of scope. Ambition is indie profitable, not rocket ship. Features and bets should be scoped to what one developer can ship, distribute, and support
@@ -55,10 +61,10 @@ Brownfield baseline: the runtime below has shipped and is running at v2 — but 
 
 ## Context
 
-- **Brownfield with scar tissue.** v2 runtime exists, governance loop works, 6+ months of code is in the repo. The code isn't the problem — positioning, distribution, and user research are. See `.planning/codebase/` for the full map.
-- **Traction reality check.** 207 stars / 4 watchers / 42 forks → **~7 forks with real commits, ~4 persistent-user forks, ~1 open issue**. Single-digit real users. The gap between vanity metrics and real usage is exactly the problem this milestone exists to fix. Full signal analysis in `.planning/research/SIGNAL.md`.
+- **Brownfield with scar tissue.** v2 runtime exists, governance loop works, 6+ months of code is in the repo. The code isn't the problem — positioning, distribution, and user research are. See the April codebase snapshot in git history under `.planning/codebase/` (retired).
+- **Traction reality check.** 207 stars / 4 watchers / 42 forks → **~7 forks with real commits, ~4 persistent-user forks, ~1 open issue**. Single-digit real users. The gap between vanity metrics and real usage is exactly the problem this milestone exists to fix. Full signal analysis in `docs/research/2026-04-user-signal.md`.
 - **Founder's dogfood is hiding.** The Claude Code → Discord approval flow is working (issue #46 comment, 2026-03-18), but it's never been demoed, tweeted, or featured on the homepage. The beachhead starts by bringing this into daylight.
-- **Four real users to reach out to** (all in `.planning/research/SIGNAL.md`): Lief/RyanTJoy (LAN self-hoster who debugged CSP/HSTS issues and pushed fixes to their fork), Elpolini (self-host schema migration hardener), Jory Irving (Authentik homelab user), Jasmeet Sidhu (upstream PR contributor). None of them are the target audience, but all of them *actually used the product* and have information the target-audience dream users don't have yet.
+- **Four real users to reach out to** (all in `docs/research/2026-04-user-signal.md`): Lief/RyanTJoy (LAN self-hoster who debugged CSP/HSTS issues and pushed fixes to their fork), Elpolini (self-host schema migration hardener), Jory Irving (Authentik homelab user), Jasmeet Sidhu (upstream PR contributor). None of them are the target audience, but all of them *actually used the product* and have information the target-audience dream users don't have yet.
 - **Peer ecosystem.** OpenClaw (350k stars, unrelated but name-adjacent), Claude Code (Anthropic is actively pushing it, fast-growing), Cursor, Aider, Cody. The beachhead sits at the intersection of "developers running a coding agent daily" and "developers who've felt the pain of an agent doing something dumb."
 
 ## Constraints
