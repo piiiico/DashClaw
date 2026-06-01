@@ -4,6 +4,30 @@ DashClaw supports cryptographically verifiable agent identity via standard JWT
 bearer tokens. Any OIDC-compatible issuer works — Keycloak, Auth0, a custom
 JWKS server, or AgentLair.
 
+## Getting an identity (enroll first)
+
+Identity is **additive** — DashClaw works without it (Phase 1 attributes actions
+by the `agent_id` body field). Add verifiable identity when you want cryptographic
+proof of *who* acted. There are two enrollment paths:
+
+**A. Public-key pairing (no identity provider required).** The simplest path for
+self-hosters who don't run an OIDC issuer:
+
+1. The agent generates a keypair and submits its public key: `POST /api/pairings`
+   (Node SDK: `claw.createPairing(publicKeyPem, algorithm, agentName)`). The call
+   returns a `pairing_url`.
+2. Open the `pairing_url` (or **Settings → Agent Identity**) and approve the
+   request as an admin — this also sets the agent's permission level. Pairing
+   requests expire after `DASHCLAW_PAIRING_TTL_MINUTES` (default 15).
+3. The agent signs its requests with the private key; approved keys appear under
+   **/identities**.
+
+**B. JWKS-verified JWT (bring your own issuer).** If you already run an
+OIDC-compatible issuer (Keycloak, Auth0, AgentLair, or a custom JWKS server),
+mint a JWT there and point DashClaw at the issuer via `DASHCLAW_ALLOWED_ISSUER`.
+The agent attaches `Authorization: Bearer <JWT>`. Obtaining the token is the
+issuer's job — DashClaw only *verifies* it (covered in the rest of this document).
+
 ## How it works
 
 1. The agent attaches `Authorization: Bearer <JWT>` to DashClaw API calls.

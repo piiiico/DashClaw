@@ -59,7 +59,9 @@ DashClaw ships as one codebase serving two roles via `DASHCLAW_MODE`:
 
 ## 3. Architecture Overview
 
-DashClaw is organized into a lean governance runtime with modular extensions using Next.js Route Groups.
+DashClaw is organized into a lean governance runtime with modular extensions.
+
+> **Note (accuracy):** The `(core)` / `(extensions)` / `(archive)` grouping below is a *conceptual* tiering, not the on-disk layout — the real `app/` directories are flat (`app/mission-control`, `app/drift`, …), there are no Next.js route-group folders. In the UI, the "extensions" surfaces (drift, learning, routing, swarm, prompts) live under a collapsible sidebar group labeled **Labs**; there is no "AI Safety Research" section in the product.
 
 ```
 app/

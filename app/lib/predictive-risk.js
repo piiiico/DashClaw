@@ -27,19 +27,23 @@ const DEFAULT_STRATEGY_CONFIG = {
  * Compute a statistical risk adjustment from historical action data.
  *
  * @param {{ total: number, failures: number, avg_risk: number|null, recent_count: number }} stats
- * @returns {{ adjustment: number, failure_rate: number, total_actions: number, avg_historical_risk: number|null, velocity: number }}
+ * @returns {{ adjustment: number, failure_rate: number, total_actions: number, avg_historical_risk: number|null, velocity: number, basis: 'no_history'|'history' }}
  */
 export function computeStatisticalAdjustment(stats) {
   const { total, failures, avg_risk, recent_count } = stats;
   let adjustment = 0;
 
   if (total === 0) {
+    // Cold start: no history for this (agent, action_type). The +5 is a fixed
+    // "unknown territory" prior, NOT a learned prediction — `basis` flags that so
+    // consumers don't mistake it for a statistical signal.
     return {
       adjustment: 5,
       failure_rate: 0,
       total_actions: 0,
       avg_historical_risk: null,
       velocity: 0,
+      basis: 'no_history',
     };
   }
 
@@ -61,6 +65,7 @@ export function computeStatisticalAdjustment(stats) {
     total_actions: total,
     avg_historical_risk: avg_risk != null ? Math.round(Number(avg_risk)) : null,
     velocity: recent_count,
+    basis: 'history',
   };
 }
 

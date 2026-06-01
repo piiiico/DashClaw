@@ -39,16 +39,18 @@ describe('predictive-risk', () => {
       expect(adj.adjustment).toBe(5);
     });
 
-    it('returns +5 for zero history (unknown territory)', () => {
+    it('returns +5 for zero history (unknown territory) flagged basis=no_history', () => {
       const stats = { total: 0, failures: 0, avg_risk: null, recent_count: 0 };
       const adj = computeStatisticalAdjustment(stats);
       expect(adj.adjustment).toBe(5);
+      expect(adj.basis).toBe('no_history');
     });
 
     it('returns 0 for healthy agent with low failure rate', () => {
       const stats = { total: 50, failures: 2, avg_risk: 30, recent_count: 2 };
       const adj = computeStatisticalAdjustment(stats);
       expect(adj.adjustment).toBe(0);
+      expect(adj.basis).toBe('history');
     });
 
     it('stacks failure rate and velocity adjustments', () => {

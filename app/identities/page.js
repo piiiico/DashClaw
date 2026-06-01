@@ -327,7 +327,7 @@ export default function IdentitiesPage() {
               <EmptyState
                 icon={Fingerprint}
                 title="No approved identities"
-                description="Approved agent identities will appear here. Use the Pending Pairings section above to approve an agent."
+                description="Approved agent identities will appear here. To enroll one, approve a request in Pending Pairings above, or go to Settings → Agent Identity to register a public key manually or share a pairing URL."
               />
             </CardContent>
           </Card>

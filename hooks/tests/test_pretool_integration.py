@@ -537,5 +537,45 @@ class TestPretoolIntegration(unittest.TestCase):
         self.assertIn("file", body["intel"])
 
 
+    # -----------------------------------------------------------------------
+    # 15. Readonly bash is low-risk (no blanket 70 floor)
+    # -----------------------------------------------------------------------
+
+    def test_bash_readonly_is_low_risk(self):
+        """A readonly command like `echo hello` must not inherit the Bash tool's
+        70 base_risk — the per-command classifier scores it low."""
+        code, _, _ = _run_hook(
+            {"tool_name": "Bash", "tool_input": {"command": "echo hello"}, "tool_use_id": "tu-019"},
+            self._env(),
+        )
+        self.assertEqual(code, 0)
+        body = [r for r in self.log.get_all() if r["path"] == "/api/guard"][0]["body"]
+        self.assertEqual(body["intel"]["bash"]["intent"], "readonly")
+        self.assertLess(body["risk_score"], 20)
+
+    def test_bash_redirect_counts_as_write(self):
+        """A redirection is a write even when the command is readonly — score it
+        at least at write level, not the readonly base, but below the danger floor."""
+        code, _, _ = _run_hook(
+            {"tool_name": "Bash", "tool_input": {"command": "echo data > /tmp/out.txt"}, "tool_use_id": "tu-020"},
+            self._env(),
+        )
+        self.assertEqual(code, 0)
+        body = [r for r in self.log.get_all() if r["path"] == "/api/guard"][0]["body"]
+        self.assertGreaterEqual(body["risk_score"], 35)
+        self.assertLess(body["risk_score"], 70)
+
+    def test_bash_redirect_to_system_path_is_high_risk(self):
+        """Redirecting INTO a protected system path stays high-risk even though
+        `echo` classifies as readonly (the old 70 floor used to mask this)."""
+        code, _, _ = _run_hook(
+            {"tool_name": "Bash", "tool_input": {"command": "echo pwned > /etc/passwd"}, "tool_use_id": "tu-021"},
+            self._env(),
+        )
+        self.assertEqual(code, 0)
+        body = [r for r in self.log.get_all() if r["path"] == "/api/guard"][0]["body"]
+        self.assertGreaterEqual(body["risk_score"], 70)
+
+
 if __name__ == "__main__":
     unittest.main()

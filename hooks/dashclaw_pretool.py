@@ -183,23 +183,44 @@ def _enrich_bash(tool_input: dict, tool_info: dict) -> dict:
     # Map bash intent to action_type
     action_type = _INTENT_TO_ACTION.get(bash_intel["intent"], "other")
 
-    # Risk: max of tool base_risk and bash risk_score
+    # Risk scoring. Trust the per-command classifier for recognized intents; fall
+    # back to the Bash tool's blunt base_risk only for an 'unknown' (unparseable)
+    # command. The previous max(base_risk, score) pinned EVERY bash call to the 70
+    # base, so a readonly `echo hello` reported 70 — defeating the semantic
+    # classifier this module exists to provide.
     base_risk = tool_info["risk_profile"]["base_risk"]
-    risk_score = max(base_risk, bash_intel["risk_score"])
+    intent = bash_intel["intent"]
+    if intent == "unknown":
+        risk_score = max(base_risk, bash_intel["risk_score"])
+    else:
+        risk_score = bash_intel["risk_score"]
 
-    # Boost for sensitive targets
     parsed = bash_intel.get("parsed", {})
     targets = parsed.get("targets", [])
     redirections = parsed.get("redirections", [])
-    all_paths = list(targets) + [r.get("target", "") for r in redirections]
+    redirect_targets = [r.get("target", "") for r in redirections]
+    all_paths = list(targets) + redirect_targets
 
+    # A shell redirection writes to a file even when the command itself (echo/cat)
+    # classifies as readonly, so a low readonly score must not hide the write.
+    if redirections and risk_score < 35:
+        risk_score = 35
+
+    # Boost for path traversal in any target.
     for path in all_paths:
         if ".." in path.replace("\\", "/").split("/"):
             risk_score += 20
             break
+    # Boost for sensitive targets (.env, keys, credentials).
     for path in all_paths:
         if _is_sensitive_path(path):
             risk_score += 15
+            break
+    # Escalate redirections that WRITE into a protected system location (e.g.
+    # `echo x > /etc/passwd`) — dangerous even though `echo` classifies as readonly.
+    for path in redirect_targets:
+        if _is_system_path(path):
+            risk_score = max(risk_score, 75)
             break
 
     risk_score = min(risk_score, 100)
@@ -329,6 +350,20 @@ def _is_sensitive_path(path: str) -> bool:
     lower = path.lower()
     for pattern in (".env", "secret", "credential", "private_key", ".pem", "id_rsa", ".key"):
         if pattern in lower:
+            return True
+    return False
+
+
+def _is_system_path(path: str) -> bool:
+    """True if a path targets a protected system location (/etc, /usr, /bin, ...).
+
+    Used to escalate shell redirections that WRITE into system locations — those
+    are dangerous even when the command (echo/printf) classifies as readonly.
+    """
+    norm = path.replace("\\", "/").strip().strip('"').strip("'")
+    for prefix in ("/etc", "/usr", "/bin", "/sbin", "/lib", "/lib64",
+                   "/boot", "/sys", "/proc", "/var", "/opt", "/dev"):
+        if norm == prefix or norm.startswith(prefix + "/"):
             return True
     return False
 
