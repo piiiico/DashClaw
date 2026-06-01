@@ -13,8 +13,8 @@ commands that actually ran.
 | Category | Count |
 |---|---|
 | Known bugs fixed | 2 fixed + 1 already-fixed (regression coverage added) |
-| Other logic errors fixed | 3 (in progress; 11 confirmed, working the queue) |
-| Tests added/strengthened | ~17 cases across 6 files |
+| Other logic errors fixed | 11 (all confirmed findings) |
+| Tests added/strengthened | ~30 cases across 12 files |
 | Docs/examples fixed | resource count across 6 files; others verified accurate |
 | Safe cleanups | 0 (pending) |
 | Reverted | 1 (learning route q/limit, see bug 2 note) |
@@ -110,13 +110,17 @@ regression test proven red before and green after.
 | 1 | code-sessions | `runFinalize` read session fields off `detail.*` but `getSessionDetail` returns `{ session, messages, toolUses }`, so live-session optimizer/alerts ran on zeroed cost/tokens (silent) | FIXED 174e0de2 |
 | 2 | Node SDK | `_request` serialized `{ status: undefined }` as the literal `status=undefined`, emptying filtered list results (regression from v1) | FIXED 354fad31 |
 | 5 | learning analytics | non-numeric `?limit=` produced `LIMIT NaN` and 500'd velocity/curves GET | FIXED b2de6d17 |
-| 3 | execution-finality | workflow execute wrote the final outcome ungated, clobbering an operator cancel that landed mid-run | queued |
-| 6 | execution-finality | workflow resume route lacked the try/catch the execute route has, leaving the parent action stuck `running` on a throw | queued |
-| 4 | core routes | a literal `null` JSON body crashed validated POST routes with 500 instead of the intended 400 | queued |
-| 7 | Node SDK | `_request` called `res.json()` unconditionally, so a non-JSON error body (502/504/413/429) threw a SyntaxError and lost the real status | queued |
-| 8 | Node SDK | `waitForApproval` returned a different object shape from the SSE fast-path vs the polling fallback | queued |
-| 10 | middleware | auth/rate-limit error responses omitted the CORS headers their matching success responses set | queued |
-| 11 | core routes | outcome route emitted ACTION_UPDATED with no `action` key, so the SSE frame for terminal outcomes was `data: null` | under review |
+| 3 | execution-finality | workflow execute wrote the final outcome ungated, clobbering an operator cancel that landed mid-run | FIXED afd45289 |
+| 6 | execution-finality | workflow resume route lacked the try/catch the execute route has, leaving the parent action stuck `running` on a throw | FIXED 39f3ed33 |
+| 4 | core routes | a literal `null` JSON body crashed validated POST routes with 500 instead of the intended 400 | FIXED 176fd3c7 |
+| 4b | core lib | explicit snake_case `null` dropped a present camelCase value in `validate()` field resolution | FIXED 4ffd14f6 |
+| 7 | Node SDK | `_request` called `res.json()` unconditionally, so a non-JSON error body (502/504/413/429) threw a SyntaxError and lost the real status | FIXED 4dfedcc3 |
+| 8 | Node SDK | `waitForApproval` returned a different object shape from the SSE fast-path vs the polling fallback | FIXED 50bc3d2f |
+| 10 | middleware | auth/rate-limit error responses omitted the CORS headers their matching success responses set | FIXED 0cca32cf |
+| 11 | core routes | outcome route emitted ACTION_UPDATED with no `action` key, so the SSE frame for terminal outcomes was `data: null` | FIXED 1297b45a |
+
+All 11 confirmed findings are fixed. Each fix has a regression test verified red
+before and green after, the full suite stays green, and the app builds.
 
 Refuted or uncertain (not fixed): a non-Error workflow throw (not reachable in
 the current call graph), and the legacy outcome-mapping note (a duplicate of #3's
@@ -196,7 +200,69 @@ this needs a small repository extraction: add a `listDecisions(sql, orgId,
 route (the route's direct-SQL count would then drop, not rise). Low risk, but
 it touches a route plus a new repository function and should be DB-verified.
 
-## Big refactor proposals (not executed)
+## Big refactor proposals (not executed, you decide)
 
-To be written: middleware.js split and TypeScript migration, with risk
-assessment for each.
+### 1. Split middleware.js (1417 lines)
+
+The file is large but not tangled: roughly 630 of its lines (about 410 to 1036)
+are the demo-mode fixture dispatch, a flat if-chain mapping demo `/api/*` paths
+to `demo*` fixture helpers. The auth/security core (rate limit, API-key
+resolution, CORS, org-context stripping, default-deny) is only about lines 1086
+to 1322. The two concerns barely interleave.
+
+Recommended sequence, lowest risk first:
+
+- **1a. Extract the demo dispatch** into `app/lib/demo/demoDispatch.js` exporting
+  `handleDemoApiRequest(request, { mode, demoCookie, isMarketingHost })` that
+  returns a Response or null (null means "not a demo path, fall through"). The
+  fixture helpers already live in `app/lib/demo/demoMiddleware.js`, so this is
+  mostly a move. Middleware keeps a 3-line delegation. Reduces middleware.js by
+  about 45 percent. Risk: MEDIUM. The branch order and exact path matches must
+  be preserved verbatim; demo mode is a sandbox (no real data, writes blocked),
+  so a regression there cannot leak production data. Must stay Edge-runtime
+  compatible (no Node built-ins) and be covered by a demo-mode smoke check.
+
+- **1b. Extract the auth core** (rate limit, `hashApiKey`, `resolveApiKey`,
+  `verifyOrgExists`, `getCorsHeaders`, `timingSafeEqual`, the module-level
+  `apiKeyCache`/`rateLimitMap`/`orgExistsCache`) into `app/lib/middleware-auth.js`.
+  The caches must remain module singletons, which a single shared module
+  preserves. Payoff: the auth helpers become unit-testable in isolation (today
+  they are module-private, so only the trial-enforcement and CORS-error paths
+  have coverage). Risk: MEDIUM-HIGH because it is the security surface; gate on
+  the full suite plus the CI `startup-smoke` job plus a manual cross-origin
+  auth check. Do 1a and 1b as separate reviewed changes, never together.
+
+Net: middleware.js drops to roughly 400 lines of readable auth flow, the demo
+and auth concerns become independently testable, and no behavior changes.
+
+### 2. TypeScript migration
+
+The runtime is JavaScript with partial JSDoc. A big-bang `.js` to `.ts` rename
+is HIGH risk: it touches every file plus the build (`next build`), eslint, and
+vitest config at once, and would collide with the livingcode generators that
+parse the JS source (`livingcode/collectors/*`, the route-SQL and OpenAPI
+scanners) and may not understand TS syntax. Do not do it in one pass.
+
+Recommended incremental path, each step independently shippable:
+
+- **2a. Type-check in place (no renames).** Add a `tsconfig.json` with
+  `allowJs`, `checkJs`, `noEmit`, `strict: false` and run `tsc --noEmit` as a
+  non-blocking CI step. This surfaces real type bugs (the null-body and
+  numeric-as-string classes found tonight are exactly what `checkJs` catches)
+  with zero file moves and zero risk to the build. Tighten incrementally with
+  per-file `// @ts-check` and JSDoc types. LOW risk, high signal.
+
+- **2b. Migrate the SDK first** (`sdk/`, `sdk-python` is separate). It is
+  published, self-contained, and consumers benefit most from shipped `.d.ts`.
+  This validates the toolchain on a contained surface before touching the app.
+  MEDIUM risk, isolated.
+
+- **2c. Migrate `app/lib/*` leaf utilities**, then repositories, then routes
+  last. Verify the livingcode/route-SQL/OpenAPI scanners handle each migrated
+  file (extend their parser to TS if needed) before moving on. Routes are last
+  because the scanners and the Next App Router conventions are most sensitive
+  there. HIGH risk if rushed; low if staged.
+
+Recommendation: start with 2a now (cheap, catches real bugs), treat 2b/2c as a
+multi-milestone effort only if the type-safety payoff is judged worth the churn
+against the existing JSDoc + guardrail approach.
