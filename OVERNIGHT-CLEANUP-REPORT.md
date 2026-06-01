@@ -19,7 +19,7 @@ commands that actually ran.
 | Coverage tests added | 13 (8 middleware auth, 2 CORS-on-error, 3 learning route) |
 | Safe cleanups | 0 deleted (eslint clean, no orphans created) |
 | Reverted | 1 (learning route q/limit, see bug 2 note) |
-| Left untouched (logged as proposals) | 3 + 2 refuted findings |
+| Left untouched (logged as proposals) | 3 + 2 refuted findings (1 proposal, the `/api/prompts` auth fix, resolved 2026-06-01 in `b936a620`) |
 | Branch state | local only on `overnight/cleanup-2026-06-01`, not pushed |
 
 ## Baseline (recorded before any change)
@@ -203,7 +203,14 @@ touching env files).
 
 ## Proposals (not executed, for review)
 
-### SECURITY: `/api/prompts` bare prefix in PUBLIC_ROUTES over-exposes org data
+### [RESOLVED 2026-06-01] SECURITY: `/api/prompts` bare prefix in PUBLIC_ROUTES over-exposes org data
+
+> **Resolved in commit `b936a620`** (pushed to main 2026-06-01). PUBLIC_ROUTES now
+> lists only the three static `/raw` markdown endpoints; `templates` (incl.
+> POST/PATCH/DELETE), `versions`, `render`, `runs`, and `stats` fall under the
+> existing default-deny. Regression tests in
+> `__tests__/unit/middleware-auth.test.js` assert `/api/prompts/templates` is 401
+> without a key and `server-setup/raw` stays public. Original finding preserved below.
 
 `middleware.js` PUBLIC_ROUTES contains the bare prefix `/api/prompts`, and the
 gate is `pathname.startsWith(route)`. The intent (per the inline comment and the
@@ -223,7 +230,7 @@ specific raw endpoints that must stay public
 `/api/prompts/sdk-coverage/raw` if it exists). NOT executed here because it
 changes auth behavior (those paths flip from 200 to 401 without a key), which
 the operating rules say to surface as a proposal rather than apply unsupervised.
-This is the highest-priority item in this report.
+This was the highest-priority item in this report; resolved per the note above.
 
 ### Closed-session PATCH returns a contradictory 404
 
