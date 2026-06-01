@@ -88,6 +88,18 @@ describe('DashClaw v2 SDK', () => {
       expect(url).not.toContain('undefined');
     });
 
+    it('surfaces the HTTP status on a non-JSON error body instead of a SyntaxError', async () => {
+      // A Vercel 502/504/413/429 gateway response is not JSON, so res.json()
+      // rejects with a SyntaxError. _request must still throw a status-bearing
+      // error so callers can branch on err.status.
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 504,
+        json: async () => { throw new SyntaxError("Unexpected token '<'"); },
+      });
+      await expect(claw.guard({ action_type: 'deploy' })).rejects.toMatchObject({ status: 504 });
+    });
+
     it('throws with reason from governance block responses', async () => {
       global.fetch = mockFetch({ reason: 'Blocked by cost policy', error: 'generic' }, false, 403);
       await expect(claw.guard({ action_type: 'test' })).rejects.toThrow('Blocked by cost policy');

@@ -90,7 +90,16 @@ class DashClaw {
       body: body ? JSON.stringify(body) : undefined
     });
 
-    const data = await res.json();
+    // Parse the body defensively. A non-JSON error body (a Vercel 502/504/413
+    // gateway page, a 429 rate-limit page) makes res.json() reject with a
+    // SyntaxError, which would propagate instead of the status-bearing error
+    // below and lose res.status. Fall back to {} so the real status is thrown.
+    let data = {};
+    try {
+      data = await res.json();
+    } catch {
+      data = {};
+    }
 
     if (!res.ok) {
       if (res.status === 403 && data.decision && data.decision.decision === 'block') {
