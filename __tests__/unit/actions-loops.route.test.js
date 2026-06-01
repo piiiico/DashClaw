@@ -9,7 +9,7 @@ import { makeRequest } from '../helpers.js';
 // configured agent_id, dashclaw_loop_list hit this on every call.
 const { mockSql } = vi.hoisted(() => {
   const sql = Object.assign(
-    // tagged-template calls — used here only for the stats aggregate
+    // tagged-template calls, used here only for the stats aggregate
     vi.fn(async () => [{ open_count: 2, resolved_count: 1, critical_open: 0, high_open: 1 }]),
     {
       query: vi.fn(async (text) => {

@@ -50,7 +50,7 @@ function req(body = {}) {
   });
 }
 
-describe('POST resume — parent transitions out of running', () => {
+describe('POST resume: parent transitions out of running', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     h.getWorkflowRun.mockResolvedValue({

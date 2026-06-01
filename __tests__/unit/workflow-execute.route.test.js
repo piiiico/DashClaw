@@ -60,7 +60,7 @@ function req(body = {}) {
   });
 }
 
-describe('POST /api/workflows/templates/[templateId]/execute — parent outcome gating', () => {
+describe('POST /api/workflows/templates/[templateId]/execute: parent outcome gating', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     h.getWorkflowTemplate.mockResolvedValue({

@@ -189,7 +189,7 @@ describe('POST /api/code-sessions/ingest-live — append path', () => {
 describe('POST /api/code-sessions/ingest-live — finalize path', () => {
   beforeEach(() => {
     mockGetSessionFreshness.mockResolvedValue({ id: 'cs_live_unit', source_mtime: null, parser_version: 2 });
-    // getSessionDetail returns { session, messages, toolUses } — match the real
+    // getSessionDetail returns { session, messages, toolUses }, matching the real
     // repository contract so the test exercises the same shape production runs on.
     mockGetSessionDetail.mockResolvedValue({
       session: {

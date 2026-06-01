@@ -131,12 +131,12 @@ proposals below rather than executed unsupervised.
 
 ## Tests added or strengthened
 
-- `__tests__/unit/actions-loops.route.test.js` (new, 3) — loop_list 500 regression
-- `__tests__/unit/learning.route.test.js` (new, 3) — first coverage for GET /api/learning
-- `__tests__/unit/mcp-tools-toolkit.test.js` (+5) — learning_query store/search + agent_id override lock
+- `__tests__/unit/actions-loops.route.test.js` (new, 3) - loop_list 500 regression
+- `__tests__/unit/learning.route.test.js` (new, 3) - first coverage for GET /api/learning
+- `__tests__/unit/mcp-tools-toolkit.test.js` (+5) - learning_query store/search + agent_id override lock
 - `__tests__/integration/code-sessions/ingest-live.route.test.js` (mock corrected + session-flow assertions)
-- `__tests__/unit/sdk-v2.test.js` (+1) — query-param undefined/null filtering
-- `__tests__/unit/learning-analytics.test.js` (+3) — limit NaN guard
+- `__tests__/unit/sdk-v2.test.js` (+1) - query-param undefined/null filtering
+- `__tests__/unit/learning-analytics.test.js` (+3) - limit NaN guard
 
 ## Docs and examples fixed
 
@@ -162,14 +162,14 @@ routes still call, not dead code).
 
 ## Coverage added
 
-- `__tests__/unit/middleware-auth.test.js` (8) — the API-key auth decision
+- `__tests__/unit/middleware-auth.test.js` (8) - the API-key auth decision
   matrix (fast path accept + 503-on-missing-org, slow-path 401 on
   unknown/revoked, readonly 403-on-write / 200-on-read, cross-origin 401,
   public-route pass-through). The core of the highest-risk file had no direct
   coverage before.
-- `__tests__/unit/middleware-cors-errors.test.js` (2) — CORS headers on error
+- `__tests__/unit/middleware-cors-errors.test.js` (2) - CORS headers on error
   responses (the #10 fix).
-- `__tests__/unit/learning.route.test.js` (3) — first coverage for GET /api/learning.
+- `__tests__/unit/learning.route.test.js` (3) - first coverage for GET /api/learning.
 - The SSRF helper (`url-safety.js`) and DLP/security-scanner paths were already
   covered, so no new tests were needed there.
 
