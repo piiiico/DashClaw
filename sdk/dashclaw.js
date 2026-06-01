@@ -66,8 +66,16 @@ class DashClaw {
   async _request(path, method = 'GET', body = null, params = null) {
     let url = `${this.baseUrl}${path}`;
     if (params) {
-      const qs = new URLSearchParams(params).toString();
-      if (qs) url += `?${qs}`;
+      // Skip undefined/null values. Passing them straight into URLSearchParams
+      // serializes the literal strings "undefined"/"null", which the receiving
+      // routes treat as real filter values and match zero rows. Falsy-but-valid
+      // values (0, false, '') are preserved. Mirrors the v1 SDK behavior.
+      const qs = new URLSearchParams();
+      for (const [key, value] of Object.entries(params)) {
+        if (value !== undefined && value !== null) qs.append(key, String(value));
+      }
+      const s = qs.toString();
+      if (s) url += `?${s}`;
     }
 
     const headers = {

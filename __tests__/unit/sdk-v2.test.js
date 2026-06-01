@@ -67,6 +67,27 @@ describe('DashClaw v2 SDK', () => {
       expect(opts.headers['x-api-key']).toBe('test-key');
     });
 
+    it('drops undefined/null query params but keeps falsy-but-valid values', async () => {
+      // Regression: a caller passing { status: undefined } must not send the
+      // literal string "status=undefined", which the routes match against and
+      // get zero rows. 0/false/'' are valid filter values and are preserved.
+      global.fetch = mockFetch({ ok: true });
+      await claw._request('/api/things', 'GET', null, {
+        agent_id: 'a1',
+        status: undefined,
+        cursor: null,
+        limit: 0,
+        active: false,
+      });
+      const [url] = fetch.mock.calls[0];
+      expect(url).toContain('agent_id=a1');
+      expect(url).toContain('limit=0');
+      expect(url).toContain('active=false');
+      expect(url).not.toContain('status');
+      expect(url).not.toContain('cursor');
+      expect(url).not.toContain('undefined');
+    });
+
     it('throws with reason from governance block responses', async () => {
       global.fetch = mockFetch({ reason: 'Blocked by cost policy', error: 'generic' }, false, 403);
       await expect(claw.guard({ action_type: 'test' })).rejects.toThrow('Blocked by cost policy');
