@@ -44,6 +44,7 @@ Prompt-injection scanning runs against `declared_goal` before guard evaluation a
 ```json
 {
   "decision": "allow | warn | block | require_approval",
+  "decision_id": "act_gd_...",
   "action_id": "act_gd_...",
   "reason": "Risk score exceeds org threshold",
   "signals": ["Production access", "High risk score"],
@@ -55,6 +56,8 @@ Prompt-injection scanning runs against `declared_goal` before guard evaluation a
   "warnings": []
 }
 ```
+
+`decision_id` is the canonical id of this guard evaluation (`act_gd_…`). `action_id` is a **deprecated alias** of the same value, kept for back-compat. Do not pass either to `waitForApproval` / `GET /api/actions/:id` — use the `action_id` returned by `POST /api/actions` (an `act_…` id) for follow-up calls.
 
 `GET /api/guard` lists recent guard decisions and supports filters such as `agent_id`, `decision`, `limit`, and `offset`.
 

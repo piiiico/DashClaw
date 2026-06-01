@@ -177,7 +177,7 @@ DashClaw is intentionally multi-surface. Claude Code hooks are one strong integr
 | MCP server | MCP-capable agents, Claude Desktop/Code, managed agents, remote tool access | `@dashclaw/mcp-server`, `POST /api/mcp` |
 | Node SDK | JavaScript/TypeScript agents and apps | `sdk/dashclaw.js`, npm package `dashclaw` version `2.13.0` |
 | Python SDK | Python agents and backend workflows | `sdk-python/dashclaw/client.py` |
-| Claude Code hooks | Coding-agent tool governance without per-call SDK code | `hooks/`, `npm run hooks:install`, `plugins/dashclaw/.claude-plugin/` |
+| Claude Code hooks | Coding-agent tool governance (incl. sub-agent spawns and delegated work — see `hooks/README.md` "Sub-agent governance & tracking") without per-call SDK code | `hooks/`, `npm run hooks:install`, `plugins/dashclaw/.claude-plugin/` |
 | Codex plugin | Codex coding-agent governance via field-compatible hook schema | `cli/lib/codex/`, `dashclaw install codex`, `plugins/dashclaw/.codex-plugin/` |
 | Hermes Agent plugin | Per-turn governance context injection, secret redaction, subagent ROI, live session ingest | `.hermes/hooks/`, `plugins/dashclaw/.hermes-plugin/`, `scripts/install-hermes-plugin.{sh,ps1}` |
 | OpenClaw plugin | OpenClaw lifecycle-native governance | `packages/openclaw-plugin/` |

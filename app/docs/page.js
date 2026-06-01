@@ -306,7 +306,7 @@ const { action, action_id } = await claw.createAction({
 });
 
 // 3. If the server flagged this, wait for a human operator.
-//    Pass createAction's action_id — NOT decision.action_id.
+//    Pass createAction's action_id — NOT the guard's decision_id (a.k.a. decision.action_id).
 if (action?.status === 'pending_approval') {
   await claw.waitForApproval(action_id);
 }
