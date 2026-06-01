@@ -16,9 +16,11 @@ commands that actually ran.
 | Other logic errors fixed | 11 (all confirmed findings) |
 | Tests added/strengthened | ~30 cases across 12 files |
 | Docs/examples fixed | resource count across 6 files; others verified accurate |
-| Safe cleanups | 0 (pending) |
+| Coverage tests added | 13 (8 middleware auth, 2 CORS-on-error, 3 learning route) |
+| Safe cleanups | 0 deleted (eslint clean, no orphans created) |
 | Reverted | 1 (learning route q/limit, see bug 2 note) |
 | Left untouched (logged as proposals) | 3 + 2 refuted findings |
+| Branch state | local only on `overnight/cleanup-2026-06-01`, not pushed |
 
 ## Baseline (recorded before any change)
 
@@ -151,11 +153,53 @@ proposals below rather than executed unsupervised.
 
 ## Safe cleanups
 
-(none yet)
+No dead code was deleted. `eslint .` is clean across the branch (no unused
+imports or variables), and the fixes were additive/surgical, so they created no
+orphans. Per house convention, pre-existing code that looked unused but is
+intentional was left in place and noted rather than removed (for example
+`requireTier` in `app/lib/org.js` is a documented no-op tier-gate shim that seven
+routes still call, not dead code).
+
+## Coverage added
+
+- `__tests__/unit/middleware-auth.test.js` (8) — the API-key auth decision
+  matrix (fast path accept + 503-on-missing-org, slow-path 401 on
+  unknown/revoked, readonly 403-on-write / 200-on-read, cross-origin 401,
+  public-route pass-through). The core of the highest-risk file had no direct
+  coverage before.
+- `__tests__/unit/middleware-cors-errors.test.js` (2) — CORS headers on error
+  responses (the #10 fix).
+- `__tests__/unit/learning.route.test.js` (3) — first coverage for GET /api/learning.
+- The SSRF helper (`url-safety.js`) and DLP/security-scanner paths were already
+  covered, so no new tests were needed there.
+
+## CI status on this branch
+
+All CI gates pass locally: `lint`, `docs:check`, `openapi:check`,
+`api:inventory:check`, `route-sql:check`, `version:check`, `contracts:check`,
+`reliability:ws1:check`, `sdk:integration`, `sdk:integration:python`,
+`npx vitest run` (2272 passed, 5 skipped), and `next build`.
+
+`node scripts/security-scan.js` reports 2 critical findings LOCALLY, but both
+are the developer's gitignored local env files (`.env` and
+`examples/anthropic-governed-agent/.env`) that are not tracked and do not exist
+in CI, so the CI security-scan step passes. This branch touched no env files and
+committed no secrets. Left untouched deliberately (the operating rules forbid
+touching env files).
 
 ## Reverted or left untouched
 
-(none yet)
+- Reverted: the first attempt at the learning_query fix added server-side
+  `q`/`limit` to GET /api/learning via `sql.query`, which tripped the CI-gated
+  `route-sql:check` guardrail. Reverted in favor of the client-side approach in
+  commit ddf26140; server-side search is logged as a proposal above.
+- Left untouched (logged as proposals): the `/api/prompts` public-prefix auth
+  exposure and the closed-session PATCH 404, both real but requiring auth or
+  status-code changes that the operating rules say to surface rather than apply
+  unsupervised.
+- Not fixed (refuted/uncertain in verification): a non-Error workflow throw (not
+  reachable in the current call graph) and a legacy outcome-mapping note (a
+  duplicate of the #3 mechanism, fixed by the #3 gate).
 
 ## Proposals (not executed, for review)
 
