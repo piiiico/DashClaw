@@ -84,7 +84,18 @@ export async function GET(request) {
     `;
     params.push(limit, offset);
 
-    const countQuery = `SELECT COUNT(*) as total FROM open_loops ol ${where}`;
+    // The count must mirror the main query's join: the `where` clause can
+    // reference ar.agent_id (when an agent_id filter is supplied), so the
+    // LEFT JOIN to action_records has to be present here too. Without it
+    // Postgres errors with "missing FROM-clause entry for table ar" and the
+    // whole GET returns 500. The join cannot multiply rows (one action_record
+    // per action_id per org), so COUNT(*) is unchanged for the unfiltered case.
+    const countQuery = `
+      SELECT COUNT(*) as total
+      FROM open_loops ol
+      LEFT JOIN action_records ar ON ol.action_id = ar.action_id AND ar.org_id = ol.org_id
+      ${where}
+    `;
     const countParams = params.slice(0, -2);
 
     const [loops, countResult, stats] = await Promise.all([
