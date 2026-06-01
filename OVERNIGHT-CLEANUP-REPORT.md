@@ -13,12 +13,12 @@ commands that actually ran.
 | Category | Count |
 |---|---|
 | Known bugs fixed | 2 fixed + 1 already-fixed (regression coverage added) |
-| Other logic errors fixed | 0 (in progress) |
-| Tests added | 11 (3 loop_list, 5 learning, 3 agent_id override) |
-| Docs/examples fixed | 0 |
-| Safe cleanups | 0 |
+| Other logic errors fixed | 3 (in progress; 11 confirmed, working the queue) |
+| Tests added/strengthened | ~17 cases across 6 files |
+| Docs/examples fixed | resource count across 6 files; others verified accurate |
+| Safe cleanups | 0 (pending) |
 | Reverted | 1 (learning route q/limit, see bug 2 note) |
-| Left untouched (logged) | 0 |
+| Left untouched (logged as proposals) | 3 + 2 refuted findings |
 
 ## Baseline (recorded before any change)
 
@@ -96,17 +96,54 @@ secret_list, handoff_create) plus the bare-server fallback path, not just guard.
 Verified by flipping the precedence: the new test and the existing guard test
 both fail under the old ordering, both pass under the fixed ordering.
 
-## Logic errors fixed
+## Logic errors
 
-(none yet)
+Found by a read-only discovery pass (6 parallel finders across middleware/auth,
+core governance routes, core lib, execution/finality, the Node SDK, and
+auxiliary routes), each finding then adversarially re-verified to refute
+unreachable or contract-breaking candidates. 11 confirmed; I re-verified each
+against the code before fixing. Every fix is behavior-preserving with a
+regression test proven red before and green after.
 
-## Tests added
+| # | Area | Issue | Status |
+|---|---|---|---|
+| 1 | code-sessions | `runFinalize` read session fields off `detail.*` but `getSessionDetail` returns `{ session, messages, toolUses }`, so live-session optimizer/alerts ran on zeroed cost/tokens (silent) | FIXED 174e0de2 |
+| 2 | Node SDK | `_request` serialized `{ status: undefined }` as the literal `status=undefined`, emptying filtered list results (regression from v1) | FIXED 354fad31 |
+| 5 | learning analytics | non-numeric `?limit=` produced `LIMIT NaN` and 500'd velocity/curves GET | FIXED b2de6d17 |
+| 3 | execution-finality | workflow execute wrote the final outcome ungated, clobbering an operator cancel that landed mid-run | queued |
+| 6 | execution-finality | workflow resume route lacked the try/catch the execute route has, leaving the parent action stuck `running` on a throw | queued |
+| 4 | core routes | a literal `null` JSON body crashed validated POST routes with 500 instead of the intended 400 | queued |
+| 7 | Node SDK | `_request` called `res.json()` unconditionally, so a non-JSON error body (502/504/413/429) threw a SyntaxError and lost the real status | queued |
+| 8 | Node SDK | `waitForApproval` returned a different object shape from the SSE fast-path vs the polling fallback | queued |
+| 10 | middleware | auth/rate-limit error responses omitted the CORS headers their matching success responses set | queued |
+| 11 | core routes | outcome route emitted ACTION_UPDATED with no `action` key, so the SSE frame for terminal outcomes was `data: null` | under review |
 
-(none yet)
+Refuted or uncertain (not fixed): a non-Error workflow throw (not reachable in
+the current call graph), and the legacy outcome-mapping note (a duplicate of #3's
+mechanism). Two more, real but requiring auth/status-code changes, are logged as
+proposals below rather than executed unsupervised.
+
+## Tests added or strengthened
+
+- `__tests__/unit/actions-loops.route.test.js` (new, 3) — loop_list 500 regression
+- `__tests__/unit/learning.route.test.js` (new, 3) — first coverage for GET /api/learning
+- `__tests__/unit/mcp-tools-toolkit.test.js` (+5) — learning_query store/search + agent_id override lock
+- `__tests__/integration/code-sessions/ingest-live.route.test.js` (mock corrected + session-flow assertions)
+- `__tests__/unit/sdk-v2.test.js` (+1) — query-param undefined/null filtering
+- `__tests__/unit/learning-analytics.test.js` (+3) — limit NaN guard
 
 ## Docs and examples fixed
 
-(none yet)
+- MCP resource count corrected from 4 to 6 across sdk/README, sdk-python/README,
+  the platform-intelligence reference docs (livingcode source), and the
+  managed-agent-mcp + examples READMEs. Verified the actual count is 6
+  (`policies`, `capabilities`, `agent/{id}/history`, `status`,
+  `code-sessions/projects`, `code-sessions/sessions/{id}`). CHANGELOG and
+  historical plans left as-is (they record the v2.12 launch state).
+- Verified accurate (no change needed): README route counts
+  (259 / 46 stable / 24 beta / 189 experimental match the inventory); the
+  flagship examples (first-governed-action.js, guard-and-act.js,
+  loop-monitoring.js) match the real SDK methods and `guard()` return shape.
 
 ## Safe cleanups
 
@@ -117,6 +154,36 @@ both fail under the old ordering, both pass under the fixed ordering.
 (none yet)
 
 ## Proposals (not executed, for review)
+
+### SECURITY: `/api/prompts` bare prefix in PUBLIC_ROUTES over-exposes org data
+
+`middleware.js` PUBLIC_ROUTES contains the bare prefix `/api/prompts`, and the
+gate is `pathname.startsWith(route)`. The intent (per the inline comment and the
+demo-mode re-pass list) was to expose only the static raw-markdown prompt
+endpoints (`/api/prompts/server-setup/raw`, `/api/prompts/agent-connect/raw`)
+for the public "Copy Prompt" buttons. But the bare prefix also makes the
+org-scoped management endpoints unauthenticated: `GET /api/prompts/templates`,
+`/api/prompts/runs`, `/api/prompts/stats` return org data with no API key
+(falling back to `org_default`), and `POST /api/prompts/render` with
+`record:true` performs an unauthenticated write to `org_default`. The
+templates POST/PATCH/DELETE are saved only by their own `getOrgRole` admin
+self-gates; GET and render have none.
+
+Recommended remediation: replace the bare `/api/prompts` entry with the
+specific raw endpoints that must stay public
+(`/api/prompts/server-setup/raw`, `/api/prompts/agent-connect/raw`, and
+`/api/prompts/sdk-coverage/raw` if it exists). NOT executed here because it
+changes auth behavior (those paths flip from 200 to 401 without a key), which
+the operating rules say to surface as a proposal rather than apply unsupervised.
+This is the highest-priority item in this report.
+
+### Closed-session PATCH returns a contradictory 404
+
+`updateSession` filters `WHERE ... AND status != 'closed'`, so a PATCH to an
+existing-but-closed session matches zero rows and the route returns 404
+'Session not found' even though GET still returns that session. A correct fix
+returns 409 (or keeps 404 with an accurate message), but either changes a public
+status code or response body, so it is logged here rather than applied.
 
 ### Server-side q/limit on GET /api/learning
 
