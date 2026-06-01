@@ -19,7 +19,7 @@ commands that actually ran.
 | Coverage tests added | 13 (8 middleware auth, 2 CORS-on-error, 3 learning route) |
 | Safe cleanups | 0 deleted (eslint clean, no orphans created) |
 | Reverted | 1 (learning route q/limit, see bug 2 note) |
-| Left untouched (logged as proposals) | 3 + 2 refuted findings (1 proposal, the `/api/prompts` auth fix, resolved 2026-06-01 in `b936a620`) |
+| Left untouched (logged as proposals) | 3 + 2 refuted findings (all 3 non-refactor proposals resolved 2026-06-01: `/api/prompts` auth `b936a620`, closed-session 409 `ea39b2e5`, learning q/limit `085ff46d`; the 2 big refactors remain) |
 | Branch state | local only on `overnight/cleanup-2026-06-01`, not pushed |
 
 ## Baseline (recorded before any change)
@@ -232,7 +232,13 @@ changes auth behavior (those paths flip from 200 to 401 without a key), which
 the operating rules say to surface as a proposal rather than apply unsupervised.
 This was the highest-priority item in this report; resolved per the note above.
 
-### Closed-session PATCH returns a contradictory 404
+### [RESOLVED 2026-06-01] Closed-session PATCH returns a contradictory 404
+
+> **Resolved in commit `ea39b2e5`** (pushed to main). The PATCH route now
+> re-checks existence on the null path: a closed session returns 409 'Session is
+> closed and cannot be updated'; a truly absent one stays 404. Terminal-state
+> guard unchanged. Tests in `__tests__/unit/sessions-detail.route.test.js`.
+> Original finding preserved below.
 
 `updateSession` filters `WHERE ... AND status != 'closed'`, so a PATCH to an
 existing-but-closed session matches zero rows and the route returns 404
@@ -240,7 +246,13 @@ existing-but-closed session matches zero rows and the route returns 404
 returns 409 (or keeps 404 with an accurate message), but either changes a public
 status code or response body, so it is logged here rather than applied.
 
-### Server-side q/limit on GET /api/learning
+### [RESOLVED 2026-06-01] Server-side q/limit on GET /api/learning
+
+> **Resolved in commit `085ff46d`** (pushed to main). Added `listDecisions()` to
+> `app/lib/repositories/learning.repository.js` with `q` (ILIKE on
+> decision/context) and a clamped `limit`; the route calls it (dropping its
+> direct-SQL count, not raising it) and the MCP handler passes the params through
+> with a client-side fallback for older instances. Original finding preserved below.
 
 `dashclaw_learning_query` now filters search text and limit client-side over
 the server's most-recent decisions. To search the full decision history, add
