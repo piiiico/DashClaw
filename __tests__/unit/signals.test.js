@@ -173,4 +173,24 @@ describe('computeSignals', () => {
     expect(signals[0].type).toBe('stale_running_action');
     expect(signals[0].severity).toBe('amber');
   });
+
+  it('detects agent_silent: amber when idle, red while holding a task', async () => {
+    // stalePresence is the 8th Promise.all query (index 7). The SQL now bounds
+    // silence to a recent 10m..48h window so weeks-dead agents stop firing; this
+    // covers the JS mapping (severity + detected_at) for rows the query returns.
+    const t = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+    const sql = createSignalSqlMock([
+      [], [], [], [], [], [], [],
+      [
+        { agent_id: 'a1', agent_name: 'Idle', last_heartbeat_at: t, current_task_id: null, status: 'online' },
+        { agent_id: 'a2', agent_name: 'Busy', last_heartbeat_at: t, current_task_id: 'act_x', status: 'online' },
+      ],
+    ]);
+    const signals = await computeSignals('org_1', null, sql);
+    const byAgent = Object.fromEntries(signals.map((s) => [s.agent_id, s]));
+    expect(byAgent.a1.type).toBe('agent_silent');
+    expect(byAgent.a1.severity).toBe('amber');
+    expect(byAgent.a2.severity).toBe('red');
+    expect(byAgent.a1.detected_at).toBe(t);
+  });
 });

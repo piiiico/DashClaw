@@ -96,12 +96,18 @@ export async function computeSignals(orgId, filterAgentId, sql) {
       ORDER BY timestamp_start ASC
       LIMIT 10
     `,
-    // Check for stale heartbeats (silent for > 10 mins)
+    // Stale heartbeat = an agent that recently went quiet (silent 10m..48h).
+    // The UPPER bound is load-bearing: agent_presence.status is never reaped
+    // back to 'offline', so without it any agent that ran once and stopped fires
+    // this signal forever — one-shot test/setup agents end up "lost" for 80 days
+    // and bury real incidents. Past 48h an agent is retired/offline, not an
+    // active incident, so it is noise, not signal.
     sql`
       SELECT agent_id, agent_name, last_heartbeat_at, current_task_id, status
       FROM agent_presence
       WHERE org_id = ${orgId}
         AND last_heartbeat_at::timestamptz < NOW() - INTERVAL '10 minutes'
+        AND last_heartbeat_at::timestamptz > NOW() - INTERVAL '48 hours'
         AND (status != 'offline' OR current_task_id IS NOT NULL)
       LIMIT 10
     `,
