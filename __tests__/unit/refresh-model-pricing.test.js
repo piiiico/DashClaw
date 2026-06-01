@@ -4,6 +4,13 @@ import { ratesForPattern, buildPricingTables, replaceBlock, REGISTRY } from '../
 // Fixture mirrors a real LiteLLM payload shape — per-token rates as floats,
 // optional cache columns, the litellm_provider tag we don't currently use.
 const FIXTURE = {
+  'claude-opus-4-8': {
+    input_cost_per_token: 0.000005,
+    output_cost_per_token: 0.000025,
+    cache_creation_input_token_cost: 0.00000625,
+    cache_read_input_token_cost: 0.0000005,
+    litellm_provider: 'anthropic',
+  },
   'claude-opus-4-7': {
     input_cost_per_token: 0.000005,
     output_cost_per_token: 0.000025,
@@ -113,6 +120,15 @@ describe('refresh-model-pricing — buildPricingTables', () => {
     // 1m mirror exists for opus-4-7
     expect(claudeCode['claude-opus-4-7[1m]']).toEqual(claudeCode['claude-opus-4-7']);
 
+    // opus-4-8 is the current frontier Opus — it must be priced at the 4.x
+    // family rate ($5/$25) with its own [1m] mirror, else heavy claude-code
+    // usage falls through to the legacy 'opus' default ($15/$75) and inflates
+    // 3x. Regression guard for the ~$15.5k spend bug.
+    expect(claudeCode['claude-opus-4-8']).toBeDefined();
+    expect(claudeCode['claude-opus-4-8'].input).toBe(5);
+    expect(claudeCode['claude-opus-4-8'].output).toBe(25);
+    expect(claudeCode['claude-opus-4-8[1m]']).toEqual(claudeCode['claude-opus-4-8']);
+
     // haiku-4-5 has a date-stamped mirror
     expect(claudeCode['claude-haiku-4-5-20251001']).toEqual(claudeCode['claude-haiku-4-5']);
 
@@ -125,6 +141,7 @@ describe('refresh-model-pricing — buildPricingTables', () => {
   it('REGISTRY covers all the families that DashClaw prices today', () => {
     const patterns = Object.keys(REGISTRY);
     // Sanity: every family we surface in the UI is in the registry.
+    expect(patterns).toContain('opus-4-8');
     expect(patterns).toContain('opus-4-7');
     expect(patterns).toContain('opus-4-5');
     expect(patterns).toContain('opus-4-1');

@@ -13,6 +13,7 @@
  */
 
 import path from 'node:path';
+import { PRICES_PER_MTOK, FALLBACK } from './pricing.js';
 
 export const STUCK_LOOP_DEFAULT_THRESHOLD = 5;
 export const COST_LIMIT_DEFAULT_MULTIPLIER = 3;
@@ -97,6 +98,20 @@ export function renderStuckLoopGuard({ threshold = STUCK_LOOP_DEFAULT_THRESHOLD,
   ].join('\n');
 }
 
+/**
+ * Render the Python PRICES dict body for the cost-limit guard directly from
+ * the canonical PRICES_PER_MTOK table — the single source of truth. The guard's
+ * _price_for() strips any [1m] suffix before lookup, so the [1m] mirror keys are
+ * redundant here and omitted to keep the generated dict readable.
+ */
+function renderPythonPrices() {
+  return Object.entries(PRICES_PER_MTOK)
+    .filter(([key]) => !key.includes('['))
+    .map(([key, p]) =>
+      `    ${JSON.stringify(key)}: {"input": ${p.input}, "output": ${p.output}, "cache_write": ${p.cache_write}, "cache_read": ${p.cache_read}},`)
+    .join('\n');
+}
+
 export function renderCostLimitGuard({ thresholdUsd, sessionId = null, projectSlug = null, projectMedianUsd = null } = {}) {
   const t = Number.isFinite(thresholdUsd) && thresholdUsd > 0
     ? Number(thresholdUsd)
@@ -119,13 +134,13 @@ export function renderCostLimitGuard({ thresholdUsd, sessionId = null, projectSl
     `STATE_DIR = pathlib.Path.home() / ".claude-dashclaw"`,
     `STATE_DIR.mkdir(exist_ok=True)`,
     ``,
-    `# Pricing per 1M tokens. Mirror of app/lib/claude-code/pricing.js — update both together.`,
+    `# Pricing per 1M tokens. Auto-generated from app/lib/claude-code/pricing.js`,
+    `# (PRICES_PER_MTOK) at hook-build time, so this table can never drift from`,
+    `# the canonical rates. Regenerate the hook to pick up new model pricing.`,
     `PRICES = {`,
-    `    "claude-opus-4-7":   {"input": 15.0, "output": 75.0, "cache_write": 18.75, "cache_read": 1.5},`,
-    `    "claude-sonnet-4-6": {"input":  3.0, "output": 15.0, "cache_write":  3.75, "cache_read": 0.3},`,
-    `    "claude-haiku-4-5":  {"input":  1.0, "output":  5.0, "cache_write":  1.25, "cache_read": 0.1},`,
+    renderPythonPrices(),
     `}`,
-    `DEFAULT_PRICE = {"input": 3.0, "output": 15.0, "cache_write": 3.75, "cache_read": 0.3}`,
+    `DEFAULT_PRICE = {"input": ${FALLBACK.input}, "output": ${FALLBACK.output}, "cache_write": ${FALLBACK.cache_write}, "cache_read": ${FALLBACK.cache_read}}`,
     ``,
     `def _price_for(model):`,
     `    if not model: return DEFAULT_PRICE`,

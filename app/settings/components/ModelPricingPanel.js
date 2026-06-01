@@ -1,36 +1,20 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { DEFAULT_PRICING as ENGINE_PRICING } from '../../lib/billing.js';
 
-const DEFAULT_PRICING = [
-  // Anthropic Claude 4.5/4.6 family
-  { pattern: 'opus-4-6', label: 'Claude Opus 4.6', input: 15, output: 75 },
-  { pattern: 'opus-4-5', label: 'Claude Opus 4.5', input: 15, output: 75 },
-  { pattern: 'opus', label: 'Claude Opus (default)', input: 15, output: 75 },
-  { pattern: 'sonnet-4-6', label: 'Claude Sonnet 4.6', input: 3, output: 15 },
-  { pattern: 'sonnet-4-5', label: 'Claude Sonnet 4.5', input: 3, output: 15 },
-  { pattern: 'sonnet', label: 'Claude Sonnet (default)', input: 3, output: 15 },
-  { pattern: 'haiku-4-5', label: 'Claude Haiku 4.5', input: 0.80, output: 4 },
-  { pattern: 'haiku', label: 'Claude Haiku (default)', input: 0.80, output: 4 },
-  // OpenAI
-  { pattern: 'codex-5.4', label: 'Codex 5.4', input: 3, output: 15 },
-  { pattern: 'codex', label: 'Codex (default)', input: 3, output: 15 },
-  { pattern: 'o3-pro', label: 'o3-pro', input: 150, output: 600 },
-  { pattern: 'o3-mini', label: 'o3-mini', input: 1.10, output: 4.40 },
-  { pattern: 'o3', label: 'o3', input: 10, output: 40 },
-  { pattern: 'o4-mini', label: 'o4-mini', input: 1.10, output: 4.40 },
-  { pattern: 'gpt-4.1-mini', label: 'GPT-4.1 Mini', input: 0.40, output: 1.60 },
-  { pattern: 'gpt-4.1-nano', label: 'GPT-4.1 Nano', input: 0.10, output: 0.40 },
-  { pattern: 'gpt-4.1', label: 'GPT-4.1', input: 2, output: 8 },
-  { pattern: 'gpt-4o-mini', label: 'GPT-4o Mini', input: 0.15, output: 0.60 },
-  { pattern: 'gpt-4o', label: 'GPT-4o', input: 2.50, output: 10 },
-  // Google Gemini
-  { pattern: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro', input: 1.25, output: 10 },
-  { pattern: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash', input: 0.15, output: 0.60 },
-  // Meta Llama
-  { pattern: 'llama-4-maverick', label: 'Llama 4 Maverick', input: 0.50, output: 0.77 },
-  { pattern: 'llama-4-scout', label: 'Llama 4 Scout', input: 0.17, output: 0.35 },
-];
+// Seed the editor from the engine's canonical pricing table (app/lib/billing.js)
+// so the Settings defaults can never drift from the rates actually used to
+// estimate cost. Previously this was a hand-maintained copy that went stale —
+// Opus 4.5/4.6 lingered at the legacy $15/$75 (real rate $5/$25), Opus 4.7/4.8
+// were absent, and o3-pro read $150/$600 (real $20/$80). The editor only
+// exposes input/output per 1M tokens; the engine's cache columns aren't shown.
+const DEFAULT_PRICING = ENGINE_PRICING.map(({ pattern, label, input, output }) => ({
+  pattern,
+  label,
+  input,
+  output,
+}));
 
 export default function ModelPricingPanel() {
   const [pricing, setPricing] = useState(null);

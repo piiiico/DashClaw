@@ -18,6 +18,8 @@
 // hand-curated.
 export const PRICES_PER_MTOK = Object.freeze({
   // MODEL_PRICING_GENERATED:PRICING:START
+  'claude-opus-4-8'               : { input: 5.00, output: 25.00, cache_write: 6.25, cache_read: 0.50 }, // claude-opus-4-8
+  'claude-opus-4-8[1m]'           : { input: 5.00, output: 25.00, cache_write: 6.25, cache_read: 0.50 }, // claude-opus-4-8
   'claude-opus-4-7'               : { input: 5.00, output: 25.00, cache_write: 6.25, cache_read: 0.50 }, // claude-opus-4-7
   'claude-opus-4-7[1m]'           : { input: 5.00, output: 25.00, cache_write: 6.25, cache_read: 0.50 }, // claude-opus-4-7
   'claude-opus-4-6'               : { input: 5.00, output: 25.00, cache_write: 6.25, cache_read: 0.50 }, // claude-opus-4-6

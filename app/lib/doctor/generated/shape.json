@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:175699a2f86fa82fcbf9df86943cf4db7c440f36",
+  "timestamp": "sha1:95cb38dca164da741ea06db9b0404af52002a3b3",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -3183,6 +3183,7 @@
         "middleware.js",
         "scripts/_db.mjs",
         "scripts/auto-migrate.mjs",
+        "scripts/backfill-action-cost-reprice.mjs",
         "scripts/backfill-code-session-cache-cost.mjs",
         "scripts/backfill-embeddings.mjs",
         "scripts/backfill-learning-episodes.mjs",

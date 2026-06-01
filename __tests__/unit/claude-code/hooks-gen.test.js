@@ -42,6 +42,16 @@ describe('claude-code/hooks-gen', () => {
     expect(out).toMatch(/LIMIT_USD = 12\.5000/);
   });
 
+  it('cost-limit guard sources prices from the canonical table (Opus 4.8 at $5, not legacy $15)', () => {
+    // The PRICES dict is now generated from PRICES_PER_MTOK instead of being a
+    // hand-maintained mirror that drifted: opus-4-7 used to be hardcoded at the
+    // legacy $15/$75 and opus-4-8 was absent. Both must reflect the $5/$25 rate.
+    const out = renderCostLimitGuard({ thresholdUsd: 5 });
+    expect(out).toMatch(/"claude-opus-4-8": \{"input": 5,/);
+    expect(out).toMatch(/"claude-opus-4-7": \{"input": 5,/);
+    expect(out).toMatch(/DEFAULT_PRICE = \{"input": 3,/);
+  });
+
   it('renderInstallInstructions produces a valid settings.json snippet', () => {
     const inst = renderInstallInstructions({ kind: 'stuck-loop', scriptPath: '/abs/path/hook.py' });
     expect(inst.hookEvent).toBe('PreToolUse');

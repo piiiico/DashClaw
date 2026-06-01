@@ -45,8 +45,9 @@ const PER_MILLION = 1_000_000;
 // is the authoritative rate.
 export const REGISTRY = {
   // Anthropic Claude family. Cache rates follow the family rule
-  // (cache_write = 1.25x input; cache_read = 0.10x input). Opus 4.5/4.6/4.7
+  // (cache_write = 1.25x input; cache_read = 0.10x input). Opus 4.5/4.6/4.7/4.8
   // share rates ($5/$25); only Opus 4.1 still carries the legacy $15/$75.
+  'opus-4-8': { label: 'Claude Opus 4.8', candidates: ['claude-opus-4-8', 'claude-opus-4-5'] },
   'opus-4-7': { label: 'Claude Opus 4.7', candidates: ['claude-opus-4-7-20260101', 'claude-opus-4-7', 'claude-opus-4-5'] },
   'opus-4-6': { label: 'Claude Opus 4.6', candidates: ['claude-opus-4-6-20251201', 'claude-opus-4-6', 'claude-opus-4-5'] },
   'opus-4-5': { label: 'Claude Opus 4.5', candidates: ['claude-opus-4-5-20250805', 'claude-opus-4-5'] },
@@ -130,9 +131,9 @@ export function buildPricingTables(litellm) {
         cache_read: rates.cache_read,
         _source: rates.sourceKey,
       };
-      // Opus 4-7 gets an [1m] variant mirror in pricing.js.
-      if (pattern === 'opus-4-7') {
-        claudeCode['claude-opus-4-7[1m]'] = { ...claudeCode['claude-opus-4-7'] };
+      // Opus 4-7 / 4-8 ship a [1m] long-context variant; mirror its rate.
+      if (pattern === 'opus-4-7' || pattern === 'opus-4-8') {
+        claudeCode[`claude-${pattern}[1m]`] = { ...claudeCode[`claude-${pattern}`] };
       }
       // Haiku 4-5 has a date-stamped variant; mirror.
       if (pattern === 'haiku-4-5') {

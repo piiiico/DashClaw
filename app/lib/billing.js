@@ -23,6 +23,7 @@ export const DEFAULT_PRICING = [
   // Llama) — stays HAND-CURATED. Run the refresh script after Anthropic /
   // OpenAI / Google publish new rates and review the diff.
   // MODEL_PRICING_GENERATED:BILLING:START
+  { pattern: 'opus-4-8', label: 'Claude Opus 4.8', input: 5, output: 25, cache_write: 6.25, cache_read: 0.5 }, // claude-opus-4-8
   { pattern: 'opus-4-7', label: 'Claude Opus 4.7', input: 5, output: 25, cache_write: 6.25, cache_read: 0.5 }, // claude-opus-4-7
   { pattern: 'opus-4-6', label: 'Claude Opus 4.6', input: 5, output: 25, cache_write: 6.25, cache_read: 0.5 }, // claude-opus-4-6
   { pattern: 'opus-4-5', label: 'Claude Opus 4.5', input: 5, output: 25, cache_write: 6.25, cache_read: 0.5 }, // claude-opus-4-5

@@ -18,6 +18,20 @@ describe('claude-code/pricing', () => {
     expect(p.cache_read).toBe(0.50);
   });
 
+  it('priceFor returns Opus 4.x rates for opus-4-8 (regression: was missing → fell back to sonnet)', () => {
+    // Opus 4.8 shares the 4.x family rate ($5/$25/$6.25/$0.50). Before the fix
+    // it was absent from PRICES_PER_MTOK, so priceFor fell to the sonnet FALLBACK
+    // ($3/$15) and the Code Sessions cost surface under-counted every 4.8 turn.
+    const p = priceFor('claude-opus-4-8');
+    expect(p.input).toBe(5.00);
+    expect(p.output).toBe(25.00);
+    expect(p.cache_write).toBe(6.25);
+    expect(p.cache_read).toBe(0.50);
+    const p1m = priceFor('claude-opus-4-8[1m]');
+    expect(p1m.input).toBe(5.00);
+    expect(p1m.output).toBe(25.00);
+  });
+
   it('priceFor strips [1m] suffix and resolves to opus-4-7', () => {
     const p = priceFor('claude-opus-4-7[1m]');
     expect(p.input).toBe(5.00);

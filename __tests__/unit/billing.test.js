@@ -28,6 +28,15 @@ describe('estimateCost', () => {
     expect(estimateCost(1_000_000, 1_000_000, 'haiku-4-5')).toBeCloseTo(6, 5);
   });
 
+  it('prices Opus 4.8 at the current $5/$25 rate, not the legacy $15/$75 default', () => {
+    // Regression: opus-4-8 was missing from DEFAULT_PRICING, so the lowercase
+    // `includes('opus')` match fell through to the unversioned 'opus' legacy
+    // default ($15/$75) — a 3x overcharge that inflated the claude-code agent's
+    // 30d spend to ~$15.5k. Opus 4.x family rate is $5 input + $25 output / 1M.
+    expect(estimateCost(1_000_000, 1_000_000, 'claude-opus-4-8')).toBeCloseTo(30, 5);
+    expect(estimateCost(1_000_000, 1_000_000, 'claude-opus-4-8[1m]')).toBeCloseTo(30, 5);
+  });
+
   it('returns 0 for unknown-but-present models and warns once per model', () => {
     // Prior behavior priced unknown models at Opus-tier rates as a "conservative
     // over-estimate", which inflated cheap open-source models ~1000x and poisoned
