@@ -143,6 +143,10 @@ describe('guard pipeline integration', () => {
     expect(result.reasons[0]).toContain('workspace_write');
     expect(result.reasons[0]).toContain('danger');
     expect(result.matched_policies).toContain('gp_test_1');
+    // decision_id is the canonical guard-evaluation id; action_id is a deprecated
+    // alias of the SAME value (not the action_records id).
+    expect(result.decision_id).toMatch(/^act_gd_/);
+    expect(result.action_id).toBe(result.decision_id);
   });
 
   // 2. permission_escalation: allows when agent has sufficient permission

@@ -141,14 +141,16 @@ Telegram button.
 ### The rule every agent author needs to know
 
 **`waitForApproval()` must be called with the `action_id` returned by
-`createAction()`, NOT with the `action_id` returned by `guard()`.**
+`createAction()`, NOT with the guard decision's id.**
 
 These are two different records in two different tables:
 
-| Call | Returns `action_id` that refers to… | Prefix |
-|---|---|---|
-| `guard()` | A row in `guard_decisions` (the decision log) | `act_gd_…` |
-| `createAction()` | A row in `action_records` (the thing you're actually doing) | `act_…` |
+| Call | Returns an id that refers to… | Prefix | Field on the result |
+|---|---|---|---|
+| `guard()` | A row in `guard_decisions` (the decision log) | `act_gd_…` | `decision_id` (canonical); `action_id` is a **deprecated alias** of the same value |
+| `createAction()` | A row in `action_records` (the thing you're actually doing) | `act_…` | `action_id` |
+
+> The guard result's `action_id` field is a legacy alias of `decision_id` and will be removed in a future major — read `decision_id` from `guard()`, and `action_id` from `createAction()`.
 
 `waitForApproval()` polls `GET /api/actions/:id`, which is the
 `action_records` table. Passing it a `guard_decisions` ID (`act_gd_…`) will

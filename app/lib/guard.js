@@ -433,7 +433,10 @@ export async function evaluateGuard(orgId, context, sql, options = {}) {
 
   return {
     decision: highestDecision,
-    action_id: decisionId, // Standardized ID for the evaluation
+    decision_id: decisionId, // Canonical: the guard-evaluation id (act_gd_*).
+    action_id: decisionId, // DEPRECATED alias of decision_id. This is the evaluation
+    // id, NOT the action_records id — use the action_id returned by createAction()
+    // (POST /api/actions) for waitForApproval / GET /api/actions/:id. Retained for back-compat.
     reason: reasons.join('; ') || null, // Primary reason string
     signals: [...warnings, ...reasons], // Combined signals for the SDK
     matched_policies: matchedPolicies,
