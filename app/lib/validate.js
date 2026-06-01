@@ -139,9 +139,12 @@ function validate(body, schema) {
   const src = (body && typeof body === 'object') ? body : {};
 
   for (const [key, rule] of Object.entries(schema)) {
-    // Support both snake_case (schema key) and camelCase (DX preference)
+    // Support both snake_case (schema key) and camelCase (DX preference).
+    // Fall back to the camelCase variant when the snake_case key is absent OR
+    // explicitly null, so a present camelCase value is not silently dropped by
+    // an explicit snake_case null (e.g. { risk_score: null, riskScore: 80 }).
     const camelKey = key.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
-    const value = src[key] !== undefined ? src[key] : src[camelKey];
+    const value = (src[key] !== undefined && src[key] !== null) ? src[key] : src[camelKey];
 
     const error = validateField(key, value, rule);
     if (error) {

@@ -27,6 +27,18 @@ describe('validators tolerate a null or non-object body (no 500 crash)', () => {
     expect(() => validateGuardInput('not an object')).not.toThrow();
     expect(validateActionRecord(42).valid).toBe(false);
   });
+
+  it('a present camelCase value is not dropped by an explicit snake_case null', () => {
+    const result = validateActionRecord({
+      agent_id: 'a',
+      action_type: 'deploy',
+      declared_goal: 'g',
+      risk_score: null,
+      riskScore: 80,
+    });
+    expect(result.valid).toBe(true);
+    expect(result.data.risk_score).toBe(80);
+  });
 });
 
 describe('validateActionRecord', () => {
