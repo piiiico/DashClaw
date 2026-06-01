@@ -1,14 +1,14 @@
 {
   "node": {
     "current_version": "2.13.0",
-    "next_bump": "none",
-    "reason": "No unreleased SDK changes. Phase 2 agent identity (#104 — authToken + verification_status) shipped in 2.13.0 (CHANGELOG '## SDK [2.13.0]', 2026-05-15) and is live on npm. decision_id on guard responses is a server-side field the untyped SDK passes through, so it needs no SDK code change or bump.",
-    "domains": []
+    "next_bump": "patch",
+    "reason": "Adds first-class agent-message read-state methods to the main SDK, at parity with the legacy SDK and the live API: markRead / archiveMessages (PATCH /api/messages, action read|archive) plus getSentMessages / getMessages / getMessage. Additive — no breaking changes.",
+    "domains": ["messaging"]
   },
   "python": {
     "current_version": "2.13.0",
     "next_bump": "none",
-    "reason": "No unreleased SDK changes. At parity with Node: Phase 2 agent identity (#104 — auth_token + verification_status) shipped in 2.13.0 and is live on PyPI.",
+    "reason": "No unreleased SDK changes. At parity with Node: Phase 2 agent identity (#104 — auth_token + verification_status) shipped in 2.13.0 and is live on PyPI; the messaging read-state methods already exist in the Python SDK.",
     "domains": []
   }
 }

@@ -124,6 +124,8 @@ const navItems = [
   { href: '#messaging', label: 'Agent Messaging' },
   { href: '#sendMessage', label: 'sendMessage', indent: true },
   { href: '#getInbox', label: 'getInbox', indent: true },
+  { href: '#markRead', label: 'markRead', indent: true },
+  { href: '#archiveMessages', label: 'archiveMessages', indent: true },
   { href: '#handoffs', label: 'Session Handoffs' },
   { href: '#createHandoff', label: 'createHandoff', indent: true },
   { href: '#getLatestHandoff', label: 'getLatestHandoff', indent: true },
@@ -1030,6 +1032,38 @@ rendered = res["rendered"]`}
                 <DocsCodeTabs
                   nodeSnippet={`const { messages } = await claw.getInbox({ unread: true, limit: 10 });`}
                   pythonSnippet={`result = claw.get_inbox(unread=True, limit=10)`}
+                />
+              }
+            />
+
+            <MethodEntry
+              id="markRead"
+              signature="claw.markRead(messageIds) / claw.mark_read(message_ids)"
+              description="Mark messages as read for this agent. Direct messages are marked read only for the target agent (or dashboard); broadcasts update read_by for the reading agent."
+              params={[
+                { name: 'messageIds', type: 'string[]', required: true, desc: 'Message IDs (msg_*) to mark read' },
+              ]}
+              returns="Promise<{ updated }>"
+              example={
+                <DocsCodeTabs
+                  nodeSnippet={`const { updated } = await claw.markRead(['msg_abc123']);`}
+                  pythonSnippet={`result = claw.mark_read(["msg_abc123"])`}
+                />
+              }
+            />
+
+            <MethodEntry
+              id="archiveMessages"
+              signature="claw.archiveMessages(messageIds) / claw.archive_messages(message_ids)"
+              description="Archive messages for this agent so they no longer surface in the active inbox."
+              params={[
+                { name: 'messageIds', type: 'string[]', required: true, desc: 'Message IDs (msg_*) to archive' },
+              ]}
+              returns="Promise<{ updated }>"
+              example={
+                <DocsCodeTabs
+                  nodeSnippet={`const { updated } = await claw.archiveMessages(['msg_abc123']);`}
+                  pythonSnippet={`result = claw.archive_messages(["msg_abc123"])`}
                 />
               }
             />

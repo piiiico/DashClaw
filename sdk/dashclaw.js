@@ -637,6 +637,68 @@ class DashClaw {
     });
   }
 
+  /**
+   * GET /api/messages — Fetch messages this agent has sent.
+   */
+  async getSentMessages({ type, threadId, limit } = {}) {
+    return this._request('/api/messages', 'GET', null, {
+      agent_id: this.agentId,
+      direction: 'sent',
+      ...(type && { type }),
+      ...(threadId && { thread_id: threadId }),
+      ...(limit && { limit }),
+    });
+  }
+
+  /**
+   * GET /api/messages — Fetch this agent's messages with flexible filters.
+   */
+  async getMessages({ direction, type, unread, threadId, limit } = {}) {
+    return this._request('/api/messages', 'GET', null, {
+      agent_id: this.agentId,
+      ...(direction && { direction }),
+      ...(type && { type }),
+      ...(unread != null && { unread }),
+      ...(threadId && { thread_id: threadId }),
+      ...(limit && { limit }),
+    });
+  }
+
+  /**
+   * GET /api/messages/:messageId — Fetch a single message by id.
+   */
+  async getMessage(messageId) {
+    return this._request(`/api/messages/${encodeURIComponent(messageId)}`, 'GET');
+  }
+
+  /**
+   * PATCH /api/messages — Mark messages as read for this agent. Direct messages
+   * are marked read only for the target agent (or dashboard); broadcasts update
+   * read_by for this agent.
+   * @param {string[]} messageIds - Message IDs (msg_*) to mark read.
+   * @returns {Promise<{ updated: number }>}
+   */
+  async markRead(messageIds) {
+    return this._request('/api/messages', 'PATCH', {
+      message_ids: messageIds,
+      action: 'read',
+      agent_id: this.agentId,
+    });
+  }
+
+  /**
+   * PATCH /api/messages — Archive messages for this agent.
+   * @param {string[]} messageIds - Message IDs (msg_*) to archive.
+   * @returns {Promise<{ updated: number }>}
+   */
+  async archiveMessages(messageIds) {
+    return this._request('/api/messages', 'PATCH', {
+      message_ids: messageIds,
+      action: 'archive',
+      agent_id: this.agentId,
+    });
+  }
+
   // ---------------------------------------------------------------------------
   // Session Handoffs
   // ---------------------------------------------------------------------------

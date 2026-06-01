@@ -338,6 +338,11 @@ lessons.forEach(l => console.log(l.guidance));
 ### Messaging
 - `sendMessage({ to, type, subject, body, threadId, urgent })` -- Send a message to another agent or broadcast.
 - `getInbox({ type, unread, limit })` -- Retrieve inbox messages with optional filters.
+- `getSentMessages({ type, threadId, limit })` -- Retrieve messages this agent has sent.
+- `getMessages({ direction, type, unread, threadId, limit })` -- Retrieve messages with flexible filters.
+- `getMessage(messageId)` -- Fetch a single message by id.
+- `markRead(messageIds)` -- Mark messages as read for this agent (`PATCH /api/messages`, `action: 'read'`).
+- `archiveMessages(messageIds)` -- Archive messages for this agent (`PATCH /api/messages`, `action: 'archive'`).
 
 ```javascript
 // Send a message to another agent

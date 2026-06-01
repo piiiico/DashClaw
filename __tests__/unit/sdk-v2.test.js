@@ -319,6 +319,63 @@ describe('DashClaw v2 SDK', () => {
     });
   });
 
+  // --- agent messaging read-state ---
+
+  describe('agent messaging read-state', () => {
+    it('exposes markRead and archiveMessages on the client', () => {
+      expect(typeof claw.markRead).toBe('function');
+      expect(typeof claw.archiveMessages).toBe('function');
+    });
+
+    it('markRead PATCHes /api/messages with action:read, message_ids, agent_id', async () => {
+      await claw.markRead(['msg_1']);
+      const [url, opts] = fetch.mock.calls[0];
+      expect(url).toBe('http://localhost:3000/api/messages');
+      expect(opts.method).toBe('PATCH');
+      expect(JSON.parse(opts.body)).toEqual({
+        message_ids: ['msg_1'],
+        action: 'read',
+        agent_id: 'test-agent',
+      });
+    });
+
+    it('archiveMessages PATCHes /api/messages with action:archive', async () => {
+      await claw.archiveMessages(['msg_1', 'msg_2']);
+      const [url, opts] = fetch.mock.calls[0];
+      expect(url).toBe('http://localhost:3000/api/messages');
+      expect(opts.method).toBe('PATCH');
+      expect(JSON.parse(opts.body)).toEqual({
+        message_ids: ['msg_1', 'msg_2'],
+        action: 'archive',
+        agent_id: 'test-agent',
+      });
+    });
+
+    it('getMessage GETs /api/messages/:id', async () => {
+      await claw.getMessage('msg_1');
+      const [url, opts] = fetch.mock.calls[0];
+      expect(url).toBe('http://localhost:3000/api/messages/msg_1');
+      expect(opts.method).toBe('GET');
+    });
+
+    it('getSentMessages GETs /api/messages with direction=sent', async () => {
+      await claw.getSentMessages({ limit: 5 });
+      const [url, opts] = fetch.mock.calls[0];
+      expect(url).toContain('agent_id=test-agent');
+      expect(url).toContain('direction=sent');
+      expect(url).toContain('limit=5');
+      expect(opts.method).toBe('GET');
+    });
+
+    it('getMessages GETs /api/messages with the given direction', async () => {
+      await claw.getMessages({ direction: 'inbox' });
+      const [url, opts] = fetch.mock.calls[0];
+      expect(url).toContain('agent_id=test-agent');
+      expect(url).toContain('direction=inbox');
+      expect(opts.method).toBe('GET');
+    });
+  });
+
   // --- registerOpenLoop ---
 
   describe('registerOpenLoop', () => {
