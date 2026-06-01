@@ -247,7 +247,10 @@ export async function computeLearningCurves(request, { agent_id, lookback_days }
 export async function getVelocityData(request, { agent_id, limit } = {}) {
   const sql = getSql();
   const orgId = getOrgId(request);
-  const lim = Math.min(parseInt(limit || '30', 10), 100);
+  // Guard a non-numeric ?limit= (e.g. "abc"): parseInt yields NaN and LIMIT NaN
+  // makes Postgres 500 the request. Fall back to the default instead.
+  const parsedLimit = parseInt(limit, 10);
+  const lim = Math.min(Number.isFinite(parsedLimit) ? parsedLimit : 30, 100);
 
   if (agent_id) {
     return sql`SELECT * FROM learning_velocity WHERE org_id = ${orgId} AND agent_id = ${agent_id} ORDER BY created_at DESC LIMIT ${lim}`;
@@ -258,7 +261,8 @@ export async function getVelocityData(request, { agent_id, limit } = {}) {
 export async function getCurveData(request, { agent_id, action_type, limit } = {}) {
   const sql = getSql();
   const orgId = getOrgId(request);
-  const lim = Math.min(parseInt(limit || '50', 10), 200);
+  const parsedLimit = parseInt(limit, 10);
+  const lim = Math.min(Number.isFinite(parsedLimit) ? parsedLimit : 50, 200);
 
   if (agent_id && action_type) {
     return sql`SELECT * FROM learning_curves WHERE org_id = ${orgId} AND agent_id = ${agent_id} AND action_type = ${action_type} ORDER BY window_start ASC LIMIT ${lim}`;
