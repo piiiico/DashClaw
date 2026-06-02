@@ -15,6 +15,7 @@ import { RecommendedSteps } from './components/RecommendedSteps.js';
 import { ProofPanel } from './components/ProofPanel.js';
 import { ApiKeyReveal } from './components/ApiKeyReveal.js';
 import ModelPricingPanel from './components/ModelPricingPanel.js';
+import GovernancePanel from './components/GovernancePanel.jsx';
 import AgentIdentityPanel from './components/AgentIdentityPanel';
 import CopyableValueRow from './components/CopyableValueRow.js';
 import PageLayout from '../components/PageLayout';
@@ -88,6 +89,7 @@ export default async function SettingsPage({ searchParams }) {
 
   const tabs = [
     { key: 'setup', label: 'Setup & Verify', href: '/settings' },
+    { key: 'governance', label: 'Governance', href: '/settings?tab=governance' },
     { key: 'pricing', label: 'Model Pricing', href: '/settings?tab=pricing' },
     { key: 'identity', label: 'Agent Identity', href: '/settings?tab=identity' },
   ];
@@ -312,6 +314,11 @@ export default async function SettingsPage({ searchParams }) {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Governance tab */}
+      {tab === 'governance' && (
+        <GovernancePanel />
       )}
 
       {/* Model Pricing tab */}
