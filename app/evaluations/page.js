@@ -66,6 +66,11 @@ export default function EvaluationsPage() {
   const [scorerFilter, setScorerFilter] = useState('all');
   const [scoreTotal, setScoreTotal] = useState(0);
 
+  // Run detail (distribution) + cancel
+  const [expandedRunId, setExpandedRunId] = useState(null);
+  const [runDetail, setRunDetail] = useState(null);
+  const [cancelingRunId, setCancelingRunId] = useState(null);
+
   // Create scorer form
   const [showCreateScorer, setShowCreateScorer] = useState(false);
   const [newScorer, setNewScorer] = useState({ name: '', scorer_type: 'regex', config: '{}', description: '' });
@@ -186,6 +191,32 @@ export default function EvaluationsPage() {
     try {
       await fetch(`/api/evaluations/scorers/${id}`, { method: 'DELETE' });
       fetchData();
+    } catch { /* ignore */ }
+  };
+
+  // Cancel a stuck (pending/running) run
+  const handleCancelRun = async (id) => {
+    setCancelingRunId(id);
+    try {
+      await fetch(`/api/evaluations/runs/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'failed' }),
+      });
+      fetchData();
+    } catch { /* ignore */ } finally {
+      setCancelingRunId(null);
+    }
+  };
+
+  // Toggle a run's score-distribution detail
+  const handleToggleRunDetail = async (id) => {
+    if (expandedRunId === id) { setExpandedRunId(null); setRunDetail(null); return; }
+    setExpandedRunId(id);
+    setRunDetail(null);
+    try {
+      const res = await fetch(`/api/evaluations/runs/${id}`);
+      if (res.ok) setRunDetail(await res.json());
     } catch { /* ignore */ }
   };
 
@@ -475,26 +506,63 @@ export default function EvaluationsPage() {
                   <EmptyState icon={Play} title="No evaluation runs" description={scorers.length === 0 ? 'Create a scorer first, then run an evaluation.' : 'Start a run to batch-evaluate agent actions.'} />
                 ) : (
                   <div className="space-y-2">
-                    {runs.map(run => (
-                      <div
-                        key={run.id}
-                        className="flex items-center justify-between gap-3 rounded-lg border border-border bg-surface-tertiary px-3 py-2"
-                      >
-                        <div className="flex min-w-0 items-center gap-3">
-                          {run.status === 'completed' && <CheckCircle size={14} className="shrink-0 text-success" aria-hidden="true" />}
-                          {run.status === 'running' && <RefreshCw size={14} className="shrink-0 animate-spin text-info" aria-hidden="true" />}
-                          {run.status === 'failed' && <XCircle size={14} className="shrink-0 text-error" aria-hidden="true" />}
-                          {run.status === 'pending' && <Clock size={14} className="shrink-0 text-tertiary" aria-hidden="true" />}
-                          <span className="text-sm font-medium text-white">{run.name}</span>
-                          <Badge size="xs">{run.scorer_name || run.scorer_type || '—'}</Badge>
+                    {runs.map(run => {
+                      const terminal = run.status === 'completed' || run.status === 'failed';
+                      const open = expandedRunId === run.id;
+                      return (
+                      <div key={run.id} className="rounded-lg border border-border bg-surface-tertiary">
+                        <div className="flex items-center justify-between gap-3 px-3 py-2">
+                          <div className="flex min-w-0 items-center gap-3">
+                            {run.status === 'completed' && <CheckCircle size={14} className="shrink-0 text-success" aria-hidden="true" />}
+                            {run.status === 'running' && <RefreshCw size={14} className="shrink-0 animate-spin text-info" aria-hidden="true" />}
+                            {run.status === 'failed' && <XCircle size={14} className="shrink-0 text-error" aria-hidden="true" />}
+                            {run.status === 'pending' && <Clock size={14} className="shrink-0 text-tertiary" aria-hidden="true" />}
+                            <span className="text-sm font-medium text-white">{run.name}</span>
+                            <Badge size="xs">{run.scorer_name || run.scorer_type || '—'}</Badge>
+                          </div>
+                          <div className="flex shrink-0 items-center gap-3">
+                            <span className="tabular-nums text-xs text-tertiary">{run.scored_count || 0}/{run.total_actions || '?'} scored</span>
+                            {run.avg_score !== null && run.avg_score !== undefined && <ScoreBar score={parseFloat(run.avg_score)} />}
+                            <Badge variant={run.status === 'completed' ? 'success' : run.status === 'failed' ? 'error' : run.status === 'running' ? 'info' : 'default'} size="xs">{run.status}</Badge>
+                            {!terminal && (
+                              <button onClick={() => handleCancelRun(run.id)} disabled={cancelingRunId === run.id} className="text-xs text-tertiary transition-colors hover:text-error disabled:opacity-50">
+                                {cancelingRunId === run.id ? 'Cancelling…' : 'Cancel'}
+                              </button>
+                            )}
+                            <button onClick={() => handleToggleRunDetail(run.id)} className="text-xs text-tertiary transition-colors hover:text-white">
+                              {open ? 'Hide' : 'Detail'}
+                            </button>
+                          </div>
                         </div>
-                        <div className="flex shrink-0 items-center gap-3">
-                          <span className="tabular-nums text-xs text-tertiary">{run.scored_count || 0}/{run.total_actions || '?'} scored</span>
-                          {run.avg_score !== null && run.avg_score !== undefined && <ScoreBar score={parseFloat(run.avg_score)} />}
-                          <Badge variant={run.status === 'completed' ? 'success' : run.status === 'failed' ? 'error' : run.status === 'running' ? 'info' : 'default'} size="xs">{run.status}</Badge>
-                        </div>
+                        {open && (
+                          <div className="border-t border-border px-3 py-3">
+                            {!runDetail ? (
+                              <div className="text-xs text-tertiary">Loading…</div>
+                            ) : (runDetail.distribution && runDetail.distribution.length > 0) ? (
+                              <div className="flex h-16 items-end gap-2">
+                                {runDetail.distribution.map((b) => {
+                                  const max = Math.max(...runDetail.distribution.map((x) => parseInt(x.count) || 0));
+                                  const h = max > 0 ? ((parseInt(b.count) || 0) / max) * 100 : 0;
+                                  const color = b.bucket === 'excellent' ? 'bg-status-success' : b.bucket === 'acceptable' ? 'bg-status-warning' : 'bg-status-error';
+                                  return (
+                                    <div key={b.bucket} className="flex flex-1 flex-col items-center gap-1">
+                                      <span className="text-[10px] tabular-nums text-tertiary">{b.count}</span>
+                                      <div className="w-full rounded-t" style={{ height: `${Math.max(h, 4)}%` }}>
+                                        <div className={`h-full w-full rounded-t ${color}`} />
+                                      </div>
+                                      <span className="text-[10px] capitalize text-tertiary">{b.bucket}</span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <div className="text-xs text-tertiary">No score distribution recorded for this run.</div>
+                            )}
+                          </div>
+                        )}
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </CardContent>
