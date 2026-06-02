@@ -51,6 +51,8 @@ export default function ArtifactsTab({ actionId }) {
   const [artifacts, setArtifacts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [bundleSummary, setBundleSummary] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     async function load() {
@@ -71,22 +73,33 @@ export default function ArtifactsTab({ actionId }) {
 
   async function handleGenerateBundle() {
     setGenerating(true);
+    setError(null);
+    setBundleSummary(null);
     try {
       const res = await fetch('/api/artifacts/evidence-bundle', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action_id: actionId }),
       });
-      if (res.ok) {
-        // Refresh artifacts list to show the new bundle
-        const listRes = await fetch(`/api/actions/${actionId}/artifacts`);
-        if (listRes.ok) {
-          const data = await listRes.json();
-          setArtifacts(data.artifacts || []);
-        }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error === 'action_not_found' ? 'Action not found.' : (data.error || 'Failed to generate evidence bundle.'));
+        return;
       }
-    } catch {
-      /* ignore */
+      // Surface the assembled bundle the endpoint returns (previously discarded).
+      setBundleSummary({
+        steps: Array.isArray(data.steps) ? data.steps.length : 0,
+        artifacts: Array.isArray(data.artifacts) ? data.artifacts.length : 0,
+        generated_at: data.generated_at,
+      });
+      // Refresh artifacts list to show the new bundle
+      const listRes = await fetch(`/api/actions/${actionId}/artifacts`);
+      if (listRes.ok) {
+        const list = await listRes.json();
+        setArtifacts(list.artifacts || []);
+      }
+    } catch (err) {
+      setError(err.message || 'Failed to generate evidence bundle.');
     } finally {
       setGenerating(false);
     }
@@ -111,6 +124,19 @@ export default function ArtifactsTab({ actionId }) {
           {generating ? 'Generating...' : 'Generate Evidence Bundle'}
         </button>
       </div>
+
+      {error && (
+        <div role="alert" className="rounded-lg border border-error/20 bg-error-subtle px-3 py-2 text-xs text-error">
+          {error}
+        </div>
+      )}
+
+      {bundleSummary && (
+        <div role="status" className="rounded-lg border border-success/20 bg-success-subtle px-3 py-2 text-xs text-success">
+          Evidence bundle generated — {bundleSummary.steps} step{bundleSummary.steps === 1 ? '' : 's'}, {bundleSummary.artifacts} artifact{bundleSummary.artifacts === 1 ? '' : 's'}
+          {bundleSummary.generated_at ? ` · ${new Date(bundleSummary.generated_at).toLocaleString()}` : ''}.
+        </div>
+      )}
 
       {artifacts.length === 0 ? (
         <div className="text-sm text-tertiary py-8 text-center">

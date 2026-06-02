@@ -1,15 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft, ExternalLink, RotateCcw } from 'lucide-react';
+import { ArrowLeft, ExternalLink, RotateCcw, Ban } from 'lucide-react';
 
 const STATUS_BADGE = {
   completed: { label: 'Completed', color: 'bg-emerald-400/10 text-success border-success/20' },
   failed: { label: 'Failed', color: 'bg-red-400/10 text-error border-error/20' },
   running: { label: 'Running', color: 'bg-blue-400/10 text-info border-blue-400/20' },
+  cancelled: { label: 'Cancelled', color: 'bg-zinc-400/10 text-secondary border-zinc-400/20' },
 };
 
-export default function WorkflowRunHeader({ run, templateId, onResume, resuming }) {
+export default function WorkflowRunHeader({ run, templateId, onResume, resuming, onCancel, cancelling }) {
   const badge = STATUS_BADGE[run.status] || STATUS_BADGE.running;
 
   return (
@@ -42,6 +43,16 @@ export default function WorkflowRunHeader({ run, templateId, onResume, resuming 
             >
               <RotateCcw className={`w-3 h-3 ${resuming ? 'animate-spin' : ''}`} />
               {resuming ? 'Resuming...' : 'Resume from checkpoint'}
+            </button>
+          )}
+          {run.status === 'running' && onCancel && (
+            <button
+              onClick={onCancel}
+              disabled={cancelling}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-error-subtle text-error border border-error/20 hover:bg-error-subtle hover:border-error/40 transition-colors disabled:opacity-50"
+            >
+              <Ban className="w-3 h-3" />
+              {cancelling ? 'Cancelling...' : 'Cancel run'}
             </button>
           )}
         </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import PageLayout from '../../../../components/PageLayout.js';
 import WorkflowRunHeader from './components/WorkflowRunHeader.jsx';
@@ -14,29 +14,62 @@ export default function WorkflowRunDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [resuming, setResuming] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
-  useEffect(() => {
-    async function loadRun() {
-      try {
-        const res = await fetch(`/api/workflows/templates/${templateId}/runs/${runActionId}`);
-        if (!res.ok) {
-          if (res.status === 404) {
-            setError('not_found');
-          } else {
-            setError('fetch_failed');
-          }
-          return;
-        }
-        const data = await res.json();
-        setRun(data);
-      } catch {
-        setError('fetch_failed');
-      } finally {
-        setLoading(false);
+  const loadRun = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/workflows/templates/${templateId}/runs/${runActionId}`);
+      if (!res.ok) {
+        setError(res.status === 404 ? 'not_found' : 'fetch_failed');
+        return null;
       }
+      const data = await res.json();
+      setRun(data);
+      setError(null);
+      return data;
+    } catch {
+      setError('fetch_failed');
+      return null;
+    } finally {
+      setLoading(false);
     }
-    loadRun();
   }, [templateId, runActionId]);
+
+  // Poll while the run is still executing so the timeline advances live
+  // instead of freezing on the first snapshot (a run can take up to ~2 min).
+  useEffect(() => {
+    let cancelled = false;
+    let timer;
+    const tick = async () => {
+      const data = await loadRun();
+      if (cancelled) return;
+      if (data && (data.status === 'running' || data.status === 'pending')) {
+        timer = setTimeout(tick, 4000);
+      }
+    };
+    tick();
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [loadRun]);
+
+  async function handleCancel() {
+    setCancelling(true);
+    try {
+      const res = await fetch(`/api/workflows/templates/${templateId}/runs/${runActionId}/cancel`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        alert(err.message || 'Cancel failed');
+      }
+      await loadRun();
+    } catch {
+      alert('Cancel failed');
+    } finally {
+      setCancelling(false);
+    }
+  }
 
   async function handleResume() {
     setResuming(true);
@@ -97,7 +130,7 @@ export default function WorkflowRunDetailPage() {
   return (
     <PageLayout title={run.template_name || 'Workflow Run'} maturity="beta">
       <div className="space-y-8">
-        <WorkflowRunHeader run={run} templateId={templateId} onResume={handleResume} resuming={resuming} />
+        <WorkflowRunHeader run={run} templateId={templateId} onResume={handleResume} resuming={resuming} onCancel={handleCancel} cancelling={cancelling} />
         <div>
           <h2 className="text-sm font-medium text-secondary mb-3">Steps</h2>
           <WorkflowRunTimeline steps={run.steps} />
