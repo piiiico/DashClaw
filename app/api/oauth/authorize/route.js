@@ -69,6 +69,14 @@ export async function GET(request) {
   const v = await validate(request);
   if (!v.ok) return NextResponse.json({ error: v.error }, { status: 400 });
 
+  // form-action must permit BOTH this endpoint (the POST target) AND the client's
+  // (already-validated) callback origin. Chromium/Brave enforce form-action against
+  // the redirect that the POST returns, so a bare 'self' silently blocks the
+  // post-consent redirect to claude.ai and the Authorize button does nothing.
+  let callbackOrigin = '';
+  try { callbackOrigin = new URL(v.q.redirectUri).origin; } catch { /* validated above */ }
+  const formAction = callbackOrigin ? `'self' ${callbackOrigin}` : "'self'";
+
   // Minimal consent page. POSTs back to this same URL (query preserved).
   const html = `<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -86,7 +94,7 @@ export async function GET(request) {
     status: 200,
     headers: {
       'Content-Type': 'text/html; charset=utf-8',
-      'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; base-uri 'none'",
+      'Content-Security-Policy': `default-src 'none'; style-src 'unsafe-inline'; form-action ${formAction}; base-uri 'none'`,
       'X-Frame-Options': 'DENY',
     },
   });
@@ -119,5 +127,7 @@ export async function POST(request) {
   const redirect = new URL(v.q.redirectUri);
   redirect.searchParams.set('code', code);
   if (v.q.state) redirect.searchParams.set('state', v.q.state);
-  return NextResponse.redirect(redirect);
+  // 303 See Other: the consent submit was a POST, but the callback must be
+  // fetched with GET (a 307 would re-POST the form body to claude.ai).
+  return NextResponse.redirect(redirect, 303);
 }

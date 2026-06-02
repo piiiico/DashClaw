@@ -37,6 +37,9 @@ describe('GET /api/oauth/authorize', () => {
     expect(res.status).toBe(200);
     expect(res.headers.get('content-type')).toContain('text/html');
     expect(await res.text()).toContain('Authorize');
+    // CSP form-action must allow the validated callback origin or the post-consent
+    // redirect to claude.ai is blocked by the browser (Authorize button does nothing).
+    expect(res.headers.get('content-security-policy')).toContain("form-action 'self' https://claude.ai");
   });
 
   it('rejects an unregistered client', async () => {
@@ -59,7 +62,7 @@ describe('POST /api/oauth/authorize', () => {
     mockGetToken.mockResolvedValue({ orgId: 'org_1', userId: 'usr_1' });
     // Same-origin headers satisfy the CSRF check on the consent POST.
     const res = await POST(makeRequest(`https://x/api/oauth/authorize?${VALID_QS}`, { headers: { host: 'x', origin: 'https://x' } }));
-    expect(res.status).toBe(307);
+    expect(res.status).toBe(303);
     const loc = res.headers.get('location');
     expect(loc).toContain('https://claude.ai/api/mcp/auth_callback?code=');
     expect(loc).toContain('state=xyz');
