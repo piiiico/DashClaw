@@ -38,6 +38,9 @@ export default function ScoringPage() {
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [scoringId, setScoringId] = useState(null);      // profile id currently being scored
   const [scoreSummary, setScoreSummary] = useState(null); // { profileId, summary? , error? }
+  const [profileStatus, setProfileStatus] = useState('active'); // active | archived
+  const [scoreStats, setScoreStats] = useState(null);    // ?view=stats for the selected profile
+  const [editTemplateId, setEditTemplateId] = useState(null);
 
   // --- Create Profile Form State --------------------------
   const [newProfile, setNewProfile] = useState({
@@ -62,13 +65,14 @@ export default function ScoringPage() {
         setProfiles(demoScoringProfiles);
         return;
       }
-      const res = await fetch('/api/scoring/profiles');
+      const qs = profileStatus === 'active' ? '' : `?status=${profileStatus}`;
+      const res = await fetch(`/api/scoring/profiles${qs}`);
       if (res.ok) {
         const data = await res.json();
         setProfiles(data.profiles || []);
       }
     } catch (err) { console.error('Failed to fetch profiles:', err); }
-  }, []);
+  }, [profileStatus]);
 
   const fetchRiskTemplates = useCallback(async () => {
     try {
@@ -89,6 +93,7 @@ export default function ScoringPage() {
       if (isDemoMode()) {
         await new Promise(r => setTimeout(r, 400));
         setScores(demoScoringScores);
+        setScoreStats(null);
         return;
       }
       const url = profileId
@@ -98,6 +103,12 @@ export default function ScoringPage() {
       if (res.ok) {
         const data = await res.json();
         setScores(data.scores || []);
+      }
+      if (profileId) {
+        const statsRes = await fetch(`/api/scoring/score?view=stats&profile_id=${profileId}`);
+        if (statsRes.ok) setScoreStats(await statsRes.json());
+      } else {
+        setScoreStats(null);
       }
     } catch (err) { console.error('Failed to fetch scores:', err); }
   }, []);
@@ -230,6 +241,31 @@ export default function ScoringPage() {
     fetchRiskTemplates();
   };
 
+  const handleUnarchiveProfile = async (profileId) => {
+    await fetch(`/api/scoring/profiles/${profileId}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'active' }),
+    });
+    fetchProfiles();
+  };
+
+  const handleUpdateTemplate = async () => {
+    if (!editTemplateId) return;
+    const payload = {
+      ...newTemplate,
+      action_type: newTemplate.action_type || null,
+      rules: newTemplate.rules.filter(r => r.condition),
+    };
+    const res = await fetch(`/api/scoring/risk-templates/${editTemplateId}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
+    });
+    if (res.ok) {
+      setEditTemplateId(null);
+      setNewTemplate({ name: '', description: '', action_type: '', base_risk: 20, rules: [{ condition: '', add: 10 }] });
+      fetchRiskTemplates();
+    }
+  };
+
   // --- Score color helper ---------------------------------
 
   const scoreColor = (score) => {
@@ -268,7 +304,15 @@ export default function ScoringPage() {
       {activeTab === 'Profiles' && (
         <div>
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold">Scoring Profiles</h2>
+            <div className="flex items-center gap-3">
+              <h2 className="text-lg font-semibold">Scoring Profiles</h2>
+              <div className="flex gap-0.5 bg-[#111] rounded-lg p-0.5">
+                {['active', 'archived'].map(s => (
+                  <button key={s} onClick={() => setProfileStatus(s)}
+                    className={`px-2.5 py-1 rounded text-xs font-medium capitalize transition-colors ${profileStatus === s ? 'bg-[#222] text-white' : 'text-tertiary hover:text-secondary'}`}>{s}</button>
+                ))}
+              </div>
+            </div>
             <button onClick={() => setShowCreate(!showCreate)}
               className="px-4 py-2 rounded-lg bg-brand text-black text-sm font-medium hover:bg-brand/90">
               {showCreate ? 'Cancel' : 'Create Profile'}
@@ -367,8 +411,13 @@ export default function ScoringPage() {
                     )}
                     <button onClick={() => { setSelectedProfile(profile); fetchScores(profile.id); setActiveTab('Score Explorer'); }}
                       className="text-xs text-brand hover:text-brand/80">View Scores</button>
-                    <button onClick={() => handleArchiveProfile(profile.id)}
-                      className="text-xs text-tertiary hover:text-error">Archive</button>
+                    {profile.status === 'archived' ? (
+                      <button onClick={() => handleUnarchiveProfile(profile.id)}
+                        className="text-xs text-tertiary hover:text-success">Unarchive</button>
+                    ) : (
+                      <button onClick={() => handleArchiveProfile(profile.id)}
+                        className="text-xs text-tertiary hover:text-error">Archive</button>
+                    )}
                   </div>
                 </div>
 
@@ -418,6 +467,23 @@ export default function ScoringPage() {
           <h2 className="text-lg font-semibold mb-4">
             {selectedProfile ? `Scores: ${selectedProfile.name}` : 'Recent Scores (all profiles)'}
           </h2>
+          {selectedProfile && scoreStats && (scoreStats.total_scores || 0) > 0 && (
+            <div className="mb-4 grid grid-cols-3 md:grid-cols-6 gap-2">
+              {[
+                { label: 'Scores', value: scoreStats.total_scores },
+                { label: 'Avg', value: scoreStats.avg_score ?? '—' },
+                { label: 'Min', value: scoreStats.min_score ?? '—' },
+                { label: 'Max', value: scoreStats.max_score ?? '—' },
+                { label: 'Std dev', value: scoreStats.stddev_score ?? '—' },
+                { label: 'Agents', value: scoreStats.unique_agents ?? '—' },
+              ].map(s => (
+                <div key={s.label} className="p-2 rounded bg-[#111] border border-[rgba(255,255,255,0.04)] text-center">
+                  <div className="text-sm font-semibold text-white tabular-nums">{s.value}</div>
+                  <div className="text-[10px] text-tertiary">{s.label}</div>
+                </div>
+              ))}
+            </div>
+          )}
           {scores.length === 0 && <EmptyState title="No scores yet" description="Score actions against a profile to see results here." />}
           <div className="space-y-2">
             {scores.map(score => (
@@ -435,16 +501,24 @@ export default function ScoringPage() {
                 {score.dimension_scores && (
                   <div className="mt-2 space-y-1">
                     {score.dimension_scores.map((ds, i) => (
-                      <div key={i} className="flex items-center gap-2 text-xs">
-                        <span className="text-tertiary w-24 truncate">{ds.dimension_name}</span>
-                        <div className="flex-1 bg-[#111] rounded-full h-2">
-                          <div className={`h-2 rounded-full ${scoreBg(ds.score || 0)}`}
-                            style={{ width: `${ds.score || 0}%` }} />
+                      <div key={i}>
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="text-tertiary w-24 truncate">{ds.dimension_name}</span>
+                          <div className="flex-1 bg-[#111] rounded-full h-2">
+                            <div className={`h-2 rounded-full ${scoreBg(ds.score || 0)}`}
+                              style={{ width: `${ds.score || 0}%` }} />
+                          </div>
+                          <span className={`w-8 text-right ${scoreColor(ds.score || 0)}`}>{ds.score ?? '-'}</span>
+                          <Badge color={ds.label === 'excellent' ? 'green' : ds.label === 'good' ? 'blue' : ds.label === 'poor' ? 'red' : 'zinc'}>
+                            {ds.label}
+                          </Badge>
                         </div>
-                        <span className={`w-8 text-right ${scoreColor(ds.score || 0)}`}>{ds.score ?? '-'}</span>
-                        <Badge color={ds.label === 'excellent' ? 'green' : ds.label === 'good' ? 'blue' : ds.label === 'poor' ? 'red' : 'zinc'}>
-                          {ds.label}
-                        </Badge>
+                        {(ds.raw_value != null || ds.weight != null) && (
+                          <div className="ml-[6.5rem] mt-0.5 text-[10px] text-disabled tabular-nums">
+                            {ds.raw_value != null && <>raw {typeof ds.raw_value === 'number' ? Math.round(ds.raw_value * 100) / 100 : ds.raw_value}</>}
+                            {ds.weight != null && <> · weight {Math.round(ds.weight * 100)}%</>}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -465,7 +539,13 @@ export default function ScoringPage() {
           </p>
 
           <Card className="mb-6 p-4 space-y-3">
-            <h3 className="text-sm font-medium text-secondary">Create Risk Template</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-medium text-secondary">{editTemplateId ? 'Edit Risk Template' : 'Create Risk Template'}</h3>
+              {editTemplateId && (
+                <button onClick={() => { setEditTemplateId(null); setNewTemplate({ name: '', description: '', action_type: '', base_risk: 20, rules: [{ condition: '', add: 10 }] }); }}
+                  className="text-xs text-tertiary hover:text-white">Cancel edit</button>
+              )}
+            </div>
             <input value={newTemplate.name} onChange={e => setNewTemplate(t => ({ ...t, name: e.target.value }))}
               placeholder="Template name (e.g. 'Production Safety')"
               className="w-full px-3 py-2 bg-[#111] border border-[rgba(255,255,255,0.1)] rounded-lg text-sm text-white" />
@@ -503,9 +583,9 @@ export default function ScoringPage() {
             <button onClick={() => setNewTemplate(t => ({ ...t, rules: [...t.rules, { condition: '', add: 10 }] }))}
               className="text-sm text-brand hover:text-brand/80">+ Add rule</button>
 
-            <button onClick={handleCreateTemplate} disabled={!newTemplate.name}
+            <button onClick={editTemplateId ? handleUpdateTemplate : handleCreateTemplate} disabled={!newTemplate.name}
               className="px-4 py-2 rounded-lg bg-brand text-black text-sm font-medium hover:bg-brand/90 disabled:opacity-40">
-              Create Template
+              {editTemplateId ? 'Save changes' : 'Create Template'}
             </button>
           </Card>
 
@@ -523,8 +603,12 @@ export default function ScoringPage() {
                       <Badge color="zinc">{(tmpl.rules || []).length} rules</Badge>
                     </div>
                   </div>
-                  <button onClick={() => handleDeleteTemplate(tmpl.id)}
-                    className="text-xs text-tertiary hover:text-error">Delete</button>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => { setEditTemplateId(tmpl.id); setNewTemplate({ name: tmpl.name, description: tmpl.description || '', action_type: tmpl.action_type || '', base_risk: tmpl.base_risk ?? 20, rules: (tmpl.rules && tmpl.rules.length) ? tmpl.rules.map(r => ({ condition: r.condition, add: r.add })) : [{ condition: '', add: 10 }] }); }}
+                      className="text-xs text-tertiary hover:text-white">Edit</button>
+                    <button onClick={() => handleDeleteTemplate(tmpl.id)}
+                      className="text-xs text-tertiary hover:text-error">Delete</button>
+                  </div>
                 </div>
                 {tmpl.rules && tmpl.rules.length > 0 && (
                   <div className="mt-2 space-y-1">
