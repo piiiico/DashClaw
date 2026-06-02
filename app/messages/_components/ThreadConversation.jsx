@@ -7,7 +7,7 @@ import { timeAgo, TYPE_VARIANTS, copyToClipboard, formatDateGroup } from './help
 import MarkdownBody from './MarkdownBody';
 import AttachmentChips from './AttachmentChips';
 
-export default function ThreadConversation({ thread, filterAgentId, onNewMessage, fullWidth }) {
+export default function ThreadConversation({ thread, filterAgentId, onNewMessage, onThreadUpdated, fullWidth }) {
   const isDemo = isDemoMode();
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,9 +15,45 @@ export default function ThreadConversation({ thread, filterAgentId, onNewMessage
   const [sending, setSending] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
   const [replyAttachments, setReplyAttachments] = useState([]);
+  // Thread status/summary are editable here (PATCH /api/messages/threads).
+  // Kept in local state so the header reflects changes immediately; re-synced
+  // when the selected thread changes.
+  const [localStatus, setLocalStatus] = useState(thread.status);
+  const [localSummary, setLocalSummary] = useState(thread.summary || '');
+  const [editingSummary, setEditingSummary] = useState(false);
+  const [summaryDraft, setSummaryDraft] = useState('');
+  const [patching, setPatching] = useState(false);
   const replyFileRef = useRef(null);
   const bottomRef = useRef(null);
   const containerRef = useRef(null);
+
+  useEffect(() => {
+    setLocalStatus(thread.status);
+    setLocalSummary(thread.summary || '');
+    setEditingSummary(false);
+  }, [thread.id, thread.status, thread.summary]);
+
+  const patchThread = useCallback(async (updates) => {
+    if (isDemo) return;
+    setPatching(true);
+    if (updates.status != null) setLocalStatus(updates.status);     // optimistic
+    if (updates.summary !== undefined) setLocalSummary(updates.summary || '');
+    try {
+      const res = await fetch('/api/messages/threads', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ thread_id: thread.id, ...updates }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.thread) {
+        if (data.thread.status != null) setLocalStatus(data.thread.status);
+        if (data.thread.summary !== undefined) setLocalSummary(data.thread.summary || '');
+        onThreadUpdated?.(data.thread);
+      }
+    } finally {
+      setPatching(false);
+    }
+  }, [isDemo, thread.id, onThreadUpdated]);
 
   const participants = (() => {
     try {
@@ -156,10 +192,19 @@ export default function ThreadConversation({ thread, filterAgentId, onNewMessage
         <div className="flex items-center gap-2 mb-1">
           <Hash size={14} className="text-secondary" />
           <span className="text-sm font-semibold text-white">{thread.name}</span>
-          <Badge variant={thread.status === 'open' ? 'success' : 'default'} size="xs">
-            {thread.status}
+          <Badge variant={localStatus === 'open' ? 'success' : 'default'} size="xs">
+            {localStatus}
           </Badge>
           <span className="text-xs text-tertiary">{thread.message_count || messages.length} messages</span>
+          {!isDemo && (
+            <button
+              onClick={() => patchThread({ status: localStatus === 'resolved' ? 'open' : 'resolved' })}
+              disabled={patching}
+              className="ml-auto text-xs text-secondary hover:text-white disabled:opacity-50"
+            >
+              {localStatus === 'resolved' ? 'Reopen' : 'Resolve thread'}
+            </button>
+          )}
         </div>
         {participants.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-1">
@@ -170,8 +215,40 @@ export default function ThreadConversation({ thread, filterAgentId, onNewMessage
             ))}
           </div>
         )}
-        {thread.summary && (
-          <div className="text-xs text-tertiary mt-1">{thread.summary}</div>
+        {editingSummary ? (
+          <div className="flex items-center gap-2 mt-1">
+            <input
+              value={summaryDraft}
+              onChange={e => setSummaryDraft(e.target.value)}
+              placeholder="Thread summary"
+              aria-label="Thread summary"
+              className="flex-1 px-2 py-1 text-xs bg-surface-primary border border-[rgba(255,255,255,0.06)] rounded text-secondary"
+            />
+            <button
+              onClick={() => { patchThread({ summary: summaryDraft }); setEditingSummary(false); }}
+              disabled={patching}
+              className="text-xs text-brand hover:text-brand/80 disabled:opacity-50"
+            >
+              Save
+            </button>
+            <button onClick={() => setEditingSummary(false)} className="text-xs text-tertiary hover:text-white">
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 mt-1">
+            {localSummary
+              ? <span className="text-xs text-tertiary">{localSummary}</span>
+              : <span className="text-xs text-disabled italic">No summary</span>}
+            {!isDemo && (
+              <button
+                onClick={() => { setSummaryDraft(localSummary); setEditingSummary(true); }}
+                className="text-xs text-secondary hover:text-white"
+              >
+                {localSummary ? 'Edit' : 'Add summary'}
+              </button>
+            )}
+          </div>
         )}
       </div>
 
@@ -246,7 +323,7 @@ export default function ThreadConversation({ thread, filterAgentId, onNewMessage
             );
           })
         )}
-        {thread.status === 'resolved' && (
+        {localStatus === 'resolved' && (
           <div className="flex items-center gap-2 py-2 px-3 rounded-md bg-success-subtle border border-success/20 text-success text-xs">
             Thread resolved
           </div>
