@@ -2,6 +2,8 @@
 
 Frontend/backend sync gaps: governance capabilities the backend supports that the dashboard never exposes to users. Audit-only — no code was changed.
 
+> **STATUS (updated 2026-06-02):** This is the original audit. Remediation is underway — **all 15 High items are done** and all fabricated/misleading data is removed, plus a large chunk of the Medium/Low/partially-wired tail. See **`SYNC_AUDIT_IMPLEMENTATION.md`** for exactly what's implemented and the precise "Still remaining" backlog (~25 items). Use that doc as the source of truth; the `file:line` map below is still the backend reference for the remaining items.
+
 ## Summary
 
 - **Active API route+method capabilities mapped:** ~219 (≈170 fully wired) across the non-archived runtime (`app/api/**` excluding `app/api/_archive/**`).
