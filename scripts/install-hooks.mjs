@@ -105,7 +105,7 @@ export function hookBlocks(python = 'python') {
   return {
     PreToolUse: [
       {
-        matcher: 'Agent|Task|Bash|Edit|Write|MultiEdit',
+        matcher: 'Agent|Task|Bash|Edit|Write|MultiEdit|mcp__.*',
         hooks: [
           {
             type: 'command',
@@ -117,7 +117,7 @@ export function hookBlocks(python = 'python') {
     ],
     PostToolUse: [
       {
-        matcher: 'Agent|Task|Bash|Edit|Write|MultiEdit',
+        matcher: 'Agent|Task|Bash|Edit|Write|MultiEdit|mcp__.*',
         hooks: [
           {
             type: 'command',

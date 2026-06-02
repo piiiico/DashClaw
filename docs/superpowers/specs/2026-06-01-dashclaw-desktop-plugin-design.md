@@ -1,7 +1,7 @@
 # DashClaw on Claude Desktop — Plugin + OAuth Connector Design Spec
 
 **Date:** 2026-06-01
-**Status:** Draft
+**Status:** Leg 2 (OAuth) IMPLEMENTED as of 2026-06-02 — full PKCE S256 authorization server at `app/api/oauth/{authorize,token,register}/route.js` + `app/api/oauth/metadata/*` discovery routes + `/api/mcp` `401`/`WWW-Authenticate` challenge in `middleware.js`. Leg 1 (`.mcpb` packaging + `marketplace.json`) still pending. The "only new engineering is OAuth / to-build OAuth" framing below is historical — do not re-scope it as unbuilt.
 **Author:** Wes + Claude
 
 ## Overview

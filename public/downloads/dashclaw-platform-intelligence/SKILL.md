@@ -5,7 +5,7 @@ description: DashClaw platform expert for integration, troubleshooting, and gove
 
 # DashClaw Platform Intelligence
 
-**Shape snapshot:** `sha1:b07488c696f76f9a2ef74b73bf9e5824c448bdf2`
+**Shape snapshot:** `sha1:7e54ac30e23ed6655f5202d46e66ee993cbdbb42`
 **This file is auto-generated.** Do not edit by hand — regenerate with:
 
 ```bash
@@ -46,7 +46,7 @@ neither exists. When you cannot run the queries above, fall back **in this order
 ## At a Glance
 
 - **220** active API routes across **54** categories
-- **4** required + **133** optional environment variables
+- **4** required + **135** optional environment variables
 - **89** database tables
 
 ## API Surface
@@ -437,7 +437,7 @@ neither exists. When you cannot run the queries above, fall back **in this order
 
 These must be set — DashClaw will fail to start without them.
 
-- **`DASHCLAW_API_KEY`** - referenced in 58 file(s)
+- **`DASHCLAW_API_KEY`** - referenced in 59 file(s)
 - **`DATABASE_URL`** - referenced in 87 file(s)
 - **`ENCRYPTION_KEY`** - referenced in 4 file(s)
 - **`NEXTAUTH_SECRET`** - referenced in 5 file(s)
@@ -452,6 +452,7 @@ These have fallbacks or only activate specific features.
 - `ALERT_FROM_EMAIL` *(undocumented)*
 - `ALLOWED_ORIGIN` *(undocumented)*
 - `ANTHROPIC_API_KEY` *(undocumented)*
+- `ANTHROPIC_MODEL` *(undocumented)*
 - `API_INVENTORY_VERIFIED_DATE` *(undocumented)*
 - `API_SECRET` *(undocumented)*
 - `BASE_URL` *(undocumented)*
@@ -477,6 +478,7 @@ These have fallbacks or only activate specific features.
 - `DASHCLAW_DB_POOL_MAX` *(undocumented)*
 - `DASHCLAW_DISABLE_RATE_LIMIT` *(undocumented)*
 - `DASHCLAW_GUARD_FALLBACK` *(undocumented)*
+- `DASHCLAW_GUARD_UNAVAILABLE_POLICY` *(undocumented)*
 - `DASHCLAW_HOSTED` *(undocumented)*
 - `DASHCLAW_JTI_MAX_TTL_SECONDS` *(undocumented)*
 - `DASHCLAW_JTI_REPLAY_PROTECTION` *(undocumented)*

@@ -8,7 +8,7 @@ Parallels the Codex plugin in `../.codex-plugin/` and the Claude Code installati
 
 **Skills** (registered as `dashclaw:governance` and `dashclaw:platform-intelligence`)
 - `dashclaw-governance` — when to call guard, how to interpret decisions, action recording, session lifecycle.
-- `dashclaw-platform-intelligence` — auto-generated API surface reference (181 routes) plus diagnostic scripts.
+- `dashclaw-platform-intelligence` — auto-generated API surface reference plus diagnostic scripts.
 
 **MCP tools** via `../.mcp.json` (same server as Codex and Claude Code) — guard check, action recording, approval wait, governed capability invocation, policy discovery, session tracking, Optimal Files preview/manifest, code-session resources.
 
