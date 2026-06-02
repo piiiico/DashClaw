@@ -1774,6 +1774,14 @@
       "file_path": "app/api/guard/decisions/route.js"
     },
     {
+      "path": "/api/handoffs",
+      "methods": [
+        "GET"
+      ],
+      "dynamic_params": [],
+      "file_path": "app/api/handoffs/route.js"
+    },
+    {
       "path": "/api/handoffs/[id]",
       "methods": [
         "GET"
@@ -3437,6 +3445,7 @@
     {
       "path": "/api/handoffs",
       "methods": [
+        "GET",
         "POST"
       ],
       "dynamic_params": [],

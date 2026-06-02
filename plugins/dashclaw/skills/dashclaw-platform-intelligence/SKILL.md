@@ -5,7 +5,7 @@ description: DashClaw platform expert for integration, troubleshooting, and gove
 
 # DashClaw Platform Intelligence
 
-**Shape snapshot:** `sha1:cb3281255ca2361115aee440e25277b2b5fedcf1`
+**Shape snapshot:** `sha1:b07488c696f76f9a2ef74b73bf9e5824c448bdf2`
 **This file is auto-generated.** Do not edit by hand — regenerate with:
 
 ```bash
@@ -206,7 +206,7 @@ neither exists. When you cannot run the queries above, fall back **in this order
 
 ### `handoffs`
 
-- `POST` `/api/handoffs`
+- `GET, POST` `/api/handoffs`
 - `GET` `/api/handoffs/[id]`
 - `POST` `/api/handoffs/[id]/consume`
 - `GET` `/api/handoffs/latest`

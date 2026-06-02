@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:cb3281255ca2361115aee440e25277b2b5fedcf1",
+  "timestamp": "sha1:b07488c696f76f9a2ef74b73bf9e5824c448bdf2",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -1453,6 +1453,7 @@
     {
       "path": "/api/handoffs",
       "methods": [
+        "GET",
         "POST"
       ],
       "dynamic_params": [],

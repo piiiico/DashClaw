@@ -165,7 +165,7 @@ doc-type: architecture
 | `/api/evaluations/stats` | `GET` | `experimental` | `(default)` | `app/api/evaluations/stats/route.js` |
 | `/api/guard` | `GET, POST` | `stable` | `/api/guard` | `app/api/guard/route.js` |
 | `/api/guard/decisions` | `GET` | `stable` | `/api/guard` | `app/api/guard/decisions/route.js` |
-| `/api/handoffs` | `POST` | `stable` | `/api/handoffs` | `app/api/handoffs/route.js` |
+| `/api/handoffs` | `GET, POST` | `stable` | `/api/handoffs` | `app/api/handoffs/route.js` |
 | `/api/handoffs/latest` | `GET` | `stable` | `/api/handoffs` | `app/api/handoffs/latest/route.js` |
 | `/api/handoffs/{id}` | `GET` | `stable` | `/api/handoffs` | `app/api/handoffs/[id]/route.js` |
 | `/api/handoffs/{id}/consume` | `POST` | `stable` | `/api/handoffs` | `app/api/handoffs/[id]/consume/route.js` |

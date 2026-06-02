@@ -29,6 +29,10 @@ are prefixed with the package name.
 
 ## [Unreleased]
 
+### Fixed — `GET /api/handoffs` (Handoffs tab + SDK `getLatestHandoff`/`get_handoffs`)
+
+- **Fixed.** `/api/handoffs` only exported `POST`, so every `GET /api/handoffs` 405'd — breaking the Workspace **Handoffs** tab (always empty) and the documented SDK read methods (Node `getLatestHandoff`, Python `get_handoffs`/`get_latest_handoff`). Added a `GET` handler: list mode (`?agent_id=&project_id=&limit=`, most-recent first) and single-latest mode (`?latest=true`, the SDK contract), backed by a new `listHandoffs` repository function. The Handoffs tab now reads the real freeform `bundle` shape (`summary`, `decisions_made`, `open_loops`, `state_snapshot`) instead of a legacy flat shape that never existed in this API.
+
 ### MoltFire + Claude Code "Branch Finish" loop (DashClaw Labs)
 
 A real operating loop that uses the Labs surfaces together to finish a Claude Code branch with governance — render the review prompt, search the standards knowledge, approval-gate the push, simulate a policy, check capability health, score quality, and record the outcome.

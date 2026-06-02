@@ -1022,6 +1022,45 @@
       }
     },
     "/api/handoffs": {
+      "get": {
+        "operationId": "get_api_handoffs",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Validation or request error"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "GET /api/handoffs",
+        "tags": [
+          "handoffs"
+        ],
+        "x-api-maturity": "stable"
+      },
       "post": {
         "operationId": "post_api_handoffs",
         "parameters": [],

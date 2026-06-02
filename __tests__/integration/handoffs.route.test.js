@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const repo = vi.hoisted(() => ({
   createHandoff: vi.fn(),
   getLatestHandoff: vi.fn(),
+  listHandoffs: vi.fn(),
   getHandoffById: vi.fn(),
   consumeHandoff: vi.fn(),
 }));
@@ -49,6 +50,46 @@ describe('POST /api/handoffs', () => {
     const { POST } = await import('../../app/api/handoffs/route.js');
     const res = await POST(jsonRequest('http://test/api/handoffs', 'POST', { agent_id: 'h', bundle: {} }));
     expect(res.status).toBe(500);
+  });
+});
+
+describe('GET /api/handoffs', () => {
+  it('lists handoffs (most-recent first) and exposes the bundle', async () => {
+    repo.listHandoffs.mockResolvedValue([
+      { id: 'hf_2', agent_id: 'hermes', project_id: null, bundle_json: { summary: 'newer' }, created_at: '2026-06-02T00:00:00Z', consumed_at: null },
+      { id: 'hf_1', agent_id: 'hermes', project_id: null, bundle_json: { summary: 'older' }, created_at: '2026-06-01T00:00:00Z', consumed_at: null },
+    ]);
+    const { GET } = await import('../../app/api/handoffs/route.js');
+    const res = await GET(new Request('http://test/api/handoffs?agent_id=hermes', { headers: { 'x-api-key': 'test' } }));
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.handoffs).toHaveLength(2);
+    expect(json.total).toBe(2);
+    expect(json.handoffs[0].bundle.summary).toBe('newer');
+    expect(repo.listHandoffs).toHaveBeenCalledWith({}, 'org_1', expect.objectContaining({ agentId: 'hermes' }));
+  });
+
+  it('returns the single latest handoff with ?latest=true', async () => {
+    repo.getLatestHandoff.mockResolvedValue({ id: 'hf_1', agent_id: 'hermes', project_id: null, bundle_json: { summary: 's' }, created_at: '2026-06-01T00:00:00Z' });
+    const { GET } = await import('../../app/api/handoffs/route.js');
+    const res = await GET(new Request('http://test/api/handoffs?agent_id=hermes&latest=true', { headers: { 'x-api-key': 'test' } }));
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.bundle.summary).toBe('s');
+    expect(repo.listHandoffs).not.toHaveBeenCalled();
+  });
+
+  it('returns 400 for ?latest=true without agent_id', async () => {
+    const { GET } = await import('../../app/api/handoffs/route.js');
+    const res = await GET(new Request('http://test/api/handoffs?latest=true', { headers: { 'x-api-key': 'test' } }));
+    expect(res.status).toBe(400);
+  });
+
+  it('returns 404 for ?latest=true when none exist', async () => {
+    repo.getLatestHandoff.mockResolvedValue(null);
+    const { GET } = await import('../../app/api/handoffs/route.js');
+    const res = await GET(new Request('http://test/api/handoffs?agent_id=hermes&latest=true', { headers: { 'x-api-key': 'test' } }));
+    expect(res.status).toBe(404);
   });
 });
 

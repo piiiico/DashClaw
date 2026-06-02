@@ -73,6 +73,29 @@ export async function getLatestHandoff(sql, orgId, filter) {
   return rows[0] || null;
 }
 
+/**
+ * List recent handoffs for an org, optionally filtered by agent and/or project.
+ * Backs `GET /api/handoffs` (the dashboard Handoffs tab and the SDK
+ * `get_handoffs` list method). Most-recent first.
+ */
+export async function listHandoffs(sql, orgId, filter = {}) {
+  const agentId = filter.agentId || null;
+  const projectId = filter.projectId || null;
+  const limit = Math.min(parseInt(filter.limit, 10) || 20, 100);
+
+  const rows = await sql`
+    SELECT id, org_id, agent_id, project_id, created_in_session_id,
+           bundle_json, created_at, consumed_at, consumed_by_session_id
+    FROM code_session_handoffs
+    WHERE org_id = ${orgId}
+      ${agentId ? sql`AND agent_id = ${agentId}` : sql``}
+      ${projectId ? sql`AND project_id = ${projectId}` : sql``}
+    ORDER BY created_at DESC
+    LIMIT ${limit}
+  `;
+  return rows;
+}
+
 export async function getHandoffById(sql, orgId, id) {
   const rows = await sql`
     SELECT id, org_id, agent_id, project_id, created_in_session_id,

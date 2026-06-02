@@ -588,28 +588,35 @@ function HandoffsTab({ agentId, dense }) {
         <HelpIcon sectionKey="handoffs" tip={HELP_TIPS['handoffs']} />
       </span>
       {handoffs.map(h => {
-        const decisions = safeParseJson(h.key_decisions);
-        const tasks = safeParseJson(h.open_tasks);
-        const priorities = safeParseJson(h.next_priorities);
+        // The stored handoff bundle is freeform JSON; the canonical keys
+        // (summary, decisions_made, open_loops, state_snapshot) are what the
+        // SDKs write. The tab previously read a legacy flat shape that never
+        // existed in this API.
+        const bundle = h.bundle || {};
+        const asItems = (v) => (Array.isArray(v) ? v : v == null ? [] : [v]);
+        const stateItems = bundle.state_snapshot
+          ? (typeof bundle.state_snapshot === 'object'
+              ? Object.entries(bundle.state_snapshot).map(([k, val]) => `${k}: ${typeof val === 'object' ? JSON.stringify(val) : val}`)
+              : [String(bundle.state_snapshot)])
+          : [];
         const agentColor = getAgentColor(h.agent_id);
 
         const sections = [
-          { key: 'decisions', label: 'Key Decisions', items: decisions },
-          { key: 'tasks', label: 'Open Tasks', items: tasks },
-          { key: 'priorities', label: 'Next Priorities', items: priorities },
-          { key: 'mood', label: 'Mood Notes', items: h.mood_notes ? [h.mood_notes] : [] },
+          { key: 'decisions', label: 'Decisions Made', items: asItems(bundle.decisions_made) },
+          { key: 'open_loops', label: 'Open Loops', items: asItems(bundle.open_loops) },
+          { key: 'state', label: 'State Snapshot', items: stateItems },
         ];
 
         return (
           <Card key={h.id} hover={false}>
             <CardContent className={dense ? "pt-3 pb-3" : "pt-4"}>
               <div className="flex items-center gap-2 mb-2">
-                <span className="font-mono text-xs text-tertiary">{formatDate(h.session_date)}</span>
+                <span className="font-mono text-xs text-tertiary">{formatDate(h.created_at)}</span>
                 {h.agent_id && (
                   <Badge variant="default" size="xs" className={agentColor}>{h.agent_id}</Badge>
                 )}
               </div>
-              <div className="text-sm text-secondary mb-3">{h.summary}</div>
+              <div className="text-sm text-secondary mb-3">{bundle.summary}</div>
               <div className="space-y-1">
                 {sections.filter(s => s.items.length > 0).map(section => {
                   const isOpen = expanded[`${h.id}-${section.key}`];

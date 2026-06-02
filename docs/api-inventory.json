@@ -1404,6 +1404,7 @@
     {
       "path": "/api/handoffs",
       "methods": [
+        "GET",
         "POST"
       ],
       "maturity": "stable",

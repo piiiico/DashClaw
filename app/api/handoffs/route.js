@@ -2,10 +2,55 @@ import { NextResponse } from 'next/server';
 import { getSql } from '../../lib/db.js';
 import { getOrgId } from '../../lib/org.js';
 import { apiErrorResponse } from '../../lib/apiErrors.js';
-import { createHandoff } from '../../lib/repositories/code-session-handoffs.repository.js';
+import { createHandoff, getLatestHandoff, listHandoffs } from '../../lib/repositories/code-session-handoffs.repository.js';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+
+// GET /api/handoffs — list handoffs (most-recent first) or, with ?latest=true,
+// the single most recent unconsumed handoff for an agent. Both forms are
+// already used by the Node/Python SDKs (getLatestHandoff / get_handoffs) and
+// the dashboard Handoffs tab, which previously 405'd because only POST existed.
+export async function GET(req) {
+  try {
+    const sql = getSql();
+    const orgId = getOrgId(req);
+
+    const { searchParams } = new URL(req.url);
+    const agentId = searchParams.get('agent_id');
+    const projectId = searchParams.get('project_id');
+
+    if (searchParams.get('latest') === 'true') {
+      if (!agentId) return NextResponse.json({ error: 'agent_id required' }, { status: 400 });
+      const row = await getLatestHandoff(sql, orgId, { agentId, projectId });
+      if (!row) return NextResponse.json({ error: 'no_handoff' }, { status: 404 });
+      return NextResponse.json({
+        id: row.id,
+        agent_id: row.agent_id,
+        project_id: row.project_id,
+        bundle: row.bundle_json,
+        created_at: row.created_at,
+      });
+    }
+
+    const rows = await listHandoffs(sql, orgId, {
+      agentId,
+      projectId,
+      limit: searchParams.get('limit'),
+    });
+    const handoffs = rows.map((row) => ({
+      id: row.id,
+      agent_id: row.agent_id,
+      project_id: row.project_id,
+      bundle: row.bundle_json,
+      created_at: row.created_at,
+      consumed_at: row.consumed_at,
+    }));
+    return NextResponse.json({ handoffs, total: handoffs.length });
+  } catch (err) {
+    return apiErrorResponse(err, 'HANDOFFS_GET');
+  }
+}
 
 export async function POST(req) {
   try {
