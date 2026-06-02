@@ -472,6 +472,10 @@ export default function MessagesPage() {
               thread={selected}
               filterAgentId={filterAgentId}
               onNewMessage={threadConvRef}
+              onThreadUpdated={(updated) => {
+                setSelected(prev => (prev ? { ...prev, ...updated } : prev));
+                setThreads(prev => prev.map(t => (t.id === updated.id ? { ...t, ...updated } : t)));
+              }}
               fullWidth
             />
           </CardContent>
