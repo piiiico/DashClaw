@@ -23,7 +23,7 @@ export default async function ClaudeCodeGuidePage() {
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Agent|Task|Bash|Edit|Write|MultiEdit",
+        "matcher": "Agent|Task|Bash|Edit|Write|MultiEdit|mcp__.*",
         "hooks": [
           {
             "type": "command",
@@ -35,7 +35,7 @@ export default async function ClaudeCodeGuidePage() {
     ],
     "PostToolUse": [
       {
-        "matcher": "Agent|Task|Bash|Edit|Write|MultiEdit",
+        "matcher": "Agent|Task|Bash|Edit|Write|MultiEdit|mcp__.*",
         "hooks": [
           {
             "type": "command",
@@ -160,7 +160,7 @@ DASHCLAW_GUARD_TIMEOUT=5`,
       number: 7,
       title: 'Run Claude Code and trigger a tool call',
       summary:
-        'Ask Claude Code to do anything that uses Bash, Edit, Write, or MultiEdit. The hook fires automatically. For policies that require approval, your phone will DM you.',
+        'Ask Claude Code to do anything that uses Bash, Edit, Write, or MultiEdit, or an MCP tool (e.g. a connected Gmail/Stripe send). The hook fires automatically. For policies that require approval, your phone will DM you.',
       codeTitle: 'Example prompt',
       codeBody: 'Create a file called hello.txt with the contents "Hello from a governed agent"',
       note: 'Watch the terminal — you should see [DashClaw] messages as the hook evaluates the action.',

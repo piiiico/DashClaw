@@ -1,6 +1,6 @@
 # DashClaw Hooks for Claude Code
 
-Two Python hook scripts that connect Claude Code to your DashClaw governance policies. 40+ governed tools with semantic classification are evaluated against your DashClaw guard before execution. After execution, the outcome is recorded as evidence. No SDK instrumentation or code changes required in your project. Just drop the hooks in and set your environment variables.
+Two Python hook scripts that connect Claude Code to your DashClaw governance policies. Tool calls are classified into semantic categories (execution, file_io, orchestration, interactive, mcp) and evaluated against your DashClaw guard before execution. MCP tool calls (`mcp__*`) are included, so connected-MCP actions like Gmail/Stripe/Calendar sends are governed too. After execution, the outcome is recorded as evidence. No SDK instrumentation or code changes required in your project. Just drop the hooks in and set your environment variables.
 
 ## v2 Intelligence Module
 
@@ -37,7 +37,7 @@ v2 hooks classify every Claude Code tool into a semantic category and govern bas
 
 Configure which categories are governed via the `DASHCLAW_GOVERNED_CATEGORIES` environment variable (comma-separated list). Unknown tools that do not match any category fail-safe to governed.
 
-> **Claude Code routing note.** Which tool calls reach the hook is decided by the `PreToolUse` / `PostToolUse` **matcher** in `.claude/settings.json`, which ships as `Agent|Task|Bash|Edit|Write|MultiEdit`. So **sub-agent spawns are governed** (the `Agent` tool — named `Task` before Claude Code 2.1.63), alongside Bash and file edits. `PreToolUse` also fires *inside* sub-agents, so a sub-agent's own Bash/Edit/Write calls are governed too and recorded with sub-agent provenance (see "Sub-agent governance & tracking" below). Still outside the default matcher: `Skill`, `interactive`, and `mcp` tools — govern those via the SDK/MCP server or by adding the names to the matcher. (Codex and Hermes installers wire their own routing.)
+> **Claude Code routing note.** Which tool calls reach the hook is decided by the `PreToolUse` / `PostToolUse` **matcher** in `.claude/settings.json`, which ships as `Agent|Task|Bash|Edit|Write|MultiEdit|mcp__.*`. So **sub-agent spawns are governed** (the `Agent` tool — named `Task` before Claude Code 2.1.63), alongside Bash and file edits. The `mcp__.*` segment puts **MCP tool calls inside the matcher too**, so connected-MCP actions (Gmail/Stripe/Calendar sends, etc.) are intercepted by the hook path before execution. `PreToolUse` also fires *inside* sub-agents, so a sub-agent's own Bash/Edit/Write calls are governed too and recorded with sub-agent provenance (see "Sub-agent governance & tracking" below). Still outside the default matcher: `Skill` and `interactive` tools — govern those via the SDK/MCP server or by adding the names to the matcher. (Codex and Hermes installers wire their own routing.)
 
 ### Sub-agent governance & tracking
 
@@ -147,7 +147,10 @@ export DASHCLAW_BASE_URL=https://your-dashclaw-instance.vercel.app
 export DASHCLAW_API_KEY=your_api_key_here
 export DASHCLAW_AGENT_ID=claude-code              # optional, defaults to "claude-code"
 export DASHCLAW_CODE_SESSIONS_ENABLED=1           # optional: enable Stop-hook session telemetry
+export DASHCLAW_BEHAVIOR_SAMPLES_ENABLED=1        # optional: enable Behavior Learning samples (local-only)
 ```
+
+`DASHCLAW_BEHAVIOR_SAMPLES_ENABLED=1` opt-in turns on the **Behavior Learning** recorder (`dashclaw_agent_intel/behavior_recorder.py`). For each governed tool call, `dashclaw_pretool.py` stashes a redacted pre-execution sample (tool, command *shape*, risk, paths, guard decision) and `dashclaw_posttool.py` finalizes it with the outcome, appending one JSONL line to `.dashclaw/behavior-samples/<date>.jsonl` (override the dir with `DASHCLAW_BEHAVIOR_SAMPLES_DIR`). An enforce-mode block is recorded immediately (PostToolUse won't fire). Secrets, env values, and full paths are scrubbed before write; nothing is uploaded. The DashClaw **Policy Coach** (`/policy-coach`) analyzes these local samples into evidence-backed policy suggestions. Fail-silent: a recorder error never blocks or slows a tool call. Off by default. See [docs/behavior-learning.md](../docs/behavior-learning.md).
 
 `DASHCLAW_CODE_SESSIONS_ENABLED=1` opt-in turns on the Code Sessions reporter (`dashclaw_code_session_reporter.py`, lazily imported by the Stop hook). After the existing token-capture + outcome PATCH work runs, the reporter slices the new JSONL lines since the previous turn's cursor, builds a tool_use → action_id map from a session-scoped log written by `dashclaw_pretool.py`, and POSTs the delta to `/api/code-sessions/ingest-jsonl` with `source_host='hook'`. Fail-silent: if `DASHCLAW_BASE_URL` is empty or the endpoint is unreachable, the hook still exits 0 with no traceback. The full backfill path for historical sessions runs through `dashclaw code ingest` instead (see [cli/README.md](../cli/README.md#dashclaw-code)).
 
@@ -167,6 +170,12 @@ If DashClaw is reachable, the hook evaluates the command against your guard poli
 `dashclaw_stop.py` runs at the end of every assistant turn. It reads the session transcript, sums LLM token usage across that turn's assistant messages (with cache-read tokens weighted at 0.1× to match real Anthropic billing), and PATCHes `tokens_in`, `tokens_out`, and `model` onto each action_id the pretool opened during the turn. Cost is derived server-side from the configured pricing table.
 
 The Stop hook also auto-closes any action still in `status='running'` at turn end (PostToolUse safety net) — terminal statuses written by PostToolUse are preserved, never overwritten. See [`docs/ANALYTICS-ROLLOUT.md`](../docs/ANALYTICS-ROLLOUT.md) for the full data flow.
+
+## Common setup failures
+
+- **Hook does nothing / no `[DashClaw]` output.** The hooks read `DASHCLAW_BASE_URL`, not `DASHCLAW_URL` (the MCP server uses `DASHCLAW_URL`). If you only set `DASHCLAW_URL`, the hook exits silently and governs nothing. Set both if you run both.
+- **Every request 401s with "Invalid or missing API key".** The instance DB is on an old schema. Run `npm run db:migrate` on the instance to apply the pending schema.
+- **Hook warns `[Demo mode]`.** `DASHCLAW_BASE_URL` points at the demo deployment. Repoint it at your own instance.
 
 ## Configuration
 
@@ -257,7 +266,7 @@ All tools in governed categories are evaluated against DashClaw policies. With t
 - **file_io**: Edit, Write, MultiEdit, NotebookEdit. File operations are enriched with security scan results. Sensitive files (`.env`, secrets, credentials), migrations, infrastructure configs, and auth-related files get elevated risk scores.
 - **orchestration**: Agent (plus the legacy `Task` alias), Skill, TodoWrite. The `Agent`/`Task` spawn tools **are** in the shipped matcher, so sub-agent spawns are governed and recorded as `orchestration` actions (see "Sub-agent governance & tracking"). `Skill`/`TodoWrite` are classified but not in the default matcher — add them if you want them intercepted.
 - **interactive**: WebFetch, RemoteTrigger. Network-facing interactive tools are governed by default.
-- **mcp**: Any `mcp__*` tool call. Enriched with server health signals when routed to the hook — but, like orchestration, MCP tools sit outside the default matcher, so govern them via the DashClaw MCP server rather than relying on hook interception.
+- **mcp**: Any `mcp__*` tool call. Enriched with server health signals. `mcp__*` is in the shipped matcher, so MCP tool calls **are** intercepted by the `PreToolUse` hook before execution (connected-MCP actions like Gmail/Stripe/Calendar sends). The DashClaw MCP server remains the governance path for hosts that don't run Claude Code hooks.
 
 Unknown tools that do not match any configured category fail-safe to governed.
 

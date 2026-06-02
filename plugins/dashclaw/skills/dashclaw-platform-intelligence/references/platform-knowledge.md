@@ -42,7 +42,7 @@ Both modes serve the same landing page. `/demo` sets a cookie and redirects to `
 - SDKs:
   - **Node v2 — governance runtime** (`sdk/dashclaw.js`, 80 methods across Core Governance, Scoring, Execution Studio, Messaging, Sessions, and Capability Runtime). This is the SDK that ships as the `dashclaw` package.
   - **Node v1 — full platform legacy** (`sdk/legacy/dashclaw-v1.js`, 187 methods), re-exported as `dashclaw/legacy` for older integrations (see `docs/sdk-parity.md`).
-  - **Python — full platform** (`sdk-python/dashclaw/client.py`, 235 methods).
+  - **Python — full platform** (`sdk-python/dashclaw/client.py`, 211 methods).
 - Node SDK naming: camelCase. Python SDK naming: snake_case.
 
 ## Auth Chain
@@ -205,7 +205,7 @@ Config resolution order:
 
 Approvals use `POST /api/actions/:id/approve`; real-time sync via Redis SSE.
 
-**Claude Code Hooks (`hooks/`)**: Two Python scripts for `PreToolUse` and `PostToolUse` lifecycle events. Require only stdlib, no pip installs. Governed tools: Bash, Edit, Write, MultiEdit. Safe to install even without DashClaw configured (silent no-op when env vars are missing). `dashclaw_pretool` records blocked actions on `handle_block` so the audit trail captures policy denials (BUG-02 fix).
+**Claude Code Hooks (`hooks/`)**: Three Python scripts for `PreToolUse`, `PostToolUse`, and `Stop` lifecycle events. Require only stdlib, no pip installs. Governed tools: Bash, Edit, Write, MultiEdit, sub-agent spawns (Agent/Task), and MCP tool calls (`mcp__*`) — so connector sends like Gmail/Stripe/Calendar are governed too. Safe to install even without DashClaw configured (silent no-op when env vars are missing). `dashclaw_pretool` records blocked actions on `handle_block` so the audit trail captures policy denials (BUG-02 fix).
 
 **SDK terminal output**: The Node SDK's `waitForApproval()` method prints a structured approval block to stdout before blocking. The block includes the action ID, policy name, risk score, declared goal, and the replay URL.
 
@@ -221,7 +221,7 @@ These are optional packages published alongside the core runtime.
 - **stdio binary** — `npx @dashclaw/mcp-server --url ... --key ...` (Claude Desktop, Claude Code, MCP Inspector)
 - **Streamable HTTP** — `POST /api/mcp` on the DashClaw instance itself
 
-**23 tools across 7 groups:**
+**26 tools across 9 groups:**
 - *Core governance (8):* `dashclaw_guard`, `dashclaw_record`, `dashclaw_invoke`, `dashclaw_capabilities_list`, `dashclaw_policies_list`, `dashclaw_wait_for_approval`, `dashclaw_session_start`, `dashclaw_session_end`.
 - *Optimal files (2):* `dashclaw_optimal_files_preview`, `dashclaw_optimal_files_manifest`.
 - *Session continuity (3):* `dashclaw_handoff_create`, `dashclaw_handoff_latest`, `dashclaw_handoff_consume`.
@@ -229,6 +229,8 @@ These are optional packages published alongside the core runtime.
 - *Skill safety (1):* `dashclaw_skill_scan`.
 - *Open loops (3):* `dashclaw_loop_add`, `dashclaw_loop_list`, `dashclaw_loop_close`.
 - *Learning + retrospection (3):* `dashclaw_learning_log`, `dashclaw_learning_query`, `dashclaw_decisions_recent`.
+- *Agent inbox (2):* `dashclaw_inbox_list`, `dashclaw_messages_mark_read`.
+- *Behavior learning (1):* `dashclaw_behavior_suggestions` — observe-only Policy Coach suggestions from recorded behavior.
 
 **6 resources:** `dashclaw://policies`, `dashclaw://capabilities`, `dashclaw://agent/{agent_id}/history`, `dashclaw://status`, `dashclaw://code-sessions/projects`, `dashclaw://code-sessions/sessions/{session_id}`.
 

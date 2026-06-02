@@ -389,6 +389,22 @@ export const TOOL_DEFINITIONS = [
     },
   },
   {
+    name: 'dashclaw_behavior_suggestions',
+    description:
+      'List DashClaw Policy Coach suggestions — evidence-backed, observe-only policy suggestions ' +
+      'the analyzer learned from this agent\'s locally-recorded behavior (destructive commands, ' +
+      'protected-path writes, repeated reloads, failed loops, model/task mismatches, and the safe ' +
+      'operating envelope). Read-only: each suggestion carries confidence, sample size, evidence, and ' +
+      'expected effect. Review, simulate, and adopt them from the Policy Coach UI — nothing is enforced ' +
+      'automatically.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        agent_id: { type: 'string', description: 'Override default agent ID (filter to one agent)' },
+      },
+    },
+  },
+  {
     name: 'dashclaw_inbox_list',
     description:
       'List this agent\'s DashClaw inbox messages and unread count. Use at the start of a session, ' +
@@ -738,6 +754,15 @@ export function createToolHandlers(client) {
       const res = await client.fetch(`/api/guard/decisions?${params}`);
       const data = await res.json();
       return JSON.stringify(data);
+    },
+
+    async dashclaw_behavior_suggestions(input) {
+      // GET /api/behavior/suggestions — analyzes the local behavior-sample log.
+      // Read-only; adopt/dismiss are UI-only in V1 (they require simulation review).
+      const result = await client.get('/api/behavior/suggestions', {
+        agent_id: agentId(input),
+      }, { timeout: 15000 });
+      return JSON.stringify(result);
     },
 
     async dashclaw_inbox_list(input) {

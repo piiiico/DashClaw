@@ -25,7 +25,7 @@ Generated inventories remain authoritative for generated facts:
 | SDK parity by domain | `docs/sdk-parity.md` |
 | Durable execution finality spec | `docs/architecture/durable-execution-finality.md` |
 
-As of this verification, generated API inventory reports **259 routes**: **46 stable**, **24 beta**, **189 experimental**.
+As of this verification, generated API inventory reports **270 routes**: **46 stable**, **24 beta**, **200 experimental**.
 
 ## Product boundary
 
@@ -59,6 +59,7 @@ As of this verification, generated API inventory reports **259 routes**: **46 st
 | Connect | `/connect` | Path to first governed action, including hosted trial provisioning when `DASHCLAW_HOSTED=true`. |
 | Agent Profiles | `/agents/[agentId]` | Governance-focused agent profile with trust posture, decision history, assumptions, signals, and policies. |
 | Policy Builder | `/policies` | Policy management, policy generation, simulation, import/proof surfaces, and guard activity. |
+| Policy Coach | `/policy-coach` | Behavior Learning (v1, observe-only): evidence-backed policy suggestions learned from locally-recorded agent behavior, with simulate-before-adopt and dismiss suppression. See `docs/behavior-learning.md`. |
 | Analytics | `/analytics` | Cost trends, action volume, agent/type breakdowns, policy enforcement stats, and token efficiency. |
 | Workflows | `/workflows` | Workflow template management and governed workflow execution surfaces. |
 | Capabilities | `/capabilities` | Governed HTTP capability registry, health, access rules, testing, and invocation. |
@@ -113,6 +114,7 @@ These modules consume core runtime data and add operator value without changing 
 | Evaluations | `/api/evaluations/*` | Scorers, runs, stats, evaluation outputs, and side-effect-free scorer preview (`/api/evaluations/scorers/preview` dry-runs a scorer config without writing an `eval_scores` row). |
 | Scoring | `/api/scoring/*` | Risk profiles, dimensions, templates, calibration, and scoring. |
 | Learning | `/api/learning/*` | Lessons, analytics, recommendations, maturity, and velocity. |
+| Behavior Learning | `/api/behavior/*`, `/policy-coach` UI | Policy Coach (v1, observe-only). `GET /api/behavior/samples` (local sample status), `GET /api/behavior/suggestions` (deterministic per-agent suggestions) + `POST` (adopt/dismiss, simulation-gated), `POST /api/behavior/simulate` (replay over local samples). Samples are local JSONL (`.dashclaw/behavior-samples/`, opt-in `DASHCLAW_BEHAVIOR_SAMPLES_ENABLED`) — no DB rows, no upload. Recorder: `hooks/dashclaw_agent_intel/behavior_recorder.py`. Analyzer/simulator/evaluator: `app/lib/behavior/*`. Two enforceable suggestion types compile to guard policies (`risk_threshold`, the new `protected_path` type); four are advisory. CLI: `dashclaw behavior status|suggestions`. MCP: `dashclaw_behavior_suggestions`. See `docs/behavior-learning.md`. |
 | Drift | `/api/drift/*` | Drift metrics, snapshots, alerts, and stats. |
 | Prompts | `/api/prompts/*` | Prompt templates, versions, rendering, stats, and raw setup/connect prompts. |
 | Billing and usage | `/api/billing/*`, `/api/usage/*`, `/api/cron/reset-meters` | Stripe checkout/portal, usage readout, and meter reset. |

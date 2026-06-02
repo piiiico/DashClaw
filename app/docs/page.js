@@ -92,7 +92,7 @@ function SectionNav({ items }) {
 const navItems = [
   { href: '#quick-start', label: 'Quick Start' },
   { href: '#mcp-server', label: 'MCP Server' },
-  { href: '#mcp-tools', label: 'Tools (23)', indent: true },
+  { href: '#mcp-tools', label: 'Tools (26)', indent: true },
   { href: '#mcp-resources', label: 'Resources (6)', indent: true },
   { href: '#mcp-config', label: 'Configuration', indent: true },
   { href: '#cli-and-doctor', label: 'CLI & Doctor' },
@@ -391,12 +391,12 @@ except Exception as e:
               <h2 className="text-2xl font-bold tracking-tight">MCP Server</h2>
             </div>
             <p className="mt-2 mb-8 text-sm text-text-secondary leading-relaxed">
-              <code className="font-mono text-text-secondary">@dashclaw/mcp-server</code> exposes DashClaw governance over Model Context Protocol. Any MCP-compatible client gets 23 governance tools across 7 groups (core governance, optimal files, session continuity, credential hygiene, skill safety, open loops, learning + retrospection) plus 6 read-only resources.
+              <code className="font-mono text-text-secondary">@dashclaw/mcp-server</code> exposes DashClaw governance over Model Context Protocol. Any MCP-compatible client gets 26 governance tools across 9 groups (core governance, optimal files, session continuity, credential hygiene, skill safety, open loops, learning + retrospection, agent inbox, behavior learning) plus 6 read-only resources.
             </p>
 
             {/* Tools */}
             <div id="mcp-tools" className="scroll-mt-20 mb-10">
-              <h3 className="text-lg font-semibold text-text-primary mb-4">Tools (23)</h3>
+              <h3 className="text-lg font-semibold text-text-primary mb-4">Tools (26)</h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
@@ -431,6 +431,9 @@ except Exception as e:
                       { group: 'Learning + retrospection', tool: 'dashclaw_learning_log', desc: 'Log non-obvious decision + outcome', inputs: 'decision, context, outcome' },
                       { tool: 'dashclaw_learning_query', desc: 'Query prior decisions/lessons', inputs: 'query, agent_id, limit' },
                       { tool: 'dashclaw_decisions_recent', desc: 'Recent governed-action ledger', inputs: 'agent_id, action_type, decision, since' },
+                      { group: 'Agent inbox', tool: 'dashclaw_inbox_list', desc: 'List inbox messages + unread count', inputs: 'agent_id, direction, unread, type, limit' },
+                      { tool: 'dashclaw_messages_mark_read', desc: 'Mark inbox messages as read', inputs: 'message_ids, agent_id' },
+                      { group: 'Behavior learning', tool: 'dashclaw_behavior_suggestions', desc: 'Observe-only Policy Coach suggestions from recorded behavior', inputs: 'agent_id' },
                     ].map((row) => (
                       <tr key={row.tool} className="border-b border-border">
                         <td className="py-2 pr-4 font-mono text-xs text-brand">
@@ -507,6 +510,9 @@ except Exception as e:
 
 Connect → log in to DashClaw → Authorize. No API key in the UI: the
 instance runs its own OAuth (DCR + PKCE). Guide: docs/CLAUDE-DESKTOP-PLUGIN.md`}</CodeBlock>
+                <p className="text-xs text-text-tertiary leading-relaxed">
+                  In chat clients the connector governs <span className="text-text-secondary">cooperatively</span>: the agent, guided by the governance skill, calls <code className="font-mono text-text-secondary">dashclaw_guard</code> / <code className="font-mono text-text-secondary">dashclaw_invoke</code> and records its decisions — it is not a kernel-level block, so a non-compliant model could still call a native tool without consulting guard. Hard <code className="font-mono text-text-secondary">PreToolUse</code> blocking (fail-closed deny) is a property of the CLI hook path (Claude Code / Codex / Hermes); Cowork hard-gating is not yet verified.
+                </p>
               </div>
             </div>
           </section>

@@ -29,6 +29,18 @@ are prefixed with the package name.
 
 ## [Unreleased]
 
+### Behavior Learning Mode / Policy Coach (v1, observe-only)
+
+A passive learning loop that records real, **redacted, local-only** Claude Code + agent usage, analyzes it deterministically, and suggests evidence-backed DashClaw policies per agent. v1 is **observe-only** — it never blocks, never changes approvals, and never auto-enforces. Full docs: `docs/behavior-learning.md`.
+
+- **Added — passive recorder.** `hooks/dashclaw_agent_intel/behavior_recorder.py`, wired through the existing Pre/PostToolUse hooks (opt-in `DASHCLAW_BEHAVIOR_SAMPLES_ENABLED=1`). Writes one redacted JSONL sample per governed tool call to `.dashclaw/behavior-samples/<date>.jsonl`: event id, timestamp, agent, model (best-effort), tool/action type, command *shape*, read/write paths, risk, guard decision, outcome, duration, and `action_id`. Deterministic secret/path redaction (same pattern set as code-sessions); fail-silent — never blocks a tool call. No raw secrets, env values, message bodies, or full transcripts.
+- **Added — deterministic analyzer + simulator.** `app/lib/behavior/*` (path-match, redaction, task-classifier, model-tier, policy-model, analyzer, simulate, sample-store). Emits six suggestion types — destructive-command approval, protected-path approval, repeated-reload warn, failed-loop warn, model/task-mismatch warn, and agent safe-envelope — each with confidence, sample size, evidence event ids, expected effect, and false-positive risk. Analyzer and simulator share one evaluator, so simulations are faithful.
+- **Added — Policy Coach UI** at `/policy-coach` (Govern → Policy Coach): sample status, observed-agent operating envelopes, and suggestions with **Simulate / Edit / Adopt / Dismiss**. Adoption is **gated on simulation review**. Dismiss supports *suppress similar*.
+- **Added — API.** `GET /api/behavior/samples`, `GET/POST /api/behavior/suggestions` (adopt/dismiss, simulation-gated), `POST /api/behavior/simulate`. Adopting an enforceable suggestion creates an **inactive** (`active=0`) guard-policy draft via the existing policy path — enforcement is never enabled automatically.
+- **Added — new `protected_path` guard policy type** (`app/lib/validate.js` + `app/lib/guard.js`), authorable from `/policies` and matched with the same path matcher the Policy Coach simulates with. `risk_threshold` covers the destructive-command type. The other four suggestion types are advisory observations in v1.
+- **Added — surfaces.** CLI `dashclaw behavior status|suggestions`; MCP tool `dashclaw_behavior_suggestions` (read-only).
+- **Storage.** Local files only (samples + dismissals); **no database migration**. The only DB write is the inactive policy draft on adopt.
+
 ### SDK [3.0.0] — 2026-06-02 — BREAKING: removed methods that targeted archived endpoints
 
 The dead-`/routing`+`/feedback`-page cleanup surfaced SDK methods wrapping endpoints that live ONLY under `app/api/_archive/` (no `next.config` rewrite → they always 404'd). Removed as a **breaking** change; both SDKs shipped as a **major** — **Node 3.0.0** (npm) and **Python 3.0.0** (PyPI).

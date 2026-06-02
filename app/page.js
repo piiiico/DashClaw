@@ -45,7 +45,7 @@ export default function LandingPage() {
 
           {/* Subhead */}
           <p className="mt-6 text-lg text-text-secondary max-w-2xl mx-auto leading-relaxed">
-            DashClaw intercepts agent actions before they reach the real world. Enforce policies, require human approval, and record verifiable evidence in one open source runtime.
+            DashClaw intercepts agent actions at the moment intent becomes a real-world call. In coding agents (Claude Code, Codex, Hermes) it can hard-block via lifecycle hooks; in chat-based clients it governs through approvals and a verifiable record. Enforce policies, require human approval, and prove every decision in one open source runtime.
           </p>
 
           {/* CTA row */}
@@ -635,6 +635,9 @@ if (decision === "allow") {
                   <span className="px-3 py-1 rounded-lg bg-surface-secondary border border-border">GDPR</span>
                   <span className="px-3 py-1 rounded-lg bg-surface-secondary border border-border">NIST AI RMF</span>
                 </div>
+                <p className="mt-4 text-xs text-text-tertiary max-w-2xl mx-auto leading-relaxed">
+                  DashClaw maps your guard decisions and approvals to these frameworks and generates audit-ready evidence; it does not assert that your deployment is certified.
+                </p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 <div className="p-6 rounded-xl bg-surface-secondary/80 border border-border text-center">
@@ -687,7 +690,7 @@ if (decision === "allow") {
                   {
                     label: 'Zero code',
                     title: 'MCP server',
-                    desc: 'Any MCP-compatible client (Claude Code, Claude Desktop, Managed Agents) gets governance via 23 tools and 6 resources. No SDK, no hooks.',
+                    desc: 'Any MCP-compatible client (Claude Code, Claude Desktop, Managed Agents) gets governance via 26 tools and 6 resources. No SDK, no hooks. In chat clients the model invokes governance cooperatively (records + approval gates), not a hard kernel block — pair with the governance skill so the agent consults guard before acting.',
                     example: 'npx @dashclaw/mcp-server --url ... --key ...',
                     href: '/docs#mcp-server',
                   },
@@ -715,7 +718,7 @@ if (decision === "allow") {
                   {
                     label: 'Hooks',
                     title: 'Claude Code lifecycle',
-                    desc: 'Two stdlib-only Python scripts for PreToolUse / PostToolUse. No pip install. Safe to ship even without DashClaw configured.',
+                    desc: 'Two stdlib-only Python scripts for PreToolUse / PostToolUse. No pip install. Safe to ship even without DashClaw configured. Governs Bash, Edit, Write, MultiEdit, sub-agent (Agent/Task) spawns, and MCP tool calls (mcp__*) — including Gmail/Stripe/Calendar sends.',
                     example: 'cp hooks/dashclaw_*.py .claude/hooks/',
                     href: '/docs#agent-tools',
                   },

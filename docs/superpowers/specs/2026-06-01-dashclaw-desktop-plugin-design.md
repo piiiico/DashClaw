@@ -8,7 +8,7 @@
 
 The Claude consumer app (web chat, the Chat tab in Claude Desktop, and **Cowork** — the agentic desktop mode) shipped a plugin system on **2026-01-30** ("Cowork plugins"). A plugin bundles **Skills + Connectors + sub-agents (+ hooks/commands)** and uses the **identical `.claude-plugin/plugin.json` format as Claude Code** — Anthropic's own knowledge-work plugins install in both Cowork and Claude Code unchanged.
 
-DashClaw already ships most of what a Desktop plugin needs: the `plugins/dashclaw/` tree (a `.claude-plugin/plugin.json`, the `dashclaw-governance` + `dashclaw-platform-intelligence` skills) and a working **remote MCP endpoint at `/api/mcp`** (Streamable HTTP, JSON-RPC 2.0, 23 tools + 6 resources). This spec adds the Claude consumer app as a **fourth distribution target** (alongside Claude Code, Codex, Hermes) in two legs:
+DashClaw already ships most of what a Desktop plugin needs: the `plugins/dashclaw/` tree (a `.claude-plugin/plugin.json`, the `dashclaw-governance` + `dashclaw-platform-intelligence` skills) and a working **remote MCP endpoint at `/api/mcp`** (Streamable HTTP, JSON-RPC 2.0, 26 tools + 6 resources). This spec adds the Claude consumer app as a **fourth distribution target** (alongside Claude Code, Codex, Hermes) in two legs:
 
 - **Leg 1 — dogfood now:** package the existing stdio server as a one-click local connector (`.mcpb`) and add a `marketplace.json` so the existing plugin (the two skills) installs into the app's Customize → Plugins from the GitHub repo. Zero backend change; usable in your own Desktop this week.
 - **Leg 2 — public-ready:** add an **OAuth 2.0** authorization layer to `/api/mcp` so DashClaw becomes a paste-the-URL remote connector that works on **every** surface (web chat, Desktop, mobile, Cowork) and is Connectors-Directory-submittable.
@@ -28,7 +28,7 @@ All confirmed against official Anthropic docs (citations at end):
 1. **Connector auth is OAuth-or-authless only.** Static API keys, custom headers, and URL tokens are **explicitly prohibited** for custom connectors: *"Tokens or API keys passed in the connector URL … are not supported."* Supported: **OAuth** (`oauth_dcr`, `oauth_cimd`, `oauth_anthropic_creds`), **authless**, or `custom_connection` (email `mcp-review@anthropic.com`). → DashClaw's current static `x-api-key` works for the Managed Agents API but **cannot** be added via the consumer "Add custom connector" UI. This is the entire reason Leg 2 exists.
 2. **OAuth specifics:** PKCE `S256` mandatory on every authorization request; authorization-server metadata discovery (RFC 8414 / OIDC); auth detected via `401` + `WWW-Authenticate`; `/token` must accept `application/x-www-form-urlencoded`; hosted callback is `https://claude.ai/api/mcp/auth_callback`. DCR (RFC 7591) is required *unless* you support CIMD.
 3. **Transport:** Streamable HTTP required. ✅ already implemented.
-4. **Plans & surfaces:** custom connectors work on Free/Pro/Max/Team/Enterprise (**Free = 1 connector**). Plugins are paid-plan features; sub-agents and hooks run **only in Cowork** (paid), not plain chat.
+4. **Plans & surfaces:** custom connectors work on Free/Pro/Max/Team/Enterprise (**Free = 1 connector**). Plugins are paid-plan features; sub-agents and hooks run **only in Cowork** (paid), not plain chat. **Caveat:** plugin-SCOPE hooks (`hooks/hooks.json`) do **not** load in Cowork (it spawns with `--setting-sources user`; anthropics/claude-code #27398) — only user-scope `~/.claude/settings.json` hooks load, so DashClaw cannot rely on its plugin-bundled hooks firing there.
 5. **Plugin format** = `.claude-plugin/plugin.json` + `.claude-plugin/marketplace.json`, same as Claude Code; personal marketplaces are added via Customize → Plugins → "+" → Add marketplace (GitHub repo / git URL).
 
 ## Background: the three primitives and where DashClaw already sits
@@ -54,7 +54,7 @@ The stdio entry (`mcp-server/bin/dashclaw-mcp.js`) already reads `DASHCLAW_URL`,
 {
   "manifest_version": "0.3",
   "name": "dashclaw",
-  "version": "2.14.0",
+  "version": "<read from mcp-server/package.json at build time>",
   "description": "Govern agents with guard checks, approvals, and audit trails.",
   "author": { "name": "DashClaw" },
   "server": {
@@ -90,7 +90,7 @@ The stdio entry (`mcp-server/bin/dashclaw-mcp.js`) already reads `DASHCLAW_URL`,
 }
 ```
 
-**New file — `scripts/build-mcpb.mjs`:** stages `mcp-server/` (code + production deps) + the manifest into a temp dir, runs `mcpb pack`, emits `dist/dashclaw.mcpb`. Keeps the bundle reproducible and CI-checkable. (The `version` is read from `mcp-server/package.json` — never hardcode, per the repo's version:check rule.)
+**New file — `scripts/build-mcpb.mjs`:** stages `mcp-server/` (code + production deps) + the manifest into a temp dir, runs `mcpb pack`, emits `dist/dashclaw.mcpb`. Keeps the bundle reproducible and CI-checkable. (The `version` is read from `mcp-server/package.json` — never hardcode, per the repo's version:check rule.) The manifest itself is **generated by `scripts/lib/build-mcpb-manifest.mjs`** at build time — there is no checked-in `mcp-server/mcpb/manifest.json`; the JSON above is illustrative shape only.
 
 ### 1b. `marketplace.json` so the plugin installs via Customize → Plugins
 
@@ -132,7 +132,7 @@ Whether the consumer plugin surface honors a plugin's `.mcp.json` **stdio** (`co
 
 ## Leg 2 — OAuth 2.0 connector (public-ready, every surface)
 
-Goal: anyone adds `https://<instance>/api/mcp` as a custom connector, authorizes once, and uses the 23 governance tools — on web chat, Desktop, mobile, and Cowork.
+Goal: anyone adds `https://<instance>/api/mcp` as a custom connector, authorizes once, and uses the 26 governance tools — on web chat, Desktop, mobile, and Cowork.
 
 ### The minimal authorization server
 
@@ -172,7 +172,7 @@ The Connectors Directory review wants **read vs write tools split** and **tool a
 
 ## Caveats / non-goals (decided consciously)
 
-- **Advisory vs enforced.** On plain chat surfaces DashClaw governance is **advisory** (a cooperating Claude follows the skill's guard/record/wait protocol). Hard enforcement via hooks exists only in Claude Code / Cowork. The connector still delivers real audit trails + approval prompts everywhere; we are not claiming hard blocks on web chat.
+- **Advisory vs enforced.** On plain chat surfaces DashClaw governance is **advisory** (a cooperating Claude follows the skill's guard/record/wait protocol). Hard enforcement via hooks is **confirmed only in Claude Code (CLI)**. Cowork runs the CLI in a local Linux VM, so a `PreToolUse` deny *could* hard-block in principle — but it's **UNVERIFIED**: plugin-bundled hooks don't load in Cowork (it spawns with `--setting-sources user`; anthropics/claude-code #27398), only user-scope `~/.claude/settings.json` hooks load, and the network-allowlisted ARM64 VM makes an HTTP guard hook **fail-open** unless the instance domain is allowlisted. Treat Cowork hard enforcement as possible-but-unverified, **not shipped**. Plain web/Desktop chat has **no hooks** (advisory via connector + skill). The connector still delivers real audit trails + approval prompts everywhere; we are not claiming hard blocks on web chat.
 - **Free-tier reach.** Custom connectors: Free = 1. Plugins: paid plans. We don't gate our own value on Free.
 - **No third-party connectors bundled** (governance boundary).
 

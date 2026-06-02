@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:7e54ac30e23ed6655f5202d46e66ee993cbdbb42",
+  "timestamp": "sha1:5e65b89a2a6387282f387448b7a18aeeda909aa6",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -767,6 +767,34 @@
       "dynamic_params": [],
       "archived": false,
       "file_path": "app/api/auth/local/route.js"
+    },
+    {
+      "path": "/api/behavior/samples",
+      "methods": [
+        "GET"
+      ],
+      "dynamic_params": [],
+      "archived": false,
+      "file_path": "app/api/behavior/samples/route.js"
+    },
+    {
+      "path": "/api/behavior/simulate",
+      "methods": [
+        "POST"
+      ],
+      "dynamic_params": [],
+      "archived": false,
+      "file_path": "app/api/behavior/simulate/route.js"
+    },
+    {
+      "path": "/api/behavior/suggestions",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "dynamic_params": [],
+      "archived": false,
+      "file_path": "app/api/behavior/suggestions/route.js"
     },
     {
       "path": "/api/billing/checkout",
@@ -3059,6 +3087,22 @@
         "scripts/fuzz-api.mjs",
         "scripts/seed-branch-finish-loop.mjs",
         "verify.js"
+      ],
+      "in_env_example": false
+    },
+    {
+      "name": "DASHCLAW_BEHAVIOR_SAMPLES_DIR",
+      "required": false,
+      "files": [
+        "app/lib/behavior/sample-store.js"
+      ],
+      "in_env_example": false
+    },
+    {
+      "name": "DASHCLAW_BEHAVIOR_SAMPLES_ENABLED",
+      "required": false,
+      "files": [
+        "app/lib/behavior/sample-store.js"
       ],
       "in_env_example": false
     },

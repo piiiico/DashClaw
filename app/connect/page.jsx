@@ -156,7 +156,7 @@ export DASHCLAW_API_KEY=oc_live_...`}</CodeBlock>
           <section className="mt-6 rounded-2xl border border-border bg-surface-secondary p-6 sm:p-8">
             <StepHeader n={2}>Pick an integration surface</StepHeader>
             <p className="text-sm text-text-secondary max-w-2xl leading-relaxed">
-              Four ways to plug an agent into DashClaw. Pick one. All four hit the same governance loop on the same instance, so you can switch later without changing anything else.
+              Five ways to plug an agent into DashClaw. Pick one. All five hit the same governance loop on the same instance, so you can switch later without changing anything else.
             </p>
 
             <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -208,7 +208,7 @@ pip install dashclaw`}</CodeBlock>
                 </div>
                 <p className="text-sm text-text-secondary leading-relaxed mb-4">
                   Two Python files dropped into{' '}
-                  <code className="font-mono text-text-primary">.claude/hooks/</code>. Governs Bash, Edit, Write, and MultiEdit tool calls. Safe to ship even without DashClaw configured.
+                  <code className="font-mono text-text-primary">.claude/hooks/</code>. Governs Bash, Edit, Write, MultiEdit, sub-agent spawns, and MCP tool calls (mcp__*) such as Gmail/Stripe/Calendar sends. Safe to ship even without DashClaw configured.
                 </p>
                 <div className="mt-auto">
                   <CodeBlock>{`cp hooks/dashclaw_*.py .claude/hooks/`}</CodeBlock>
@@ -231,6 +231,26 @@ pip install dashclaw`}</CodeBlock>
                   <CodeBlock>{`npm install @dashclaw/openclaw-plugin`}</CodeBlock>
                   <Link href="/guides/openclaw" className="mt-3 inline-flex items-center gap-1.5 text-xs text-brand hover:text-brand-hover transition-colors font-medium">
                     OpenClaw plugin guide <ArrowRight size={12} aria-hidden="true" />
+                  </Link>
+                </div>
+              </div>
+
+              {/* OAuth custom connector */}
+              <div className="rounded-xl border border-border bg-surface-tertiary p-5 flex flex-col">
+                <div className="flex items-center gap-2 mb-3">
+                  <KeyRound size={16} className="text-brand" aria-hidden="true" />
+                  <h3 className="text-base font-semibold text-text-primary">Custom connector (Claude app — web / Desktop), OAuth, no key</h3>
+                </div>
+                <p className="text-sm text-text-secondary leading-relaxed mb-4">
+                  No API key. Paste your instance URL into Claude&apos;s Add custom connector, then log in and authorize. Free tier allows one connector. On plain chat, governance is advisory — it records actions and prompts for approval, not a hard block.
+                </p>
+                <div className="mt-auto">
+                  <CodeBlock>{`https://YOUR-INSTANCE.vercel.app/api/mcp`}</CodeBlock>
+                  <p className="mt-3 text-[11px] text-text-tertiary leading-relaxed">
+                    In Claude, open Add custom connector, paste the URL, click Connect, log in, and Authorize.
+                  </p>
+                  <Link href="/docs/CLAUDE-DESKTOP-PLUGIN.md" className="mt-3 inline-flex items-center gap-1.5 text-xs text-brand hover:text-brand-hover transition-colors font-medium">
+                    Claude app connector guide <ArrowRight size={12} aria-hidden="true" />
                   </Link>
                 </div>
               </div>
@@ -375,6 +395,36 @@ dashclaw doctor`}</CodeBlock>
               <code className="font-mono text-text-secondary">1</code> warnings or unreachable. Add{' '}
               <code className="font-mono text-text-secondary">--json</code> for CI integration.
             </p>
+
+            <div className="mt-5 rounded-xl border border-border bg-surface-tertiary p-5">
+              <div className="text-[10px] font-mono uppercase tracking-[0.18em] text-text-tertiary mb-2">If it doesn&apos;t connect</div>
+              <ul className="space-y-2 text-xs text-text-secondary leading-relaxed">
+                <li>
+                  · The MCP server reads{' '}
+                  <code className="font-mono text-text-primary">DASHCLAW_URL</code>{' '}
+                  while the SDK and hooks read{' '}
+                  <code className="font-mono text-text-primary">DASHCLAW_BASE_URL</code>{' '}
+                  — set both to your instance URL.
+                </li>
+                <li>
+                  · <code className="font-mono text-text-primary">401 Invalid or missing API key</code>{' '}
+                  right after a deploy or update usually means the DB schema is behind — run{' '}
+                  <code className="font-mono text-text-primary">npm run db:migrate</code>{' '}
+                  on the host.
+                </li>
+                <li>
+                  · Never point an agent at the demo deployment (e.g.{' '}
+                  <code className="font-mono text-text-primary">dashclaw.io</code>) — it rejects writes. Use your own instance.
+                </li>
+                <li>
+                  · Hook not firing? Re-run{' '}
+                  <code className="font-mono text-text-primary">npm run hooks:install</code>{' '}
+                  and confirm the matcher in{' '}
+                  <code className="font-mono text-text-primary">.claude/settings.json</code>{' '}
+                  includes <code className="font-mono text-text-primary">mcp__.*</code>.
+                </li>
+              </ul>
+            </div>
           </section>
 
           {/* Framework guides */}
@@ -392,7 +442,7 @@ dashclaw doctor`}</CodeBlock>
                 {
                   href: '/guides/claude-code',
                   title: 'Claude Code',
-                  desc: 'Govern Bash, Edit, Write, and MultiEdit tool calls via PreToolUse hooks. Zero SDK code required.',
+                  desc: 'Govern Bash, Edit, Write, MultiEdit, sub-agent spawns, and MCP tool calls (mcp__*) via PreToolUse hooks. Zero SDK code required.',
                 },
                 {
                   href: '/guides/codex',

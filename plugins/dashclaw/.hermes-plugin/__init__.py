@@ -125,7 +125,7 @@ def _cli_setup(args):
     print("     or sign in at https://dashclaw.io and copy the workspace API key.")
     print("  2. Export the env vars (shell or ~/.hermes/config.yaml under `plugins.dashclaw.env`):")
     print("       DASHCLAW_BASE_URL=https://<your-instance>.vercel.app")
-    print("       DASHCLAW_API_KEY=dcw_...")
+    print("       DASHCLAW_API_KEY=oc_live_...")
     print("       DASHCLAW_AGENT_ID=hermes        # optional, defaults to hermes")
     print("  3. Verify with: hermes dashclaw doctor")
     return 0

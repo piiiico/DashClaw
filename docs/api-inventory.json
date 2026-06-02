@@ -32,6 +32,7 @@
     ],
     "experimental": [
       "/api/agents",
+      "/api/behavior",
       "/api/bounties",
       "/api/calendar",
       "/api/content",
@@ -46,10 +47,10 @@
     ]
   },
   "summary": {
-    "total_routes": 267,
+    "total_routes": 270,
     "stable_routes": 46,
     "beta_routes": 24,
-    "experimental_routes": 197
+    "experimental_routes": 200
   },
   "routes": [
     {
@@ -763,6 +764,34 @@
       "maturity": "beta",
       "matched_prefix": "/api/auth",
       "file": "app/api/auth/local/route.js"
+    },
+    {
+      "path": "/api/behavior/samples",
+      "methods": [
+        "GET"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "/api/behavior",
+      "file": "app/api/behavior/samples/route.js"
+    },
+    {
+      "path": "/api/behavior/simulate",
+      "methods": [
+        "POST"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "/api/behavior",
+      "file": "app/api/behavior/simulate/route.js"
+    },
+    {
+      "path": "/api/behavior/suggestions",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "/api/behavior",
+      "file": "app/api/behavior/suggestions/route.js"
     },
     {
       "path": "/api/billing/checkout",

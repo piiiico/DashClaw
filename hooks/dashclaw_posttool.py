@@ -23,6 +23,7 @@ from datetime import datetime, timezone
 # Import the shared HTTP retry helper from the sibling intel package.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from dashclaw_agent_intel.http_client import request_with_retry
+from dashclaw_agent_intel import behavior_recorder
 
 # ---------------------------------------------------------------------------
 # Load .env file (C:/Projects/DashClaw/.env) before reading config.
@@ -260,6 +261,16 @@ def main():
     }
     _patch_action(action_id, body)
     _log("patched", "action_id=" + action_id + " status=" + status)
+
+    # Behavior Learning: finalize the pending sample stashed by PreToolUse with
+    # this outcome and append it to the local JSONL log (opt-in, fail-silent).
+    try:
+        behavior_recorder.record_post(
+            tool_use_id, status, outcome_metadata, action_id,
+            os.environ.get("DASHCLAW_WORKSPACE"),
+        )
+    except Exception:
+        pass
 
     # Clean up temp file
     _cleanup_temp(tool_use_id)

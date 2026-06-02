@@ -14,6 +14,7 @@ import { EVENTS, publishOrgEvent } from './events.js';
 import { getLearningContext } from './learning-context.js';
 import { evaluateRecoveryRecipes } from './recovery.js';
 import { getActBindingMode } from './act-binding.js';
+import { matchesProtectedPath } from './behavior/path-match.js';
 import { verify } from './integrity/verify.js';
 import { issueReceipt } from './integrity/receipt.js';
 import { getServerSigningKey } from './integrity/server-key.js';
@@ -538,6 +539,24 @@ export async function evaluatePolicy(policy, rules, context, sql, orgId, effecti
       const actionTypes = rules.action_types || [];
       if (actionTypes.includes(context.action_type)) {
         return { action: 'block', reason: `Action type "${context.action_type}" is blocked by policy` };
+      }
+      return null;
+    }
+
+    case 'protected_path': {
+      // Behavior Learning protected-path gate. Matches the action's target path
+      // (and any write_paths a caller provides) against the policy's globs using
+      // the same matcher the Policy Coach simulates with, so enforcement and
+      // simulation agree. `target` is the only path field that survives guard
+      // input validation today (see GUARD_INPUT_SCHEMA).
+      const paths = Array.isArray(rules.paths) ? rules.paths : [];
+      if (paths.length === 0) return null;
+      const candidates = [];
+      if (typeof context.target === 'string' && context.target) candidates.push(context.target);
+      if (Array.isArray(context.write_paths)) candidates.push(...context.write_paths);
+      const hit = candidates.find((p) => matchesProtectedPath(p, paths));
+      if (hit) {
+        return { action: rules.action || 'require_approval', reason: `Protected path touched: ${hit}` };
       }
       return null;
     }

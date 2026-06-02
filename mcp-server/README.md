@@ -1,6 +1,6 @@
 # @dashclaw/mcp-server
 
-MCP server for [DashClaw](https://github.com/ucsandman/DashClaw) governance. Exposes 23 governance tools and 6 read-only resources over [Model Context Protocol](https://modelcontextprotocol.io/). Works with Claude Code, Claude Desktop, Claude Managed Agents, and any MCP-compatible client.
+MCP server for [DashClaw](https://github.com/ucsandman/DashClaw) governance. Exposes 26 governance tools and 6 read-only resources over [Model Context Protocol](https://modelcontextprotocol.io/). Works with Claude Code, Claude Desktop, Claude Managed Agents, and any MCP-compatible client.
 
 ## Quick Start
 
@@ -48,7 +48,7 @@ agent = client.beta.agents.create(
 )
 ```
 
-### Claude Desktop / Cowork (one-click .mcpb)
+### Claude Desktop (one-click .mcpb)
 
 Build the bundle from the DashClaw repo root (the build script ships in the repo, not the npm package), then install it without touching `claude_desktop_config.json`:
 
@@ -58,7 +58,9 @@ node scripts/build-mcpb.mjs    # → dist/dashclaw.mcpb
 
 Then double-click `dist/dashclaw.mcpb` (or Settings → Extensions → Install Extension…).
 The installer prompts for your instance URL, API key, and an agent ID
-(default `claude-desktop`). The 23 governance tools then appear in Claude.
+(default `claude-desktop`). The 26 governance tools then appear in Claude.
+
+> **Cowork caveat:** Cowork tool availability runs through its VM, and the host `.mcpb` install path is unverified for Cowork. The OAuth remote connector (below) is the verified cross-surface path.
 
 ### Claude custom connector (remote, OAuth)
 
@@ -69,7 +71,7 @@ in the UI — Claude's connector flow requires OAuth, not headers:
 2. Paste `https://<your-instance>/api/mcp`.
 3. Claude discovers `/.well-known/oauth-protected-resource`, registers via DCR,
    and opens your DashClaw login + a consent screen.
-4. Authorize → the 23 governance tools appear, scoped to your workspace.
+4. Authorize → the 26 governance tools appear, scoped to your workspace.
 
 Works on Free/Pro/Max/Team/Enterprise (Free is capped at one custom connector).
 The legacy `x-api-key` path (Managed Agents) is unchanged.
@@ -80,7 +82,7 @@ To also load the DashClaw **skills** (governance protocol + platform intelligenc
 in the Claude app: Customize → Plugins → "+" → Add marketplace →
 `github: ucsandman/DashClaw`, then install the `dashclaw` plugin.
 
-## Tools (23)
+## Tools (26)
 
 Grouped by domain. See [`lib/tools.js`](./lib/tools.js) for the canonical definitions.
 
@@ -142,6 +144,19 @@ Grouped by domain. See [`lib/tools.js`](./lib/tools.js) for the canonical defini
 | `dashclaw_learning_query` | Query prior decisions/lessons |
 | `dashclaw_decisions_recent` | Recent governed-action ledger |
 
+**Agent inbox (2)** — read this agent's DashClaw inbox + mark messages read.
+
+| Tool | Description |
+|---|---|
+| `dashclaw_inbox_list` | List inbox messages + unread count |
+| `dashclaw_messages_mark_read` | Mark inbox messages read |
+
+**Behavior learning (1)** — observe-only Policy Coach suggestions learned from this agent's recorded behavior.
+
+| Tool | Description |
+|---|---|
+| `dashclaw_behavior_suggestions` | List observe-only Policy Coach suggestions learned from this agent's recorded behavior |
+
 ## Resources (6)
 
 | URI | Description |
@@ -162,3 +177,5 @@ Grouped by domain. See [`lib/tools.js`](./lib/tools.js) for the canonical defini
 | `--agent-id` | `DASHCLAW_AGENT_ID` | (empty) | Default agent ID |
 
 CLI args take precedence over environment variables.
+
+> **Note:** This server reads `DASHCLAW_URL` (not `DASHCLAW_BASE_URL`); the hooks and CLI read `DASHCLAW_BASE_URL`.

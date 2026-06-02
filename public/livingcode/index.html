@@ -48,12 +48,12 @@ p.kicker{background:var(--accent-bg);border:1px solid var(--accent-border);borde
 p.kicker b{color:var(--accent-deep)}
 </style></head><body>
 <h1>DashClaw Livingcode Dashboard</h1>
-<div class="sig" id="sig">Shape signature: sha1:7e54ac30e23ed6655f5202d46e66ee993cbdbb42 · signature-stable</div>
+<div class="sig" id="sig">Shape signature: sha1:5e65b89a2a6387282f387448b7a18aeeda909aa6 · signature-stable</div>
 <div class="grid">
-      <div class="cell"><div class="n">220</div><div class="k">Active routes</div></div>
+      <div class="cell"><div class="n">223</div><div class="k">Active routes</div></div>
       <div class="cell"><div class="n">48</div><div class="k">Archived routes</div></div>
       <div class="cell"><div class="n">4</div><div class="k">Required env vars</div></div>
-      <div class="cell"><div class="n">135</div><div class="k">Optional env vars</div></div>
+      <div class="cell"><div class="n">137</div><div class="k">Optional env vars</div></div>
       <div class="cell"><div class="n">89</div><div class="k">Tables</div></div>
       <div class="cell"><div class="n">15</div><div class="k">Events</div></div>
       <div class="cell"><div class="n">10</div><div class="k">Signals</div></div>
@@ -275,7 +275,10 @@ p.kicker b{color:var(--accent-deep)}
       <div class="cell"><div class="n">1</div><div class="k">TODOs</div></div>
       <div class="cell"><div class="n">128</div><div class="k">Files &gt;300 lines</div></div></div></section>
 
-<section><h2>Changed since last snapshot</h2><p class="kicker"><b>6</b> env_vars added, <b>8</b> routes added, <b>1</b> routes changed, <b>4</b> tables added since last snapshot.</p><ul class="diff">    <li><code>added</code> <b>routes</b>: /api/evaluations/scorers/preview <span class="sig">New route: POST</span></li>
+<section><h2>Changed since last snapshot</h2><p class="kicker"><b>8</b> env_vars added, <b>11</b> routes added, <b>1</b> routes changed, <b>4</b> tables added since last snapshot.</p><ul class="diff">    <li><code>added</code> <b>routes</b>: /api/behavior/samples <span class="sig">New route: GET</span></li>
+    <li><code>added</code> <b>routes</b>: /api/behavior/simulate <span class="sig">New route: POST</span></li>
+    <li><code>added</code> <b>routes</b>: /api/behavior/suggestions <span class="sig">New route: GET, POST</span></li>
+    <li><code>added</code> <b>routes</b>: /api/evaluations/scorers/preview <span class="sig">New route: POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/integrity/jwks <span class="sig">New route: GET</span></li>
     <li><code>added</code> <b>routes</b>: /api/integrity/verify <span class="sig">New route: POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/oauth/authorize <span class="sig">New route: GET, POST</span></li>
@@ -285,6 +288,8 @@ p.kicker b{color:var(--accent-deep)}
     <li><code>added</code> <b>routes</b>: /api/oauth/token <span class="sig">New route: POST</span></li>
     <li><code>changed</code> <b>routes</b>: /api/handoffs <span class="sig">Methods: POST -&gt; GET, POST</span></li>
     <li><code>added</code> <b>env_vars</b>: ANTHROPIC_MODEL <span class="sig">New env var (optional, undocumented)</span></li>
+    <li><code>added</code> <b>env_vars</b>: DASHCLAW_BEHAVIOR_SAMPLES_DIR <span class="sig">New env var (optional, undocumented)</span></li>
+    <li><code>added</code> <b>env_vars</b>: DASHCLAW_BEHAVIOR_SAMPLES_ENABLED <span class="sig">New env var (optional, undocumented)</span></li>
     <li><code>added</code> <b>env_vars</b>: DASHCLAW_GUARD_UNAVAILABLE_POLICY <span class="sig">New env var (optional, undocumented)</span></li>
     <li><code>added</code> <b>env_vars</b>: DASHCLAW_PAIRING_TTL_MINUTES <span class="sig">New env var (optional, undocumented)</span></li>
     <li><code>added</code> <b>env_vars</b>: DASHCLAW_SIGNING_KEY_JWK <span class="sig">New env var (optional, undocumented)</span></li>
@@ -322,6 +327,9 @@ p.kicker b{color:var(--accent-deep)}
 <details><summary>/auth/* (3)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/auth/[...nextauth]"><td><code>/api/auth/[...nextauth]</code></td><td></td><td class="sig">app/api/auth/[...nextauth]/route.js</td></tr>
     <tr data-path="/api/auth/config"><td><code>/api/auth/config</code></td><td>GET</td><td class="sig">app/api/auth/config/route.js</td></tr>
     <tr data-path="/api/auth/local"><td><code>/api/auth/local</code></td><td>DELETE, POST</td><td class="sig">app/api/auth/local/route.js</td></tr></tbody></table></details>
+<details><summary>/behavior/* (3)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/behavior/samples"><td><code>/api/behavior/samples</code></td><td>GET</td><td class="sig">app/api/behavior/samples/route.js</td></tr>
+    <tr data-path="/api/behavior/simulate"><td><code>/api/behavior/simulate</code></td><td>POST</td><td class="sig">app/api/behavior/simulate/route.js</td></tr>
+    <tr data-path="/api/behavior/suggestions"><td><code>/api/behavior/suggestions</code></td><td>GET, POST</td><td class="sig">app/api/behavior/suggestions/route.js</td></tr></tbody></table></details>
 <details><summary>/billing/* (2)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/billing/checkout"><td><code>/api/billing/checkout</code></td><td>POST</td><td class="sig">app/api/billing/checkout/route.js</td></tr>
     <tr data-path="/api/billing/portal"><td><code>/api/billing/portal</code></td><td>GET</td><td class="sig">app/api/billing/portal/route.js</td></tr></tbody></table></details>
 <details><summary>/capabilities/* (10)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/capabilities"><td><code>/api/capabilities</code></td><td>GET, POST</td><td class="sig">app/api/capabilities/route.js</td></tr>

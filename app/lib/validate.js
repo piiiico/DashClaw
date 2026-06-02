@@ -250,7 +250,7 @@ const GUARD_INPUT_SCHEMA = {
   source_of_truth: { type: 'object' },
 };
 
-const POLICY_TYPES = ['risk_threshold', 'require_approval', 'block_action_type', 'rate_limit', 'webhook_check', 'behavioral_anomaly', 'semantic_check', 'permission_escalation', 'green_contract', 'branch_freshness', 'non_fabrication'];
+const POLICY_TYPES = ['risk_threshold', 'require_approval', 'block_action_type', 'rate_limit', 'webhook_check', 'behavioral_anomaly', 'semantic_check', 'permission_escalation', 'green_contract', 'branch_freshness', 'non_fabrication', 'protected_path'];
 const GUARD_ACTIONS = ['allow', 'warn', 'block', 'require_approval'];
 
 const POLICY_SCHEMA = {
@@ -317,6 +317,18 @@ export function validatePolicy(body) {
       if (!Array.isArray(rules.action_types) || rules.action_types.length === 0) {
         result.valid = false;
         result.errors.push(`${result.data.policy_type} policy requires rules.action_types array`);
+      }
+      break;
+    case 'protected_path':
+      // Path-scoped approval/warn gate (Behavior Learning). rules.paths is a
+      // non-empty array of globs; rules.action defaults to require_approval and
+      // is validated by the generic GUARD_ACTIONS check above when present.
+      if (!Array.isArray(rules.paths) || rules.paths.length === 0) {
+        result.valid = false;
+        result.errors.push('protected_path policy requires a non-empty rules.paths array');
+      } else if (!rules.paths.every((p) => typeof p === 'string' && p.length > 0 && p.length <= 256)) {
+        result.valid = false;
+        result.errors.push('protected_path rules.paths must be non-empty strings (<=256 chars)');
       }
       break;
     case 'rate_limit':

@@ -68,7 +68,7 @@ ln -s "$DASHCLAW_REPO/plugins/dashclaw/skills" "$HOME/.hermes/skills/dashclaw"
 
 ```bash
 export DASHCLAW_BASE_URL="https://your-instance.vercel.app"
-export DASHCLAW_API_KEY="dcw_..."        # workspace API key
+export DASHCLAW_API_KEY="oc_live_..."        # workspace API key
 export DASHCLAW_AGENT_ID="hermes"         # optional; default "hermes"
 ```
 

@@ -13,10 +13,10 @@ doc-type: architecture
 
 ## Summary
 
-- Total routes: `267`
+- Total routes: `270`
 - Stable routes: `46`
 - Beta routes: `24`
-- Experimental routes: `197`
+- Experimental routes: `200`
 
 ## Routes
 
@@ -96,6 +96,9 @@ doc-type: architecture
 | `/api/assumptions/{assumptionId}` | `GET, PATCH` | `experimental` | `(default)` | `app/api/assumptions/[assumptionId]/route.js` |
 | `/api/auth/config` | `GET` | `beta` | `/api/auth` | `app/api/auth/config/route.js` |
 | `/api/auth/local` | `DELETE, POST` | `beta` | `/api/auth` | `app/api/auth/local/route.js` |
+| `/api/behavior/samples` | `GET` | `experimental` | `/api/behavior` | `app/api/behavior/samples/route.js` |
+| `/api/behavior/simulate` | `POST` | `experimental` | `/api/behavior` | `app/api/behavior/simulate/route.js` |
+| `/api/behavior/suggestions` | `GET, POST` | `experimental` | `/api/behavior` | `app/api/behavior/suggestions/route.js` |
 | `/api/billing/checkout` | `POST` | `experimental` | `(default)` | `app/api/billing/checkout/route.js` |
 | `/api/billing/portal` | `GET` | `experimental` | `(default)` | `app/api/billing/portal/route.js` |
 | `/api/capabilities` | `GET, POST` | `experimental` | `(default)` | `app/api/capabilities/route.js` |

@@ -52,7 +52,7 @@ export const platformFeatures = [
   { icon: DashClawLogo, title: 'Verified Agent Identity', description: 'Know which agent took which action. JWKS-verified OIDC bearer tokens (EdDSA, RSA, ECDSA) with replay protection and per-call action binding — cryptographic attribution, not self-assertion.' },
   { icon: Terminal, title: 'CLI Approval Channel', description: 'Approve or deny agent actions from the terminal without opening a browser. Works with Claude Code, Codex, Hermes Agent, Gemini CLI, and any terminal-first workflow.' },
   { icon: Webhook, title: 'Coding-agent Hooks', description: 'Govern Claude Code, Codex, and Hermes Agent tool calls via shared field-compatible hook schemas. No SDK instrumentation required. Hermes additionally exposes pre_llm_call (per-turn context injection), post_llm_call (live ingest), transform_tool_result (secret redaction), and subagent_stop (delegate_task ROI).' },
-  { icon: Network, title: 'MCP Server', description: 'Connect any MCP client to DashClaw governance with one config line. 23 tools and 6 resources over stdio or Streamable HTTP. Works with Claude Code, Claude Desktop, and Managed Agents.' },
+  { icon: Network, title: 'MCP Server', description: 'Connect any MCP client to DashClaw governance with one config line. 26 tools and 6 resources over stdio or Streamable HTTP. Works with Claude Code, Claude Desktop, and Managed Agents.' },
   { icon: FolderKanban, title: 'Execution Studio', description: 'Workflow templates, capability registry, knowledge collections, and model strategies. Chain governed actions into multi-step pipelines with conditional execution and resume-from-checkpoint.' },
 ];
 
@@ -103,7 +103,7 @@ export const frameworkQuickstarts = [
     }
   }
 }
-// 23 governance tools + 6 resources
+// 26 governance tools + 6 resources
 // No SDK. No code changes.`
   },
   {
@@ -168,7 +168,7 @@ if (decision === 'allow') {
     name: 'Claude Code',
     label: 'PreToolUse hook',
     code: `# .claude/hooks/dashclaw_pretool.py
-# Governs Bash, Edit, Write, MultiEdit
+# Governs Bash, Edit, Write, MultiEdit, Agent/Task, mcp__* tools
 # No pip installs required
 
 import json, sys, urllib.request, os
@@ -176,7 +176,7 @@ import json, sys, urllib.request, os
 payload = json.loads(sys.stdin.read())
 tool = payload.get("tool_name", "")
 
-if tool not in ["Bash","Edit","Write","MultiEdit"]:
+if tool not in ["Bash","Edit","Write","MultiEdit"] and not tool.startswith("mcp__"):
     sys.exit(0)  # not governed
 
 # Guard check via DashClaw API

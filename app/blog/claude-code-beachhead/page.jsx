@@ -39,8 +39,8 @@ export default function BlogPostPage() {
           Govern Claude Code before it surprises you
         </h1>
         <p className="mt-4 text-base text-text-secondary">
-          A PreToolUse hook that turns every Bash, Edit, Write, and
-          MultiEdit call into a checkpoint. Destructive commands pause.
+          A PreToolUse hook that turns every Bash, Edit, Write,
+          MultiEdit, and MCP tool call into a checkpoint. Destructive commands pause.
           My phone buzzes. I tap Approve or Deny. Terminal unblocks in
           about eight seconds.
         </p>
@@ -91,8 +91,8 @@ export default function BlogPostPage() {
         </h2>
         <p className="mt-3 text-base text-text-secondary">
           DashClaw registers a PreToolUse hook on your Claude Code
-          install. Every Bash, Edit, Write, and MultiEdit call goes
-          through a policy check before it runs. Three steps:
+          install. Every Bash, Edit, Write, MultiEdit, and mcp__* call
+          goes through a policy check before it runs. Three steps:
         </p>
         <ol className="mt-4 space-y-2 text-base text-text-secondary">
           <li>

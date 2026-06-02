@@ -644,7 +644,7 @@ If your agent supports Model Context Protocol (Claude Code, Claude Desktop, Mana
 
 **Streamable HTTP transport** (same surface, served by your DashClaw instance at `POST /api/mcp`).
 
-**23 tools** in 7 groups:
+**26 tools** in 9 groups:
 
 - **Core governance (8):** `dashclaw_guard`, `dashclaw_record`, `dashclaw_invoke`, `dashclaw_capabilities_list`, `dashclaw_policies_list`, `dashclaw_wait_for_approval`, `dashclaw_session_start`, `dashclaw_session_end`.
 - **Optimal files (2):** `dashclaw_optimal_files_preview`, `dashclaw_optimal_files_manifest` — Code Sessions optimizer output (root CLAUDE.md, path-scoped rules, hooks, skill packs).
@@ -653,6 +653,8 @@ If your agent supports Model Context Protocol (Claude Code, Claude Desktop, Mana
 - **Skill safety (1):** `dashclaw_skill_scan` — static safety scan of untrusted skill files; results cached by content hash.
 - **Open loops (3):** `dashclaw_loop_add`, `dashclaw_loop_list`, `dashclaw_loop_close` — action-scoped commitments (the "I will X later" tracker).
 - **Learning + retrospection (3):** `dashclaw_learning_log`, `dashclaw_learning_query`, `dashclaw_decisions_recent` — log + query non-obvious decisions; recent governed-action ledger.
+- **Agent inbox (2):** `dashclaw_inbox_list`, `dashclaw_messages_mark_read`
+- **Behavior learning (1):** `dashclaw_behavior_suggestions`
 
 **6 resources:** `dashclaw://policies`, `dashclaw://capabilities`, `dashclaw://agent/{agent_id}/history`, `dashclaw://status`, `dashclaw://code-sessions/projects`, `dashclaw://code-sessions/sessions/{session_id}`.
 

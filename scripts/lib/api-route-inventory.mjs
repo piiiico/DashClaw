@@ -34,6 +34,7 @@ export const API_MATURITY_RULES = {
   ],
   experimental: [
     '/api/agents',
+    '/api/behavior',
     '/api/bounties',
     '/api/calendar',
     '/api/content',

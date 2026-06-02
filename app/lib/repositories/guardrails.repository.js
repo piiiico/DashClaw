@@ -103,11 +103,15 @@ export async function getGuardDecisionStats(sql, orgId) {
   };
 }
 
-export async function insertPolicy(sql, orgId, { id, name, policyType, rules, agentIds }) {
+export async function insertPolicy(sql, orgId, { id, name, policyType, rules, agentIds, active = 1 }) {
+  // `active` defaults to 1 to preserve existing callers. Behavior Learning
+  // adoption passes active=0 so a suggested draft never auto-enforces — the
+  // operator activates it later from the Policies surface.
+  const activeFlag = active ? 1 : 0;
   const now = new Date().toISOString();
   const result = await sql`
     INSERT INTO guard_policies (id, org_id, name, policy_type, rules, active, agent_ids, created_at, updated_at)
-    VALUES (${id}, ${orgId}, ${name}, ${policyType}, ${rules}, 1, ${agentIds || null}, ${now}, ${now})
+    VALUES (${id}, ${orgId}, ${name}, ${policyType}, ${rules}, ${activeFlag}, ${agentIds || null}, ${now}, ${now})
     RETURNING *
   `;
   return result[0];

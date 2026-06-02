@@ -25,6 +25,8 @@ const DEFAULT_FORM_STATE = {
   // branch_freshness
   freshness: ['stale', 'diverged'],
   maxCommitsBehind: 0,
+  // protected_path (Behavior Learning)
+  protectedPaths: [],
   agentIds: [],
 };
 
@@ -44,6 +46,7 @@ export const POLICY_TYPE_OPTIONS = [
   { value: 'green_contract', label: 'Green Contract', desc: 'Gate actions (e.g. deploy) until tests reach a required green level' },
   { value: 'branch_freshness', label: 'Branch Freshness', desc: 'Block actions when the branch is stale/diverged or too many commits behind' },
   { value: 'non_fabrication', label: 'Non-Fabrication', desc: 'Block or route to approval outbound content that states a fact not traceable to its source-of-truth' },
+  { value: 'protected_path', label: 'Protected Path', desc: 'Warn or require approval when an action touches sensitive paths (auth, secrets, billing, middleware, …)' },
 ];
 
 function cleanString(value) {
@@ -164,6 +167,14 @@ export function compilePolicyPayload(formState) {
         action: form.action,
       };
       break;
+    case 'protected_path':
+      rules = {
+        paths: Array.isArray(form.protectedPaths)
+          ? form.protectedPaths.map((p) => cleanString(p)).filter(Boolean)
+          : [],
+        action: form.action === 'block' || form.action === 'warn' ? form.action : 'require_approval',
+      };
+      break;
     default:
       rules = {};
       break;
@@ -206,6 +217,7 @@ export function decompilePolicyForm(policy) {
     requiredLevel: rules.required_level || DEFAULT_FORM_STATE.requiredLevel,
     freshness: Array.isArray(rules.freshness) ? rules.freshness : DEFAULT_FORM_STATE.freshness,
     maxCommitsBehind: rules.max_commits_behind ?? DEFAULT_FORM_STATE.maxCommitsBehind,
+    protectedPaths: Array.isArray(rules.paths) ? rules.paths : DEFAULT_FORM_STATE.protectedPaths,
     agentIds: parseAgentIds(policy),
   };
 }
@@ -260,6 +272,11 @@ export function buildPolicySummary(formState) {
       const verb = form.action === 'block' ? 'Block' : form.action === 'warn' ? 'Warn on' : 'Require approval for';
       const states = (Array.isArray(form.freshness) ? form.freshness : ['stale', 'diverged']).join(' or ');
       return `${verb} ${actionListText(form.actionTypes)} actions when the branch is ${states} and more than ${Number(form.maxCommitsBehind) || 0} commits behind${scoped}.`;
+    }
+    case 'protected_path': {
+      const verb = form.action === 'block' ? 'Block' : form.action === 'warn' ? 'Warn on' : 'Require approval for';
+      const count = Array.isArray(form.protectedPaths) ? form.protectedPaths.filter(Boolean).length : 0;
+      return `${verb} actions that touch ${count > 0 ? `${count} protected path pattern${count === 1 ? '' : 's'}` : 'protected paths'}${scoped}.`;
     }
     default:
       return 'Configure a policy rule.';

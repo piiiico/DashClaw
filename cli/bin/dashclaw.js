@@ -99,6 +99,9 @@ ${bold('Usage:')}
   dashclaw inbox list [--unread] [--limit N]      List inbox messages
   dashclaw inbox read <id> [<id> ...]    Mark messages read
   dashclaw inbox archive <id> [<id> ...] Archive messages
+  dashclaw behavior status               Behavior Learning sample status (local recorder)
+  dashclaw behavior suggestions          Evidence-backed policy suggestions per agent
+    --agent-id <id>                      Filter to one agent
   dashclaw logout                        Remove saved config (~/.dashclaw/config.json)
   dashclaw help                          Show this help
 
@@ -893,9 +896,77 @@ async function cmdInbox() {
   }
 }
 
+// -- behavior subcommand group -----------------------------------------------
+//
+// Behavior Learning / Policy Coach. Read-only inspection of the locally-recorded
+// behavior samples and the evidence-backed policy suggestions derived from them.
+// Direct-API calls (durable path, see prompts/inbox groups). Adopt/dismiss are
+// intentionally UI-only in V1 — they require simulation review.
+
+function behaviorClient() {
+  return { baseUrl, apiKey };
+}
+
+async function cmdBehaviorStatus() {
+  try {
+    const data = await apiRequest(behaviorClient(), 'GET', '/api/behavior/samples');
+    console.log(`  Recorder:   ${data.recorder_enabled ? green('on') : dim('off')}`);
+    console.log(`  Directory:  ${dim(data.dir || '-')}`);
+    console.log(`  Samples:    ${bold(String(data.sample_count ?? 0))}  ${dim('across')} ${data.agent_count ?? 0} ${dim('agent(s)')}`);
+    console.log(`  Window:     ${dim((data.oldest_ts || '-') + ' → ' + (data.newest_ts || '-'))}`);
+    console.log(`  Ready:      ${data.ready ? green('yes') : dim('no — need ' + (data.min_samples ?? 8) + '+ samples for an agent')}`);
+    for (const a of data.agents || []) {
+      console.log(`    ${a.agent_id}  ${dim(a.count + ' samples')}`);
+    }
+  } catch (err) {
+    console.error(`Error: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+async function cmdBehaviorSuggestions() {
+  const agent = getFlag('--agent-id') || agentId;
+  try {
+    const data = await apiRequest(behaviorClient(), 'GET', '/api/behavior/suggestions', {
+      query: { agent_id: agent },
+    });
+    const suggestions = data.suggestions || [];
+    if (suggestions.length === 0) {
+      console.log(dim(`  No suggestions (${data.sample_count ?? 0} samples analyzed).`));
+      return;
+    }
+    for (const s of suggestions) {
+      const kind = s.enforceable ? green('draft') : dim('advisory');
+      console.log(`  ${bold(s.type)}  ${dim(s.agent_id)}  ${s.confidence}%  [${kind}]  ${dim(s.severity)}`);
+      console.log(`    ${s.expected_effect}`);
+      console.log(dim(`    evidence: ${s.matching_sample_size}/${s.sample_size} · id ${s.id}`));
+    }
+    console.log();
+    console.log(dim('  Review + simulate + adopt from the Policy Coach UI (/policy-coach).'));
+  } catch (err) {
+    console.error(`Error: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+async function cmdBehavior() {
+  const sub = args[1];
+  switch (sub) {
+    case 'status':
+      return cmdBehaviorStatus();
+    case 'suggestions':
+      return cmdBehaviorSuggestions();
+    default:
+      console.error(`Unknown subcommand: dashclaw behavior ${sub || '(missing)'}\n` +
+                    'Try: dashclaw behavior status\n' +
+                    '     dashclaw behavior suggestions [--agent-id X]');
+      process.exit(1);
+  }
+}
+
 // -- Router -------------------------------------------------------------------
 
-const COMMANDS_NEEDING_CONFIG = new Set(['approvals', 'approve', 'deny', 'doctor', 'code', 'prompts', 'inbox']);
+const COMMANDS_NEEDING_CONFIG = new Set(['approvals', 'approve', 'deny', 'doctor', 'code', 'prompts', 'inbox', 'behavior']);
 // `install` deliberately omitted: provisioning hooks and AGENTS.md shouldn't
 // require the user to have already configured API keys. If config happens to
 // be present, install will pick up baseUrl for the AGENTS.md instance link.
@@ -954,6 +1025,9 @@ async function main() {
       break;
     case 'inbox':
       await cmdInbox();
+      break;
+    case 'behavior':
+      await cmdBehavior();
       break;
     case 'help':
     case '--help':

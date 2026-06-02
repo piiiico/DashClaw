@@ -72,6 +72,7 @@ _load_dotenv()
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from dashclaw_agent_intel import classify_bash, scan_file_operation, classify_tool, McpHealthMonitor
 from dashclaw_agent_intel.http_client import request_with_retry
+from dashclaw_agent_intel import behavior_recorder
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -236,6 +237,9 @@ def _enrich_bash(tool_input: dict, tool_info: dict) -> dict:
         "risk_score": risk_score,
         "reversible": bash_intel["reversible"],
         "declared_goal": "Bash: " + command[:120],
+        # A shell redirection target is a write path; forward it as `target` so a
+        # protected_path policy can gate `echo secret > app/secrets/x` style writes.
+        "target": redirect_targets[0] if redirect_targets else None,
         "intel": {
             "bash": {
                 "intent": bash_intel["intent"],
@@ -278,6 +282,10 @@ def _enrich_file(tool_name: str, tool_input: dict, tool_info: dict) -> dict:
         "risk_score": risk_score,
         "reversible": True,
         "declared_goal": "%s: %s" % (tool_name, path),
+        # `target` is forwarded into the guard context so a protected_path policy
+        # (Behavior Learning) can match the file being written. It is the only
+        # path field that survives guard input validation.
+        "target": path,
         "intel": {
             "file": {
                 "traversal_detected": file_intel["traversal_detected"],
@@ -770,6 +778,11 @@ def main():
         "intel": enrichment.get("intel", {}),
     }
 
+    # Forward the resolved target path (file tools, bash redirects) so a
+    # protected_path guard policy can match it. Omitted when there is no path.
+    if enrichment.get("target"):
+        context["target"] = enrichment["target"]
+
     # Sub-agent provenance. Claude Code puts agent_id / agent_type on hook stdin
     # ONLY when the call fires inside a sub-agent. We keep the governed agent_id =
     # the configured parent (sub-agents inherit the parent's pairing and policies,
@@ -798,6 +811,17 @@ def main():
 
     # Step 6: Handle decision
     decision = guard_resp.get("decision", "allow")
+
+    # Behavior Learning: passively record a redacted sample of this governed
+    # tool call (opt-in via DASHCLAW_BEHAVIOR_SAMPLES_ENABLED; fully fail-silent).
+    # For allow/warn/approval the pending sample is finalized by PostToolUse;
+    # an enforce-mode block is recorded terminally here since PostToolUse won't fire.
+    try:
+        behavior_recorder.record_pre(
+            tool_use_id, tool_name, tool_input, context, guard_resp, decision, HOOK_MODE, WORKSPACE
+        )
+    except Exception:
+        pass
 
     if decision == "allow":
         handle_allow(context, tool_use_id)

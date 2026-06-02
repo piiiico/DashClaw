@@ -5,7 +5,7 @@ description: DashClaw platform expert for integration, troubleshooting, and gove
 
 # DashClaw Platform Intelligence
 
-**Shape snapshot:** `sha1:7e54ac30e23ed6655f5202d46e66ee993cbdbb42`
+**Shape snapshot:** `sha1:5e65b89a2a6387282f387448b7a18aeeda909aa6`
 **This file is auto-generated.** Do not edit by hand — regenerate with:
 
 ```bash
@@ -45,8 +45,8 @@ neither exists. When you cannot run the queries above, fall back **in this order
 
 ## At a Glance
 
-- **220** active API routes across **54** categories
-- **4** required + **135** optional environment variables
+- **223** active API routes across **55** categories
+- **4** required + **137** optional environment variables
 - **89** database tables
 
 ## API Surface
@@ -101,6 +101,12 @@ neither exists. When you cannot run the queries above, fall back **in this order
 - `-` `/api/auth/[...nextauth]`
 - `GET` `/api/auth/config`
 - `DELETE, POST` `/api/auth/local`
+
+### `behavior`
+
+- `GET` `/api/behavior/samples`
+- `POST` `/api/behavior/simulate`
+- `GET, POST` `/api/behavior/suggestions`
 
 ### `billing`
 
@@ -473,6 +479,8 @@ These have fallbacks or only activate specific features.
 - `DASHCLAW_ALLOWED_ISSUER` *(undocumented)*
 - `DASHCLAW_API_KEY_ORG` *(undocumented)*
 - `DASHCLAW_BASE_URL` *(undocumented)*
+- `DASHCLAW_BEHAVIOR_SAMPLES_DIR` *(undocumented)*
+- `DASHCLAW_BEHAVIOR_SAMPLES_ENABLED` *(undocumented)*
 - `DASHCLAW_CLOSED_ENROLLMENT` *(undocumented)*
 - `DASHCLAW_DB_DRIVER` *(undocumented)*
 - `DASHCLAW_DB_POOL_MAX` *(undocumented)*

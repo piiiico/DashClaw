@@ -507,6 +507,44 @@ export default function PolicyRuleBuilderSection({
           </div>
         </div>
       )}
+
+      {form.type === 'protected_path' && (
+        <div className="space-y-4">
+          <p className="text-[11px] text-tertiary">
+            Warns or requires approval when an action&apos;s target path matches one of these globs.
+            Patterns support <code className="text-secondary">**</code> (any depth) and{' '}
+            <code className="text-secondary">*</code> (one segment). The Policy Coach pre-fills these
+            from observed protected-path writes (auth, secrets, billing, middleware, .organism,
+            livingcode, cron/gateway).
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="sm:col-span-2">
+              <label className="block text-xs text-secondary mb-1">Protected path globs (one per line)</label>
+              <textarea
+                aria-label="Protected path globs"
+                value={(form.protectedPaths || []).join('\n')}
+                onChange={(event) => onChange('protectedPaths', event.target.value.split('\n'))}
+                placeholder={'**/auth/**\n**/secrets/**\nmiddleware.js'}
+                rows={4}
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-secondary mb-1">Action</label>
+              <select
+                aria-label="Protected path action"
+                value={form.action}
+                onChange={(event) => onChange('action', event.target.value)}
+                className={selectClass}
+              >
+                {DECISION_ACTIONS.map((action) => (
+                  <option key={action.value} value={action.value}>{action.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

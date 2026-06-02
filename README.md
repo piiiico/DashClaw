@@ -88,7 +88,7 @@ bash scripts/install-hermes-plugin.sh        # macOS / Linux
 powershell -File scripts/install-hermes-plugin.ps1   # Windows
 ```
 
-For Claude Code specifically, the hook installer alone (without the plugin) governs 40+ tool types (Bash, Edit, Write, MultiEdit, …) with semantic classification, risk scoring, and per-turn token capture — no SDK calls in your agent code. Set `DASHCLAW_BASE_URL`, `DASHCLAW_API_KEY`, and optionally `DASHCLAW_HOOK_MODE=enforce`. Full details in [`hooks/README.md`](hooks/README.md).
+For Claude Code specifically, the hook installer alone (without the plugin) governs Bash, Edit, Write, MultiEdit, sub-agent spawns, and every `mcp__*` tool call with semantic classification, risk scoring, and per-turn token capture — no SDK calls in your agent code. Set `DASHCLAW_BASE_URL`, `DASHCLAW_API_KEY`, and optionally `DASHCLAW_HOOK_MODE=enforce`. Full details in [`hooks/README.md`](hooks/README.md).
 
 **Verify it fires:** pipe a fake tool call through the hook — a clean exit (and a guard evaluation when DashClaw is reachable) confirms the wiring. Use `python3` if your system has no `python` on PATH; the installer picks the right one automatically.
 
@@ -98,7 +98,7 @@ echo '{"tool_name":"Bash","tool_input":{"command":"echo hello"},"tool_use_id":"t
 
 ### 2. MCP server (zero code, any MCP host)
 
-[`@dashclaw/mcp-server`](./mcp-server) exposes **23 governance MCP tools** across 7 groups — core governance, optimal files, session continuity, credential hygiene, skill safety, open loops, learning + retrospection — plus 6 read-only resources (`dashclaw://policies`, `dashclaw://capabilities`, `dashclaw://agent/{agent_id}/history`, `dashclaw://status`, `dashclaw://code-sessions/projects`, `dashclaw://code-sessions/sessions/{session_id}`).
+[`@dashclaw/mcp-server`](./mcp-server) exposes **26 governance MCP tools** across 9 groups — core governance, optimal files, session continuity, credential hygiene, skill safety, open loops, learning + retrospection, agent inbox, behavior learning — plus 6 read-only resources (`dashclaw://policies`, `dashclaw://capabilities`, `dashclaw://agent/{agent_id}/history`, `dashclaw://status`, `dashclaw://code-sessions/projects`, `dashclaw://code-sessions/sessions/{session_id}`).
 
 **Stdio (Claude Code, Claude Desktop, any stdio MCP client):**
 
@@ -142,7 +142,7 @@ npm install dashclaw     # Node 18+
 pip install dashclaw     # Python 3.7+
 ```
 
-87-method canonical Node surface: core governance, durable execution finality, scoring profiles, learning analytics, messaging, handoffs, security scanning, threads, sessions, and the execution-studio domains (workflow templates, model strategies, knowledge collections, capability runtime). The Python SDK exposes 227 methods including ready-made framework integrations:
+107-method canonical Node surface: core governance, durable execution finality, scoring profiles, learning analytics, messaging, handoffs, security scanning, threads, sessions, and the execution-studio domains (workflow templates, model strategies, knowledge collections, capability runtime). The Python SDK exposes 211 methods including ready-made framework integrations:
 
 ```python
 # LangChain — auto-log LLM calls, tool use, and costs
@@ -173,7 +173,7 @@ It intercepts every tool-use call (`before_tool_call`, `llm_output`, `after_tool
 
 ### 5. Direct REST API and webhooks
 
-Every governance primitive is reachable as HTTP. The stable contract is pinned in [`docs/openapi/critical-stable.openapi.json`](./docs/openapi/critical-stable.openapi.json); the full inventory (**259 routes**: 46 stable, 24 beta, 189 experimental) is at [`docs/api-inventory.md`](./docs/api-inventory.md). Webhook events include `signal.detected`, `decision.created`, `action.created`, `lost_confirmation`, and the rest of the catalog — configurable per org.
+Every governance primitive is reachable as HTTP. The stable contract is pinned in [`docs/openapi/critical-stable.openapi.json`](./docs/openapi/critical-stable.openapi.json); the full inventory (**270 routes**: 46 stable, 24 beta, 200 experimental) is at [`docs/api-inventory.md`](./docs/api-inventory.md). Webhook events include `signal.detected`, `decision.created`, `action.created`, `lost_confirmation`, and the rest of the catalog — configurable per org.
 
 ### 6. Skills — governance protocol + live platform reference
 

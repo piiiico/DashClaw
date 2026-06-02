@@ -173,7 +173,7 @@ dashclaw doctor`}</pre>
         <div className="max-w-5xl mx-auto py-12">
           <h2 className="text-2xl font-bold tracking-tight mb-2">What you just deployed</h2>
           <p className="text-text-secondary mb-8">
-            Your DashClaw instance ships with 259 governance API routes. Every feature works out of the box -- no LLM API key required.
+            Your DashClaw instance ships with the full governance API surface. Every feature works out of the box -- no LLM API key required.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

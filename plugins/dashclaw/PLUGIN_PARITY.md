@@ -24,11 +24,12 @@ ledger) clean separation between Codex sessions and Claude Code sessions.
 
 ## What the plugin does NOT install
 
-Hooks (PreToolUse / PostToolUse / Stop guards over Bash, Edit, Write, and
-MultiEdit) are **not** bundled in either manifest. They are agent-specific
+Hooks (PreToolUse / PostToolUse / Stop guards over Bash, Edit, Write,
+MultiEdit, sub-agent spawns (Agent/Task), and MCP tool calls (mcp__*)) are
+**not** bundled in either manifest. They are agent-specific
 filesystem artifacts that live in `~/.codex/config.toml` (Codex) or
 `.claude/settings.json` (Claude Code) respectively, and require Python on
 PATH. Use the dedicated installer commands instead:
 
-- Codex: `dashclaw install codex` (Phase 1 of Codex parity)
+- Codex: `dashclaw install codex`
 - Claude Code: `node scripts/install-hooks.mjs`
