@@ -2,12 +2,12 @@
 
 import { useState } from 'react';
 import {
-  Rocket, AlertTriangle, ShieldAlert, Ban, Timer, Globe, Lock, MessageSquare,
+  Rocket, AlertTriangle, ShieldAlert, Ban, Timer, Globe, Lock, MessageSquare, BadgeCheck,
 } from 'lucide-react';
 import ShieldConfig from './ShieldConfig';
 
 const ICON_MAP = {
-  Rocket, AlertTriangle, ShieldAlert, Ban, Timer, Globe, Lock, MessageSquare,
+  Rocket, AlertTriangle, ShieldAlert, Ban, Timer, Globe, Lock, MessageSquare, BadgeCheck,
 };
 
 export default function ShieldCard({ shield, policy, onToggle, onSaved }) {

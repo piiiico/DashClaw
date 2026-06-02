@@ -66,6 +66,14 @@ export const SHIELDS = [
     policyType: 'require_approval',
     defaultRules: { action_types: ['message', 'post'] },
   },
+  {
+    id: 'non_fabrication_guard',
+    name: 'No Fabricated Facts',
+    description: 'Require approval for outbound content that states a fact not traceable to its source-of-truth',
+    icon: 'BadgeCheck',
+    policyType: 'non_fabrication',
+    defaultRules: { on_violation: 'require_approval', content_path: 'content', source_path: 'source_of_truth' },
+  },
 ];
 
 /**

@@ -177,6 +177,45 @@ export default function ShieldConfig({ shield, policy, onSaved }) {
         </div>
       )}
 
+      {shield.policyType === 'non_fabrication' && (
+        <div className="space-y-3">
+          <div className="text-[10px] text-tertiary">
+            Verifies the action&apos;s outbound content against a source-of-truth. Attach <code className="text-secondary">content</code> + <code className="text-secondary">source_of_truth</code> to the action; a fabricated fact (amount, date, percentage, or registered ID not in the source) is held per the action below. Fail-closed: a missing source-of-truth blocks.
+          </div>
+          <div>
+            <label className="text-[10px] uppercase tracking-widest text-tertiary block mb-1">On Violation</label>
+            <select value={config.on_violation || 'require_approval'} onChange={e => updateConfig('on_violation', e.target.value)} className="w-full rounded-lg border border-white/5 bg-surface-tertiary px-3 py-2 text-xs text-secondary focus:outline-none focus:border-brand/50">
+              <option value="block">Block (fail-closed)</option>
+              <option value="require_approval">Require Approval</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-[10px] uppercase tracking-widest text-tertiary block mb-2">Action Types <span className="text-tertiary normal-case tracking-normal">(optional — empty applies to all)</span></label>
+            <div className="flex flex-wrap gap-1.5">
+              {ACTION_OPTIONS.map(type => {
+                const active = (config.action_types || []).includes(type);
+                return (
+                  <button
+                    key={type}
+                    onClick={() => {
+                      const types = active
+                        ? (config.action_types || []).filter(t => t !== type)
+                        : [...(config.action_types || []), type];
+                      updateConfig('action_types', types);
+                    }}
+                    className={`rounded-full px-2.5 py-1 text-xs transition-colors ${
+                      active ? 'bg-brand/15 border border-brand/40 text-brand' : 'bg-white/5 border border-white/5 text-secondary hover:text-white'
+                    }`}
+                  >
+                    {type}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
       {shield.policyType === 'webhook_check' && (
         <div className="space-y-3">
           <div>
