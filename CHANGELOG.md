@@ -29,9 +29,9 @@ are prefixed with the package name.
 
 ## [Unreleased]
 
-### SDK — BREAKING: removed methods that targeted archived endpoints (pending major)
+### SDK [3.0.0] — 2026-06-02 — BREAKING: removed methods that targeted archived endpoints
 
-The dead-`/routing`+`/feedback`-page cleanup surfaced SDK methods wrapping endpoints that live ONLY under `app/api/_archive/` (no `next.config` rewrite → they always 404'd). Removed as a **breaking** change; both SDKs go to a **major** on next publish (the owner bumps + runs `npm run release:sdks`).
+The dead-`/routing`+`/feedback`-page cleanup surfaced SDK methods wrapping endpoints that live ONLY under `app/api/_archive/` (no `next.config` rewrite → they always 404'd). Removed as a **breaking** change; both SDKs shipped as a **major** — **Node 3.0.0** (npm) and **Python 3.0.0** (PyPI).
 
 - **Removed (Node, → 3.0.0).** `submitFeedback` (`POST /api/feedback`). Canonical public-method count 108 → **107**.
 - **Removed (Python, → 3.0.0).** Routing suite — `list_routing_agents`, `register_routing_agent`, `get_routing_agent`, `update_routing_agent_status`, `delete_routing_agent`, `list_routing_tasks`, `submit_routing_task`, `complete_routing_task`, `get_routing_stats`, `get_routing_health` (`/api/routing/*`); and feedback suite — `submit_feedback`, `list_feedback`, `get_feedback`, `resolve_feedback`, `delete_feedback`, `get_feedback_stats` (`/api/feedback/*`). Public-method count 227 → **211**.

@@ -1,14 +1,14 @@
 {
   "node": {
-    "current_version": "2.13.1",
-    "next_bump": "major",
-    "reason": "BREAKING: removed submitFeedback (POST /api/feedback) — the endpoint lives only under app/api/_archive/feedback and always 404'd. Still pending additive: Prompt Library wrappers (listPromptTemplates/getPromptTemplate/createPromptTemplate/updatePromptTemplate/deletePromptTemplate/listPromptVersions/createPromptVersion/getPromptVersion/activatePromptVersion/getPromptStats/listPromptRuns), recordDecision, getLearningRecommendations, simulatePolicy, previewScorer, deleteKnowledgeCollection. The breaking removal forces a major (3.0.0). current_version stays 2.13.1 until the owner bumps sdk/package.json + publishes via npm run release:sdks. Canonical public-method count is now 107 (was 108).",
+    "current_version": "3.0.0",
+    "next_bump": "none",
+    "reason": "3.0.0 published. BREAKING: removed submitFeedback (POST /api/feedback) — the endpoint lives only under app/api/_archive/feedback and always 404'd. Also shipped the additive Prompt Library wrappers (listPromptTemplates/getPromptTemplate/createPromptTemplate/updatePromptTemplate/deletePromptTemplate/listPromptVersions/createPromptVersion/getPromptVersion/activatePromptVersion/getPromptStats/listPromptRuns), recordDecision, getLearningRecommendations, simulatePolicy, previewScorer, deleteKnowledgeCollection. Canonical public-method count is 107.",
     "domains": []
   },
   "python": {
-    "current_version": "2.13.0",
-    "next_bump": "major",
-    "reason": "BREAKING: removed the routing suite (list_routing_agents/register_routing_agent/get_routing_agent/update_routing_agent_status/delete_routing_agent/list_routing_tasks/submit_routing_task/complete_routing_task/get_routing_stats/get_routing_health) and the feedback suite (submit_feedback/list_feedback/get_feedback/resolve_feedback/delete_feedback/get_feedback_stats) — all target /api/routing/* and /api/feedback/* which live only under app/api/_archive and always 404'd. Forces a major (3.0.0). current_version stays 2.13.0 until the owner bumps sdk-python/pyproject.toml + publishes. Public-method count is now 211 (was 227).",
+    "current_version": "3.0.0",
+    "next_bump": "none",
+    "reason": "3.0.0 published. BREAKING: removed the routing suite (list_routing_agents/register_routing_agent/get_routing_agent/update_routing_agent_status/delete_routing_agent/list_routing_tasks/submit_routing_task/complete_routing_task/get_routing_stats/get_routing_health) and the feedback suite (submit_feedback/list_feedback/get_feedback/resolve_feedback/delete_feedback/get_feedback_stats) — all targeted /api/routing/* and /api/feedback/* which live only under app/api/_archive and always 404'd. Public-method count is 211.",
     "domains": []
   }
 }

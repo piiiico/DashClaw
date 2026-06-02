@@ -34,11 +34,9 @@
 - [Activity Logs](#activity-logs)
 - [Compliance Engine](#compliance-engine)
 - [Compliance Exports](#compliance-exports)
-- [Task Routing](#task-routing)
 - [Bulk Sync](#bulk-sync)
 - [Evaluation Framework](#evaluation-framework)
 - [Prompt Management](#prompt-management)
-- [User Feedback](#user-feedback)
 - [Drift Detection](#drift-detection)
 - [Learning Analytics](#learning-analytics)
 - [Scoring Profiles](#scoring-profiles)
@@ -386,19 +384,6 @@ Supports frameworks: SOC 2 (`soc2`), NIST AI RMF (`nist-ai-rmf`), EU AI Act (`eu
 
 Export IDs use `ce_` prefix. Schedule IDs use `cs_` prefix.
 
-## Task Routing
-
-**Maturity:** Stable
-
-| Endpoint | Methods | Node SDK | Python SDK |
-|---|---|---|---|
-| `/api/routing/agents` | GET, POST | `listRoutingAgents`, `registerRoutingAgent` | `list_routing_agents`, `register_routing_agent` |
-| `/api/routing/agents/{agentId}` | GET, PATCH, DELETE | `getRoutingAgent`, `updateRoutingAgentStatus`, `deleteRoutingAgent` | `get_routing_agent`, `update_routing_agent_status`, `delete_routing_agent` |
-| `/api/routing/tasks` | GET, POST | `listRoutingTasks`, `submitRoutingTask` | `list_routing_tasks`, `submit_routing_task` |
-| `/api/routing/tasks/{taskId}/complete` | POST | `completeRoutingTask` | `complete_routing_task` |
-| `/api/routing/stats` | GET | `getRoutingStats` | `get_routing_stats` |
-| `/api/routing/health` | GET | `getRoutingHealth` | `get_routing_health` |
-
 ## Bulk Sync
 
 **Maturity:** Stable
@@ -444,18 +429,6 @@ Scorer IDs use `es_` prefix. Score IDs use `sc_` prefix. Run IDs use `er_` prefi
 | `/api/prompts/variables` | GET | `listPromptVariables` | `list_prompt_variables` |
 
 Template IDs use `pt_` prefix. Version IDs use `pv_` prefix.
-
-## User Feedback
-
-**Maturity:** Stable
-
-| Endpoint | Methods | Node SDK | Python SDK |
-|---|---|---|---|
-| `/api/feedback` | GET, POST | `submitFeedback`, `listFeedback` | `submit_feedback`, `list_feedback` |
-| `/api/feedback/{feedbackId}` | GET, PATCH, DELETE | `getFeedback`, `resolveFeedback`, `deleteFeedback` | `get_feedback`, `resolve_feedback`, `delete_feedback` |
-| `/api/feedback/stats` | GET | `getFeedbackStats` | `get_feedback_stats` |
-
-Feedback IDs use `fb_` prefix. Auto-detects sentiment (positive/negative/neutral) and auto-tags into 6 categories: performance, accuracy, cost, security, reliability, ux.
 
 ## Drift Detection
 
