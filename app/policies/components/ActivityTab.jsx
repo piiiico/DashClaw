@@ -18,6 +18,24 @@ const decisionDot = {
   allow: 'bg-status-success',
 };
 
+// JWT-integrity audit axis (verification / replay / action-binding). Most calls
+// sit at the benign defaults (unverified / not_applicable / ok), so only the
+// noteworthy states are badged to keep the feed readable.
+function integrityBadges(d) {
+  const out = [];
+  const v = d.verification_status;
+  if (v && v !== 'unverified' && v !== 'not_applicable') {
+    out.push({ label: v === 'verified' ? 'verified' : `verify: ${v}`, variant: v === 'verified' ? 'success' : 'error' });
+  }
+  if (d.replay_status && d.replay_status !== 'not_applicable' && d.replay_status !== 'ok') {
+    out.push({ label: `replay: ${d.replay_status}`, variant: 'error' });
+  }
+  if (d.act_status && d.act_status !== 'not_applicable' && d.act_status !== 'ok') {
+    out.push({ label: `act: ${d.act_status}`, variant: 'error' });
+  }
+  return out;
+}
+
 function formatRelativeTime(isoString) {
   if (!isoString) return '\u2014';
   const diff = Date.now() - new Date(isoString).getTime();
@@ -120,6 +138,9 @@ export default function ActivityTab() {
                       <span className="text-xs text-secondary">{d.agent_name || d.agent_id || 'unknown'}</span>
                       <span aria-hidden="true" className="text-xs text-zinc-700">&middot;</span>
                       <span className="text-xs tabular-nums text-tertiary">{formatRelativeTime(d.created_at)}</span>
+                      {integrityBadges(d).map((b, i) => (
+                        <Badge key={i} variant={b.variant} size="xs">{b.label}</Badge>
+                      ))}
                     </div>
                     {d.matched_policies?.length > 0 && (
                       <div className="mt-1 text-xs text-tertiary">

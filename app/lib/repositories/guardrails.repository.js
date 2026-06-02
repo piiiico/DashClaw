@@ -62,7 +62,8 @@ export async function listGuardDecisions(sql, orgId, filters = {}) {
 
   const decisionsQuery = `
     SELECT gd.id, gd.decision, gd.risk_score, gd.agent_id, gd.action_type,
-           gd.reason, gd.matched_policies, gd.context, gd.created_at
+           gd.reason, gd.matched_policies, gd.context, gd.created_at,
+           gd.verification_status, gd.replay_status, gd.act_status
     FROM guard_decisions gd
     ${where}
     ORDER BY gd.created_at DESC
