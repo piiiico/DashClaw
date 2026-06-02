@@ -24,6 +24,7 @@ export default function AssumptionsPage() {
   const { selectedAgentId } = useAgentFilter();
   const [assumptions, setAssumptions] = useState([]);
   const [total, setTotal] = useState(0);
+  const [driftSummary, setDriftSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const demo = isDemoMode();
@@ -38,12 +39,14 @@ export default function AssumptionsPage() {
       const params = new URLSearchParams();
       if (selectedAgentId) params.set('agent_id', selectedAgentId);
       params.set('limit', '200');
+      params.set('drift', 'true'); // annotate each row with drift_score + return drift_summary
 
       const res = await fetch(`/api/actions/assumptions?${params}`);
       if (res.ok) {
         const data = await res.json();
         setAssumptions(data.assumptions || []);
         setTotal(typeof data.total === 'number' ? data.total : (data.assumptions || []).length);
+        setDriftSummary(data.drift_summary || null);
       }
     } catch (err) {
       console.error('Failed to fetch assumptions:', err);
@@ -75,7 +78,7 @@ export default function AssumptionsPage() {
       breadcrumbs={['Governance', 'Assumptions']}
     >
       {/* Instrument rail — one container, divided columns */}
-      <div className="mb-8 grid grid-cols-2 divide-x divide-border overflow-hidden rounded-xl border border-border bg-surface-secondary md:grid-cols-4 md:divide-y-0">
+      <div className="mb-8 grid grid-cols-2 divide-x divide-border overflow-hidden rounded-xl border border-border bg-surface-secondary md:grid-cols-5 md:divide-y-0">
         <div className="p-4">
           <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Total</div>
           <div className="mt-1 text-2xl font-semibold tabular-nums text-white">{stats.total}</div>
@@ -91,6 +94,10 @@ export default function AssumptionsPage() {
         <div className="p-4">
           <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Pending</div>
           <div className="mt-1 text-2xl font-semibold tabular-nums text-warning">{stats.pending}</div>
+        </div>
+        <div className="p-4">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">At risk · drift</div>
+          <div className={`mt-1 text-2xl font-semibold tabular-nums ${(driftSummary?.at_risk || 0) > 0 ? 'text-warning' : 'text-white'}`}>{driftSummary?.at_risk ?? 0}</div>
         </div>
       </div>
 
@@ -160,9 +167,16 @@ export default function AssumptionsPage() {
                       )}
                     </div>
                   </div>
-                  <Badge variant={cfg.variant} size="xs">
-                    {cfg.label}
-                  </Badge>
+                  <div className="flex shrink-0 flex-col items-end gap-1">
+                    <Badge variant={cfg.variant} size="xs">
+                      {cfg.label}
+                    </Badge>
+                    {typeof a.drift_score === 'number' && a.drift_score > 0 && (
+                      <Badge variant={a.drift_score >= 50 ? 'error' : 'warning'} size="xs">
+                        drift {a.drift_score}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               </Card>
             );

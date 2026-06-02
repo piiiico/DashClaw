@@ -74,12 +74,19 @@ export default function RuntimeSummaryCard() {
       <Header />
       <div className="space-y-2.5">
         <MetricRow icon={Zap} label="Throughput · 1h" value={data.throughput.last_1h} />
-        <MetricRow icon={Clock} label="Latency p95" value={`${(data.latency.p95_ms / 1000).toFixed(1)}s`} />
+        <MetricRow
+          icon={Clock}
+          label="Latency p95"
+          value={`${(data.latency.p95_ms / 1000).toFixed(1)}s`}
+          sub={data.latency.p50_ms != null ? `p50 ${(data.latency.p50_ms / 1000).toFixed(1)}s` : ''}
+        />
         <MetricRow
           icon={AlertTriangle}
           label="Approval backlog"
           value={data.approval_backlog.pending_count}
-          sub={data.approval_backlog.pending_count > 0 ? `${data.approval_backlog.oldest_minutes}m oldest` : ''}
+          sub={data.approval_backlog.pending_count > 0
+            ? `${data.approval_backlog.oldest_minutes}m oldest${data.approval_backlog.avg_wait_minutes != null ? ` · ${data.approval_backlog.avg_wait_minutes}m avg` : ''}`
+            : ''}
           color={approvalColor}
         />
         <MetricRow

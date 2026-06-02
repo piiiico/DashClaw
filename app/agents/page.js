@@ -16,9 +16,12 @@ import { Skeleton } from '../components/ui/Skeleton';
 const statusDotMap = {
   active: 'bg-status-success',
   online: 'bg-status-success',
+  busy: 'bg-brand',
+  idle: 'bg-zinc-400',
   critical: 'bg-status-error',
   error: 'bg-status-error',
   degraded: 'bg-status-warning',
+  stale: 'bg-status-warning',
   offline: 'bg-zinc-600',
   unknown: 'bg-zinc-500',
 };
