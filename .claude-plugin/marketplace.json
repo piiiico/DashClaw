@@ -1,0 +1,14 @@
+{
+  "name": "dashclaw",
+  "owner": { "name": "DashClaw", "email": "team@dashclaw.io" },
+  "metadata": { "pluginRoot": "./plugins" },
+  "plugins": [
+    {
+      "name": "dashclaw",
+      "source": "dashclaw",
+      "description": "DashClaw governance, integration, and platform intelligence: guard checks, approvals, and audit trails for your agents.",
+      "category": "Developer Tools",
+      "tags": ["governance", "mcp", "agent-safety", "approval"]
+    }
+  ]
+}
