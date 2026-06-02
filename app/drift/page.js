@@ -307,6 +307,8 @@ export default function DriftPage() {
                             <SevIcon size={14} className={sevConf.color} aria-hidden="true" />
                             <Badge variant={sevConf.variant} size="xs">{alert.severity}</Badge>
                             <Badge size="xs">{alert.metric}</Badge>
+                            {alert.drift_type && <Badge size="xs">{alert.drift_type}</Badge>}
+                            {alert.dimension && <Badge size="xs">{alert.dimension}</Badge>}
                             <span className="text-xs text-secondary">{alert.agent_id}</span>
                           </div>
                           <div className="flex items-center gap-2">
@@ -343,6 +345,12 @@ export default function DriftPage() {
                           <span>Baseline: {alert.baseline_mean} ± {alert.baseline_stddev}</span>
                           <span>Current: {alert.current_mean} ± {alert.current_stddev}</span>
                           <span>Samples: {alert.sample_count}</span>
+                          {alert.acknowledged && alert.acknowledged_by && (
+                            <span>
+                              Ack&apos;d by {alert.acknowledged_by}
+                              {alert.acknowledged_at ? ` · ${new Date(alert.acknowledged_at).toLocaleString()}` : ''}
+                            </span>
+                          )}
                           <span className="ml-auto">{new Date(alert.created_at).toLocaleDateString()}</span>
                         </div>
                       </div>
