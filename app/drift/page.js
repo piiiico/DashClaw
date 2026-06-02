@@ -61,6 +61,13 @@ export default function DriftPage() {
   const [loading, setLoading] = useState(true);
   const [running, setRunning] = useState(false);
 
+  // Alert filters (backend supports severity / acknowledged / metric).
+  const [severity, setSeverity] = useState('all');
+  const [ackFilter, setAckFilter] = useState('all');
+  const [metricFilter, setMetricFilter] = useState('all');
+  const [metricCatalog, setMetricCatalog] = useState([]);
+  const filtersActive = severity !== 'all' || ackFilter !== 'all' || metricFilter !== 'all';
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
@@ -74,8 +81,14 @@ export default function DriftPage() {
       }
 
       const params = agentId ? `?agent_id=${agentId}` : '';
+      const alertParams = new URLSearchParams();
+      if (agentId) alertParams.set('agent_id', agentId);
+      alertParams.set('limit', '50');
+      if (severity !== 'all') alertParams.set('severity', severity);
+      if (ackFilter !== 'all') alertParams.set('acknowledged', ackFilter === 'ack' ? 'true' : 'false');
+      if (metricFilter !== 'all') alertParams.set('metric', metricFilter);
       const [alertsRes, statsRes, snapshotsRes] = await Promise.all([
-        fetch(`/api/drift/alerts${params}${params ? '&' : '?'}limit=50`),
+        fetch(`/api/drift/alerts?${alertParams}`),
         fetch(`/api/drift/stats${params}`),
         fetch(`/api/drift/snapshots${params}${params ? '&' : '?'}limit=30`),
       ]);
@@ -87,9 +100,18 @@ export default function DriftPage() {
     } finally {
       setLoading(false);
     }
-  }, [agentId]);
+  }, [agentId, severity, ackFilter, metricFilter]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  // Populate the metric filter from the trackable-metric catalog (orphan route).
+  useEffect(() => {
+    if (isDemo) return;
+    fetch('/api/drift/metrics')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (d?.metrics) setMetricCatalog(d.metrics); })
+      .catch(() => {});
+  }, [isDemo]);
 
   const handleRunDetection = async () => {
     setRunning(true);
@@ -148,6 +170,7 @@ export default function DriftPage() {
   }
 
   const overall = stats?.overall || {};
+  const selectClass = 'rounded-lg border border-border bg-surface-tertiary px-2.5 py-1.5 text-xs text-secondary transition-colors hover:border-border-hover focus:border-brand/50 focus:outline-none focus:ring-2 focus:ring-brand/20';
 
   return (
     <PageLayout
@@ -229,8 +252,41 @@ export default function DriftPage() {
           <Card>
             <CardHeader title="Drift alerts" icon={Activity} count={alerts.length} />
             <CardContent>
+              {!isDemo && (
+                <div className="mb-4 flex flex-wrap items-center gap-2">
+                  <select value={severity} onChange={(e) => setSeverity(e.target.value)} className={selectClass} aria-label="Filter by severity">
+                    <option value="all">All severities</option>
+                    <option value="critical">Critical</option>
+                    <option value="warning">Warning</option>
+                    <option value="info">Info</option>
+                  </select>
+                  <select value={ackFilter} onChange={(e) => setAckFilter(e.target.value)} className={selectClass} aria-label="Filter by acknowledgement">
+                    <option value="all">All statuses</option>
+                    <option value="unack">Unacknowledged</option>
+                    <option value="ack">Acknowledged</option>
+                  </select>
+                  <select value={metricFilter} onChange={(e) => setMetricFilter(e.target.value)} className={selectClass} aria-label="Filter by metric">
+                    <option value="all">All metrics</option>
+                    {metricCatalog.map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
+                  </select>
+                  {filtersActive && (
+                    <button
+                      onClick={() => { setSeverity('all'); setAckFilter('all'); setMetricFilter('all'); }}
+                      className="text-[11px] text-tertiary transition-colors hover:text-secondary"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+              )}
               {alerts.length === 0 ? (
-                <EmptyState icon={Activity} title="No drift detected" description="Run drift detection to analyze behavioral patterns against baselines." />
+                <EmptyState
+                  icon={Activity}
+                  title={filtersActive ? 'No alerts match these filters' : 'No drift detected'}
+                  description={filtersActive
+                    ? 'Adjust or clear the filters to see more alerts.'
+                    : 'Run drift detection to analyze behavioral patterns against baselines.'}
+                />
               ) : (
                 <div className="space-y-2">
                   {alerts.map(alert => {

@@ -61,6 +61,11 @@ export default function EvaluationsPage() {
   const [llmAvailable, setLlmAvailable] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // Score filters (backend supports scorer_name / min_score / max_score + total).
+  const [scoreBand, setScoreBand] = useState('all');
+  const [scorerFilter, setScorerFilter] = useState('all');
+  const [scoreTotal, setScoreTotal] = useState(0);
+
   // Create scorer form
   const [showCreateScorer, setShowCreateScorer] = useState(false);
   const [newScorer, setNewScorer] = useState({ name: '', scorer_type: 'regex', config: '{}', description: '' });
@@ -85,14 +90,24 @@ export default function EvaluationsPage() {
       }
 
       const params = agentId ? `?agent_id=${agentId}` : '';
+      const evalParams = new URLSearchParams();
+      if (agentId) evalParams.set('agent_id', agentId);
+      evalParams.set('limit', '50');
+      if (scorerFilter !== 'all') evalParams.set('scorer_name', scorerFilter);
+      if (scoreBand === 'failing') evalParams.set('max_score', '0.5');
+      if (scoreBand === 'passing') evalParams.set('min_score', '0.5');
       const [scoresRes, scorersRes, runsRes, statsRes] = await Promise.all([
-        fetch(`/api/evaluations${params}${params ? '&' : '?'}limit=50`),
+        fetch(`/api/evaluations?${evalParams}`),
         fetch('/api/evaluations/scorers'),
         fetch('/api/evaluations/runs?limit=20'),
         fetch(`/api/evaluations/stats${params}`),
       ]);
 
-      if (scoresRes.ok) { const d = await scoresRes.json(); setScores(d.scores || []); }
+      if (scoresRes.ok) {
+        const d = await scoresRes.json();
+        setScores(d.scores || []);
+        setScoreTotal(typeof d.total === 'number' ? d.total : (d.scores || []).length);
+      }
       if (scorersRes.ok) {
         const d = await scorersRes.json();
         setScorers(d.scorers || []);
@@ -105,7 +120,7 @@ export default function EvaluationsPage() {
     } finally {
       setLoading(false);
     }
-  }, [agentId]);
+  }, [agentId, scoreBand, scorerFilter]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -190,6 +205,7 @@ export default function EvaluationsPage() {
     : overall.avg_score ? 'text-error' : 'text-white';
 
   const inputClass = 'rounded-lg border border-border bg-surface-tertiary px-3 py-2 text-sm text-secondary placeholder:text-disabled transition-colors hover:border-border-hover focus:border-brand/50 focus:outline-none focus:ring-2 focus:ring-brand/20';
+  const filterSelect = 'rounded-lg border border-border bg-surface-tertiary px-2.5 py-1.5 text-xs text-secondary transition-colors hover:border-border-hover focus:border-brand/50 focus:outline-none focus:ring-2 focus:ring-brand/20';
 
   const primaryBtn = 'flex items-center gap-1.5 rounded-lg border border-brand/20 bg-brand/10 px-3 py-1.5 text-xs font-medium text-brand transition-colors hover:border-brand/40 hover:bg-brand/15 disabled:opacity-50';
   const secondaryBtn = 'rounded-lg border border-border bg-surface-tertiary px-3 py-1.5 text-xs text-secondary transition-colors hover:border-border-hover hover:text-white';
@@ -261,8 +277,28 @@ export default function EvaluationsPage() {
           <Card>
             <CardHeader title="Recent scores" icon={BarChart3} count={scores.length} />
             <CardContent>
+              {!isDemo && (
+                <div className="mb-4 flex flex-wrap items-center gap-2">
+                  <select value={scorerFilter} onChange={(e) => setScorerFilter(e.target.value)} className={filterSelect} aria-label="Filter by scorer">
+                    <option value="all">All scorers</option>
+                    {scorers.map((s) => <option key={s.id} value={s.name}>{s.name}</option>)}
+                  </select>
+                  <select value={scoreBand} onChange={(e) => setScoreBand(e.target.value)} className={filterSelect} aria-label="Filter by score band">
+                    <option value="all">All scores</option>
+                    <option value="passing">Passing (≥50%)</option>
+                    <option value="failing">Failing (&lt;50%)</option>
+                  </select>
+                  <span className="ml-auto text-[11px] tabular-nums text-tertiary">Showing {scores.length} of {scoreTotal}</span>
+                </div>
+              )}
               {scores.length === 0 ? (
-                <EmptyState icon={BarChart3} title="No scores yet" description="Create a scorer and run an evaluation, or submit scores via the SDK." />
+                <EmptyState
+                  icon={BarChart3}
+                  title={(scoreBand !== 'all' || scorerFilter !== 'all') ? 'No scores match these filters' : 'No scores yet'}
+                  description={(scoreBand !== 'all' || scorerFilter !== 'all')
+                    ? 'Adjust or clear the filters to see more scores.'
+                    : 'Create a scorer and run an evaluation, or submit scores via the SDK.'}
+                />
               ) : (
                 <div className="space-y-2">
                   {scores.map(score => (
