@@ -121,6 +121,47 @@ describe('/api/keys POST', () => {
     expect(data.key.label).toBe('API Key');
   });
 
+  it('defaults the key role to admin when none is provided (backward compatible)', async () => {
+    mockSql.mockResolvedValue([]);
+
+    const res = await POST(makeRequest('http://localhost/api/keys', {
+      headers: { 'x-org-id': 'org_1', 'x-org-role': 'admin', 'x-user-id': 'user_1' },
+      body: { label: 'Key' },
+    }));
+
+    expect(res.status).toBe(201);
+    const data = await res.json();
+    expect(data.key.role).toBe('admin');
+  });
+
+  it('honors an explicit member role and returns it', async () => {
+    mockSql.mockResolvedValue([]);
+
+    const res = await POST(makeRequest('http://localhost/api/keys', {
+      headers: { 'x-org-id': 'org_1', 'x-org-role': 'admin', 'x-user-id': 'user_1' },
+      body: { label: 'Read/write key', role: 'member' },
+    }));
+
+    expect(res.status).toBe(201);
+    const data = await res.json();
+    expect(data.key.role).toBe('member');
+    // the role was bound into the INSERT, not silently forced to admin
+    const insertCall = mockSql.mock.calls.find((c) => Array.isArray(c[0]) && c[0].join('').includes('INSERT INTO api_keys'));
+    expect(insertCall).toBeTruthy();
+    expect(insertCall.slice(1)).toContain('member');
+  });
+
+  it('rejects an invalid role with 400 before inserting', async () => {
+    const res = await POST(makeRequest('http://localhost/api/keys', {
+      headers: { 'x-org-id': 'org_1', 'x-org-role': 'admin' },
+      body: { label: 'Key', role: 'superuser' },
+    }));
+
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toMatch(/role must be one of/i);
+  });
+
   it('returns 500 on db error', async () => {
     mockSql.mockRejectedValue(new Error('insert failed'));
 

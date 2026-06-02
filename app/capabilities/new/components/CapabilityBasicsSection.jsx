@@ -105,8 +105,10 @@ export default function CapabilityBasicsSection({ form, mode, onChange }) {
             className="w-full px-3 py-2 bg-surface-tertiary border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-brand"
           >
             <option value="unknown">unknown</option>
+            <option value="untested">untested</option>
             <option value="healthy">healthy</option>
             <option value="degraded">degraded</option>
+            <option value="failing">failing</option>
             <option value="unhealthy">unhealthy</option>
           </select>
         </div>

@@ -501,6 +501,7 @@ describe('CapabilityDetailPage', () => {
 
     expect(await screen.findByText('Slack Notify Registry')).toBeTruthy();
     expect(screen.queryByRole('button', { name: /run test/i })).toBeNull();
-    expect(await screen.findByText(/testing is available for runnable http capabilities only/i)).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /invoke/i })).toBeNull();
+    expect(await screen.findByText(/testing and invocation are available for runnable http capabilities only/i)).toBeTruthy();
   });
 });

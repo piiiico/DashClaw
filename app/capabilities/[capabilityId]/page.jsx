@@ -11,6 +11,7 @@ import CapabilityHealthCards from './components/CapabilityHealthCards';
 import CapabilityFactsCard from './components/CapabilityFactsCard';
 import CapabilityHistoryTable from './components/CapabilityHistoryTable';
 import CapabilityTestPanel from './components/CapabilityTestPanel';
+import CapabilityInvokePanel from './components/CapabilityInvokePanel';
 import CapabilityAccessTab from './components/CapabilityAccessTab';
 import {
   deriveGeneratedInputFields,
@@ -40,6 +41,9 @@ export default function CapabilityDetailPage({ params }) {
   const [testPanelOpen, setTestPanelOpen] = useState(false);
   const [testSubmitting, setTestSubmitting] = useState(false);
   const [testResult, setTestResult] = useState(null);
+  const [invokePanelOpen, setInvokePanelOpen] = useState(false);
+  const [invokeSubmitting, setInvokeSubmitting] = useState(false);
+  const [invokeResult, setInvokeResult] = useState(null);
   const hasInitializedHistory = useRef(false);
   const generatedTestFields = deriveGeneratedInputFields(capability);
   const canTestCapability = isRunnableHttpCapability(capability);
@@ -153,6 +157,43 @@ export default function CapabilityDetailPage({ params }) {
     }
   }, [capabilityId, historyFilters, loadHealthSummary, loadHistory]);
 
+  // Real governed invocation. The route returns a structured body for every
+  // outcome (success and each rejection), so we keep the parsed body even when
+  // the HTTP status is non-2xx and let the panel render it.
+  const handleInvokeSubmit = useCallback(async ({ error: parseError, payload, declaredGoal, agentId }) => {
+    if (parseError) {
+      setInvokeResult({ error: parseError });
+      return;
+    }
+
+    setInvokeSubmitting(true);
+    setInvokeResult(null);
+
+    try {
+      const body = { ...payload };
+      if (declaredGoal) body.declared_goal = declaredGoal;
+      if (agentId) body.agent_id = agentId;
+
+      const response = await fetch(`/api/capabilities/${capabilityId}/invoke`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const resultBody = await response.json().catch(() => ({ error: 'Invocation failed' }));
+      setInvokeResult(resultBody);
+
+      // An invocation records an action and updates health — refresh both.
+      await Promise.all([
+        loadHealthSummary(),
+        loadHistory(historyFilters),
+      ]);
+    } catch (err) {
+      setInvokeResult({ error: err.message || 'Failed to invoke capability' });
+    } finally {
+      setInvokeSubmitting(false);
+    }
+  }, [capabilityId, historyFilters, loadHealthSummary, loadHistory]);
+
   return (
     <PageLayout
       title={capability?.name || 'Capability detail'}
@@ -220,17 +261,38 @@ export default function CapabilityDetailPage({ params }) {
 
           <div className="space-y-6">
             {canTestCapability ? (
-              testPanelOpen ? (
-                <CapabilityTestPanel
-                  fields={generatedTestFields}
-                  isSubmitting={testSubmitting}
-                  result={testResult}
-                  onSubmit={handleTestSubmit}
-                />
-              ) : null
+              <div className="space-y-4">
+                {/* The status hero already provides the "Run test" trigger. */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setInvokePanelOpen((v) => !v)}
+                    aria-pressed={invokePanelOpen}
+                    className="rounded-lg border border-brand/20 bg-brand/10 px-3 py-1.5 text-sm font-medium text-brand transition-colors hover:border-brand/40 hover:bg-brand/15"
+                  >
+                    {invokePanelOpen ? 'Hide invoke' : 'Invoke'}
+                  </button>
+                </div>
+                {testPanelOpen ? (
+                  <CapabilityTestPanel
+                    fields={generatedTestFields}
+                    isSubmitting={testSubmitting}
+                    result={testResult}
+                    onSubmit={handleTestSubmit}
+                  />
+                ) : null}
+                {invokePanelOpen ? (
+                  <CapabilityInvokePanel
+                    fields={generatedTestFields}
+                    isSubmitting={invokeSubmitting}
+                    result={invokeResult}
+                    onSubmit={handleInvokeSubmit}
+                  />
+                ) : null}
+              </div>
             ) : (
               <div className="rounded-lg border border-border bg-surface-tertiary px-4 py-3 text-sm text-secondary">
-                Testing is available for runnable HTTP capabilities only.
+                Testing and invocation are available for runnable HTTP capabilities only.
               </div>
             )}
 

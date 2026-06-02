@@ -46,6 +46,7 @@ const WEBHOOK_TEMPLATES = [
   },
 ];
 
+// Mirrors VALID_EVENT_TYPES in app/api/webhooks/route.js — keep in sync.
 const EVENT_TYPES = [
   { value: 'all', label: 'All events' },
   { value: 'autonomy_spike', label: 'Autonomy spike' },
@@ -55,6 +56,9 @@ const EVENT_TYPES = [
   { value: 'assumption_drift', label: 'Assumption drift' },
   { value: 'stale_assumption', label: 'Stale assumption' },
   { value: 'stale_running_action', label: 'Stale running action' },
+  { value: 'approval_pending', label: 'Approval pending' },
+  { value: 'approval_granted', label: 'Approval granted' },
+  { value: 'approval_denied', label: 'Approval denied' },
 ];
 
 export default function WebhooksPage() {

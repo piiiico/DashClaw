@@ -1,8 +1,14 @@
+// Values mirror deriveStatus() in app/lib/capability-health.js: it emits
+// healthy / degraded / failing / untested and passes through a manually-set
+// unhealthy / unknown. All must be filterable or those capabilities only show
+// under "All health".
 const HEALTH_FILTERS = [
   { value: 'all', label: 'All health' },
   { value: 'healthy', label: 'Healthy' },
   { value: 'degraded', label: 'Degraded' },
+  { value: 'failing', label: 'Failing' },
   { value: 'unhealthy', label: 'Unhealthy' },
+  { value: 'untested', label: 'Untested' },
   { value: 'unknown', label: 'Unknown' },
 ];
 

@@ -15,8 +15,36 @@ const DEFAULT_FORM_STATE = {
   contentPath: 'content',
   sourcePath: 'source_of_truth',
   onViolation: 'block',
+  // behavioral_anomaly
+  similarityThreshold: 0.75,
+  minHistory: 5,
+  // permission_escalation
+  enforce: true,
+  // green_contract
+  requiredLevel: 'workspace',
+  // branch_freshness
+  freshness: ['stale', 'diverged'],
+  maxCommitsBehind: 0,
   agentIds: [],
 };
+
+// Single source of truth for the policy-type picker (label + one-line
+// description), shared by the manual authoring panel and the generated-draft
+// editor so both expose every backend-enforced type. Mirrors the canonical
+// POLICY_TYPES list in app/lib/validate.js.
+export const POLICY_TYPE_OPTIONS = [
+  { value: 'risk_threshold', label: 'Risk Threshold', desc: 'Block or warn when risk score exceeds a threshold' },
+  { value: 'require_approval', label: 'Require Approval', desc: 'Require approval for specific action types' },
+  { value: 'block_action_type', label: 'Block Action Type', desc: 'Block specific action types entirely' },
+  { value: 'rate_limit', label: 'Rate Limit', desc: 'Warn or block when an agent exceeds action frequency' },
+  { value: 'webhook_check', label: 'Webhook Check', desc: 'Call an external endpoint for custom decision logic' },
+  { value: 'semantic_check', label: 'Semantic Check', desc: 'Use an LLM to evaluate action intent against natural-language rules' },
+  { value: 'behavioral_anomaly', label: 'Behavioral Anomaly', desc: 'Flag actions unlike the agent’s recent behavior (embedding similarity). Requires an OpenAI key.' },
+  { value: 'permission_escalation', label: 'Permission Escalation', desc: 'Block actions whose required tool permission exceeds the agent’s approved pairing level' },
+  { value: 'green_contract', label: 'Green Contract', desc: 'Gate actions (e.g. deploy) until tests reach a required green level' },
+  { value: 'branch_freshness', label: 'Branch Freshness', desc: 'Block actions when the branch is stale/diverged or too many commits behind' },
+  { value: 'non_fabrication', label: 'Non-Fabrication', desc: 'Block or route to approval outbound content that states a fact not traceable to its source-of-truth' },
+];
 
 function cleanString(value) {
   return typeof value === 'string' ? value.trim() : '';
@@ -109,6 +137,33 @@ export function compilePolicyPayload(formState) {
         on_violation: form.onViolation === 'require_approval' ? 'require_approval' : 'block',
       };
       break;
+    case 'behavioral_anomaly':
+      rules = {
+        similarity_threshold: Math.max(0, Math.min(1, Number(form.similarityThreshold) || 0)),
+        min_history: Math.max(1, Number(form.minHistory) || 5),
+        action: form.action,
+      };
+      break;
+    case 'permission_escalation':
+      rules = { enforce: !!form.enforce, action: form.action };
+      break;
+    case 'green_contract':
+      rules = {
+        action_types: form.actionTypes || [],
+        required_level: form.requiredLevel || 'workspace',
+        action: form.action,
+      };
+      break;
+    case 'branch_freshness':
+      rules = {
+        action_types: form.actionTypes || [],
+        freshness: Array.isArray(form.freshness) && form.freshness.length > 0
+          ? form.freshness
+          : ['stale', 'diverged'],
+        max_commits_behind: Math.max(0, Number(form.maxCommitsBehind) || 0),
+        action: form.action,
+      };
+      break;
     default:
       rules = {};
       break;
@@ -145,6 +200,12 @@ export function decompilePolicyForm(policy) {
     contentPath: rules.content_path || DEFAULT_FORM_STATE.contentPath,
     sourcePath: rules.source_path || DEFAULT_FORM_STATE.sourcePath,
     onViolation: rules.on_violation || DEFAULT_FORM_STATE.onViolation,
+    similarityThreshold: rules.similarity_threshold ?? DEFAULT_FORM_STATE.similarityThreshold,
+    minHistory: rules.min_history ?? DEFAULT_FORM_STATE.minHistory,
+    enforce: rules.enforce !== undefined ? !!rules.enforce : DEFAULT_FORM_STATE.enforce,
+    requiredLevel: rules.required_level || DEFAULT_FORM_STATE.requiredLevel,
+    freshness: Array.isArray(rules.freshness) ? rules.freshness : DEFAULT_FORM_STATE.freshness,
+    maxCommitsBehind: rules.max_commits_behind ?? DEFAULT_FORM_STATE.maxCommitsBehind,
     agentIds: parseAgentIds(policy),
   };
 }
@@ -181,6 +242,24 @@ export function buildPolicySummary(formState) {
         ? `${actionListText(form.actionTypes)} actions`
         : 'any action';
       return `${form.onViolation === 'require_approval' ? 'Require approval for' : 'Block'} ${nfScope} whose outbound content states a fact not traceable to its source-of-truth${scoped}.`;
+    }
+    case 'behavioral_anomaly': {
+      const pct = Math.round((Number(form.similarityThreshold) || 0) * 100);
+      const verb = form.action === 'block' ? 'Block' : form.action === 'warn' ? 'Warn on' : 'Require approval for';
+      return `${verb} actions less than ${pct}% similar to the agent’s recent behavior, after ${Number(form.minHistory) || 5} baseline samples${scoped}. Requires embeddings (OpenAI key).`;
+    }
+    case 'permission_escalation':
+      return form.enforce
+        ? `${form.action === 'block' ? 'Block' : form.action === 'warn' ? 'Warn on' : 'Require approval for'} actions whose required tool permission exceeds the agent’s approved pairing level${scoped}.`
+        : `Permission-escalation policy is configured but disabled — set Enforce to activate it${scoped}.`;
+    case 'green_contract': {
+      const verb = form.action === 'block' ? 'Block' : form.action === 'warn' ? 'Warn on' : 'Require approval for';
+      return `${verb} ${actionListText(form.actionTypes)} actions unless test status has reached “${form.requiredLevel || 'workspace'}”${scoped}.`;
+    }
+    case 'branch_freshness': {
+      const verb = form.action === 'block' ? 'Block' : form.action === 'warn' ? 'Warn on' : 'Require approval for';
+      const states = (Array.isArray(form.freshness) ? form.freshness : ['stale', 'diverged']).join(' or ');
+      return `${verb} ${actionListText(form.actionTypes)} actions when the branch is ${states} and more than ${Number(form.maxCommitsBehind) || 0} commits behind${scoped}.`;
     }
     default:
       return 'Configure a policy rule.';

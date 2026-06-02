@@ -7,6 +7,17 @@ const DECISION_ACTIONS = [
   { value: 'require_approval', label: 'Require Approval' },
 ];
 
+// Test-status ladder enforced by the green_contract guard (app/lib/guard.js).
+const GREEN_LEVELS = [
+  { value: 'targeted', label: 'Targeted' },
+  { value: 'package', label: 'Package' },
+  { value: 'workspace', label: 'Workspace' },
+  { value: 'merge_ready', label: 'Merge-ready' },
+];
+
+// Branch states the branch_freshness guard can trigger on.
+const FRESHNESS_OPTIONS = ['stale', 'diverged'];
+
 export default function PolicyRuleBuilderSection({
   form,
   actionOptions,
@@ -19,6 +30,16 @@ export default function PolicyRuleBuilderSection({
       current.includes(type)
         ? current.filter((value) => value !== type)
         : [...current, type]
+    );
+  };
+
+  const toggleFreshness = (state) => {
+    const current = Array.isArray(form.freshness) ? form.freshness : [];
+    onChange(
+      'freshness',
+      current.includes(state)
+        ? current.filter((value) => value !== state)
+        : [...current, state]
     );
   };
 
@@ -262,6 +283,226 @@ export default function PolicyRuleBuilderSection({
                 placeholder="source_of_truth"
                 className={inputClass}
               />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {form.type === 'behavioral_anomaly' && (
+        <div className="space-y-4">
+          <p className="text-[11px] text-tertiary">
+            Compares each action against the agent&apos;s recent history using embedding similarity.
+            Requires embeddings — set <code className="text-secondary">OPENAI_API_KEY</code>. The policy
+            stays dormant until the agent has at least the baseline number of recorded actions.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs text-secondary mb-1">Similarity threshold (0&ndash;1)</label>
+              <input
+                aria-label="Similarity threshold"
+                type="number"
+                min="0"
+                max="1"
+                step="0.05"
+                value={form.similarityThreshold}
+                onChange={(event) => {
+                  const value = event.target.value === ''
+                    ? ''
+                    : Math.max(0, Math.min(1, parseFloat(event.target.value) || 0));
+                  onChange('similarityThreshold', value);
+                }}
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-secondary mb-1">Baseline samples</label>
+              <input
+                aria-label="Baseline samples"
+                type="number"
+                min="1"
+                value={form.minHistory}
+                onChange={(event) => onChange('minHistory', parseInt(event.target.value, 10) || 1)}
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-secondary mb-1">On anomaly</label>
+              <select
+                aria-label="Behavioral anomaly action"
+                value={form.action}
+                onChange={(event) => onChange('action', event.target.value)}
+                className={selectClass}
+              >
+                {DECISION_ACTIONS.map((action) => (
+                  <option key={action.value} value={action.value}>{action.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {form.type === 'permission_escalation' && (
+        <div className="space-y-4">
+          <p className="text-[11px] text-tertiary">
+            Compares the permission a tool requires against the agent&apos;s approved pairing level.
+            The policy is inert until enforcement is turned on.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <label className="flex items-center gap-2 text-sm text-white">
+              <input
+                aria-label="Enforce permission escalation"
+                type="checkbox"
+                checked={!!form.enforce}
+                onChange={(event) => onChange('enforce', event.target.checked)}
+                className="h-4 w-4 accent-brand"
+              />
+              Enforce this policy
+            </label>
+            <div>
+              <label className="block text-xs text-secondary mb-1">On escalation</label>
+              <select
+                aria-label="Permission escalation action"
+                value={form.action}
+                onChange={(event) => onChange('action', event.target.value)}
+                className={selectClass}
+              >
+                {DECISION_ACTIONS.map((action) => (
+                  <option key={action.value} value={action.value}>{action.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {form.type === 'green_contract' && (
+        <div className="space-y-4">
+          <p className="text-[11px] text-tertiary">
+            Gates the selected actions until the agent reports a test status at or above the required
+            level. A missing test status fails the contract.
+          </p>
+          <div>
+            <label className="block text-xs text-secondary mb-2">Action Types</label>
+            <div className="flex flex-wrap gap-2">
+              {actionOptions.map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  aria-pressed={form.actionTypes.includes(type)}
+                  onClick={() => toggleActionType(type)}
+                  className={`px-2.5 py-1 rounded-md text-xs transition-colors ${
+                    form.actionTypes.includes(type)
+                      ? 'bg-brand text-white'
+                      : 'bg-[#1a1a1a] text-secondary border border-[rgba(255,255,255,0.06)] hover:text-white'
+                  }`}
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs text-secondary mb-1">Required green level</label>
+              <select
+                aria-label="Required green level"
+                value={form.requiredLevel}
+                onChange={(event) => onChange('requiredLevel', event.target.value)}
+                className={selectClass}
+              >
+                {GREEN_LEVELS.map((level) => (
+                  <option key={level.value} value={level.value}>{level.label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-secondary mb-1">On violation</label>
+              <select
+                aria-label="Green contract action"
+                value={form.action}
+                onChange={(event) => onChange('action', event.target.value)}
+                className={selectClass}
+              >
+                {DECISION_ACTIONS.map((action) => (
+                  <option key={action.value} value={action.value}>{action.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {form.type === 'branch_freshness' && (
+        <div className="space-y-4">
+          <p className="text-[11px] text-tertiary">
+            Blocks the selected actions when the agent&apos;s working branch is in one of the chosen
+            states and is too many commits behind its base.
+          </p>
+          <div>
+            <label className="block text-xs text-secondary mb-2">Action Types</label>
+            <div className="flex flex-wrap gap-2">
+              {actionOptions.map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  aria-pressed={form.actionTypes.includes(type)}
+                  onClick={() => toggleActionType(type)}
+                  className={`px-2.5 py-1 rounded-md text-xs transition-colors ${
+                    form.actionTypes.includes(type)
+                      ? 'bg-brand text-white'
+                      : 'bg-[#1a1a1a] text-secondary border border-[rgba(255,255,255,0.06)] hover:text-white'
+                  }`}
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs text-secondary mb-2">Trigger when branch is</label>
+            <div className="flex flex-wrap gap-2">
+              {FRESHNESS_OPTIONS.map((state) => (
+                <button
+                  key={state}
+                  type="button"
+                  aria-pressed={(form.freshness || []).includes(state)}
+                  onClick={() => toggleFreshness(state)}
+                  className={`px-2.5 py-1 rounded-md text-xs transition-colors ${
+                    (form.freshness || []).includes(state)
+                      ? 'bg-brand text-white'
+                      : 'bg-[#1a1a1a] text-secondary border border-[rgba(255,255,255,0.06)] hover:text-white'
+                  }`}
+                >
+                  {state}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs text-secondary mb-1">Max commits behind</label>
+              <input
+                aria-label="Max commits behind"
+                type="number"
+                min="0"
+                value={form.maxCommitsBehind}
+                onChange={(event) => onChange('maxCommitsBehind', parseInt(event.target.value, 10) || 0)}
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-secondary mb-1">On violation</label>
+              <select
+                aria-label="Branch freshness action"
+                value={form.action}
+                onChange={(event) => onChange('action', event.target.value)}
+                className={selectClass}
+              >
+                {DECISION_ACTIONS.map((action) => (
+                  <option key={action.value} value={action.value}>{action.label}</option>
+                ))}
+              </select>
             </div>
           </div>
         </div>

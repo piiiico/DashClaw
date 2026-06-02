@@ -3,6 +3,7 @@ import { headers } from 'next/headers';
 import { getSql } from '../lib/db.js';
 import { listProjects, countUnreadAlerts } from '../lib/repositories/code-sessions.repository.js';
 import PageLayout from '../components/PageLayout';
+import CodeSessionAlertsPanel from '../components/CodeSessionAlertsPanel';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -22,6 +23,7 @@ export default async function CodeSessionsProjectsPage() {
 
   return (
     <PageLayout title="Code Sessions" subtitle={subtitle} maturity="beta">
+      <CodeSessionAlertsPanel />
       {!projects.length ? (
         <div className="rounded-md border border-dashed border-border p-8 text-center text-secondary">
           <p className="font-medium">No Code Sessions data yet.</p>

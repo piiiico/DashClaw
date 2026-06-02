@@ -15,18 +15,9 @@ import {
   compilePolicyPayload,
   decompilePolicyForm,
   buildPolicySummary,
+  POLICY_TYPE_OPTIONS as POLICY_TYPES,
 } from '../lib/policyFormModel';
 import { PACK_PREVIEWS } from '../../lib/policyPackPreviews.js';
-
-const POLICY_TYPES = [
-  { value: 'risk_threshold', label: 'Risk Threshold', desc: 'Block or warn when risk score exceeds a threshold' },
-  { value: 'require_approval', label: 'Require Approval', desc: 'Require approval for specific action types' },
-  { value: 'block_action_type', label: 'Block Action Type', desc: 'Block specific action types entirely' },
-  { value: 'rate_limit', label: 'Rate Limit', desc: 'Warn or block when an agent exceeds action frequency' },
-  { value: 'webhook_check', label: 'Webhook Check', desc: 'Call an external endpoint for custom decision logic' },
-  { value: 'semantic_check', label: 'Semantic Check', desc: 'Use an LLM to evaluate action intent against natural language rules' },
-  { value: 'non_fabrication', label: 'Non-Fabrication', desc: 'Block or route to approval outbound content that states a fact not traceable to its source-of-truth' },
-];
 
 const ACTION_OPTIONS = [
   'build', 'deploy', 'post', 'apply', 'security', 'message', 'api',
@@ -46,6 +37,10 @@ function formatRules(policy) {
     case 'webhook_check': { try { return `Webhook \u2192 ${new URL(rules.url).hostname}`; } catch { return 'Webhook'; } }
     case 'semantic_check': return `Semantic: "${(rules.instruction || '').slice(0, 50)}..."`;
     case 'non_fabrication': return `Non-fabrication → ${rules.on_violation || 'block'}`;
+    case 'behavioral_anomaly': return `Anomaly < ${Math.round((rules.similarity_threshold ?? 0.75) * 100)}% similar → ${rules.action || 'require_approval'}`;
+    case 'permission_escalation': return rules.enforce ? `Permission escalation → ${rules.action || 'block'}` : 'Permission escalation (disabled)';
+    case 'green_contract': return `${(rules.action_types || []).join(', ')} need ${rules.required_level || 'workspace'} green → ${rules.action || 'block'}`;
+    case 'branch_freshness': return `${(rules.action_types || []).join(', ')} when ${(rules.freshness || ['stale', 'diverged']).join('/')} → ${rules.action || 'block'}`;
     default: return type;
   }
 }

@@ -4,19 +4,11 @@ import { useMemo, useState } from 'react';
 import {
   buildPolicySummary,
   compilePolicyPayload,
+  POLICY_TYPE_OPTIONS as POLICY_TYPES,
 } from '../lib/policyFormModel.js';
 import { normalizeGeneratedPolicyDrafts } from './lib/policyGeneratorDrafts.js';
 import PolicyDraftCandidateList from './components/PolicyDraftCandidateList';
 import PolicyGeneratedDraftEditor from './components/PolicyGeneratedDraftEditor';
-
-const POLICY_TYPES = [
-  { value: 'risk_threshold', label: 'Risk Threshold', desc: 'Block or warn when risk score exceeds a threshold' },
-  { value: 'require_approval', label: 'Require Approval', desc: 'Require approval for specific action types' },
-  { value: 'block_action_type', label: 'Block Action Type', desc: 'Block specific action types entirely' },
-  { value: 'rate_limit', label: 'Rate Limit', desc: 'Warn or block when an agent exceeds action frequency' },
-  { value: 'webhook_check', label: 'Webhook Check', desc: 'Call an external endpoint for custom decision logic' },
-  { value: 'semantic_check', label: 'Semantic Check', desc: 'Use an LLM to evaluate action intent against natural language rules' },
-];
 
 const ACTION_OPTIONS = [
   'build', 'deploy', 'post', 'apply', 'security', 'message', 'api',

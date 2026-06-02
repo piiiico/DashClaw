@@ -8,6 +8,7 @@ import { logActivity } from '../../lib/audit.js';
 import { getSql } from '../../lib/db.js';
 import crypto from 'crypto';
 import { isSelfHostModeEnabled } from '../../lib/selfHost.js';
+import { isValidApiKeyRole, API_KEY_ROLES } from '../../lib/apiKeyRoles.js';
 
 function hashKey(key) {
   return crypto.createHash('sha256').update(key).digest('hex');
@@ -60,10 +61,15 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { label = 'API Key' } = body;
+    // `role` defaults to 'admin' so existing (non-UI) callers keep their
+    // behavior; the dashboard now always sends an explicit role.
+    const { label = 'API Key', role = 'admin' } = body;
 
     if (typeof label !== 'string' || label.length > 256) {
       return NextResponse.json({ error: 'Label must be a string of 256 characters or fewer' }, { status: 400 });
+    }
+    if (!isValidApiKeyRole(role)) {
+      return NextResponse.json({ error: `role must be one of: ${API_KEY_ROLES.join(', ')}` }, { status: 400 });
     }
 
     const sql = getSql();
@@ -85,7 +91,7 @@ export async function POST(request) {
 
     await sql`
       INSERT INTO api_keys (id, org_id, key_hash, key_prefix, label, role)
-      VALUES (${keyId}, ${orgId}, ${keyHash}, ${keyPrefix}, ${label}, 'admin')
+      VALUES (${keyId}, ${orgId}, ${keyHash}, ${keyPrefix}, ${label}, ${role})
     `;
 
     // Fire-and-forget meter increment
@@ -96,7 +102,7 @@ export async function POST(request) {
     logActivity({
       orgId, actorId: getUserId(request) || 'unknown', action: 'key.created',
       resourceType: 'api_key', resourceId: keyId,
-      details: { label, prefix: keyPrefix }, request,
+      details: { label, prefix: keyPrefix, role }, request,
     }, sql);
 
     return NextResponse.json({
@@ -105,7 +111,7 @@ export async function POST(request) {
         raw_key: rawKey,
         prefix: keyPrefix,
         label,
-        role: 'admin',
+        role,
         storageWarning: 'Store this key now. It will not be shown again.'
       }
     }, { status: 201 });

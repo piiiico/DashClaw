@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import {
-  Brain, CheckCircle2, XCircle, HelpCircle, Clock,
+  Brain, CheckCircle2, XCircle, Clock,
 } from 'lucide-react';
 import Link from 'next/link';
 import PageLayout from '../components/PageLayout';
@@ -12,58 +12,60 @@ import { EmptyState } from '../components/ui/EmptyState';
 import { ListSkeleton } from '../components/ui/Skeleton';
 import { useAgentFilter } from '../lib/AgentFilterContext';
 import { isDemoMode } from '../lib/isDemoMode';
+import { deriveAssumptionStatus, ASSUMPTION_FILTER_OPTIONS as FILTER_OPTIONS } from '../lib/assumptions-status';
 
 const STATUS_CONFIG = {
-  validated: { icon: CheckCircle2, color: 'text-success', variant: 'success' },
-  invalidated: { icon: XCircle, color: 'text-error', variant: 'error' },
-  pending: { icon: HelpCircle, color: 'text-warning', variant: 'warning' },
-  awaiting_validation: { icon: Clock, color: 'text-info', variant: 'info' },
+  validated: { icon: CheckCircle2, color: 'text-success', variant: 'success', label: 'validated' },
+  invalidated: { icon: XCircle, color: 'text-error', variant: 'error', label: 'invalidated' },
+  pending: { icon: Clock, color: 'text-warning', variant: 'warning', label: 'awaiting validation' },
 };
-
-const FILTER_OPTIONS = [
-  { value: 'all', label: 'All' },
-  { value: 'awaiting_validation', label: 'Awaiting validation' },
-  { value: 'validated', label: 'Validated' },
-  { value: 'invalidated', label: 'Invalidated' },
-];
 
 export default function AssumptionsPage() {
   const { selectedAgentId } = useAgentFilter();
   const [assumptions, setAssumptions] = useState([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const demo = isDemoMode();
 
+  // Fetch the full (agent-scoped) set once; the route filters on integer
+  // `validated`/`stale` columns and has no `status` param, so the four display
+  // statuses (incl. "invalidated", which the API can't filter directly) are
+  // derived and filtered client-side from the real fields.
   const fetchAssumptions = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
       if (selectedAgentId) params.set('agent_id', selectedAgentId);
-      if (filter !== 'all') params.set('status', filter);
-      params.set('limit', '50');
+      params.set('limit', '200');
 
       const res = await fetch(`/api/actions/assumptions?${params}`);
       if (res.ok) {
         const data = await res.json();
         setAssumptions(data.assumptions || []);
+        setTotal(typeof data.total === 'number' ? data.total : (data.assumptions || []).length);
       }
     } catch (err) {
       console.error('Failed to fetch assumptions:', err);
     } finally {
       setLoading(false);
     }
-  }, [selectedAgentId, filter]);
+  }, [selectedAgentId]);
 
   useEffect(() => {
     if (!demo) fetchAssumptions();
     else setLoading(false);
   }, [demo, fetchAssumptions]);
 
+  const visibleAssumptions = filter === 'all'
+    ? assumptions
+    : assumptions.filter(a => deriveAssumptionStatus(a) === filter);
+
   const stats = {
-    total: assumptions.length,
-    validated: assumptions.filter(a => a.status === 'validated').length,
-    invalidated: assumptions.filter(a => a.status === 'invalidated').length,
-    pending: assumptions.filter(a => a.status === 'pending' || a.status === 'awaiting_validation').length,
+    total,
+    validated: assumptions.filter(a => deriveAssumptionStatus(a) === 'validated').length,
+    invalidated: assumptions.filter(a => deriveAssumptionStatus(a) === 'invalidated').length,
+    pending: assumptions.filter(a => deriveAssumptionStatus(a) === 'pending').length,
   };
 
   return (
@@ -118,16 +120,19 @@ export default function AssumptionsPage() {
       {/* List */}
       {loading ? (
         <ListSkeleton rows={6} />
-      ) : assumptions.length === 0 ? (
+      ) : visibleAssumptions.length === 0 ? (
         <EmptyState
           icon={Brain}
-          title="No assumptions recorded"
-          description="Agents record assumptions using dc.recordAssumption() when making decisions based on uncertain information."
+          title={filter === 'all' ? 'No assumptions recorded' : `No ${filter === 'pending' ? 'awaiting-validation' : filter} assumptions`}
+          description={filter === 'all'
+            ? 'Agents record assumptions using dc.recordAssumption() when making decisions based on uncertain information.'
+            : 'No assumptions match this filter. Switch to “All” to see every recorded assumption.'}
         />
       ) : (
         <div className="space-y-3">
-          {assumptions.map((a) => {
-            const cfg = STATUS_CONFIG[a.status] || STATUS_CONFIG.pending;
+          {visibleAssumptions.map((a) => {
+            const status = deriveAssumptionStatus(a);
+            const cfg = STATUS_CONFIG[status];
             const StatusIcon = cfg.icon;
             return (
               <Card key={a.id} hover={false}>
@@ -156,7 +161,7 @@ export default function AssumptionsPage() {
                     </div>
                   </div>
                   <Badge variant={cfg.variant} size="xs">
-                    {(a.status || 'pending').replace(/_/g, ' ')}
+                    {cfg.label}
                   </Badge>
                 </div>
               </Card>

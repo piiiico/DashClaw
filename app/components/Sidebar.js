@@ -10,7 +10,7 @@ import {
   PanelLeft, Menu, X, Activity, Shield, Microscope,
   Terminal, TrendingUp, GraduationCap, Plug,
   MessageSquare, Download, Workflow, Cpu, BookOpen, Wrench, Fingerprint, Bell, Inbox,
-  FlaskConical, ChevronDown, GitBranch,
+  FlaskConical, ChevronDown, GitBranch, Stethoscope, ClipboardCheck,
 } from 'lucide-react';
 import DashClawLogo from './DashClawLogo';
 
@@ -42,6 +42,7 @@ const navGroups = [
       { href: '/integrations', icon: Plug, label: 'Integrations' },
       { href: '/webhooks', icon: Bell, label: 'Webhooks' },
       { href: '/identities', icon: Fingerprint, label: 'Identities' },
+      { href: '/doctor', icon: Stethoscope, label: 'Doctor' },
       { href: '/settings', icon: Settings, label: 'Settings' },
     ],
   },
@@ -55,6 +56,7 @@ const navGroups = [
       { href: '/drift', icon: TrendingUp, label: 'Drift' },
       { href: '/learning', icon: GraduationCap, label: 'Learning' },
       { href: '/quality', icon: BarChart3, label: 'Quality' },
+      { href: '/evaluations', icon: ClipboardCheck, label: 'Evaluations' },
       { href: '/prompts', icon: Terminal, label: 'Prompts' },
       { href: '/feedback', icon: MessageSquare, label: 'Feedback' },
       { href: '/messages', icon: Inbox, label: 'Messages' },

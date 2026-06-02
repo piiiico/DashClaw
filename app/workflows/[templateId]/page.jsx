@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-  ArrowLeft, Rocket, Copy, FileText, Cpu, ExternalLink,
+  ArrowLeft, Rocket, Copy, FileText, Cpu,
 } from 'lucide-react';
 import PageLayout from '../../components/PageLayout';
 import { Card, CardContent, CardHeader } from '../../components/ui/Card';
@@ -30,8 +30,8 @@ export default function WorkflowTemplateDetailPage() {
   const [draft, setDraft] = useState(createDefaultWorkflowDraft());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [launching, setLaunching] = useState(false);
-  const [launchResult, setLaunchResult] = useState(null);
+  const [running, setRunning] = useState(false);
+  const [runError, setRunError] = useState(null);
   const [duplicating, setDuplicating] = useState(false);
   const [stepsView, setStepsView] = useState('builder');
   const [savingSteps, setSavingSteps] = useState(false);
@@ -115,26 +115,45 @@ export default function WorkflowTemplateDetailPage() {
     };
   }, [templateId]);
 
-  const handleLaunch = async () => {
-    setLaunching(true);
-    setLaunchResult(null);
+  // Run the workflow through the governed executor (/execute). Unlike /launch
+  // (which only records an action), this evaluates guard + quota, runs every
+  // step, persists step results + artifacts, and returns the run action_id.
+  // On any outcome that produced a run we navigate to its timeline; policy
+  // blocks / quota / no-steps have no run, so they surface inline.
+  const handleRun = async () => {
+    setRunning(true);
+    setRunError(null);
     try {
-      const res = await fetch(`/api/workflows/templates/${templateId}/launch`, {
+      const res = await fetch(`/api/workflows/templates/${templateId}/execute`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}),
       });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error || 'Launch failed');
+      const data = await res.json().catch(() => ({}));
+
+      if (data.action_id) {
+        // success OR failed-with-steps — the run timeline shows the outcome
+        router.push(`/workflows/${templateId}/runs/${data.action_id}`);
+        return;
       }
-      const { launch } = await res.json();
-      setLaunchResult(launch);
-      fetchTemplate();
+
+      let message;
+      if (data.error === 'blocked_by_policy') {
+        const reasons = (data.guard_decision?.reasons || []).join('; ');
+        message = `Blocked by policy${reasons ? `: ${reasons}` : ''}`;
+      } else if (data.error === 'quota_exceeded') {
+        message = data.message || 'Monthly workflow execution limit exceeded.';
+      } else if (data.error === 'workflow_has_no_steps') {
+        message = 'This workflow has no executable steps yet — add steps in the builder first.';
+      } else {
+        message = data.error || 'Workflow execution failed.';
+      }
+      setRunError(message);
+      loadRuns();
     } catch (err) {
-      setLaunchResult({ error: err.message });
+      setRunError(err.message || 'Workflow execution failed.');
     } finally {
-      setLaunching(false);
+      setRunning(false);
     }
   };
 
@@ -209,11 +228,12 @@ export default function WorkflowTemplateDetailPage() {
             <Copy size={14} /> {duplicating ? 'Duplicating...' : 'Duplicate'}
           </button>
           <button
-            onClick={handleLaunch}
-            disabled={launching}
+            onClick={handleRun}
+            disabled={running}
+            aria-busy={running}
             className="flex items-center gap-2 px-3 py-1.5 text-sm text-white bg-brand hover:bg-brand/90 rounded-lg transition-colors disabled:opacity-50"
           >
-            <Rocket size={14} /> {launching ? 'Launching...' : 'Launch'}
+            <Rocket size={14} aria-hidden="true" /> {running ? 'Running…' : 'Run'}
           </button>
         </div>
       )}
@@ -245,25 +265,14 @@ export default function WorkflowTemplateDetailPage() {
         </Card>
       </div>
 
-      {launchResult && !launchResult.error && (
-        <div className="mb-6 px-4 py-3 rounded-lg bg-success-subtle border border-success/20">
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-success">
-              Launched as action <span className="font-mono">{launchResult.action_id}</span>
-              {launchResult.resolved_strategy && ' · strategy snapshotted'}
-            </div>
-            <Link
-              href={`/decisions/${launchResult.action_id}`}
-              className="flex items-center gap-1.5 text-xs text-success hover:text-emerald-200"
-            >
-              <ExternalLink size={12} /> View replay
-            </Link>
-          </div>
+      {running && (
+        <div role="status" className="mb-6 px-4 py-3 rounded-lg bg-surface-tertiary border border-border text-sm text-secondary">
+          Running workflow steps through the governed executor… this can take up to two minutes.
         </div>
       )}
-      {launchResult?.error && (
-        <div className="mb-6 px-4 py-3 rounded-lg bg-error-subtle border border-error/20 text-sm text-error">
-          Launch failed: {launchResult.error}
+      {runError && (
+        <div role="alert" className="mb-6 px-4 py-3 rounded-lg bg-error-subtle border border-error/20 text-sm text-error">
+          {runError}
         </div>
       )}
 
@@ -324,7 +333,7 @@ export default function WorkflowTemplateDetailPage() {
               <div className="text-sm text-tertiary py-4">Loading runs...</div>
             ) : runs.length === 0 ? (
               <div className="text-sm text-tertiary py-8 text-center">
-                No runs yet. Use the SDK or API to execute this workflow.
+                No runs yet. Press <span className="text-secondary">Run</span> to execute this workflow, or trigger it from the SDK or API.
               </div>
             ) : (
               <div className="space-y-2">

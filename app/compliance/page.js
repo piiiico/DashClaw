@@ -451,11 +451,11 @@ export default function CompliancePage() {
                 <div className="grid grid-cols-2 divide-x divide-y divide-border">
                   <div className="p-4">
                     <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Guard decisions</div>
-                    <div className="mt-1 text-lg font-semibold tabular-nums text-white">{evidence.guard_decisions ?? 0}</div>
+                    <div className="mt-1 text-lg font-semibold tabular-nums text-white">{evidence.guard_decisions_total ?? 0}</div>
                   </div>
                   <div className="p-4">
                     <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Blocked</div>
-                    <div className="mt-1 text-lg font-semibold tabular-nums text-error">{evidence.blocked ?? 0}</div>
+                    <div className="mt-1 text-lg font-semibold tabular-nums text-error">{evidence.guard_decisions_blocked ?? 0}</div>
                   </div>
                   <div className="p-4">
                     <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Approval requests</div>
@@ -463,7 +463,7 @@ export default function CompliancePage() {
                   </div>
                   <div className="p-4">
                     <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Actions recorded</div>
-                    <div className="mt-1 text-lg font-semibold tabular-nums text-info">{evidence.actions_recorded ?? 0}</div>
+                    <div className="mt-1 text-lg font-semibold tabular-nums text-info">{evidence.action_records_total ?? 0}</div>
                   </div>
                 </div>
               )}

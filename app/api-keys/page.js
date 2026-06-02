@@ -8,6 +8,7 @@ import { Badge } from '../components/ui/Badge';
 import { EmptyState } from '../components/ui/EmptyState';
 import ConnectAgentButton from '../components/ConnectAgentButton';
 import { useEffectiveRole } from '../hooks/useEffectiveRole';
+import { API_KEY_ROLE_OPTIONS } from '../lib/apiKeyRoles';
 
 export default function ApiKeysPage() {
   const { isAdmin } = useEffectiveRole();
@@ -19,6 +20,7 @@ export default function ApiKeysPage() {
   // Create form
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newLabel, setNewLabel] = useState('');
+  const [newRole, setNewRole] = useState('admin');
   const [creating, setCreating] = useState(false);
 
   // Newly created key (shown once)
@@ -60,7 +62,7 @@ export default function ApiKeysPage() {
       const res = await fetch('/api/keys', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ label: newLabel.trim() }),
+        body: JSON.stringify({ label: newLabel.trim(), role: newRole }),
       });
       const data = await res.json();
 
@@ -202,7 +204,12 @@ export default function ApiKeysPage() {
               <KeyRound size={16} className="text-success" aria-hidden="true" />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="mb-1 text-sm font-semibold text-success">Key created: {newKey.label}</div>
+              <div className="mb-1 flex items-center gap-2 text-sm font-semibold text-success">
+                Key created: {newKey.label}
+                {newKey.role && (
+                  <Badge variant={newKey.role === 'admin' ? 'warning' : 'info'} size="xs">{newKey.role}</Badge>
+                )}
+              </div>
               <p className="mb-3 text-xs text-secondary">Copy your API key now. It will not be shown again.</p>
               <div className="flex items-center gap-2">
                 <code className="flex-1 overflow-x-auto rounded-lg border border-border bg-surface-tertiary px-3 py-2 font-mono text-sm text-success">
@@ -265,7 +272,7 @@ export default function ApiKeysPage() {
             <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">
               Generate new API key
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <label htmlFor="new-key-label" className="sr-only">Key label</label>
               <input
                 id="new-key-label"
@@ -278,6 +285,17 @@ export default function ApiKeysPage() {
                 onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
                 className="flex-1 rounded-lg border border-border bg-surface-tertiary px-3 py-2 text-sm text-secondary placeholder:text-disabled transition-colors hover:border-border-hover focus:border-brand/50 focus:outline-none focus:ring-2 focus:ring-brand/20"
               />
+              <label htmlFor="new-key-role" className="sr-only">Key role</label>
+              <select
+                id="new-key-role"
+                value={newRole}
+                onChange={(e) => setNewRole(e.target.value)}
+                className="rounded-lg border border-border bg-surface-tertiary px-3 py-2 text-sm text-secondary transition-colors hover:border-border-hover focus:border-brand/50 focus:outline-none focus:ring-2 focus:ring-brand/20"
+              >
+                {API_KEY_ROLE_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
               <button
                 onClick={handleCreate}
                 disabled={creating || !newLabel.trim()}
@@ -286,12 +304,15 @@ export default function ApiKeysPage() {
                 {creating ? 'Creating…' : 'Create'}
               </button>
               <button
-                onClick={() => { setShowCreateForm(false); setNewLabel(''); }}
+                onClick={() => { setShowCreateForm(false); setNewLabel(''); setNewRole('admin'); }}
                 className="rounded-lg border border-border bg-surface-tertiary px-3 py-2 text-sm text-secondary transition-colors hover:border-border-hover hover:text-white"
               >
                 Cancel
               </button>
             </div>
+            <p className="mt-2 text-xs text-tertiary">
+              {API_KEY_ROLE_OPTIONS.find((o) => o.value === newRole)?.desc}
+            </p>
           </CardContent>
         </Card>
       )}
@@ -340,6 +361,11 @@ export default function ApiKeysPage() {
                         <Badge variant={isRevoked ? 'error' : 'success'} size="xs">
                           {isRevoked ? 'Revoked' : 'Active'}
                         </Badge>
+                        {key.role && (
+                          <Badge variant={key.role === 'admin' ? 'warning' : 'info'} size="xs">
+                            {key.role}
+                          </Badge>
+                        )}
                       </div>
                       <div className="mt-0.5 flex flex-wrap items-center gap-3 text-xs">
                         <code className={`font-mono ${isRevoked ? 'text-tertiary' : 'text-secondary'}`}>

@@ -367,7 +367,7 @@ export default function DecisionsLedger() {
             </select>
             <select value={filterStatus} onChange={(e) => { setFilterStatus(e.target.value); setPage(0); }} className={`${selectClass} md:flex-1`}>
               <option value="">All statuses</option>
-              {['running','completed','failed','cancelled','pending','blocked'].map(s => <option key={s} value={s}>{s}</option>)}
+              {['running','pending','pending_approval','blocked','completed','failed','cancelled'].map(s => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}
             </select>
             <select value={filterOutcome} onChange={(e) => { setFilterOutcome(e.target.value); setPage(0); }} className={`${selectClass} md:flex-1`}>
               <option value="">All outcomes</option>

@@ -54,6 +54,7 @@ As of this verification, generated API inventory reports **259 routes**: **46 st
 | Decisions | `/decisions` | Visual ledger of governed actions with outcome status and replay links. |
 | Replay | `/replay/[actionId]` | Action-level evidence view for a single governed decision. |
 | Setup | `/setup` | Readiness verification, instance health, setup proof, and migration helper entry points. |
+| Doctor | `/doctor` | In-app diagnostics from `GET /api/doctor`, grouped by category, with one-click auto-fixes via `POST /api/doctor/fix`. |
 | Connect | `/connect` | Path to first governed action, including hosted trial provisioning when `DASHCLAW_HOSTED=true`. |
 | Agent Profiles | `/agents/[agentId]` | Governance-focused agent profile with trust posture, decision history, assumptions, signals, and policies. |
 | Policy Builder | `/policies` | Policy management, policy generation, simulation, import/proof surfaces, and guard activity. |
