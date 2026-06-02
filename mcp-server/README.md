@@ -48,6 +48,24 @@ agent = client.beta.agents.create(
 )
 ```
 
+### Claude Desktop / Cowork (one-click .mcpb)
+
+Build the bundle and install it without touching `claude_desktop_config.json`:
+
+```bash
+node scripts/build-mcpb.mjs    # → dist/dashclaw.mcpb
+```
+
+Then double-click `dist/dashclaw.mcpb` (or Settings → Extensions → Install Extension…).
+The installer prompts for your instance URL, API key, and an agent ID
+(default `claude-desktop`). The 23 governance tools then appear in Claude.
+
+### Plugin (skills) via marketplace
+
+To also load the DashClaw **skills** (governance protocol + platform intelligence)
+in the Claude app: Customize → Plugins → "+" → Add marketplace →
+`github: ucsandman/DashClaw`, then install the `dashclaw` plugin.
+
 ## Tools (23)
 
 Grouped by domain. See [`lib/tools.js`](./lib/tools.js) for the canonical definitions.
