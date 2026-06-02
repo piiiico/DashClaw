@@ -185,11 +185,27 @@ describe('POST /api/mcp', () => {
     expect(data.error.code).toBe(-32601);
   });
 
-  it('builds the DashClawClient origin from the public Host, never VERCEL_URL', async () => {
-    // VERCEL_URL is the protection-walled per-deployment URL; the internal callback
-    // must target the public Host the caller connected through, or tool calls get
-    // back Vercel's HTML SSO page instead of JSON.
+  it('prefers the trusted Vercel production domain over a spoofed Host (SSRF/cred-leak defense)', async () => {
+    // The route forwards the caller credential to this origin, so it must come from
+    // a trusted server-set source — never an attacker-controllable Host header.
     vi.stubEnv('DASHCLAW_URL', '');
+    vi.stubEnv('VERCEL_PROJECT_PRODUCTION_URL', 'my-dashclaw.vercel.app');
+    const request = makeRequest('https://my-dashclaw.vercel.app/api/mcp', {
+      headers: { host: 'evil.example', authorization: 'Bearer oat_secret' },
+      body: { jsonrpc: '2.0', id: 1, method: 'ping', params: {} },
+    });
+    await POST(request);
+    expect(DashClawClient).toHaveBeenCalledWith(
+      expect.objectContaining({ url: 'https://my-dashclaw.vercel.app', authHeader: 'Bearer oat_secret' }),
+    );
+    vi.unstubAllEnvs();
+  });
+
+  it('never targets the protection-walled VERCEL_URL; falls back to Host only when no trusted origin is set', async () => {
+    // VERCEL_URL is the per-deployment URL behind Vercel deployment protection;
+    // using it makes tool calls get back an HTML SSO page instead of JSON.
+    vi.stubEnv('DASHCLAW_URL', '');
+    vi.stubEnv('VERCEL_PROJECT_PRODUCTION_URL', '');
     vi.stubEnv('VERCEL_URL', 'my-dashclaw-deadbeef-ucsandmans-projects.vercel.app');
     const request = makeRequest('https://my-dashclaw.vercel.app/api/mcp', {
       headers: { host: 'my-dashclaw.vercel.app', authorization: 'Bearer oat_x' },

@@ -5,7 +5,7 @@ description: DashClaw platform expert for integration, troubleshooting, and gove
 
 # DashClaw Platform Intelligence
 
-**Shape snapshot:** `sha1:c897b1d1fccd89b2adf22696855565d6585afc48`
+**Shape snapshot:** `sha1:cb3281255ca2361115aee440e25277b2b5fedcf1`
 **This file is auto-generated.** Do not edit by hand — regenerate with:
 
 ```bash
@@ -46,7 +46,7 @@ neither exists. When you cannot run the queries above, fall back **in this order
 ## At a Glance
 
 - **220** active API routes across **54** categories
-- **4** required + **132** optional environment variables
+- **4** required + **133** optional environment variables
 - **89** database tables
 
 ## API Surface
@@ -575,6 +575,7 @@ These have fallbacks or only activate specific features.
 - `UPSTASH_REDIS_REST_TOKEN` *(undocumented)*
 - `UPSTASH_REDIS_REST_URL` *(undocumented)*
 - `VERCEL` *(undocumented)*
+- `VERCEL_PROJECT_PRODUCTION_URL` *(undocumented)*
 - `VERCEL_URL` *(undocumented)*
 - `WEBHOOK_ALLOWED_DOMAINS` *(undocumented)*
 - `X` *(undocumented)*

@@ -25,18 +25,31 @@ function jsonrpcError(id, code, message) {
 
 /**
  * Resolve the origin this route calls back into for its own instance's API.
- * Uses an explicit DASHCLAW_URL, else the public Host the caller connected through.
- * MUST NOT use VERCEL_URL: that is the per-deployment URL (my-dashclaw-<hash>…
- * .vercel.app), which sits behind Vercel deployment protection and answers
- * server-side fetches with an HTML SSO page — every tool call then fails with
- * "HTML instead of JSON". The public production alias (the Host) is not walled.
+ * This route forwards the caller's credential (Bearer/x-api-key) to that origin,
+ * so prefer TRUSTED, non-request-derived sources to avoid SSRF / credential
+ * exfiltration via a spoofed Host:
+ *   1. DASHCLAW_URL — explicit operator override (self-host).
+ *   2. VERCEL_PROJECT_PRODUCTION_URL — Vercel's platform-set PUBLIC production
+ *      domain (e.g. my-dashclaw.vercel.app). Vercel documents this as the way to
+ *      reliably link to production. NOT VERCEL_URL: that is the per-deployment URL
+ *      behind Vercel deployment protection, which answers server-side fetches with
+ *      an HTML SSO page (every tool call then fails with "HTML instead of JSON").
+ *   3. The request Host — last resort for non-Vercel self-host with no
+ *      DASHCLAW_URL. Operators behind a proxy that forwards an arbitrary Host MUST
+ *      set DASHCLAW_URL, or a spoofed Host could redirect this self-callback (and
+ *      the forwarded credential) elsewhere.
  */
 function instanceOrigin(request) {
   if (process.env.DASHCLAW_URL) return process.env.DASHCLAW_URL.replace(/\/$/, '');
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
   const host = request.headers.get('host');
   if (host) {
-    const isLocal = host.startsWith('localhost') || host.startsWith('127.0.0.1');
-    const proto = request.headers.get('x-forwarded-proto') || (isLocal ? 'http' : 'https');
+    const hostname = host.split(':')[0]; // exact host check (not startsWith: 'localhost.evil.com' must NOT match)
+    const isLocal = hostname === 'localhost' || hostname === '127.0.0.1';
+    // Only trust X-Forwarded-Proto behind an explicitly trusted proxy (mirrors the
+    // middleware's TRUST_PROXY convention); otherwise infer from the host.
+    const trustProxy = ['1', 'true', 'yes', 'on'].includes(String(process.env.TRUST_PROXY || '').toLowerCase());
+    const proto = (trustProxy && request.headers.get('x-forwarded-proto')) || (isLocal ? 'http' : 'https');
     return `${proto}://${host}`;
   }
   return 'http://localhost:3000';
