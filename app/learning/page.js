@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { BookOpen, Zap, Lightbulb, Sparkles, FileText, RotateCw, CheckCircle2, XCircle, AlertTriangle, Clock, Power, BarChart3, TrendingUp } from 'lucide-react';
+import { BookOpen, Zap, Lightbulb, Sparkles, FileText, RotateCw, CheckCircle2, XCircle, AlertTriangle, Clock, Power, BarChart3, TrendingUp, Code2 } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
@@ -28,6 +28,11 @@ export default function LearningDashboard() {
   const [submitting, setSubmitting] = useState(false);
   const [rebuilding, setRebuilding] = useState(false);
   const [rebuildResult, setRebuildResult] = useState(null);
+  const [suggestions, setSuggestions] = useState([]);
+  const [suggestionBusy, setSuggestionBusy] = useState(null);
+  const [suggestionError, setSuggestionError] = useState('');
+  const [codeSignals, setCodeSignals] = useState({ findings: [], period: '30d' });
+  const [signalsPeriod, setSignalsPeriod] = useState('30d');
 
   useRealtime((event, payload) => {
     if (event === 'decision.created') {
@@ -99,6 +104,14 @@ export default function LearningDashboard() {
       } else {
         setRecommendationError('');
       }
+
+      // Auto-generated policy suggestions (org-scoped; best-effort).
+      try {
+        const sugRes = await fetch('/api/learning/suggestions');
+        const sugData = await sugRes.json().catch(() => ({}));
+        if (sugRes.ok && Array.isArray(sugData.suggestions)) setSuggestions(sugData.suggestions);
+      } catch { /* best-effort */ }
+
       setLastUpdated(new Date().toLocaleTimeString());
     } catch (error) {
       console.error('Failed to fetch learning data:', error);
@@ -109,6 +122,45 @@ export default function LearningDashboard() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Code-optimizer signal aggregation (period-scoped).
+  useEffect(() => {
+    fetch(`/api/learning/code-signals?period=${signalsPeriod}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (d) setCodeSignals({ findings: d.findings || [], period: d.period }); })
+      .catch(() => {});
+  }, [signalsPeriod]);
+
+  const suggestionReason = (s) => {
+    if (s.trigger === 'critical_drift') return `Critical drift on ${s.evidence?.metric} (z=${s.evidence?.z_score})`;
+    if (s.trigger === 'negative_feedback_trend') return `${s.evidence?.negative_count} negative items · avg rating ${s.evidence?.avg_rating} over ${s.evidence?.period_days}d`;
+    return s.trigger || 'pattern detected';
+  };
+
+  const handleAcceptSuggestion = async (index) => {
+    setSuggestionBusy(index);
+    setSuggestionError('');
+    try {
+      const res = await fetch('/api/learning/suggestions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'accept', suggestion_index: index }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setSuggestionError(data.error || 'Failed to accept suggestion');
+        return;
+      }
+      // The accepted suggestion is now a real policy; refetch the (now-shorter) list.
+      const sugRes = await fetch('/api/learning/suggestions');
+      const sugData = await sugRes.json().catch(() => ({}));
+      if (sugRes.ok) setSuggestions(sugData.suggestions || []);
+    } catch {
+      setSuggestionError('Failed to accept suggestion');
+    } finally {
+      setSuggestionBusy(null);
+    }
+  };
 
   const getOutcomeVariant = (outcome) => {
     switch (outcome) {
@@ -491,7 +543,19 @@ export default function LearningDashboard() {
                   </div>
                   <div className="text-xs text-tertiary flex items-center gap-1.5">
                     <TrendingUp size={12} />
-                    Adoption {formatPercent(metric.telemetry?.adoption_rate)} | Success lift {formatPercent(metric.deltas?.success_lift)}
+                    Adoption {formatPercent(metric.telemetry?.adoption_rate)} · Success lift {formatPercent(metric.deltas?.success_lift)}
+                  </div>
+                  <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-tertiary">
+                    <span>Failure −{formatPercent(metric.deltas?.failure_reduction)}</span>
+                    {metric.deltas?.latency_delta_ms != null && (
+                      <span>Latency {metric.deltas.latency_delta_ms > 0 ? '+' : ''}{Math.round(metric.deltas.latency_delta_ms)}ms</span>
+                    )}
+                    {metric.deltas?.cost_delta_estimate != null && (
+                      <span>Cost {metric.deltas.cost_delta_estimate > 0 ? '+' : ''}${Number(metric.deltas.cost_delta_estimate).toFixed(2)}</span>
+                    )}
+                    {metric.outcomes && (
+                      <span>Applied {metric.outcomes.applied ?? 0} vs baseline {metric.outcomes.baseline ?? 0}</span>
+                    )}
                   </div>
                 </div>
               ))}
@@ -502,6 +566,84 @@ export default function LearningDashboard() {
                   description="Metrics appear after recommendation telemetry and outcomes are recorded."
                 />
               ) : null}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-6">
+        {/* Suggested Policies (from negative-feedback / drift trends) */}
+        <Card>
+          <CardHeader title="Suggested Policies" icon={Sparkles} count={suggestions.length} />
+          <CardContent>
+            {suggestionError && (
+              <div className="mb-3 text-xs text-error bg-error-subtle border border-error/20 rounded-md px-3 py-2">{suggestionError}</div>
+            )}
+            <div className="space-y-3 max-h-[420px] overflow-y-auto">
+              {suggestions.length === 0 ? (
+                <EmptyState icon={Sparkles} title="No policy suggestions" description="DashClaw proposes approval policies when negative-feedback or drift trends appear." />
+              ) : (
+                suggestions.map((s, i) => (
+                  <div key={i} className="bg-surface-tertiary rounded-lg p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium text-white">{s.suggested_policy?.name}</div>
+                        <div className="text-xs text-tertiary mt-1">{s.agent_id} · {s.action_type}</div>
+                        <div className="text-xs text-secondary mt-1">{suggestionReason(s)}</div>
+                      </div>
+                      <div className="flex shrink-0 flex-col items-end gap-2">
+                        <Badge variant={s.severity === 'high' ? 'error' : 'warning'} size="xs">{s.suggested_policy?.policy_type}</Badge>
+                        <button
+                          onClick={() => handleAcceptSuggestion(i)}
+                          disabled={suggestionBusy === i}
+                          className="flex items-center gap-1 px-2.5 py-1 text-xs rounded border border-brand/20 bg-brand/10 text-brand hover:bg-brand/15 disabled:opacity-50"
+                        >
+                          <CheckCircle2 size={12} />
+                          {suggestionBusy === i ? 'Accepting…' : 'Accept'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Code Signals (optimizer findings + savings) */}
+        <Card>
+          <CardHeader title="Code Signals" icon={Code2} count={codeSignals.findings.length} />
+          <CardContent>
+            <div className="flex items-center gap-1.5 mb-3">
+              {['7d', '30d', '90d'].map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setSignalsPeriod(p)}
+                  className={`rounded-md border px-2.5 py-1 text-xs font-medium transition-colors ${
+                    signalsPeriod === p ? 'border-brand/30 bg-brand/10 text-brand' : 'border-transparent text-tertiary hover:border-border hover:text-secondary'
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
+              <span className="ml-auto text-xs text-tertiary">
+                Saved ${codeSignals.findings.reduce((sum, f) => sum + (Number(f.total_savings_usd) || 0), 0).toFixed(2)}
+              </span>
+            </div>
+            <div className="space-y-2 max-h-[380px] overflow-y-auto">
+              {codeSignals.findings.length === 0 ? (
+                <EmptyState icon={Code2} title="No code signals" description="Optimizer findings from ingested code sessions appear here." />
+              ) : (
+                codeSignals.findings.map((f) => (
+                  <div key={f.kind} className="flex items-center justify-between gap-3 bg-surface-tertiary rounded-md p-3">
+                    <span className="text-sm text-secondary">{f.kind.replace(/_/g, ' ')}</span>
+                    <div className="flex items-center gap-3 text-xs tabular-nums text-tertiary">
+                      <span>{f.occurrence_count} in {f.session_count} session{f.session_count === 1 ? '' : 's'}</span>
+                      {Number(f.total_savings_usd) > 0 && <span className="text-success">${Number(f.total_savings_usd).toFixed(2)}</span>}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
