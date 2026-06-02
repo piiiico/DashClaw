@@ -58,6 +58,7 @@ function CollectionCard({ c, onDelete }) {
         </div>
         <div className="flex items-center gap-3 mt-3 text-[10px] text-tertiary uppercase tracking-wider">
           <span>{c.doc_count} items</span>
+          <span>Created {timeAgo(c.created_at)}</span>
           <span>Synced {timeAgo(c.last_synced_at)}</span>
         </div>
         {c.tags?.length > 0 && (

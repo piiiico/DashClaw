@@ -3,16 +3,27 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Plus, BookOpen, FileText, RefreshCw, Search } from 'lucide-react';
+import { ArrowLeft, Plus, BookOpen, FileText, RefreshCw, Search, Pencil } from 'lucide-react';
 import PageLayout from '../../components/PageLayout';
 import { Card, CardContent, CardHeader } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 
+// Item ingestion only ever writes pending -> indexed | failed (see
+// knowledge-ingest.js); the `default` fallback covers anything else.
 const statusVariant = {
   pending: 'warning',
   indexed: 'success',
   failed: 'error',
 };
+
+const SOURCE_TYPES = ['files', 'urls', 'external', 'notes'];
+
+function fmtDate(value) {
+  if (!value) return '—';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleString();
+}
 
 export default function KnowledgeCollectionDetailPage() {
   const { collectionId } = useParams();
@@ -28,6 +39,10 @@ export default function KnowledgeCollectionDetailPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState(null);
   const [searching, setSearching] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editForm, setEditForm] = useState({ name: '', description: '', source_type: 'files', tags: '' });
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [editError, setEditError] = useState(null);
 
   const fetchCollection = useCallback(async () => {
     try {
@@ -55,6 +70,45 @@ export default function KnowledgeCollectionDetailPage() {
   useEffect(() => {
     if (collectionId) fetchCollection();
   }, [collectionId, fetchCollection]);
+
+  const startEdit = () => {
+    setEditError(null);
+    setEditForm({
+      name: collection.name || '',
+      description: collection.description || '',
+      source_type: collection.source_type || 'files',
+      tags: (collection.tags || []).join(', '),
+    });
+    setEditing(true);
+  };
+
+  // Real PATCH — the list-page "Edit" pencil used to dead-end at this
+  // read-only page. Wires /api/knowledge/collections/[id] (rename, re-tag,
+  // change description / source_type).
+  const saveEdit = async () => {
+    setSavingEdit(true);
+    setEditError(null);
+    try {
+      const res = await fetch(`/api/knowledge/collections/${collectionId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: editForm.name.trim(),
+          description: editForm.description.trim() || null,
+          source_type: editForm.source_type,
+          tags: editForm.tags.split(',').map((t) => t.trim()).filter(Boolean),
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Failed to save changes');
+      if (data.collection) setCollection(data.collection);
+      setEditing(false);
+    } catch (err) {
+      setEditError(err.message);
+    } finally {
+      setSavingEdit(false);
+    }
+  };
 
   const addItem = async () => {
     if (!newItemUri.trim()) return;
@@ -116,6 +170,12 @@ export default function KnowledgeCollectionDetailPage() {
             <ArrowLeft size={14} /> Back
           </Link>
           <button
+            onClick={() => (editing ? setEditing(false) : startEdit())}
+            className="flex items-center gap-2 px-3 py-1.5 text-sm text-secondary hover:text-white bg-surface-tertiary border border-[rgba(255,255,255,0.06)] rounded-lg transition-colors"
+          >
+            <Pencil size={14} /> {editing ? 'Cancel' : 'Edit'}
+          </button>
+          <button
             onClick={async () => {
               setSyncing(true);
               setSyncResult(null);
@@ -140,6 +200,72 @@ export default function KnowledgeCollectionDetailPage() {
         </div>
       }
     >
+      {/* Edit form (PATCH) */}
+      {editing && (
+        <Card className="mb-6">
+          <CardHeader title="Edit collection" icon={Pencil} />
+          <CardContent className="p-5 pt-0 space-y-3">
+            {editError && (
+              <div className="px-3 py-2 rounded-lg bg-error-subtle border border-error/20 text-sm text-error">{editError}</div>
+            )}
+            <div>
+              <label className="block text-[10px] text-tertiary uppercase tracking-wider mb-1">Name</label>
+              <input
+                type="text"
+                value={editForm.name}
+                onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
+                className="w-full px-3 py-2 bg-surface-tertiary border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-brand"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] text-tertiary uppercase tracking-wider mb-1">Description</label>
+              <input
+                type="text"
+                value={editForm.description}
+                onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
+                className="w-full px-3 py-2 bg-surface-tertiary border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-brand"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[10px] text-tertiary uppercase tracking-wider mb-1">Source type</label>
+                <select
+                  value={editForm.source_type}
+                  onChange={(e) => setEditForm((f) => ({ ...f, source_type: e.target.value }))}
+                  className="w-full px-3 py-2 bg-surface-tertiary border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-brand"
+                >
+                  {SOURCE_TYPES.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] text-tertiary uppercase tracking-wider mb-1">Tags (comma-separated)</label>
+                <input
+                  type="text"
+                  value={editForm.tags}
+                  onChange={(e) => setEditForm((f) => ({ ...f, tags: e.target.value }))}
+                  className="w-full px-3 py-2 bg-surface-tertiary border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-brand"
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={saveEdit}
+                disabled={savingEdit || !editForm.name.trim()}
+                className="px-4 py-2 text-sm text-white bg-brand hover:bg-brand/90 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {savingEdit ? 'Saving...' : 'Save changes'}
+              </button>
+              <button
+                onClick={() => setEditing(false)}
+                className="px-4 py-2 text-sm text-secondary hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Metadata row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <Card hover={false}>
@@ -168,6 +294,12 @@ export default function KnowledgeCollectionDetailPage() {
             <div className="text-[10px] text-tertiary uppercase tracking-wider mt-1">Tags</div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Created / updated timestamps */}
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-1 mb-6 text-[11px] text-tertiary">
+        <span>Created <span className="text-secondary">{fmtDate(collection.created_at)}</span></span>
+        <span>Updated <span className="text-secondary">{fmtDate(collection.updated_at)}</span></span>
       </div>
 
       {/* Add item form */}
