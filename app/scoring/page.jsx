@@ -27,6 +27,9 @@ const COMPOSITE_METHODS = [
   { value: 'geometric_mean', label: 'Geometric Mean', desc: 'Balanced  --  penalizes zeros heavily' },
 ];
 
+// Metrics auto-calibrate can analyze (matches autoCalibrate's default set).
+const CALIBRATE_METRICS = ['duration_ms', 'cost_estimate', 'tokens_total', 'risk_score', 'confidence'];
+
 export default function ScoringPage() {
   const [activeTab, setActiveTab] = useState('Profiles');
   const [profiles, setProfiles] = useState([]);
@@ -41,6 +44,10 @@ export default function ScoringPage() {
   const [profileStatus, setProfileStatus] = useState('active'); // active | archived
   const [scoreStats, setScoreStats] = useState(null);    // ?view=stats for the selected profile
   const [editTemplateId, setEditTemplateId] = useState(null);
+  const [dimEditId, setDimEditId] = useState(null);      // profile id whose dimensions are being managed
+  const [manageDims, setManageDims] = useState([]);      // editable copy of that profile's dimensions
+  const [newDim, setNewDim] = useState({ name: '', data_source: 'duration_ms', weight: 0.25 });
+  const [dimBusy, setDimBusy] = useState(false);
 
   // --- Create Profile Form State --------------------------
   const [newProfile, setNewProfile] = useState({
@@ -56,7 +63,7 @@ export default function ScoringPage() {
 
   // --- Calibrate Form State -------------------------------
   const [calibrateForm, setCalibrateForm] = useState({
-    action_type: '', lookback_days: 30,
+    action_type: '', lookback_days: 30, agent_id: '', metrics: [...CALIBRATE_METRICS],
   });
 
   const fetchProfiles = useCallback(async () => {
@@ -162,7 +169,9 @@ export default function ScoringPage() {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         action_type: calibrateForm.action_type || null,
+        agent_id: calibrateForm.agent_id || null,
         lookback_days: calibrateForm.lookback_days,
+        metrics: calibrateForm.metrics.length ? calibrateForm.metrics : undefined,
       }),
     });
     if (res.ok) {
@@ -263,6 +272,53 @@ export default function ScoringPage() {
       setEditTemplateId(null);
       setNewTemplate({ name: '', description: '', action_type: '', base_risk: 20, rules: [{ condition: '', add: 10 }] });
       fetchRiskTemplates();
+    }
+  };
+
+  // --- Dimension CRUD (post-creation) ---------------------
+  // Profiles were only editable at create time; these wire the
+  // /profiles/[id]/dimensions[/[dimId]] routes so weights/names/sources
+  // can be tuned, added, or removed without rebuilding the profile.
+  const openDimEditor = (profile) => {
+    if (dimEditId === profile.id) { setDimEditId(null); return; }
+    setDimEditId(profile.id);
+    setManageDims((profile.dimensions || []).map(d => ({ ...d })));
+    setNewDim({ name: '', data_source: 'duration_ms', weight: 0.25 });
+  };
+
+  const handleSaveDimension = async (profileId, dim) => {
+    setDimBusy(true);
+    const res = await fetch(`/api/scoring/profiles/${profileId}/dimensions/${dim.id}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: dim.name, data_source: dim.data_source, weight: dim.weight }),
+    });
+    setDimBusy(false);
+    if (res.ok) fetchProfiles();
+  };
+
+  const handleDeleteDimension = async (profileId, dimId) => {
+    setDimBusy(true);
+    const res = await fetch(`/api/scoring/profiles/${profileId}/dimensions/${dimId}`, { method: 'DELETE' });
+    setDimBusy(false);
+    if (res.ok) {
+      setManageDims(dims => dims.filter(d => d.id !== dimId));
+      fetchProfiles();
+    }
+  };
+
+  const handleAddDimension = async (profileId) => {
+    if (!newDim.name) return;
+    setDimBusy(true);
+    const res = await fetch(`/api/scoring/profiles/${profileId}/dimensions`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: newDim.name, data_source: newDim.data_source, weight: newDim.weight }),
+    });
+    setDimBusy(false);
+    if (res.ok) {
+      const created = await res.json().catch(() => null);
+      if (created?.id) setManageDims(dims => [...dims, created]);
+      setNewDim({ name: '', data_source: 'duration_ms', weight: 0.25 });
+      fetchProfiles();
     }
   };
 
@@ -411,6 +467,12 @@ export default function ScoringPage() {
                     )}
                     <button onClick={() => { setSelectedProfile(profile); fetchScores(profile.id); setActiveTab('Score Explorer'); }}
                       className="text-xs text-brand hover:text-brand/80">View Scores</button>
+                    {!isDemoMode() && (
+                      <button onClick={() => openDimEditor(profile)}
+                        className="text-xs text-tertiary hover:text-white">
+                        {dimEditId === profile.id ? 'Close' : 'Manage dims'}
+                      </button>
+                    )}
                     {profile.status === 'archived' ? (
                       <button onClick={() => handleUnarchiveProfile(profile.id)}
                         className="text-xs text-tertiary hover:text-success">Unarchive</button>
@@ -439,8 +501,8 @@ export default function ScoringPage() {
                   </div>
                 )}
 
-                {/* Dimension breakdown */}
-                {profile.dimensions && profile.dimensions.length > 0 && (
+                {/* Dimension breakdown (read-only) */}
+                {dimEditId !== profile.id && profile.dimensions && profile.dimensions.length > 0 && (
                   <div className="mt-3 grid grid-cols-2 lg:grid-cols-4 gap-2">
                     {profile.dimensions.map(dim => (
                       <div key={dim.id} className="p-2 rounded bg-[#111] border border-[rgba(255,255,255,0.04)]">
@@ -453,6 +515,50 @@ export default function ScoringPage() {
                         </div>
                       </div>
                     ))}
+                  </div>
+                )}
+
+                {/* Dimension editor (post-creation CRUD) */}
+                {dimEditId === profile.id && (
+                  <div className="mt-3 border-t border-[rgba(255,255,255,0.06)] pt-3 space-y-2">
+                    <h4 className="text-xs font-medium text-secondary">Manage dimensions</h4>
+                    {manageDims.length === 0 && (
+                      <p className="text-xs text-tertiary">No dimensions yet — add one below.</p>
+                    )}
+                    {manageDims.map((dim, i) => (
+                      <div key={dim.id} className="grid grid-cols-12 gap-2 items-center">
+                        <input value={dim.name} aria-label="Dimension name"
+                          onChange={e => setManageDims(ds => ds.map((d, j) => j === i ? { ...d, name: e.target.value } : d))}
+                          className="col-span-4 px-2 py-1.5 bg-[#0a0a0a] border border-[rgba(255,255,255,0.06)] rounded text-sm text-white" />
+                        <select value={dim.data_source} aria-label="Dimension data source"
+                          onChange={e => setManageDims(ds => ds.map((d, j) => j === i ? { ...d, data_source: e.target.value } : d))}
+                          className="col-span-3 px-2 py-1.5 bg-[#0a0a0a] border border-[rgba(255,255,255,0.06)] rounded text-sm text-white">
+                          {DATA_SOURCES.map(ds => <option key={ds.value} value={ds.value}>{ds.label}</option>)}
+                        </select>
+                        <input type="number" min="0" max="1" step="0.05" value={dim.weight} aria-label="Dimension weight"
+                          onChange={e => setManageDims(ds => ds.map((d, j) => j === i ? { ...d, weight: parseFloat(e.target.value) || 0 } : d))}
+                          className="col-span-2 px-2 py-1.5 bg-[#0a0a0a] border border-[rgba(255,255,255,0.06)] rounded text-sm text-white" />
+                        <button onClick={() => handleSaveDimension(profile.id, manageDims[i])} disabled={dimBusy || !dim.name}
+                          className="col-span-2 text-xs text-brand hover:text-brand/80 disabled:opacity-40">Save</button>
+                        <button onClick={() => handleDeleteDimension(profile.id, dim.id)} disabled={dimBusy}
+                          className="col-span-1 text-error text-xs hover:text-error disabled:opacity-40" aria-label={`Delete ${dim.name}`}>x</button>
+                      </div>
+                    ))}
+                    <div className="grid grid-cols-12 gap-2 items-center pt-1">
+                      <input value={newDim.name} aria-label="New dimension name"
+                        onChange={e => setNewDim(d => ({ ...d, name: e.target.value }))}
+                        placeholder="New dimension" className="col-span-4 px-2 py-1.5 bg-[#0a0a0a] border border-[rgba(255,255,255,0.06)] rounded text-sm text-white" />
+                      <select value={newDim.data_source} aria-label="New dimension data source"
+                        onChange={e => setNewDim(d => ({ ...d, data_source: e.target.value }))}
+                        className="col-span-3 px-2 py-1.5 bg-[#0a0a0a] border border-[rgba(255,255,255,0.06)] rounded text-sm text-white">
+                        {DATA_SOURCES.map(ds => <option key={ds.value} value={ds.value}>{ds.label}</option>)}
+                      </select>
+                      <input type="number" min="0" max="1" step="0.05" value={newDim.weight} aria-label="New dimension weight"
+                        onChange={e => setNewDim(d => ({ ...d, weight: parseFloat(e.target.value) || 0 }))}
+                        className="col-span-2 px-2 py-1.5 bg-[#0a0a0a] border border-[rgba(255,255,255,0.06)] rounded text-sm text-white" />
+                      <button onClick={() => handleAddDimension(profile.id)} disabled={dimBusy || !newDim.name}
+                        className="col-span-3 text-xs text-brand hover:text-brand/80 disabled:opacity-40">+ Add dimension</button>
+                    </div>
                   </div>
                 )}
               </Card>
@@ -646,6 +752,27 @@ export default function ScoringPage() {
                   onChange={e => setCalibrateForm(f => ({ ...f, lookback_days: parseInt(e.target.value) || 30 }))}
                   className="w-20 px-2 py-2 bg-[#111] border border-[rgba(255,255,255,0.1)] rounded-lg text-sm text-white" />
                 <span className="text-xs text-tertiary">days</span>
+              </div>
+            </div>
+            <input value={calibrateForm.agent_id}
+              onChange={e => setCalibrateForm(f => ({ ...f, agent_id: e.target.value }))}
+              placeholder="Agent ID (optional, blank = all agents)"
+              className="w-full px-3 py-2 bg-[#111] border border-[rgba(255,255,255,0.1)] rounded-lg text-sm text-white" />
+            <div>
+              <label className="text-xs text-tertiary">Metrics to analyze:</label>
+              <div className="flex flex-wrap gap-2 mt-1.5">
+                {CALIBRATE_METRICS.map(m => {
+                  const on = calibrateForm.metrics.includes(m);
+                  return (
+                    <button key={m} type="button"
+                      onClick={() => setCalibrateForm(f => ({
+                        ...f, metrics: on ? f.metrics.filter(x => x !== m) : [...f.metrics, m],
+                      }))}
+                      className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
+                        on ? 'bg-brand text-black' : 'bg-[#111] text-tertiary hover:text-secondary'
+                      }`}>{m.replace(/_/g, ' ')}</button>
+                  );
+                })}
               </div>
             </div>
             <button onClick={handleCalibrate}
