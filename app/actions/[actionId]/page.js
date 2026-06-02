@@ -285,6 +285,25 @@ export default function DecisionReplayPage() {
         </Card>
       </div>
 
+      {/* ═══ Model + learning-recommendation linkage ═══ */}
+      {(action.model || action.recommendation_id) && (
+        <div className="mb-6 flex flex-wrap items-center gap-x-6 gap-y-2 rounded-lg border border-white/5 bg-surface-tertiary px-4 py-3 text-xs">
+          {action.model && (
+            <span className="text-tertiary">Model: <span className="font-mono text-secondary">{action.model}</span></span>
+          )}
+          {action.recommendation_id && (
+            <span className="text-tertiary">
+              {action.recommendation_applied ? (
+                <>Applied recommendation <span className="font-mono text-success">{action.recommendation_id}</span></>
+              ) : (
+                <>Overrode recommendation <span className="font-mono text-warning">{action.recommendation_id}</span>
+                  {action.recommendation_override_reason ? <> — <span className="text-secondary">{action.recommendation_override_reason}</span></> : null}</>
+              )}
+            </span>
+          )}
+        </div>
+      )}
+
       {/* ═══ Tab Navigation ═══ */}
       <div className="flex items-center gap-1 mb-6 border-b border-white/5 pb-px">
         {tabs.map((tab) => (
