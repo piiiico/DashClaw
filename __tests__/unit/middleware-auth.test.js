@@ -97,4 +97,26 @@ describe('middleware API-key auth', () => {
     const res = await middleware(req('/api/prompts/server-setup/raw'));
     expect(res.status).toBe(200);
   });
+
+  // OAuth connector path (Leg 2): /api/mcp answers an unauthenticated request with
+  // 401 + WWW-Authenticate so Claude starts OAuth discovery; a live Bearer token
+  // resolves to an org and passes through. Inherits the beforeEach env + sqlMock.
+  it('returns 401 + WWW-Authenticate on /api/mcp with no credentials', async () => {
+    const res = await middleware(req('/api/mcp', {
+      method: 'POST', headers: { host: 'x.dashclaw.app', 'sec-fetch-site': 'cross-site' },
+    }));
+    expect(res.status).toBe(401);
+    expect(res.headers.get('WWW-Authenticate')).toContain('resource_metadata=');
+    expect(res.headers.get('WWW-Authenticate')).toContain('/.well-known/oauth-protected-resource');
+  });
+
+  it('accepts a valid OAuth Bearer token (passes through, not 401)', async () => {
+    const future = new Date(Date.now() + 3600_000).toISOString();
+    // resolveOAuthToken SELECT (and the fire-and-forget last_used_at UPDATE) hit sqlMock.
+    sqlMock.mockResolvedValue([{ org_id: 'org_1', expires_at: future, revoked_at: null }]);
+    const res = await middleware(req('/api/mcp', {
+      method: 'POST', headers: { host: 'x.dashclaw.app', authorization: 'Bearer oat_valid' },
+    }));
+    expect(res.status).not.toBe(401);
+  });
 });

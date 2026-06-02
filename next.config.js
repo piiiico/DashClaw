@@ -49,6 +49,8 @@ const nextConfig = {
       // Standard OIDC-style discovery path for the instance's public signing key
       // (used to re-verify integrity receipts + signed compliance bundles).
       { source: '/.well-known/jwks.json', destination: '/api/integrity/jwks' },
+      { source: '/.well-known/oauth-authorization-server', destination: '/api/oauth/metadata/authorization-server' },
+      { source: '/.well-known/oauth-protected-resource', destination: '/api/oauth/metadata/protected-resource' },
     ];
   },
   // Permanent redirects for retired surfaces.

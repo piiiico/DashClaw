@@ -1,0 +1,43 @@
+// app/api/oauth/register/route.js
+import { NextResponse } from 'next/server';
+import { getSql } from '../../../lib/db.js';
+import { registerClient } from '../../../lib/repositories/oauth.repository.js';
+import { newId } from '../../../lib/oauth/crypto.js';
+export const dynamic = 'force-dynamic';
+
+// Only register redirect URIs we'd be willing to send a freshly-minted auth code
+// to: absolute https (loopback http allowed outside production for local testing),
+// no fragment. Without this, DCR is an open-redirect primitive — an attacker
+// registers https://evil/cb and harvests codes from a crafted /authorize link.
+function isValidRedirectUri(uri) {
+  let u;
+  try { u = new URL(uri); } catch { return false; }
+  if (u.hash) return false;
+  if (u.protocol === 'https:') return true;
+  return process.env.NODE_ENV !== 'production'
+    && u.protocol === 'http:'
+    && (u.hostname === 'localhost' || u.hostname === '127.0.0.1');
+}
+
+export async function POST(request) {
+  const body = await request.json().catch(() => ({}));
+  const redirectUris = (Array.isArray(body.redirect_uris) ? body.redirect_uris : [])
+    .filter(u => typeof u === 'string' && isValidRedirectUri(u));
+  if (redirectUris.length === 0) {
+    return NextResponse.json({ error: 'invalid_redirect_uri', error_description: 'redirect_uris must be one or more absolute https URIs' }, { status: 400 });
+  }
+  const clientId = newId('ocl');
+  await registerClient(getSql(), {
+    clientId,
+    clientName: typeof body.client_name === 'string' ? body.client_name : null,
+    redirectUris,
+    scope: typeof body.scope === 'string' ? body.scope : null,
+  });
+  return NextResponse.json({
+    client_id: clientId,
+    client_id_issued_at: Math.floor(Date.now() / 1000),
+    redirect_uris: redirectUris,
+    grant_types: ['authorization_code', 'refresh_token'],
+    token_endpoint_auth_method: 'none',
+  }, { status: 201 });
+}

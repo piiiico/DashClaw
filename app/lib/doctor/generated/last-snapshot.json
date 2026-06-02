@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:3f98fffa369cd3397b69e01aa0628c6386c7130c",
+  "timestamp": "sha1:89d206a4c82e3856714fd9f6d4d4d3d5f201c1aa",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -1865,6 +1865,52 @@
       "file_path": "app/api/model-strategies/[strategyId]/complete/route.js"
     },
     {
+      "path": "/api/oauth/authorize",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "dynamic_params": [],
+      "archived": false,
+      "file_path": "app/api/oauth/authorize/route.js"
+    },
+    {
+      "path": "/api/oauth/metadata/authorization-server",
+      "methods": [
+        "GET"
+      ],
+      "dynamic_params": [],
+      "archived": false,
+      "file_path": "app/api/oauth/metadata/authorization-server/route.js"
+    },
+    {
+      "path": "/api/oauth/metadata/protected-resource",
+      "methods": [
+        "GET"
+      ],
+      "dynamic_params": [],
+      "archived": false,
+      "file_path": "app/api/oauth/metadata/protected-resource/route.js"
+    },
+    {
+      "path": "/api/oauth/register",
+      "methods": [
+        "POST"
+      ],
+      "dynamic_params": [],
+      "archived": false,
+      "file_path": "app/api/oauth/register/route.js"
+    },
+    {
+      "path": "/api/oauth/token",
+      "methods": [
+        "POST"
+      ],
+      "dynamic_params": [],
+      "archived": false,
+      "file_path": "app/api/oauth/token/route.js"
+    },
+    {
       "path": "/api/operations/feed",
       "methods": [
         "GET"
@@ -3153,7 +3199,9 @@
       "required": false,
       "files": [
         "app/api/mcp/route.js",
+        "app/api/oauth/metadata/authorization-server/route.js",
         "mcp-server/bin/dashclaw-mcp.js",
+        "middleware.js",
         "packages/openclaw-plugin/src/index.ts",
         "scripts/patch-demo-capability-endpoints.mjs",
         "scripts/seed-demo-capabilities.mjs",
@@ -3528,6 +3576,7 @@
         "__tests__/unit/health-tables.test.js",
         "__tests__/unit/health.route.test.js",
         "app/api/auth/local/route.js",
+        "app/api/oauth/authorize/route.js",
         "middleware.js"
       ],
       "in_env_example": true
@@ -3636,6 +3685,7 @@
         "__tests__/unit/security-headers.test.js",
         "app/api/auth/config/route.js",
         "app/api/health/route.js",
+        "app/api/oauth/register/route.js",
         "app/api/settings/route.js",
         "app/lib/auth.js",
         "app/lib/db.js",
@@ -4060,6 +4110,7 @@
       "files": [
         "__tests__/unit/webhooks.approval.test.js",
         "app/api/mcp/route.js",
+        "app/api/oauth/metadata/authorization-server/route.js",
         "app/lib/webhooks.js"
       ],
       "in_env_example": false
@@ -4353,6 +4404,21 @@
       "name": "notification_preferences",
       "file_path": "schema/schema.js",
       "domain": null
+    },
+    {
+      "name": "oauth_access_tokens",
+      "file_path": "schema/schema.js",
+      "domain": "governance"
+    },
+    {
+      "name": "oauth_authorization_codes",
+      "file_path": "schema/schema.js",
+      "domain": "governance"
+    },
+    {
+      "name": "oauth_clients",
+      "file_path": "schema/schema.js",
+      "domain": "governance"
     },
     {
       "name": "open_loops",

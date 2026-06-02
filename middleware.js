@@ -42,6 +42,7 @@ const PUBLIC_ROUTES = [
   // instance's published public key.
   '/api/integrity/jwks',
   '/api/integrity/verify',
+  '/api/oauth',  // OAuth AS endpoints self-authenticate (authorize checks session; token verifies PKCE; register is DCR-open)
   // Only the static-markdown /raw endpoints are public (the "Copy ... Prompt"
   // buttons on the public /self-host page fetch them unauthenticated). A bare
   // '/api/prompts' prefix here previously exposed the entire prompts API —
@@ -350,6 +351,67 @@ async function resolveApiKey(keyHash) {
   }
 }
 
+// In-memory cache mirrors resolveApiKey (5-min TTL).
+const oauthTokenCache = new Map();
+const OAUTH_TOKEN_CACHE_TTL = 5 * 60 * 1000;
+const OAUTH_TOKEN_CACHE_MAX_ENTRIES = 10000;
+
+// Bound cache growth under adversarial token probing (mirrors pruneApiKeyCache).
+function pruneOAuthTokenCache(now) {
+  if (oauthTokenCache.size <= OAUTH_TOKEN_CACHE_MAX_ENTRIES) return;
+  for (const [k, v] of oauthTokenCache.entries()) {
+    if (!v || now - v.timestamp >= OAUTH_TOKEN_CACHE_TTL) oauthTokenCache.delete(k);
+  }
+  if (oauthTokenCache.size > OAUTH_TOKEN_CACHE_MAX_ENTRIES) {
+    let toDelete = oauthTokenCache.size - OAUTH_TOKEN_CACHE_MAX_ENTRIES;
+    for (const key of oauthTokenCache.keys()) {
+      oauthTokenCache.delete(key);
+      toDelete--;
+      if (toDelete <= 0) break;
+    }
+  }
+}
+
+async function resolveOAuthToken(tokenHash) {
+  const now = Date.now();
+  pruneOAuthTokenCache(now);
+  const cached = oauthTokenCache.get(tokenHash);
+  if (cached && now - cached.timestamp < OAUTH_TOKEN_CACHE_TTL) return cached.result;
+  try {
+    const sql = neon(process.env.DATABASE_URL);
+    const rows = await sql`
+      SELECT org_id, expires_at, revoked_at
+      FROM oauth_access_tokens
+      WHERE token_hash = ${tokenHash}
+      LIMIT 1
+    `;
+    let result = null;
+    if (rows.length > 0) {
+      const r = rows[0];
+      const live = !r.revoked_at && new Date(r.expires_at).getTime() > now;
+      if (live) {
+        result = { orgId: r.org_id, role: 'member' };
+        sql`UPDATE oauth_access_tokens SET last_used_at = NOW() WHERE token_hash = ${tokenHash}`.catch(() => {});
+      }
+    }
+    oauthTokenCache.set(tokenHash, { timestamp: now, result });
+    return result;
+  } catch (err) {
+    console.error('[AUTH] OAuth token lookup failed:', err.message);
+    return null;
+  }
+}
+
+function mcpAuthChallenge(request) {
+  const host = request.headers.get('host');
+  const proto = request.headers.get('x-forwarded-proto') || 'https';
+  const base = process.env.DASHCLAW_URL ? process.env.DASHCLAW_URL.replace(/\/$/, '') : `${proto}://${host}`;
+  return securedJson(request, { error: 'authorization_required' }, {
+    status: 401,
+    headers: { 'WWW-Authenticate': `Bearer resource_metadata="${base}/.well-known/oauth-protected-resource"` },
+  });
+}
+
 function enforceHostedTrial(auth) {
   if (!auth || !auth.hostedMode) return null;
   if (auth.trialEndsAt && new Date(auth.trialEndsAt).getTime() < Date.now()) {
@@ -405,6 +467,23 @@ export async function middleware(request) {
   // alias would otherwise skip the rate limiter and security headers that the
   // canonical /api path gets. Apply them here, then pass through (public, no auth).
   if (pathname === '/.well-known/jwks.json') {
+    const trustProxy = ['1', 'true', 'yes', 'on'].includes(String(process.env.TRUST_PROXY || process.env.VERCEL || '').toLowerCase());
+    const fwd = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
+    let ip = (trustProxy ? (fwd || request.headers.get('x-real-ip')) : null) || request.ip || 'unknown';
+    if (ip === 'unknown' && process.env.NODE_ENV === 'development') ip = fwd || '127.0.0.1';
+    if (!(await checkRateLimit(`${ip}:${pathname}`))) {
+      return securedJson(request, { error: 'Rate limit exceeded. Please slow down.' }, { status: 429, headers: { 'Retry-After': '60' } });
+    }
+    const response = NextResponse.next();
+    addSecurityHeaders(response, request);
+    withCors(request, response);
+    return response;
+  }
+
+  // Public OAuth metadata discovery (RFC 8414 / 9728). Rewritten by next.config.js
+  // to /api/oauth/metadata/* — apply the same rate-limit + headers the canonical
+  // /api path gets, then pass through (public, no auth), exactly like jwks.json.
+  if (pathname === '/.well-known/oauth-authorization-server' || pathname === '/.well-known/oauth-protected-resource') {
     const trustProxy = ['1', 'true', 'yes', 'on'].includes(String(process.env.TRUST_PROXY || process.env.VERCEL || '').toLowerCase());
     const fwd = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
     let ip = (trustProxy ? (fwd || request.headers.get('x-real-ip')) : null) || request.ip || 'unknown';
@@ -1219,6 +1298,27 @@ export async function middleware(request) {
     // SECURITY: Provide a trusted client IP header for audit logging (never trust inbound x-forwarded-for directly).
     requestHeaders.set('x-client-ip', ip);
 
+    // OAuth Bearer path (Claude custom connectors). Additive — x-api-key still works.
+    const authz = request.headers.get('authorization') || '';
+    const bearer = authz.slice(0, 7).toLowerCase() === 'bearer ' ? authz.slice(7).trim() : '';
+    if (bearer) {
+      const tokenHash = await hashApiKey(bearer); // Web Crypto SHA-256 hex (matches hashToken)
+      const oauth = await resolveOAuthToken(tokenHash);
+      if (oauth) {
+        requestHeaders.set('x-org-id', oauth.orgId);
+        requestHeaders.set('x-org-role', oauth.role);
+        // Authorization passes through (not stripped) so the /api/mcp proxy can
+        // forward it to its own internal callbacks.
+        const response = NextResponse.next({ request: { headers: requestHeaders } });
+        addSecurityHeaders(response, request);
+        for (const [k, v] of Object.entries(getCorsHeaders(request))) response.headers.set(k, v);
+        return response;
+      }
+      // Bad/expired bearer: challenge on /api/mcp so Claude re-runs discovery.
+      if (pathname === '/api/mcp') return mcpAuthChallenge(request);
+      return securedJson(request, { error: 'Unauthorized - invalid token' }, { status: 401 });
+    }
+
     // If no API key is configured:
     // - dev/local: allow with org_default (convenience)
     // - production: block (prevents accidentally exposing your dashboard data)
@@ -1246,6 +1346,10 @@ export async function middleware(request) {
 
     // No key provided — check if this is a same-origin dashboard request
     if (!apiKey) {
+      // Claude connector discovery: an unauthenticated /api/mcp must answer with
+      // 401 + WWW-Authenticate so the client starts the OAuth flow.
+      if (pathname === '/api/mcp') return mcpAuthChallenge(request);
+
       const secFetchSite = request.headers.get('sec-fetch-site');
       
       // SECURITY: Only trust Sec-Fetch-Site for same-origin detection.
@@ -1364,6 +1468,8 @@ export const config = {
     '/',
     '/api/:path*',
     '/.well-known/jwks.json',
+    '/.well-known/oauth-authorization-server',
+    '/.well-known/oauth-protected-resource',
     '/demo',
     '/dashboard',
     '/dashboard/:path*',

@@ -5,7 +5,7 @@ description: DashClaw platform expert for integration, troubleshooting, and gove
 
 # DashClaw Platform Intelligence
 
-**Shape snapshot:** `sha1:3f98fffa369cd3397b69e01aa0628c6386c7130c`
+**Shape snapshot:** `sha1:89d206a4c82e3856714fd9f6d4d4d3d5f201c1aa`
 **This file is auto-generated.** Do not edit by hand — regenerate with:
 
 ```bash
@@ -29,9 +29,9 @@ If the snapshot below disagrees with a live query, **trust the live query**.
 
 ## At a Glance
 
-- **214** active API routes across **53** categories
+- **219** active API routes across **54** categories
 - **4** required + **132** optional environment variables
-- **86** database tables
+- **89** database tables
 
 ## API Surface
 
@@ -268,6 +268,14 @@ If the snapshot below disagrees with a live query, **trust the live query**.
 - `DELETE, GET, PATCH` `/api/model-strategies/[strategyId]`
 - `POST` `/api/model-strategies/[strategyId]/complete`
 
+### `oauth`
+
+- `GET, POST` `/api/oauth/authorize`
+- `GET` `/api/oauth/metadata/authorization-server`
+- `GET` `/api/oauth/metadata/protected-resource`
+- `POST` `/api/oauth/register`
+- `POST` `/api/oauth/token`
+
 ### `operations`
 
 - `GET` `/api/operations/feed`
@@ -415,7 +423,7 @@ These must be set — DashClaw will fail to start without them.
 - **`DASHCLAW_API_KEY`** - referenced in 56 file(s)
 - **`DATABASE_URL`** - referenced in 87 file(s)
 - **`ENCRYPTION_KEY`** - referenced in 4 file(s)
-- **`NEXTAUTH_SECRET`** - referenced in 4 file(s)
+- **`NEXTAUTH_SECRET`** - referenced in 5 file(s)
 
 ## Optional Environment Variables
 
@@ -556,7 +564,7 @@ These have fallbacks or only activate specific features.
 
 ## Database Tables
 
-All 86 tables defined in `schema/schema.js` (Drizzle ORM):
+All 89 tables defined in `schema/schema.js` (Drizzle ORM):
 
 - `action_embeddings`
 - `action_records`
@@ -612,6 +620,9 @@ All 86 tables defined in `schema/schema.js` (Drizzle ORM):
 - `message_threads`
 - `milestones`
 - `notification_preferences`
+- `oauth_access_tokens`
+- `oauth_authorization_codes`
+- `oauth_clients`
 - `open_loops`
 - `organizations`
 - `profile_scores`

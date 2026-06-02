@@ -65,6 +65,48 @@ export const apiKeys = pgTable('api_keys', {
   roleCheck: check('api_keys_role_check', sql`${table.role} IN ('admin', 'member')`),
 }));
 
+// @domain governance
+export const oauthClients = pgTable('oauth_clients', {
+  clientId: text('client_id').primaryKey(), // ocl_ prefix
+  clientName: text('client_name'),
+  redirectUris: text('redirect_uris').notNull(), // JSON array
+  grantTypes: text('grant_types').notNull().default('authorization_code,refresh_token'),
+  tokenEndpointAuthMethod: text('token_endpoint_auth_method').notNull().default('none'),
+  scope: text('scope'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+// @domain governance
+export const oauthAuthorizationCodes = pgTable('oauth_authorization_codes', {
+  codeHash: text('code_hash').primaryKey(),
+  clientId: text('client_id').notNull(),
+  orgId: text('org_id').notNull(),
+  userId: text('user_id'),
+  redirectUri: text('redirect_uri').notNull(),
+  codeChallenge: text('code_challenge').notNull(),
+  codeChallengeMethod: text('code_challenge_method').notNull().default('S256'),
+  scope: text('scope'),
+  agentId: text('agent_id'),
+  expiresAt: timestamp('expires_at').notNull(),
+  consumedAt: timestamp('consumed_at'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+// @domain governance
+export const oauthAccessTokens = pgTable('oauth_access_tokens', {
+  tokenHash: text('token_hash').primaryKey(),
+  refreshTokenHash: text('refresh_token_hash'),
+  clientId: text('client_id').notNull(),
+  orgId: text('org_id').notNull(),
+  userId: text('user_id'),
+  scope: text('scope'),
+  agentId: text('agent_id').notNull().default('claude-desktop'),
+  expiresAt: timestamp('expires_at').notNull(),
+  revokedAt: timestamp('revoked_at'),
+  lastUsedAt: timestamp('last_used_at'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
 // --- Action & Governance Tables ---
 
 // @domain governance

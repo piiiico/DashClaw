@@ -46,10 +46,10 @@
     ]
   },
   "summary": {
-    "total_routes": 261,
+    "total_routes": 266,
     "stable_routes": 46,
     "beta_routes": 24,
-    "experimental_routes": 191
+    "experimental_routes": 196
   },
   "routes": [
     {
@@ -1790,6 +1790,52 @@
       "maturity": "experimental",
       "matched_prefix": "(default)",
       "file": "app/api/model-strategies/[strategyId]/complete/route.js"
+    },
+    {
+      "path": "/api/oauth/authorize",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/oauth/authorize/route.js"
+    },
+    {
+      "path": "/api/oauth/metadata/authorization-server",
+      "methods": [
+        "GET"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/oauth/metadata/authorization-server/route.js"
+    },
+    {
+      "path": "/api/oauth/metadata/protected-resource",
+      "methods": [
+        "GET"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/oauth/metadata/protected-resource/route.js"
+    },
+    {
+      "path": "/api/oauth/register",
+      "methods": [
+        "POST"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/oauth/register/route.js"
+    },
+    {
+      "path": "/api/oauth/token",
+      "methods": [
+        "POST"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/oauth/token/route.js"
     },
     {
       "path": "/api/operations/feed",

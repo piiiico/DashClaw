@@ -60,6 +60,20 @@ Then double-click `dist/dashclaw.mcpb` (or Settings → Extensions → Install E
 The installer prompts for your instance URL, API key, and an agent ID
 (default `claude-desktop`). The 23 governance tools then appear in Claude.
 
+### Claude custom connector (remote, OAuth)
+
+Self-hosted DashClaw is addable as a Claude **custom connector** with no API key
+in the UI — Claude's connector flow requires OAuth, not headers:
+
+1. In Claude: Settings → Connectors → Add custom connector.
+2. Paste `https://<your-instance>/api/mcp`.
+3. Claude discovers `/.well-known/oauth-protected-resource`, registers via DCR,
+   and opens your DashClaw login + a consent screen.
+4. Authorize → the 23 governance tools appear, scoped to your workspace.
+
+Works on Free/Pro/Max/Team/Enterprise (Free is capped at one custom connector).
+The legacy `x-api-key` path (Managed Agents) is unchanged.
+
 ### Plugin (skills) via marketplace
 
 To also load the DashClaw **skills** (governance protocol + platform intelligence)

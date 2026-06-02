@@ -13,10 +13,10 @@ doc-type: architecture
 
 ## Summary
 
-- Total routes: `261`
+- Total routes: `266`
 - Stable routes: `46`
 - Beta routes: `24`
-- Experimental routes: `191`
+- Experimental routes: `196`
 
 ## Routes
 
@@ -206,6 +206,11 @@ doc-type: architecture
 | `/api/model-strategies` | `GET, POST` | `experimental` | `(default)` | `app/api/model-strategies/route.js` |
 | `/api/model-strategies/{strategyId}` | `DELETE, GET, PATCH` | `experimental` | `(default)` | `app/api/model-strategies/[strategyId]/route.js` |
 | `/api/model-strategies/{strategyId}/complete` | `POST` | `experimental` | `(default)` | `app/api/model-strategies/[strategyId]/complete/route.js` |
+| `/api/oauth/authorize` | `GET, POST` | `experimental` | `(default)` | `app/api/oauth/authorize/route.js` |
+| `/api/oauth/metadata/authorization-server` | `GET` | `experimental` | `(default)` | `app/api/oauth/metadata/authorization-server/route.js` |
+| `/api/oauth/metadata/protected-resource` | `GET` | `experimental` | `(default)` | `app/api/oauth/metadata/protected-resource/route.js` |
+| `/api/oauth/register` | `POST` | `experimental` | `(default)` | `app/api/oauth/register/route.js` |
+| `/api/oauth/token` | `POST` | `experimental` | `(default)` | `app/api/oauth/token/route.js` |
 | `/api/operations/feed` | `GET` | `experimental` | `(default)` | `app/api/operations/feed/route.js` |
 | `/api/operations/summary` | `GET` | `experimental` | `(default)` | `app/api/operations/summary/route.js` |
 | `/api/orgs` | `GET, POST` | `stable` | `/api/orgs` | `app/api/orgs/route.js` |

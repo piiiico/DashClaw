@@ -30,10 +30,11 @@ function jsonrpcError(id, code, message) {
  */
 function resolveConfig(request) {
   const apiKey = request.headers.get('x-api-key') || '';
+  const authHeader = request.headers.get('authorization') || '';
   const origin = process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`
     : process.env.DASHCLAW_URL || 'http://localhost:3000';
-  return { url: origin, apiKey };
+  return { url: origin, apiKey, authHeader };
 }
 
 /**

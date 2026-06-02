@@ -8,11 +8,18 @@ export class DashClawClient {
    * @param {string} [options.url] - DashClaw instance URL
    * @param {string} [options.apiKey] - API key (oc_live_ prefix)
    * @param {string} [options.agentId] - Default agent ID for tool calls
+   * @param {string} [options.authHeader] - Full Authorization header value (e.g. "Bearer oat_..."); when set, takes precedence over apiKey
    */
-  constructor({ url, apiKey, agentId } = {}) {
+  constructor({ url, apiKey, agentId, authHeader } = {}) {
     this.baseUrl = (url || 'http://localhost:3000').replace(/\/$/, '');
     this.apiKey = apiKey || '';
     this.agentId = agentId || '';
+    this.authHeader = authHeader || '';
+  }
+
+  // Build auth headers: prefer an explicit Authorization (OAuth) over x-api-key.
+  _authHeaders() {
+    return this.authHeader ? { Authorization: this.authHeader } : { 'x-api-key': this.apiKey };
   }
 
   async post(path, body, { timeout = 10000 } = {}) {
@@ -21,7 +28,7 @@ export class DashClawClient {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': this.apiKey,
+          ...this._authHeaders(),
         },
         body: JSON.stringify(body),
         signal: AbortSignal.timeout(timeout),
@@ -43,7 +50,7 @@ export class DashClawClient {
     try {
       const res = await fetch(url, {
         method: 'GET',
-        headers: { 'x-api-key': this.apiKey },
+        headers: { ...this._authHeaders() },
         signal: AbortSignal.timeout(timeout),
       });
       const data = await res.json();
@@ -60,7 +67,7 @@ export class DashClawClient {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': this.apiKey,
+          ...this._authHeaders(),
         },
         body: JSON.stringify(body),
         signal: AbortSignal.timeout(timeout),
@@ -80,7 +87,7 @@ export class DashClawClient {
    */
   async fetch(path, opts = {}) {
     const method = (opts.method || 'GET').toUpperCase();
-    const headers = { 'x-api-key': this.apiKey, ...(opts.headers || {}) };
+    const headers = { ...this._authHeaders(), ...(opts.headers || {}) };
     if (opts.body && !headers['Content-Type']) headers['Content-Type'] = 'application/json';
     const timeout = opts.timeout ?? 10000;
     try {
