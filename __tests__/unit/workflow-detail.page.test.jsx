@@ -35,8 +35,16 @@ vi.mock('@/components/ui/Badge', () => ({
 }));
 
 describe('WorkflowTemplateDetailPage', () => {
-  function createFetchMock(templatePayload) {
+  function createFetchMock(templatePayload, opts = {}) {
     return vi.fn(async (url, options = {}) => {
+      if (String(url) === '/api/workflows/templates/wft_1/execute' && options.method === 'POST') {
+        return {
+          ok: !opts.execute?.error,
+          status: opts.execute?.error ? 403 : 200,
+          json: async () => opts.execute ?? {},
+        };
+      }
+
       if (String(url) === '/api/workflows/templates/wft_1' && (!options.method || options.method === 'GET')) {
         return {
           ok: true,
@@ -322,5 +330,50 @@ describe('WorkflowTemplateDetailPage', () => {
       model_strategy_id: 'mst_support',
       linked_policy_ids: ['gp_approval'],
     });
+  });
+
+  const RUNNABLE = {
+    template_id: 'wft_1',
+    name: 'Refund Workflow',
+    slug: 'refund-workflow',
+    description: '',
+    status: 'draft',
+    version: 1,
+    steps: [
+      { id: 'step_1', type: 'knowledge_search', name: 'Find refund policy', config: { collection_id: 'kn_refunds', query: 'refund eligibility', top_k: 3 } },
+    ],
+    model_strategy_id: 'mst_support',
+    linked_policy_ids: [],
+    linked_knowledge_collection_ids: [],
+    linked_capability_ids: [],
+    linked_prompt_template_ids: [],
+    linked_capability_tags: [],
+  };
+
+  it('runs the workflow through /execute and navigates to the produced run timeline', async () => {
+    global.fetch = createFetchMock(RUNNABLE, { execute: { action_id: 'act_99', success: true } });
+
+    const { default: WorkflowTemplateDetailPage } = await import('@/workflows/[templateId]/page.jsx');
+    render(<WorkflowTemplateDetailPage />);
+    await screen.findByRole('heading', { name: /refund workflow/i });
+
+    fireEvent.click(screen.getByRole('button', { name: /^run$/i }));
+
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/workflows/wft_1/runs/act_99'));
+    const executeCall = global.fetch.mock.calls.find(([u, o]) => String(u).endsWith('/execute') && o?.method === 'POST');
+    expect(executeCall).toBeTruthy();
+  });
+
+  it('surfaces a policy block inline and does not navigate', async () => {
+    global.fetch = createFetchMock(RUNNABLE, { execute: { error: 'blocked_by_policy', guard_decision: { reasons: ['refund exceeds $500'] } } });
+
+    const { default: WorkflowTemplateDetailPage } = await import('@/workflows/[templateId]/page.jsx');
+    render(<WorkflowTemplateDetailPage />);
+    await screen.findByRole('heading', { name: /refund workflow/i });
+
+    fireEvent.click(screen.getByRole('button', { name: /^run$/i }));
+
+    expect(await screen.findByText(/Blocked by policy: refund exceeds \$500/i)).toBeTruthy();
+    expect(push).not.toHaveBeenCalled();
   });
 });

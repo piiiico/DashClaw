@@ -30,3 +30,7 @@ build/
 *.key
 *.crt
 secrets/
+# Keep app source under secrets/ paths in the build context (the `secrets/`
+# rule above would otherwise drop the governance routes + page).
+!app/api/secrets/
+!app/secrets/

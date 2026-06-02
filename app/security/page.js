@@ -13,6 +13,7 @@ import { EmptyState } from '../components/ui/EmptyState';
 import { ListSkeleton } from '../components/ui/Skeleton';
 import SecurityDetailPanel from '../components/SecurityDetailPanel';
 import SecurityScanners from '../components/SecurityScanners';
+import SkillScanner from '../components/SkillScanner';
 import { HelpIcon } from '../components/HelpIcon';
 import { HELP_TIPS } from '../lib/demo/fixtures/help-tips.js';
 import { useAgentFilter } from '../lib/AgentFilterContext';
@@ -263,6 +264,9 @@ export default function SecurityDashboard() {
 
       {/* Ad-hoc DLP + prompt-injection scanners */}
       <SecurityScanners />
+
+      {/* Static skill safety scanner */}
+      <SkillScanner />
 
       {/* Stats rail — Security Score + 4 inline */}
       <div className="mb-6 overflow-hidden rounded-xl border border-border bg-surface-tertiary">
