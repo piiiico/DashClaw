@@ -48,13 +48,17 @@ export default function UsagePage() {
 
 function UsageContent() {
   const [billing, setBilling] = useState(null);
+  const [costs, setCosts] = useState(null); // /api/usage/costs — per-type + daily spend
   const [loading, setLoading] = useState(true);
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
   const [error, setError] = useState(null);
 
   const fetchUsage = useCallback(async () => {
     try {
-      const res = await fetch('/api/usage');
+      const [res, costsRes] = await Promise.all([
+        fetch('/api/usage'),
+        fetch('/api/usage/costs'),
+      ]);
       const data = await res.json();
 
       if (!res.ok) {
@@ -64,6 +68,7 @@ function UsageContent() {
       }
 
       setBilling(data);
+      if (costsRes.ok) setCosts(await costsRes.json().catch(() => null));
     } catch {
       setError('Failed to connect to API');
     } finally {
@@ -134,6 +139,56 @@ function UsageContent() {
           limit={limits.api_keys}
         />
       </div>
+
+      {/* Estimated spend (/api/usage/costs) — per-action-type + daily breakdown */}
+      {costs && costs.total_actions > 0 && (
+        <Card hover={false} className="mb-6">
+          <CardContent className="pt-5 pb-5">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <BarChart3 size={16} className="text-brand" />
+                <h3 className="text-sm font-medium text-secondary">Estimated spend · {costs.period}</h3>
+              </div>
+              <div className="text-right">
+                <div className="text-lg font-semibold tabular-nums text-white">${(costs.total_cost_usd || 0).toFixed(3)}</div>
+                <div className="text-[10px] text-tertiary uppercase tracking-wider">{costs.total_actions} actions</div>
+              </div>
+            </div>
+
+            {Object.keys(costs.breakdown || {}).length > 0 && (
+              <div className="space-y-1.5 mb-4">
+                {Object.entries(costs.breakdown)
+                  .sort((a, b) => b[1].cost_usd - a[1].cost_usd)
+                  .map(([type, b]) => (
+                    <div key={type} className="flex items-center justify-between text-xs">
+                      <span className="text-secondary">{type}</span>
+                      <span className="tabular-nums text-tertiary">{b.count} · ${b.cost_usd.toFixed(3)}</span>
+                    </div>
+                  ))}
+              </div>
+            )}
+
+            {costs.daily?.length > 0 && (() => {
+              const maxCost = Math.max(...costs.daily.map((d) => d.cost_usd), 0.0001);
+              return (
+                <div>
+                  <div className="text-[10px] text-tertiary uppercase tracking-wider mb-2">Daily spend</div>
+                  <div className="flex items-end gap-1 h-16">
+                    {costs.daily.map((d) => (
+                      <div
+                        key={String(d.date)}
+                        className="flex-1 rounded-t bg-brand/60 min-h-[2px]"
+                        style={{ height: `${Math.max((d.cost_usd / maxCost) * 100, 2)}%` }}
+                        title={`${String(d.date).slice(0, 10)}: $${d.cost_usd.toFixed(3)} (${d.actions} actions)`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+          </CardContent>
+        </Card>
+      )}
 
       <Card hover={false}>
         <CardContent className="pt-5 pb-5">
