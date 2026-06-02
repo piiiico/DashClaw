@@ -6,7 +6,9 @@ RUN apk add --no-cache libc6-compat python3 make g++
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci
+# npm ci can hit a transient registry ECONNRESET in CI (surfaces as exit 152);
+# raise the network retry count so a single reset self-heals instead of failing the build.
+RUN npm ci --fetch-retries=5 --fetch-retry-maxtimeout=120000
 
 # Stage 2: Builder
 FROM node:20-alpine AS builder
@@ -15,7 +17,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Disable Next.js telemetry during build
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NEXT_TELEMETRY_DISABLED=1
 
 ARG DASHCLAW_MODE
 ARG NEXT_PUBLIC_DASHCLAW_MODE
@@ -28,8 +30,8 @@ RUN npm run build
 FROM node:20-alpine AS runner
 WORKDIR /app
 
-ENV NODE_ENV production
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
 ARG DASHCLAW_MODE
 ENV DASHCLAW_MODE=${DASHCLAW_MODE:-demo}
@@ -55,8 +57,8 @@ USER nextjs
 
 EXPOSE 3000
 
-ENV PORT 3000
+ENV PORT=3000
 # set hostname to localhost
-ENV HOSTNAME "0.0.0.0"
+ENV HOSTNAME="0.0.0.0"
 
 CMD ["node", "/app/scripts/demo-entrypoint.mjs"]
