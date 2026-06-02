@@ -20,7 +20,7 @@
 
 AI agent decision infrastructure. A control plane for policy enforcement, decision recording,
 assumption tracking, compliance mapping, security signals, messaging, evaluation scoring,
-prompt management, user feedback, behavioral drift detection, learning analytics, scoring profiles, and operator
+prompt management, behavioral drift detection, learning analytics, scoring profiles, and operator
 workflows. The governance layer for AI agent fleets.
 
 **Zero-dependency philosophy**: All features work without any LLM API key by default. The only
@@ -163,12 +163,10 @@ Client request hits middleware.js
 | `/security` | Security dashboard (signals, guard decisions, findings) |
 | `/analytics` | Cost + action analytics (hero stats, cost trend, action volume, breakdowns, token usage) |
 | `/activity` | Raw activity log |
-| `/routing` | Task routing (agent registry, task queue, health) |
 | `/compliance` | Compliance mapping (framework controls, gap analysis, evidence, reports) |
 | `/compliance/exports` | Compliance export generation, scheduling, downloads |
 | `/evaluations` | Evaluation framework (scorers, scores, runs, quality tracking) |
 | `/prompts` | Prompt registry (templates, versions, rendering, usage stats) |
-| `/feedback` | User feedback (ratings, sentiment, auto-tagging, resolution) |
 | `/drift` | Drift detection (baselines, alerts, severity, trends) |
 | `/learning` | Learning loop (episodes, recommendations) |
 | `/learning/analytics` | Learning analytics (velocity, maturity, curves, summary) |
@@ -189,7 +187,7 @@ The left sidebar is organized into four groups (`app/components/Sidebar.js`). **
 | **Govern** | Mission Control, Decisions, Approvals, Policies, Fleet |
 | **Observe** | Security, Analytics, Activity, Compliance |
 | **Configure** | API Keys, Integrations, Webhooks, Identities, Settings |
-| **Labs** *(collapsible)* | Assumptions, Sessions, Drift, Learning, Quality, Prompts, Feedback, Workflows, Model Strategies, Knowledge, Capabilities |
+| **Labs** *(collapsible)* | Assumptions, Sessions, Drift, Learning, Quality, Prompts, Workflows, Model Strategies, Knowledge, Capabilities |
 
 ## CLI and Hooks Layer
 
