@@ -50,7 +50,7 @@ agent = client.beta.agents.create(
 
 ### Claude Desktop / Cowork (one-click .mcpb)
 
-Build the bundle and install it without touching `claude_desktop_config.json`:
+Build the bundle from the DashClaw repo root (the build script ships in the repo, not the npm package), then install it without touching `claude_desktop_config.json`:
 
 ```bash
 node scripts/build-mcpb.mjs    # → dist/dashclaw.mcpb
