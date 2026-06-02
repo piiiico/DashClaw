@@ -52,6 +52,7 @@ import {
   mkdirSync,
   readFileSync,
   readdirSync,
+  renameSync,
   rmSync,
   statSync,
   writeFileSync,
@@ -395,8 +396,6 @@ function refreshBundleZip(srcDir, zipPath, manifestPath, excludeRe = null) {
     return;
   }
 
-  rmSync(zipPath, { force: true });
-
   let toZip = srcDir;
   let cleanup = null;
   if (excludeRe) {
@@ -404,6 +403,16 @@ function refreshBundleZip(srcDir, zipPath, manifestPath, excludeRe = null) {
     toZip = stagingDir;
     cleanup = stagingRoot;
   }
+
+  // Build to a temp file and only swap it into place on a verified, non-empty
+  // success. The old behaviour deleted the destination zip FIRST, so any build
+  // failure left a 0-byte/corrupt artifact committed. The common trigger on
+  // Windows is a locked source file — an editor or the Claude Desktop app
+  // holding a skill's SKILL.md open — where Compress-Archive emits a
+  // *non-terminating* error yet still exits 0; $ErrorActionPreference='Stop'
+  // promotes it to a real failure so we can detect it and keep the prior zip.
+  const tmpZip = zipPath.replace(/\.zip$/, '') + '.tmp.zip';
+  rmSync(tmpZip, { force: true });
 
   const isWindows = platform() === 'win32';
   let status;
@@ -413,7 +422,7 @@ function refreshBundleZip(srcDir, zipPath, manifestPath, excludeRe = null) {
       [
         '-NoProfile',
         '-Command',
-        `Compress-Archive -Path "${toZip}" -DestinationPath "${zipPath}" -Force`,
+        `$ErrorActionPreference='Stop'; Compress-Archive -Path "${toZip}" -DestinationPath "${tmpZip}" -Force`,
       ],
       { stdio: ['ignore', 'inherit', 'inherit'] },
     );
@@ -421,7 +430,7 @@ function refreshBundleZip(srcDir, zipPath, manifestPath, excludeRe = null) {
   } else {
     const parent = dirname(toZip);
     const name = toZip.split(/[\\/]/).pop();
-    const result = spawnSync('zip', ['-r', zipPath, name], {
+    const result = spawnSync('zip', ['-r', tmpZip, name], {
       cwd: parent,
       stdio: ['ignore', 'inherit', 'inherit'],
     });
@@ -432,10 +441,18 @@ function refreshBundleZip(srcDir, zipPath, manifestPath, excludeRe = null) {
     rmSync(cleanup, { recursive: true, force: true });
   }
 
-  if (status !== 0) {
-    warn(`zip command failed (status ${status}) — skipping manifest update`);
+  // A locked source (or any zip failure) must NOT clobber the existing zip.
+  if (status !== 0 || !existsSync(tmpZip) || statSync(tmpZip).size === 0) {
+    rmSync(tmpZip, { force: true });
+    warn(
+      `zip build failed for ${relative(REPO_ROOT, zipPath)} — keeping the existing artifact. ` +
+        'A source file is likely locked by another process (close any app holding the skill’s SKILL.md open).',
+    );
     return;
   }
+
+  rmSync(zipPath, { force: true });
+  renameSync(tmpZip, zipPath);
 
   writeFileSync(
     manifestPath,
