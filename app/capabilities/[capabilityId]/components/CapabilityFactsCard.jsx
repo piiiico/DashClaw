@@ -11,7 +11,19 @@ function FactRow({ label, value }) {
 
 export default function CapabilityFactsCard({ capability, health }) {
   const estCost = capability?.pricing?.estimated_cost_usd;
-  const docsUrl = capability?.docs_url;
+  // docs_url is operator-supplied; only render it as a link when it's a real
+  // http(s) URL. A raw href would otherwise let a javascript:/data:/vbscript:
+  // scheme through and execute on click (stored XSS).
+  const safeDocsUrl = (() => {
+    const raw = capability?.docs_url;
+    if (!raw) return null;
+    try {
+      const u = new URL(raw);
+      return u.protocol === 'http:' || u.protocol === 'https:' ? u.toString() : null;
+    } catch {
+      return null;
+    }
+  })();
   return (
     <Card hover={false}>
       <CardHeader title="Facts" />
@@ -23,11 +35,11 @@ export default function CapabilityFactsCard({ capability, health }) {
         {estCost != null && estCost !== '' && (
           <FactRow label="Est. cost / invocation" value={`$${Number(estCost).toFixed(4)}`} />
         )}
-        {docsUrl && (
+        {safeDocsUrl && (
           <FactRow
             label="Docs"
             value={
-              <a href={docsUrl} target="_blank" rel="noreferrer" className="text-brand hover:text-brand/80 underline">
+              <a href={safeDocsUrl} target="_blank" rel="noreferrer noopener" className="text-brand hover:text-brand/80 underline">
                 View docs
               </a>
             }

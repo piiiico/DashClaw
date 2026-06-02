@@ -55,4 +55,14 @@ describe('CapabilityFactsCard — pricing + docs_url', () => {
     expect(screen.queryByText('Est. cost / invocation')).toBeNull();
     expect(screen.queryByText('View docs')).toBeNull();
   });
+
+  it('does not render a docs link for a non-http(s) scheme (XSS guard)', () => {
+    for (const evil of ['javascript:alert(1)', 'data:text/html,<script>1</script>', 'vbscript:msgbox(1)', 'not a url']) {
+      const { unmount } = render(
+        <CapabilityFactsCard capability={{ source_type: 'http', docs_url: evil, pricing: {} }} health={{}} />,
+      );
+      expect(screen.queryByText('View docs')).toBeNull();
+      unmount();
+    }
+  });
 });
