@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeRequest } from '../helpers.js';
+// Mocked below via vi.mock (hoisted); imported here to assert constructor args.
+import { DashClawClient } from '../../mcp-server/lib/client.js';
 
 const mockPost = vi.fn();
 const mockGet = vi.fn();
@@ -181,5 +183,22 @@ describe('POST /api/mcp', () => {
     const data = await res.json();
 
     expect(data.error.code).toBe(-32601);
+  });
+
+  it('builds the DashClawClient origin from the public Host, never VERCEL_URL', async () => {
+    // VERCEL_URL is the protection-walled per-deployment URL; the internal callback
+    // must target the public Host the caller connected through, or tool calls get
+    // back Vercel's HTML SSO page instead of JSON.
+    vi.stubEnv('DASHCLAW_URL', '');
+    vi.stubEnv('VERCEL_URL', 'my-dashclaw-deadbeef-ucsandmans-projects.vercel.app');
+    const request = makeRequest('https://my-dashclaw.vercel.app/api/mcp', {
+      headers: { host: 'my-dashclaw.vercel.app', authorization: 'Bearer oat_x' },
+      body: { jsonrpc: '2.0', id: 1, method: 'ping', params: {} },
+    });
+    await POST(request);
+    expect(DashClawClient).toHaveBeenCalledWith(
+      expect.objectContaining({ url: 'https://my-dashclaw.vercel.app', authHeader: 'Bearer oat_x' }),
+    );
+    vi.unstubAllEnvs();
   });
 });

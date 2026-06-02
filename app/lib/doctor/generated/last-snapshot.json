@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:1b10595de9299822ff7812c88744a826302998a5",
+  "timestamp": "sha1:c897b1d1fccd89b2adf22696855565d6585afc48",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -4126,7 +4126,6 @@
       "required": false,
       "files": [
         "__tests__/unit/webhooks.approval.test.js",
-        "app/api/mcp/route.js",
         "app/api/oauth/metadata/authorization-server/route.js",
         "app/lib/webhooks.js"
       ],

@@ -24,17 +24,32 @@ function jsonrpcError(id, code, message) {
 }
 
 /**
+ * Resolve the origin this route calls back into for its own instance's API.
+ * Uses an explicit DASHCLAW_URL, else the public Host the caller connected through.
+ * MUST NOT use VERCEL_URL: that is the per-deployment URL (my-dashclaw-<hash>…
+ * .vercel.app), which sits behind Vercel deployment protection and answers
+ * server-side fetches with an HTML SSO page — every tool call then fails with
+ * "HTML instead of JSON". The public production alias (the Host) is not walled.
+ */
+function instanceOrigin(request) {
+  if (process.env.DASHCLAW_URL) return process.env.DASHCLAW_URL.replace(/\/$/, '');
+  const host = request.headers.get('host');
+  if (host) {
+    const isLocal = host.startsWith('localhost') || host.startsWith('127.0.0.1');
+    const proto = request.headers.get('x-forwarded-proto') || (isLocal ? 'http' : 'https');
+    return `${proto}://${host}`;
+  }
+  return 'http://localhost:3000';
+}
+
+/**
  * Resolve config from request headers.
- * The x-api-key header is already validated by middleware.
- * The route calls back into its own instance's API via localhost.
+ * The x-api-key header (or Bearer Authorization) is already validated by middleware.
  */
 function resolveConfig(request) {
   const apiKey = request.headers.get('x-api-key') || '';
   const authHeader = request.headers.get('authorization') || '';
-  const origin = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : process.env.DASHCLAW_URL || 'http://localhost:3000';
-  return { url: origin, apiKey, authHeader };
+  return { url: instanceOrigin(request), apiKey, authHeader };
 }
 
 /**
