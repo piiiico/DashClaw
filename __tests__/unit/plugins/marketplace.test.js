@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -13,7 +13,10 @@ const RESERVED = new Set([
 ]);
 
 describe('.claude-plugin/marketplace.json', () => {
-  const mkt = JSON.parse(readFileSync(join(ROOT, '.claude-plugin', 'marketplace.json'), 'utf8'));
+  let mkt;
+  beforeAll(() => {
+    mkt = JSON.parse(readFileSync(join(ROOT, '.claude-plugin', 'marketplace.json'), 'utf8'));
+  });
 
   it('has a valid, non-reserved kebab-case name', () => {
     expect(mkt.name).toBe('dashclaw');
