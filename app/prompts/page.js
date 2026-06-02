@@ -45,6 +45,11 @@ export default function PromptsPage() {
   const [showNewVersion, setShowNewVersion] = useState(false);
   const [newVersion, setNewVersion] = useState({ content: '', model_hint: '', changelog: '' });
 
+  // Edit template header (PATCH) + runs filter
+  const [editingTemplate, setEditingTemplate] = useState(false);
+  const [editForm, setEditForm] = useState({ name: '', description: '', category: 'general' });
+  const [runsTemplateFilter, setRunsTemplateFilter] = useState('');
+
   // Render preview
   const [renderPreview, setRenderPreview] = useState(null);
   const [renderVars, setRenderVars] = useState('{}');
@@ -69,6 +74,15 @@ export default function PromptsPage() {
   }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  // Scope the runs log to a template when one is picked on the Usage tab.
+  useEffect(() => {
+    const qs = runsTemplateFilter ? `?limit=30&template_id=${runsTemplateFilter}` : '?limit=30';
+    fetch(`/api/prompts/runs${qs}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (d) setRuns(d.runs || []); })
+      .catch(() => {});
+  }, [runsTemplateFilter]);
 
   // Fetch versions for selected template
   const fetchVersions = async (templateId) => {
@@ -126,6 +140,27 @@ export default function PromptsPage() {
       }
       fetchData();
     } catch { /* ignore */ }
+  };
+
+  // Edit template header (name/description/category)
+  const handleEditTemplate = async () => {
+    if (!selectedTemplate || !editForm.name.trim()) return;
+    try {
+      const res = await fetch(`/api/prompts/templates/${selectedTemplate.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editForm),
+      });
+      if (res.ok) {
+        setSelectedTemplate((prev) => (prev ? { ...prev, ...editForm } : prev));
+        setEditingTemplate(false);
+        fetchData();
+      } else {
+        alert('Failed to update template');
+      }
+    } catch {
+      alert('Failed to update template');
+    }
   };
 
   // Create version
@@ -330,10 +365,37 @@ export default function PromptsPage() {
                       <h2 className="text-lg font-semibold text-white">{selectedTemplate.name}</h2>
                       {selectedTemplate.description && <p className="text-xs text-tertiary mt-0.5">{selectedTemplate.description}</p>}
                     </div>
-                    <button onClick={() => setShowNewVersion(!showNewVersion)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand text-white text-xs font-medium hover:bg-brand-hover transition-colors">
-                      <Plus size={14} /> New Version
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          setEditingTemplate((v) => !v);
+                          setEditForm({ name: selectedTemplate.name, description: selectedTemplate.description || '', category: selectedTemplate.category || 'general' });
+                        }}
+                        className="px-3 py-1.5 rounded-lg border border-[rgba(255,255,255,0.12)] text-secondary text-xs font-medium hover:text-white transition-colors"
+                      >
+                        Edit
+                      </button>
+                      <button onClick={() => setShowNewVersion(!showNewVersion)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand text-white text-xs font-medium hover:bg-brand-hover transition-colors">
+                        <Plus size={14} /> New Version
+                      </button>
+                    </div>
                   </div>
+
+                  {editingTemplate && (
+                    <Card>
+                      <CardContent className="space-y-3 pt-5">
+                        <input value={editForm.name} onChange={e => setEditForm(s => ({ ...s, name: e.target.value }))} placeholder="Template name" className="w-full px-3 py-2 rounded-lg bg-[#111] border border-[rgba(255,255,255,0.1)] text-sm text-white placeholder:text-disabled focus:outline-none focus:border-brand" />
+                        <input value={editForm.description} onChange={e => setEditForm(s => ({ ...s, description: e.target.value }))} placeholder="Description (optional)" className="w-full px-3 py-2 rounded-lg bg-[#111] border border-[rgba(255,255,255,0.1)] text-sm text-white placeholder:text-disabled focus:outline-none focus:border-brand" />
+                        <select value={editForm.category} onChange={e => setEditForm(s => ({ ...s, category: e.target.value }))} className="w-full px-3 py-2 rounded-lg bg-[#111] border border-[rgba(255,255,255,0.1)] text-sm text-white focus:outline-none focus:border-brand">
+                          {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                        <div className="flex justify-end gap-2">
+                          <button onClick={() => setEditingTemplate(false)} className="px-3 py-1.5 rounded-lg text-xs text-secondary hover:text-white transition-colors">Cancel</button>
+                          <button onClick={handleEditTemplate} disabled={!editForm.name.trim()} className="px-3 py-1.5 rounded-lg bg-brand text-white text-xs font-medium hover:bg-brand-hover transition-colors disabled:opacity-50">Save changes</button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
 
                   {showNewVersion && (
                     <Card>
@@ -424,6 +486,19 @@ export default function PromptsPage() {
           <Card>
             <CardHeader title="Recent Prompt Runs" icon={Play} count={runs.length} />
             <CardContent>
+              {templates.length > 0 && (
+                <div className="mb-3 flex items-center gap-2">
+                  <select
+                    value={runsTemplateFilter}
+                    onChange={(e) => setRunsTemplateFilter(e.target.value)}
+                    aria-label="Filter runs by template"
+                    className="rounded-lg bg-[#111] border border-[rgba(255,255,255,0.1)] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-brand"
+                  >
+                    <option value="">All templates</option>
+                    {templates.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+                  </select>
+                </div>
+              )}
               {runs.length === 0 ? (
                 <EmptyState icon={Play} title="No prompt runs" description="Render prompts via the API or SDK to track usage here." />
               ) : (
@@ -461,6 +536,26 @@ export default function PromptsPage() {
                       <span className="text-xs text-tertiary tabular-nums">{t.total_runs} runs</span>
                       <span className="text-xs text-tertiary tabular-nums">{t.avg_tokens} avg tok</span>
                       <span className="text-xs text-tertiary tabular-nums">{t.avg_latency_ms}ms avg</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Usage by version — which version is actually in use */}
+        {stats?.by_version && stats.by_version.length > 0 && (
+          <Card>
+            <CardHeader title="Usage by Version" />
+            <CardContent>
+              <div className="space-y-2">
+                {stats.by_version.map((v, i) => (
+                  <div key={`${v.template_name}-${v.version}-${i}`} className="flex items-center justify-between py-1.5">
+                    <span className="text-sm text-secondary">{v.template_name} <span className="text-tertiary">v{v.version}</span></span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-tertiary tabular-nums">{v.total_runs} runs</span>
+                      {v.avg_tokens != null && <span className="text-xs text-tertiary tabular-nums">{v.avg_tokens} avg tok</span>}
                     </div>
                   </div>
                 ))}
