@@ -78,6 +78,8 @@ export default function DecisionsLedger() {
   const [filterType, setFilterType] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [filterOutcome, setFilterOutcome] = useState('');
+  const [filterSwarm, setFilterSwarm] = useState('');
+  const [knownSwarms, setKnownSwarms] = useState([]); // accumulates swarm_ids seen, so the dropdown stays stable when filtered
   const [filterRiskMin, setFilterRiskMin] = useState('1');
   const [hideRoutine, setHideRoutine] = useState(true);
   const [page, setPage] = useState(0);
@@ -96,6 +98,7 @@ export default function DecisionsLedger() {
       if (filterType) params.set('action_type', filterType);
       if (filterStatus) params.set('status', filterStatus);
       if (filterOutcome) params.set('outcome_status', filterOutcome);
+      if (filterSwarm) params.set('swarm_id', filterSwarm);
       if (hideRoutine && !filterStatus) params.set('exclude_status', 'running');
       if (filterRiskMin) params.set('risk_min', filterRiskMin);
       params.set('limit', pageSize.toString());
@@ -125,12 +128,14 @@ export default function DecisionsLedger() {
       setStats(data.stats || {});
       setTotal(displayedTotal);
       setLastUpdated(new Date().toLocaleTimeString());
+      const seen = displayed.map((a) => a.swarm_id).filter(Boolean);
+      if (seen.length) setKnownSwarms((prev) => Array.from(new Set([...prev, ...seen])));
     } catch (error) {
       console.error('Failed to fetch actions:', error);
     } finally {
       setLoading(false);
     }
-  }, [filterAgent, filterType, filterStatus, filterOutcome, filterRiskMin, hideRoutine, page]);
+  }, [filterAgent, filterType, filterStatus, filterOutcome, filterSwarm, filterRiskMin, hideRoutine, page]);
 
   useEffect(() => {
     setLoading(true);
@@ -377,6 +382,14 @@ export default function DecisionsLedger() {
               <option value="failed">Failed</option>
               <option value="lost_confirmation">Lost confirmation</option>
             </select>
+            {(knownSwarms.length > 0 || filterSwarm) && (
+              <select value={filterSwarm} onChange={(e) => { setFilterSwarm(e.target.value); setPage(0); }} className={`${selectClass} md:flex-1`} aria-label="Filter by swarm">
+                <option value="">All swarms</option>
+                {Array.from(new Set([...knownSwarms, filterSwarm].filter(Boolean))).map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            )}
             <select value={filterRiskMin} onChange={(e) => { setFilterRiskMin(e.target.value); setPage(0); }} className={`${selectClass} md:flex-1`}>
               <option value="">Any risk</option>
               <option value="1">Governed (1+)</option>
@@ -493,6 +506,9 @@ export default function DecisionsLedger() {
                             <span className={`rounded border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] ${getAgentColor(action.agent_id)}`}>
                               {action.agent_name || action.agent_id}
                             </span>
+                            {action.model && (
+                              <span className="rounded border border-white/10 px-1.5 py-0.5 text-[10px] font-medium text-tertiary" title="Model">{action.model}</span>
+                            )}
                             <span className="font-mono text-[11px] tabular-nums text-tertiary">{formatTime(action.timestamp_start)}</span>
                           </div>
                           <div className="truncate border-l border-white/5 pl-3.5 text-sm font-medium text-white">
