@@ -17,6 +17,5 @@
     "agent-safety",
     "approval"
   ],
-  "skills": "./skills/",
   "mcpServers": "./.mcp-claude.json"
 }
