@@ -1,11 +1,11 @@
 ---
 name: dashclaw-platform-intelligence
-description: DashClaw platform expert for integration, troubleshooting, and governance. Snapshot-based — always prefer live queries via `python -m livingcode query`.
+description: DashClaw platform expert for integration, troubleshooting, and governance. Snapshot-based — prefer live queries via `python -m livingcode query`, or `GET {baseUrl}/api/doctor` when Python/livingcode/the repo are unavailable.
 ---
 
 # DashClaw Platform Intelligence
 
-**Shape snapshot:** `sha1:89d206a4c82e3856714fd9f6d4d4d3d5f201c1aa`
+**Shape snapshot:** `sha1:1b10595de9299822ff7812c88744a826302998a5`
 **This file is auto-generated.** Do not edit by hand — regenerate with:
 
 ```bash
@@ -27,9 +27,25 @@ python -m livingcode query all --json  # Full machine-readable shape
 
 If the snapshot below disagrees with a live query, **trust the live query**.
 
+### Fallback: no Python, livingcode, or repo checkout
+
+`python -m livingcode` only works where the livingcode package and the repo
+checkout are present (e.g. a developer machine). In OpenClaw / the Claude app
+neither exists. When you cannot run the queries above, fall back **in this order**:
+
+1. **`GET {baseUrl}/api/doctor`** — live route/shape health straight from the running
+   instance. Requires the workspace API key (`x-api-key: <key>`); returns 401/403
+   without it. This is the authoritative live source when the CLI is unavailable.
+2. **Read the committed static shape** if a repo checkout is reachable:
+   `app/lib/doctor/generated/shape.json` (full machine-readable shape) and
+   `docs/api-inventory.json` (route inventory). These are regenerated on every
+   `npm run livingcode:refresh`, so they track the same facts the queries return.
+3. **Otherwise, treat the snapshot in this SKILL.md as authoritative** — it is the
+   best available source when neither the API nor the repo can be reached.
+
 ## At a Glance
 
-- **219** active API routes across **54** categories
+- **220** active API routes across **54** categories
 - **4** required + **132** optional environment variables
 - **89** database tables
 
@@ -180,6 +196,7 @@ If the snapshot below disagrees with a live query, **trust the live query**.
 - `GET, PATCH` `/api/evaluations/runs/[runId]`
 - `GET, POST` `/api/evaluations/scorers`
 - `DELETE, PATCH` `/api/evaluations/scorers/[scorerId]`
+- `POST` `/api/evaluations/scorers/preview`
 - `GET` `/api/evaluations/stats`
 
 ### `guard`
@@ -420,7 +437,7 @@ If the snapshot below disagrees with a live query, **trust the live query**.
 
 These must be set — DashClaw will fail to start without them.
 
-- **`DASHCLAW_API_KEY`** - referenced in 56 file(s)
+- **`DASHCLAW_API_KEY`** - referenced in 58 file(s)
 - **`DATABASE_URL`** - referenced in 87 file(s)
 - **`ENCRYPTION_KEY`** - referenced in 4 file(s)
 - **`NEXTAUTH_SECRET`** - referenced in 5 file(s)

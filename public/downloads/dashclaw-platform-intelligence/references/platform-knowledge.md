@@ -281,6 +281,8 @@ python -m livingcode emit doctor-checks --output ...
 python -m livingcode emit mcp-tools --output ...
 ```
 
+**Fallback when livingcode/Python/the repo are unavailable** (e.g. OpenClaw or the Claude app): these commands only run where the livingcode package and a repo checkout are present. Otherwise, in order: (1) `GET {baseUrl}/api/doctor` for live route/shape health — requires the workspace API key (`x-api-key: <key>`), returns 401/403 without it; (2) read the committed static shape `app/lib/doctor/generated/shape.json` plus `docs/api-inventory.json` if a checkout is reachable; (3) otherwise treat the snapshot in the generated SKILL.md as authoritative.
+
 **Refresh orchestrator:** `scripts/livingcode-refresh.mjs` (run via `npm run livingcode:refresh`) re-emits every derivative artifact and is invoked automatically by the pre-commit hook when staged changes touch `app/api/`, `app/lib/`, `schema/schema.js`, `middleware.js`, or `livingcode/`. Outputs:
 
 - `app/lib/doctor/generated/shape.json` (committed; read at runtime by JS)

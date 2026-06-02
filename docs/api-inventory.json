@@ -46,10 +46,10 @@
     ]
   },
   "summary": {
-    "total_routes": 266,
+    "total_routes": 267,
     "stable_routes": 46,
     "beta_routes": 24,
-    "experimental_routes": 196
+    "experimental_routes": 197
   },
   "routes": [
     {
@@ -1353,6 +1353,15 @@
       "maturity": "experimental",
       "matched_prefix": "(default)",
       "file": "app/api/evaluations/scorers/route.js"
+    },
+    {
+      "path": "/api/evaluations/scorers/preview",
+      "methods": [
+        "POST"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/evaluations/scorers/preview/route.js"
     },
     {
       "path": "/api/evaluations/scorers/{scorerId}",

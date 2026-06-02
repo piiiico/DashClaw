@@ -5,12 +5,9 @@ import { GET as asGet } from '../../app/api/oauth/metadata/authorization-server/
 import { GET as prGet } from '../../app/api/oauth/metadata/protected-resource/route.js';
 
 describe('oauth metadata', () => {
-  // issuerBase prefers DASHCLAW_URL then VERCEL_URL; clear both to force the
-  // host-derived branch for a deterministic assertion.
-  beforeEach(() => {
-    vi.stubEnv('DASHCLAW_URL', '');
-    vi.stubEnv('VERCEL_URL', '');
-  });
+  // issuerBase prefers DASHCLAW_URL then falls back to the request Host; clear the
+  // override to force the host-derived branch for a deterministic assertion.
+  beforeEach(() => vi.stubEnv('DASHCLAW_URL', ''));
   afterEach(() => vi.unstubAllEnvs());
 
   it('authorization-server metadata advertises S256 + endpoints', async () => {

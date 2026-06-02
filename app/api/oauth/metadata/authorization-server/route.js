@@ -4,10 +4,14 @@ export const dynamic = 'force-dynamic';
 
 export function issuerBase(request) {
   if (process.env.DASHCLAW_URL) return process.env.DASHCLAW_URL.replace(/\/$/, '');
-  // VERCEL_URL is the platform-set deployment host (not client-controllable), so
-  // prefer it over the request Host header to keep OAuth discovery from being
-  // poisoned by host-header injection behind a misconfigured self-host proxy.
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  // Use the request Host — the stable public domain the client actually connected
+  // through — and mirror mcpAuthChallenge() so discovery, the WWW-Authenticate
+  // challenge, and these metadata docs all agree on one issuer.
+  // DO NOT substitute process.env.VERCEL_URL here: that is the per-deployment URL
+  // (e.g. my-dashclaw-<hash>.vercel.app), which sits behind Vercel deployment
+  // protection AND mismatches the resource identifier the client is using — both
+  // break Claude's DCR ("Couldn't register…"). Host-header injection on a
+  // misconfigured self-host proxy is mitigated by setting DASHCLAW_URL explicitly.
   const host = request.headers.get('host');
   const proto = request.headers.get('x-forwarded-proto') || 'https';
   return `${proto}://${host}`;

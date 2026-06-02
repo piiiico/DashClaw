@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:89d206a4c82e3856714fd9f6d4d4d3d5f201c1aa",
+  "timestamp": "sha1:1b10595de9299822ff7812c88744a826302998a5",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -1412,6 +1412,15 @@
       ],
       "archived": false,
       "file_path": "app/api/evaluations/scorers/[scorerId]/route.js"
+    },
+    {
+      "path": "/api/evaluations/scorers/preview",
+      "methods": [
+        "POST"
+      ],
+      "dynamic_params": [],
+      "archived": false,
+      "file_path": "app/api/evaluations/scorers/preview/route.js"
     },
     {
       "path": "/api/evaluations/stats",
@@ -2892,6 +2901,8 @@
         "app/self-host/SetupTabs.js",
         "examples/first-governed-action.js",
         "mcp-server/bin/dashclaw-mcp.js",
+        "scripts/branch-finish.mjs",
+        "scripts/seed-branch-finish-loop.mjs",
         "scripts/test-sdk-live.mjs"
       ],
       "in_env_example": false
@@ -2966,6 +2977,7 @@
         "public/downloads/dashclaw-platform-intelligence/scripts/validate-integration.mjs",
         "scripts/auto-migrate.mjs",
         "scripts/bootstrap-agent.mjs",
+        "scripts/branch-finish.mjs",
         "scripts/collect-platform-convergence-evidence.mjs",
         "scripts/demo-agent.mjs",
         "scripts/fuzz-api.mjs",
@@ -2973,6 +2985,7 @@
         "scripts/patch-demo-capability-endpoints.mjs",
         "scripts/report-action.mjs",
         "scripts/report-tokens.mjs",
+        "scripts/seed-branch-finish-loop.mjs",
         "scripts/seed-demo-capabilities.mjs",
         "scripts/smoke-hosted.mjs",
         "scripts/telegram-setup-wizard.mjs",
@@ -3028,8 +3041,10 @@
         "public/downloads/dashclaw-platform-intelligence/scripts/bootstrap-agent-quick.mjs",
         "public/downloads/dashclaw-platform-intelligence/scripts/diagnose.mjs",
         "public/downloads/dashclaw-platform-intelligence/scripts/validate-integration.mjs",
+        "scripts/branch-finish.mjs",
         "scripts/demo-agent.mjs",
         "scripts/fuzz-api.mjs",
+        "scripts/seed-branch-finish-loop.mjs",
         "verify.js"
       ],
       "in_env_example": false
@@ -3203,7 +3218,9 @@
         "mcp-server/bin/dashclaw-mcp.js",
         "middleware.js",
         "packages/openclaw-plugin/src/index.ts",
+        "scripts/branch-finish.mjs",
         "scripts/patch-demo-capability-endpoints.mjs",
+        "scripts/seed-branch-finish-loop.mjs",
         "scripts/seed-demo-capabilities.mjs",
         "scripts/test-presence.mjs",
         "scripts/test-sdk-live.mjs",
