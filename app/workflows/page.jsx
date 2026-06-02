@@ -140,10 +140,12 @@ export default function WorkflowsPage() {
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState([]);
   const [deleting, setDeleting] = useState(false);
+  const [statusFilter, setStatusFilter] = useState('all');
 
   const fetchTemplates = useCallback(async () => {
     try {
-      const res = await fetch('/api/workflows/templates?limit=100');
+      const qs = statusFilter === 'all' ? '' : `&status=${statusFilter}`;
+      const res = await fetch(`/api/workflows/templates?limit=100${qs}`);
       if (res.ok) {
         const data = await res.json();
         setTemplates(data.templates || []);
@@ -153,7 +155,7 @@ export default function WorkflowsPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [statusFilter]);
 
   useEffect(() => {
     fetchTemplates();
@@ -207,6 +209,17 @@ export default function WorkflowsPage() {
       maturity="beta"
       actions={
         <div className="flex items-center gap-2">
+          <div className="flex gap-0.5 rounded-lg bg-[#111] p-0.5">
+            {['all', 'draft', 'active', 'archived'].map((s) => (
+              <button
+                key={s}
+                onClick={() => setStatusFilter(s)}
+                className={`rounded px-2.5 py-1 text-xs font-medium capitalize transition-colors ${statusFilter === s ? 'bg-[#222] text-white' : 'text-tertiary hover:text-secondary'}`}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
           <button
             onClick={() => { setLoading(true); fetchTemplates(); }}
             className="flex items-center gap-1.5 rounded-lg border border-border bg-surface-tertiary px-3 py-1.5 text-xs text-secondary transition-colors hover:border-border-hover hover:text-white"

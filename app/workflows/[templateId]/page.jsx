@@ -37,6 +37,8 @@ export default function WorkflowTemplateDetailPage() {
   const [savingSteps, setSavingSteps] = useState(false);
   const [runs, setRuns] = useState([]);
   const [runsLoading, setRunsLoading] = useState(false);
+  const [runsTotal, setRunsTotal] = useState(0);
+  const [runsStatus, setRunsStatus] = useState('all');
   const [savingLinks, setSavingLinks] = useState(false);
   const [workflowResources, setWorkflowResources] = useState({
     modelStrategies: [],
@@ -70,17 +72,19 @@ export default function WorkflowTemplateDetailPage() {
   const loadRuns = useCallback(async () => {
     setRunsLoading(true);
     try {
-      const res = await fetch(`/api/workflows/templates/${templateId}/runs?limit=10`);
+      const qs = runsStatus === 'all' ? '' : `&status=${runsStatus}`;
+      const res = await fetch(`/api/workflows/templates/${templateId}/runs?limit=10${qs}`);
       if (res.ok) {
         const data = await res.json();
         setRuns(data.runs || []);
+        setRunsTotal(typeof data.total === 'number' ? data.total : (data.runs || []).length);
       }
     } catch {
       // ignore
     } finally {
       setRunsLoading(false);
     }
-  }, [templateId]);
+  }, [templateId, runsStatus]);
 
   useEffect(() => {
     if (templateId) {
@@ -329,7 +333,22 @@ export default function WorkflowTemplateDetailPage() {
         </div>
         <CardContent className="p-5 pt-0">
           {stepsView === 'runs' ? (
-            runsLoading ? (
+            <>
+              <div className="mb-3 flex items-center gap-2">
+                <select
+                  value={runsStatus}
+                  onChange={(e) => setRunsStatus(e.target.value)}
+                  aria-label="Filter runs by status"
+                  className="rounded-lg bg-[#111] border border-[rgba(255,255,255,0.1)] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-brand"
+                >
+                  <option value="all">All runs</option>
+                  <option value="running">Running</option>
+                  <option value="completed">Completed</option>
+                  <option value="failed">Failed</option>
+                </select>
+                <span className="ml-auto text-xs text-tertiary tabular-nums">{runs.length} of {runsTotal} shown</span>
+              </div>
+              {runsLoading ? (
               <div className="text-sm text-tertiary py-4">Loading runs...</div>
             ) : runs.length === 0 ? (
               <div className="text-sm text-tertiary py-8 text-center">
@@ -351,7 +370,8 @@ export default function WorkflowTemplateDetailPage() {
                   </Link>
                 ))}
               </div>
-            )
+              )}
+            </>
           ) : (
             <>
               {workflowResources.errors?.length > 0 && stepData.mode === 'builder' && (
