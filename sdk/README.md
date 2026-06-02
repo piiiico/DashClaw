@@ -299,6 +299,9 @@ The v2 SDK exposes the stable governance runtime plus promoted execution domains
 - `approveAction(id, decision, reasoning?)` -- Submit approval decisions from code
 - `getPendingApprovals()` -- List actions awaiting human review
 
+### Policies
+- `simulatePolicy({ policy_type, rules, days })` -- Side-effect-free dry-run of a proposed policy against recent historical actions before committing it (pairs with `guard()` for live enforcement). `policy_type` and `rules` are required; `days` is optional. Returns `{ summary: { total, matches, block, warn, require_approval, allow }, matches, sample_size, window_days }`. Persists nothing.
+
 ### Durable Execution Finality (v2.13.3+)
 Terminal outcome reporting that is one-shot, retry-safe, and immutable once non-pending. Separate from `updateOutcome`, which remains the lifecycle-PATCH path. Full spec: [`docs/architecture/durable-execution-finality.md`](../docs/architecture/durable-execution-finality.md). Detailed examples in the [Action Outcome](#action-outcome-durable-execution-finality) subsection of Execution Studio below.
 
@@ -324,6 +327,22 @@ Terminal outcome reporting that is one-shot, retry-safe, and immutable once non-
 - `getLessons({ actionType, limit })` -- Fetch consolidated lessons from scored outcomes.
 - `renderPrompt({ template_id, version_id, variables, record })` -- Fetch a rendered prompt template from DashClaw. `template_id` is required; `version_id` defaults to the active version; `variables` is an object of mustache values; `record: true` persists the render as a governance event.
 
+### Prompt Library
+
+Manage reusable prompt templates, their versions, and usage analytics. `renderPrompt` (above) fetches a rendered version; these manage the library itself. Mutations (`create*`, `update*`, `delete*`, version creation, and `activate*`) require an admin org role.
+
+- `listPromptTemplates({ category })` -- List prompt templates (each with `version_count` + `active_version`). Returns `{ templates }`.
+- `getPromptTemplate(templateId)` -- Fetch a single template.
+- `createPromptTemplate({ name, description, category })` -- Create a template (admin). `name` is required; `description` and `category` are optional. Returns `{ id, name, description, category }`.
+- `updatePromptTemplate(templateId, patch)` -- Update a template (admin). `patch` accepts `name`, `description`, `category`.
+- `deletePromptTemplate(templateId)` -- Delete a template plus its versions and runs (admin). Returns `{ deleted: true }`.
+- `listPromptVersions(templateId)` -- List versions for a template (newest first). Returns `{ versions }`.
+- `createPromptVersion(templateId, { content, model_hint, parameters, changelog })` -- Create a version (admin). `content` is required; `model_hint`, `parameters`, `changelog` are optional.
+- `getPromptVersion(templateId, versionId)` -- Fetch a single version.
+- `activatePromptVersion(templateId, versionId)` -- Activate a version (admin). Activating one version deactivates the others for that template.
+- `getPromptStats({ template_id })` -- Prompt usage analytics, optionally scoped to one template.
+- `listPromptRuns({ template_id, version_id, limit })` -- List recorded prompt runs.
+
 ### Learning Loop
 
 The guard response now includes a `learning` field when DashClaw has historical data for the agent and action type. This creates a closed learning loop: outcomes feed back into guard decisions automatically.
@@ -348,6 +367,9 @@ lessons.forEach(l => console.log(l.guidance));
 // guidance, sample_size
 ```
 
+- `recordDecision({ decision, context, reasoning, outcome, confidence, agent_id })` -- Record a decision/outcome into the learning ledger. `decision` is required; `agent_id` is auto-injected from the constructor when omitted. Returns `{ decision }`.
+- `getLearningRecommendations({ agent_id, action_type, include_metrics, lookback_days, limit })` -- Read learned recommendations for an agent/action type. `agent_id` defaults to the constructor's agent.
+
 ### Scoring Profiles
 - `createScorer(name, type, config)` -- Define automated evaluations.
 - `createScoringProfile(profile)` -- Create a weighted multi-dimensional scoring profile.
@@ -367,6 +389,9 @@ lessons.forEach(l => console.log(l.guidance));
 - `updateRiskTemplate(templateId, updates)` -- Update a risk template's rules or base_risk.
 - `deleteRiskTemplate(templateId)` -- Delete a risk template.
 - `autoCalibrate(options)` -- Analyze historical actions and suggest percentile-based scoring scales.
+
+### Evaluations
+- `previewScorer({ scorer_type, config, sample })` -- Dry-run a scorer config against a sample action to validate a quality gate before creating a scorer or launching a run. `scorer_type` is required; `config` and `sample` are optional. Writes **no** `eval_scores` row (distinct from the scoring-profiles subsystem above). Returns `{ preview, scorer_type, result: { score, label, reasoning, error } }`.
 
 ### Messaging
 - `sendMessage({ to, type, subject, body, threadId, urgent })` -- Send a message to another agent or broadcast.
@@ -944,6 +969,9 @@ const { results } = await claw.searchKnowledgeCollection(
   { limit: 5 }
 );
 results.forEach(r => console.log(`${(r.score * 100).toFixed(1)}%: ${r.content.slice(0, 80)}...`));
+
+// Delete a collection (cascades its items + chunks)
+const { deleted, collection_id } = await claw.deleteKnowledgeCollection(collection.collection_id);
 ```
 
 ### Capability Runtime

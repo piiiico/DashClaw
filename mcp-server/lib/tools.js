@@ -388,6 +388,39 @@ export const TOOL_DEFINITIONS = [
       },
     },
   },
+  {
+    name: 'dashclaw_inbox_list',
+    description:
+      'List this agent\'s DashClaw inbox messages and unread count. Use at the start of a session, ' +
+      'or when notified, to see governance messages, lessons, questions, and status updates addressed ' +
+      'to you before deciding what to do next. Each message includes an is_read flag; the response also ' +
+      'carries the total unread_count. Pair with dashclaw_messages_mark_read once you have processed them.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        agent_id: { type: 'string', description: 'Override default agent ID' },
+        direction: { type: 'string', enum: ['inbox', 'sent'], description: 'inbox (received) or sent. Default inbox.' },
+        unread: { type: 'boolean', description: 'When true, return only unread messages.' },
+        type: { type: 'string', description: 'Filter by message type (action, info, lesson, question, status).' },
+        limit: { type: 'integer', description: 'Max messages (default 50).' },
+      },
+    },
+  },
+  {
+    name: 'dashclaw_messages_mark_read',
+    description:
+      'Mark one or more DashClaw inbox messages as read for this agent. Call after processing messages ' +
+      'from dashclaw_inbox_list so they stop reappearing as unread. Direct messages are marked read for ' +
+      'the target agent; broadcasts record this agent in read_by. Returns { updated: <count> }.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        message_ids: { type: 'array', items: { type: 'string' }, description: 'Message IDs (msg_*) to mark read.' },
+        agent_id: { type: 'string', description: 'Override default agent ID' },
+      },
+      required: ['message_ids'],
+    },
+  },
 ];
 
 /**
@@ -705,6 +738,30 @@ export function createToolHandlers(client) {
       const res = await client.fetch(`/api/guard/decisions?${params}`);
       const data = await res.json();
       return JSON.stringify(data);
+    },
+
+    async dashclaw_inbox_list(input) {
+      // GET /api/messages — the canonical inbox read. unread is a string flag
+      // server-side (checks === 'true'); undefined params are dropped by client.get.
+      const result = await client.get('/api/messages', {
+        agent_id: agentId(input),
+        direction: input.direction || 'inbox',
+        unread: input.unread ? 'true' : undefined,
+        type: input.type,
+        limit: input.limit,
+      }, { timeout: 10000 });
+      return JSON.stringify(result);
+    },
+
+    async dashclaw_messages_mark_read(input) {
+      // PATCH /api/messages with action:'read'. This is the durable mark-read
+      // path for MCP-only agents (no SDK install required). Returns { updated }.
+      const result = await client.patch('/api/messages', {
+        message_ids: input.message_ids,
+        action: 'read',
+        agent_id: agentId(input),
+      }, { timeout: 10000 });
+      return JSON.stringify(result);
     },
   };
 }

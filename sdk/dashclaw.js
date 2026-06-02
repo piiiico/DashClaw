@@ -1144,6 +1144,13 @@ class DashClaw {
     });
   }
 
+  /**
+   * DELETE /api/knowledge/collections/:id — Delete a collection (cascades items + chunks).
+   */
+  async deleteKnowledgeCollection(collectionId) {
+    return this._request(`/api/knowledge/collections/${collectionId}`, 'DELETE');
+  }
+
   // ---------------------------------------------------------------------------
   // Execution Studio — Capability Registry
   // ---------------------------------------------------------------------------
@@ -1216,6 +1223,158 @@ class DashClaw {
    */
   async getCapabilityHistory(capabilityId, filters = {}) {
     return this._request(`/api/capabilities/${capabilityId}/history`, 'GET', null, filters);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Prompt Library — reusable prompt templates, versions, render + analytics.
+  // renderPrompt() already lives in the rendering section above; these add the
+  // template/version management surface so the library is first-class in the SDK.
+  // Mutations (create/update/delete/version/activate) require an admin org role.
+  // ---------------------------------------------------------------------------
+
+  /**
+   * GET /api/prompts/templates — List prompt templates (each with version_count + active_version).
+   * @param {Object} [filters={}] - { category }
+   */
+  async listPromptTemplates(filters = {}) {
+    return this._request('/api/prompts/templates', 'GET', null, filters);
+  }
+
+  /**
+   * GET /api/prompts/templates/:id — Fetch a single template.
+   */
+  async getPromptTemplate(templateId) {
+    return this._request(`/api/prompts/templates/${templateId}`, 'GET');
+  }
+
+  /**
+   * POST /api/prompts/templates — Create a template (admin). { name, description?, category? }
+   */
+  async createPromptTemplate(data) {
+    return this._request('/api/prompts/templates', 'POST', data);
+  }
+
+  /**
+   * PATCH /api/prompts/templates/:id — Update a template (admin). { name?, description?, category? }
+   */
+  async updatePromptTemplate(templateId, patch) {
+    return this._request(`/api/prompts/templates/${templateId}`, 'PATCH', patch);
+  }
+
+  /**
+   * DELETE /api/prompts/templates/:id — Delete a template + its versions/runs (admin).
+   */
+  async deletePromptTemplate(templateId) {
+    return this._request(`/api/prompts/templates/${templateId}`, 'DELETE');
+  }
+
+  /**
+   * GET /api/prompts/templates/:id/versions — List versions (newest first).
+   */
+  async listPromptVersions(templateId) {
+    return this._request(`/api/prompts/templates/${templateId}/versions`, 'GET');
+  }
+
+  /**
+   * POST /api/prompts/templates/:id/versions — Create a version (admin).
+   * @param {string} templateId
+   * @param {Object} data - { content, model_hint?, parameters?, changelog? }
+   */
+  async createPromptVersion(templateId, data) {
+    return this._request(`/api/prompts/templates/${templateId}/versions`, 'POST', data);
+  }
+
+  /**
+   * GET /api/prompts/templates/:id/versions/:versionId — Fetch a single version.
+   */
+  async getPromptVersion(templateId, versionId) {
+    return this._request(`/api/prompts/templates/${templateId}/versions/${versionId}`, 'GET');
+  }
+
+  /**
+   * POST /api/prompts/templates/:id/versions/:versionId — Activate a version (admin).
+   * Activating one version deactivates the others for that template.
+   */
+  async activatePromptVersion(templateId, versionId) {
+    return this._request(`/api/prompts/templates/${templateId}/versions/${versionId}`, 'POST');
+  }
+
+  /**
+   * GET /api/prompts/stats — Prompt usage analytics.
+   * @param {Object} [filters={}] - { template_id }
+   */
+  async getPromptStats(filters = {}) {
+    return this._request('/api/prompts/stats', 'GET', null, filters);
+  }
+
+  /**
+   * GET /api/prompts/runs — List recorded prompt runs.
+   * @param {Object} [filters={}] - { template_id, version_id, limit }
+   */
+  async listPromptRuns(filters = {}) {
+    return this._request('/api/prompts/runs', 'GET', null, filters);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Learning — record decisions/outcomes and read back recommendations so the
+  // governance loop improves over time.
+  // ---------------------------------------------------------------------------
+
+  /**
+   * POST /api/learning — Record a decision/outcome into the learning ledger.
+   * @param {Object} entry - { decision (required), context?, reasoning?, outcome?, confidence?, agent_id? }
+   * @returns {Promise<{ decision: Object }>}
+   */
+  async recordDecision(entry) {
+    return this._request('/api/learning', 'POST', {
+      ...entry,
+      agent_id: entry.agent_id || this.agentId,
+    });
+  }
+
+  /**
+   * GET /api/learning/recommendations — Read learned recommendations for an agent/action_type.
+   * @param {Object} [filters={}] - { agent_id, action_type, include_metrics, lookback_days, limit }
+   */
+  async getLearningRecommendations(filters = {}) {
+    return this._request('/api/learning/recommendations', 'GET', null, {
+      ...filters,
+      agent_id: filters.agent_id || this.agentId,
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Policies — dry-run a proposed policy against historical actions before
+  // committing it (no persistence; pairs with guard() for live enforcement).
+  // ---------------------------------------------------------------------------
+
+  /**
+   * POST /api/policies/simulate — Simulate a single proposed policy against
+   * recent historical actions. Side-effect-free.
+   * @param {Object} args - { policy_type (required), rules (Object, required), days? }
+   * @returns {Promise<{ summary: { total, matches, block, warn, require_approval, allow }, matches: Array, sample_size, window_days }>}
+   */
+  async simulatePolicy({ policy_type, rules, days } = {}) {
+    return this._request('/api/policies/simulate', 'POST', {
+      policy_type,
+      rules,
+      ...(days !== undefined ? { days } : {}),
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Evaluations — preview a scorer (dry-run, no eval_scores written).
+  // ---------------------------------------------------------------------------
+
+  /**
+   * POST /api/evaluations/scorers/preview — Dry-run a scorer config against a
+   * sample action without persisting a score. Use to validate a quality gate
+   * (e.g. branch-finish scoring) before creating a scorer or launching a run.
+   * @param {Object} args - { scorer_type (required), config?, sample? }
+   * @returns {Promise<{ preview: true, scorer_type, result: { score, label, reasoning, error } }>}
+   */
+  async previewScorer({ scorer_type, config, sample } = {}) {
+    return this._request('/api/evaluations/scorers/preview', 'POST', { scorer_type, config, sample });
   }
 }
 

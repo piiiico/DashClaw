@@ -118,9 +118,25 @@ const navItems = [
   { href: '#loops-assumptions', label: 'Loops & Assumptions' },
   { href: '#learning-analytics', label: 'Learning Analytics' },
   { href: '#getLessons', label: 'getLessons', indent: true },
+  { href: '#recordDecision', label: 'recordDecision', indent: true },
+  { href: '#getLearningRecommendations', label: 'getLearningRecommendations', indent: true },
   { href: '#prompt-management', label: 'Prompt Management' },
+  { href: '#listPromptTemplates', label: 'listPromptTemplates', indent: true },
+  { href: '#getPromptTemplate', label: 'getPromptTemplate', indent: true },
+  { href: '#createPromptTemplate', label: 'createPromptTemplate', indent: true },
+  { href: '#updatePromptTemplate', label: 'updatePromptTemplate', indent: true },
+  { href: '#deletePromptTemplate', label: 'deletePromptTemplate', indent: true },
+  { href: '#listPromptVersions', label: 'listPromptVersions', indent: true },
+  { href: '#createPromptVersion', label: 'createPromptVersion', indent: true },
+  { href: '#getPromptVersion', label: 'getPromptVersion', indent: true },
+  { href: '#activatePromptVersion', label: 'activatePromptVersion', indent: true },
+  { href: '#getPromptStats', label: 'getPromptStats', indent: true },
+  { href: '#listPromptRuns', label: 'listPromptRuns', indent: true },
   { href: '#evaluation-framework', label: 'Evaluation Framework' },
+  { href: '#previewScorer', label: 'previewScorer', indent: true },
   { href: '#scoring-profiles', label: 'Scoring Profiles' },
+  { href: '#policies', label: 'Policies' },
+  { href: '#simulatePolicy', label: 'simulatePolicy', indent: true },
   { href: '#messaging', label: 'Agent Messaging' },
   { href: '#sendMessage', label: 'sendMessage', indent: true },
   { href: '#getInbox', label: 'getInbox', indent: true },
@@ -153,6 +169,7 @@ const navItems = [
   { href: '#workflow-templates', label: 'Workflow Templates', indent: true },
   { href: '#model-strategies-http', label: 'Model Strategies', indent: true },
   { href: '#knowledge-collections', label: 'Knowledge Collections', indent: true },
+  { href: '#deleteKnowledgeCollection', label: 'deleteKnowledgeCollection', indent: true },
   { href: '#capability-registry', label: 'Capability Registry', indent: true },
   { href: '#capability-runtime', label: 'Capability Runtime', indent: true },
   { href: '#analytics', label: 'Analytics' },
@@ -900,6 +917,54 @@ if created.get("action", {}).get("status") == "pending_approval":
                 />
               }
             />
+
+            <MethodEntry
+              id="recordDecision"
+              signature="claw.recordDecision(entry)"
+              description="Record a decision/outcome into the learning ledger so the governance loop improves over time. agent_id is auto-injected from the constructor's agentId when omitted. Node SDK only."
+              params={[
+                { name: 'decision', type: 'string', required: true, desc: 'The decision that was made' },
+                { name: 'context', type: 'string', required: false, desc: 'Situation the decision was made in' },
+                { name: 'reasoning', type: 'string', required: false, desc: 'Why this decision was chosen' },
+                { name: 'outcome', type: 'string', required: false, desc: 'What happened as a result' },
+                { name: 'confidence', type: 'number', required: false, desc: 'Confidence in the decision' },
+                { name: 'agent_id', type: 'string', required: false, desc: 'Overrides the constructor agentId for attribution' },
+              ]}
+              returns="Promise<{ decision: Object }>"
+              example={
+                <CodeBlock title="Node.js">
+{`const { decision } = await claw.recordDecision({
+  decision: 'Rolled back to v2.1.0',
+  context: 'Deploy of v2.1.1 raised error rate',
+  reasoning: 'Faster recovery than a forward fix',
+  outcome: 'Error rate returned to baseline',
+  confidence: 0.9
+});`}
+                </CodeBlock>
+              }
+            />
+
+            <MethodEntry
+              id="getLearningRecommendations"
+              signature="claw.getLearningRecommendations(filters)"
+              description="Read learned recommendations for an agent/action_type from the learning ledger. agent_id defaults to the constructor's agentId when omitted. Node SDK only."
+              params={[
+                { name: 'agent_id', type: 'string', required: false, desc: 'Agent to read recommendations for (defaults to constructor agentId)' },
+                { name: 'action_type', type: 'string', required: false, desc: 'Filter by action type' },
+                { name: 'include_metrics', type: 'boolean', required: false, desc: 'Include supporting metrics in the response' },
+                { name: 'lookback_days', type: 'number', required: false, desc: 'Window of history to consider' },
+                { name: 'limit', type: 'number', required: false, desc: 'Max recommendations to return' },
+              ]}
+              example={
+                <CodeBlock title="Node.js">
+{`const recs = await claw.getLearningRecommendations({
+  action_type: 'deploy',
+  include_metrics: true,
+  lookback_days: 30
+});`}
+                </CodeBlock>
+              }
+            />
           </section>
 
           {/* ── Prompt Management ── */}
@@ -928,6 +993,165 @@ rendered = res["rendered"]`}
                 />
               }
             />
+
+            <p className="mt-8 text-xs text-text-tertiary leading-relaxed">
+              <strong className="text-text-secondary">Prompt Library</strong> — versioned template management on top of <code className="font-mono text-text-secondary">renderPrompt</code>. Templates hold metadata; each template has one or more versions and exactly one active version, which is what <code className="font-mono text-text-secondary">renderPrompt</code> resolves. Create/update/delete and version mutations require an admin key. <strong className="text-text-secondary">Node SDK only</strong> (no Python equivalent yet).
+            </p>
+
+            <MethodEntry
+              id="listPromptTemplates"
+              signature="claw.listPromptTemplates(filters)"
+              description="List prompt templates. Node SDK only."
+              params={[
+                { name: 'category', type: 'string', required: false, desc: 'Filter templates by category' },
+              ]}
+              returns="Promise<{ templates: Object[] }>"
+              example={
+                <CodeBlock title="Node.js">
+{`const { templates } = await claw.listPromptTemplates({ category: 'marketing' });`}
+                </CodeBlock>
+              }
+            />
+
+            <MethodEntry
+              id="getPromptTemplate"
+              signature="claw.getPromptTemplate(templateId)"
+              description="Fetch a single template by id. Node SDK only."
+              example={
+                <CodeBlock title="Node.js">
+{`const template = await claw.getPromptTemplate('marketing');`}
+                </CodeBlock>
+              }
+            />
+
+            <MethodEntry
+              id="createPromptTemplate"
+              signature="claw.createPromptTemplate({ name, description, category })"
+              description="Create a template (admin). Node SDK only."
+              params={[
+                { name: 'name', type: 'string', required: true, desc: 'Template name' },
+                { name: 'description', type: 'string', required: false, desc: 'Human-readable description' },
+                { name: 'category', type: 'string', required: false, desc: 'Grouping category' },
+              ]}
+              returns="Promise<{ id, name, description, category }>"
+              example={
+                <CodeBlock title="Node.js">
+{`const tpl = await claw.createPromptTemplate({
+  name: 'Cold outreach',
+  description: 'First-touch sales email',
+  category: 'sales'
+});`}
+                </CodeBlock>
+              }
+            />
+
+            <MethodEntry
+              id="updatePromptTemplate"
+              signature="claw.updatePromptTemplate(templateId, patch)"
+              description="Update a template's name, description, or category (admin). Node SDK only."
+              example={
+                <CodeBlock title="Node.js">
+{`await claw.updatePromptTemplate('marketing', { category: 'growth' });`}
+                </CodeBlock>
+              }
+            />
+
+            <MethodEntry
+              id="deletePromptTemplate"
+              signature="claw.deletePromptTemplate(templateId)"
+              description="Delete a template along with its versions and runs (admin). Node SDK only."
+              returns="Promise<{ deleted: true }>"
+              example={
+                <CodeBlock title="Node.js">
+{`await claw.deletePromptTemplate('marketing');`}
+                </CodeBlock>
+              }
+            />
+
+            <MethodEntry
+              id="listPromptVersions"
+              signature="claw.listPromptVersions(templateId)"
+              description="List a template's versions, newest first. Node SDK only."
+              returns="Promise<{ versions: Object[] }>"
+              example={
+                <CodeBlock title="Node.js">
+{`const { versions } = await claw.listPromptVersions('marketing');`}
+                </CodeBlock>
+              }
+            />
+
+            <MethodEntry
+              id="createPromptVersion"
+              signature="claw.createPromptVersion(templateId, { content, model_hint, parameters, changelog })"
+              description="Create a new version for a template (admin). Node SDK only."
+              params={[
+                { name: 'content', type: 'string', required: true, desc: 'The prompt body (may contain variables)' },
+                { name: 'model_hint', type: 'string', required: false, desc: 'Suggested model for this version' },
+                { name: 'parameters', type: 'object', required: false, desc: 'Default render parameters' },
+                { name: 'changelog', type: 'string', required: false, desc: 'What changed in this version' },
+              ]}
+              example={
+                <CodeBlock title="Node.js">
+{`await claw.createPromptVersion('marketing', {
+  content: 'Write a launch post for {{company}}.',
+  model_hint: 'claude-sonnet',
+  changelog: 'Initial draft'
+});`}
+                </CodeBlock>
+              }
+            />
+
+            <MethodEntry
+              id="getPromptVersion"
+              signature="claw.getPromptVersion(templateId, versionId)"
+              description="Fetch a single version of a template. Node SDK only."
+              example={
+                <CodeBlock title="Node.js">
+{`const version = await claw.getPromptVersion('marketing', 'v3');`}
+                </CodeBlock>
+              }
+            />
+
+            <MethodEntry
+              id="activatePromptVersion"
+              signature="claw.activatePromptVersion(templateId, versionId)"
+              description="Activate a version (admin). Activating one version deactivates the others for that template, so it becomes the version renderPrompt resolves. Node SDK only."
+              example={
+                <CodeBlock title="Node.js">
+{`await claw.activatePromptVersion('marketing', 'v3');`}
+                </CodeBlock>
+              }
+            />
+
+            <MethodEntry
+              id="getPromptStats"
+              signature="claw.getPromptStats(filters)"
+              description="Prompt usage analytics. Node SDK only."
+              params={[
+                { name: 'template_id', type: 'string', required: false, desc: 'Scope stats to a single template' },
+              ]}
+              example={
+                <CodeBlock title="Node.js">
+{`const stats = await claw.getPromptStats({ template_id: 'marketing' });`}
+                </CodeBlock>
+              }
+            />
+
+            <MethodEntry
+              id="listPromptRuns"
+              signature="claw.listPromptRuns(filters)"
+              description="List recorded prompt runs. Node SDK only."
+              params={[
+                { name: 'template_id', type: 'string', required: false, desc: 'Filter by template' },
+                { name: 'version_id', type: 'string', required: false, desc: 'Filter by version' },
+                { name: 'limit', type: 'number', required: false, desc: 'Max runs to return' },
+              ]}
+              example={
+                <CodeBlock title="Node.js">
+{`const runs = await claw.listPromptRuns({ template_id: 'marketing', limit: 20 });`}
+                </CodeBlock>
+              }
+            />
           </section>
 
           {/* ── Evaluation Framework ── */}
@@ -949,10 +1173,32 @@ rendered = res["rendered"]`}
                 { name: 'config', type: 'object', required: false, desc: 'Scorer configuration' },
               ]}
               example={
-                <DocsCodeTabs 
+                <DocsCodeTabs
                   nodeSnippet={`await claw.createScorer('toxicity', 'regex', { pattern: 'bad-word' });`}
                   pythonSnippet={`claw.create_scorer('toxicity', 'regex', config={'pattern': 'bad-word'})`}
                 />
+              }
+            />
+
+            <MethodEntry
+              id="previewScorer"
+              signature="claw.previewScorer({ scorer_type, config, sample })"
+              description="Dry-run a scorer config against a sample without persisting anything — no eval_scores row is written. Use it to validate a quality gate before wiring the scorer into a profile. Node SDK only."
+              params={[
+                { name: 'scorer_type', type: 'string', required: true, desc: 'Scorer type (llm_judge, regex, range)' },
+                { name: 'config', type: 'object', required: false, desc: 'Scorer configuration to test' },
+                { name: 'sample', type: 'object', required: false, desc: 'Sample input to score' },
+              ]}
+              returns="Promise<{ preview, scorer_type, result: { score, label, reasoning, error } }>"
+              example={
+                <CodeBlock title="Node.js">
+{`const { result } = await claw.previewScorer({
+  scorer_type: 'regex',
+  config: { pattern: 'bad-word' },
+  sample: { output: 'this contains a bad-word' }
+});
+console.log(result.score, result.label);`}
+                </CodeBlock>
               }
             />
           </section>
@@ -977,10 +1223,42 @@ rendered = res["rendered"]`}
   dimensions: [{ scorer: 'toxicity', weight: 0.5 }] 
 });`}
                   pythonSnippet={`claw.create_scoring_profile(
-    name='prod-quality', 
+    name='prod-quality',
     dimensions=[{'scorer': 'toxicity', 'weight': 0.5}]
 )`}
                 />
+              }
+            />
+          </section>
+
+          {/* ── Policies ── */}
+          <section id="policies" className="scroll-mt-20 pt-12 border-t border-border">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-8 h-8 rounded-lg bg-brand-subtle flex items-center justify-center">
+                <Scale size={16} className="text-brand" />
+              </div>
+              <h2 className="text-2xl font-bold tracking-tight">Policies</h2>
+            </div>
+
+            <MethodEntry
+              id="simulatePolicy"
+              signature="claw.simulatePolicy({ policy_type, rules, days })"
+              description="Side-effect-free dry-run of a single proposed policy against recent historical actions — nothing is persisted. Use it to preview how a policy would have decided before committing it; pairs with guard() for live enforcement. Node SDK only."
+              params={[
+                { name: 'policy_type', type: 'string', required: true, desc: 'The policy type to simulate' },
+                { name: 'rules', type: 'object', required: true, desc: 'The proposed policy rules' },
+                { name: 'days', type: 'number', required: false, desc: 'How many days of historical actions to evaluate against' },
+              ]}
+              returns="Promise<{ summary: { total, matches, block, warn, require_approval, allow }, matches, sample_size, window_days }>"
+              example={
+                <CodeBlock title="Node.js">
+{`const sim = await claw.simulatePolicy({
+  policy_type: 'risk_threshold',
+  rules: { max_risk_score: 70 },
+  days: 30
+});
+console.log(sim.summary.block, 'of', sim.summary.total, 'would block');`}
+                </CodeBlock>
               }
             />
           </section>
@@ -1803,6 +2081,18 @@ console.log(sync.ingested, sync.chunks_created);`}
   { limit: 5 }
 );
 results.forEach(r => console.log(\`\${(r.score * 100).toFixed(1)}%: \${r.content.slice(0, 80)}\`));`}
+                  </CodeBlock>
+                }
+              />
+
+              <MethodEntry
+                id="deleteKnowledgeCollection"
+                signature="claw.deleteKnowledgeCollection(collectionId)"
+                description="Delete a collection (and its items/chunks). Node SDK only."
+                returns="Promise<{ deleted, collection_id }>"
+                example={
+                  <CodeBlock title="Node.js">
+{`const { deleted, collection_id } = await claw.deleteKnowledgeCollection(collectionId);`}
                   </CodeBlock>
                 }
               />

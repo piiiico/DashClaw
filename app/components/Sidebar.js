@@ -10,7 +10,7 @@ import {
   PanelLeft, Menu, X, Activity, Shield, Microscope,
   Terminal, TrendingUp, GraduationCap, Plug,
   MessageSquare, Download, Workflow, Cpu, BookOpen, Wrench, Fingerprint, Bell, Inbox,
-  FlaskConical, ChevronDown,
+  FlaskConical, ChevronDown, GitBranch,
 } from 'lucide-react';
 import DashClawLogo from './DashClawLogo';
 
@@ -62,6 +62,7 @@ const navGroups = [
       { href: '/model-strategies', icon: Cpu, label: 'Model Strategies' },
       { href: '/knowledge', icon: BookOpen, label: 'Knowledge' },
       { href: '/capabilities', icon: Wrench, label: 'Capabilities' },
+      { href: '/labs/branch-finish', icon: GitBranch, label: 'Branch Finish' },
     ],
   },
 ];

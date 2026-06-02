@@ -50,6 +50,9 @@ The canonical Node SDK already includes the core runtime and a meaningful portio
 - messaging, handoffs, security scanning, feedback, threads, sync,
 - sessions and action graph,
 - durable execution finality (`reportActionOutcome`, `getActionOutcome`, convenience wrappers, `deriveIdempotencyKey`),
+- the full Prompt Library surface (template CRUD, version CRUD, `activatePromptVersion`, `renderPrompt`, `getPromptStats`, `listPromptRuns`),
+- learning ledger (`recordDecision`, `getLearningRecommendations`),
+- side-effect-free dry-runs (`simulatePolicy`, `previewScorer`),
 - workflow templates,
 - model strategies,
 - knowledge collections,
@@ -115,7 +118,7 @@ That is acceptable temporarily, but it should not define future product directio
 | Scoring profiles / dimensions | Yes | No | Yes | Canonical in main SDK (`createScoringProfile`, `scoreWithProfile`, `batchScoreWithProfile`, calibration) |
 | Risk templates | Yes | No | Yes | Canonical in main SDK |
 | Evaluations (scorers / scores / runs) | Yes | Limited overlap | Yes | Canonical in main SDK |
-| Prompt management (templates / versions / render) | Yes | Limited overlap | Yes | Canonical in main SDK |
+| Prompt management (templates / versions / render) | Yes | Limited overlap | Yes | Canonical in main SDK — full Prompt Library surface (template CRUD, version CRUD + `activatePromptVersion`, `renderPrompt`, `getPromptStats`, `listPromptRuns`) |
 | Learning analytics (velocity / curves / lessons / maturity) | Yes | Limited overlap | Yes | Canonical in main SDK |
 | Security scanning (prompt injection / content) | Yes | Yes | Yes | Canonical in main SDK |
 | Feedback (`/api/feedback`, rating + comment on completed actions) | Partial (`submitFeedback` only) | Yes | Yes | Compatibility-heavy; low-priority canonical promotion. Distinct from the durable-finality `outcome` row above, which is the terminal state of an action, not a rating. |

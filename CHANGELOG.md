@@ -29,6 +29,21 @@ are prefixed with the package name.
 
 ## [Unreleased]
 
+### MoltFire + Claude Code "Branch Finish" loop (DashClaw Labs)
+
+A real operating loop that uses the Labs surfaces together to finish a Claude Code branch with governance — render the review prompt, search the standards knowledge, approval-gate the push, simulate a policy, check capability health, score quality, and record the outcome.
+
+- **Added.** `scripts/branch-finish.mjs` (`npm run branch-finish`) — the governed loop. `--dry-run` makes **zero writes** (no learning record, no mark-read) and never touches anything external; proven end-to-end. `scripts/seed-branch-finish-loop.mjs` (`npm run seed:branch-finish`) idempotently seeds 6 prompt templates, a "Wes Coding Standards" knowledge collection (ZERO SLOP, launcher policy, DashClaw facts, MoltFire prefs — bodies stored in item metadata so search works without an embedding key), and a draft workflow template linking them.
+- **Added.** `/labs/branch-finish` operator page (Labs sidebar) — wired, no placeholders: branch-finish templates with inline render, knowledge search (graceful no-embedding-key fallback), capability health, a dry-run quality-scorer form, and recent renders/decisions.
+- **Added.** `POST /api/evaluations/scorers/preview` — side-effect-free scorer dry-run (wraps `executeScorer`, writes no `eval_scores`). Lets an operator validate a quality gate before creating a scorer or run.
+- **Added.** SDK (`sdk/dashclaw.js`): Prompt Library wrappers (`listPromptTemplates`, `getPromptTemplate`, `createPromptTemplate`, `updatePromptTemplate`, `deletePromptTemplate`, `listPromptVersions`, `createPromptVersion`, `getPromptVersion`, `activatePromptVersion`, `getPromptStats`, `listPromptRuns`), plus `recordDecision`, `getLearningRecommendations`, `simulatePolicy`, `previewScorer`, and `deleteKnowledgeCollection`.
+- **Added.** CLI: `dashclaw prompts …` (list/get/versions/render/create/add-version/activate/stats) and `dashclaw inbox …` (list/read/archive), implemented as direct-API calls so they work regardless of the installed SDK version.
+
+### Fixed
+
+- **MCP inbox tools.** Added `dashclaw_inbox_list` and `dashclaw_messages_mark_read` MCP tools — MCP-only agents (Claude app / OpenClaw) can now read and mark their inbox read without an SDK install (previously no tool existed for this).
+- **Platform-intelligence skill (OpenClaw fallback).** The generated `dashclaw-platform-intelligence` skill no longer assumes `python -m livingcode` is available. The emitter (`livingcode/emitters/skill.py`) now documents an HTTP/repo fallback (`GET {baseUrl}/api/doctor` with the workspace key, then the committed `shape.json`/`api-inventory.json`, else the snapshot) for environments without Python/livingcode/the repo.
+
 ### Sub-agent governance & tracking (Claude Code)
 
 Delegated work is now first-class in DashClaw. Verified against the Claude Code hooks/sub-agents docs: `PreToolUse` fires for the sub-agent spawn (the `Agent` tool — named `Task` before CC 2.1.63) **and** inside sub-agents.

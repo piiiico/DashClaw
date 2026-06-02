@@ -21,6 +21,7 @@ import {
 } from '../lib/code/ingest-codex.js';
 import { installCodex, codexConfigPath, codexHooksDir } from '../lib/codex/install.js';
 import { runCodexNotify } from '../lib/codex/notify.js';
+import { apiRequest } from '../lib/api.js';
 
 process.on('unhandledRejection', (reason) => {
   console.error('Unhandled Rejection:', reason);
@@ -82,6 +83,22 @@ ${bold('Usage:')}
     --include-notify                     Also wire Codex's notify config to dashclaw codex notify
   dashclaw codex notify '<json>'         Record a Codex turn-complete event
                                          (called by Codex's notify config; always exits 0)
+  dashclaw prompts list [--category C]   List prompt templates
+  dashclaw prompts get <id>              Show a template
+  dashclaw prompts versions <id>         List a template's versions
+  dashclaw prompts render <templateId>   Render a prompt
+    --version-id <vid>                   Render a specific version instead of the active one
+    --var <key=value>                    Set a variable (repeatable)
+    --record                             Record the render as a prompt run
+  dashclaw prompts create --name N       Create a template (admin)
+    --description <D> --category <C>
+  dashclaw prompts add-version <id> --content C   Add a version (admin)
+    --changelog <L> --model-hint <M>
+  dashclaw prompts activate <id> <vid>   Activate a version (admin)
+  dashclaw prompts stats [--template-id X]        Prompt run analytics
+  dashclaw inbox list [--unread] [--limit N]      List inbox messages
+  dashclaw inbox read <id> [<id> ...]    Mark messages read
+  dashclaw inbox archive <id> [<id> ...] Archive messages
   dashclaw logout                        Remove saved config (~/.dashclaw/config.json)
   dashclaw help                          Show this help
 
@@ -570,9 +587,315 @@ async function cmdCode() {
   }
 }
 
+// -- prompts subcommand group ------------------------------------------------
+//
+// Direct-API calls (apiRequest) rather than SDK methods: the CLI imports the
+// PUBLISHED `dashclaw` package, which may lag this repo and lack newly-added
+// prompt methods. fetch + x-api-key against the resolved baseUrl/apiKey is the
+// durable path.
+
+function promptsClient() {
+  return { baseUrl, apiKey };
+}
+
+// Collect repeated `--var key=value` flags into a { key: value } object.
+function parseVars() {
+  const vars = {};
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--var' && i + 1 < args.length) {
+      const pair = args[i + 1];
+      const eq = pair.indexOf('=');
+      if (eq === -1) {
+        console.error(`Error: --var expects key=value, got "${pair}"`);
+        process.exit(1);
+      }
+      vars[pair.slice(0, eq)] = pair.slice(eq + 1);
+    }
+  }
+  return vars;
+}
+
+async function cmdPromptsList() {
+  const category = getFlag('--category');
+  try {
+    const data = await apiRequest(promptsClient(), 'GET', '/api/prompts/templates', {
+      query: { category },
+    });
+    const templates = data.templates || [];
+    if (templates.length === 0) {
+      console.log(dim('  No templates.'));
+      return;
+    }
+    for (const t of templates) {
+      console.log(
+        `  ${bold(t.id)}  ${t.name || '-'}  ${dim('[' + (t.category || 'uncategorized') + ']')}` +
+        `  active v${t.active_version ?? '-'}  ${dim('(' + (t.version_count ?? 0) + ' versions)')}`,
+      );
+    }
+  } catch (err) {
+    console.error(`Error: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+async function cmdPromptsGet() {
+  const id = args[2];
+  if (!id) {
+    console.error('Error: Missing template ID. Usage: dashclaw prompts get <id>');
+    process.exit(1);
+  }
+  try {
+    const data = await apiRequest(promptsClient(), 'GET', `/api/prompts/templates/${encodeURIComponent(id)}`);
+    console.log(JSON.stringify(data, null, 2));
+  } catch (err) {
+    console.error(`Error: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+async function cmdPromptsVersions() {
+  const id = args[2];
+  if (!id) {
+    console.error('Error: Missing template ID. Usage: dashclaw prompts versions <id>');
+    process.exit(1);
+  }
+  try {
+    const data = await apiRequest(
+      promptsClient(), 'GET', `/api/prompts/templates/${encodeURIComponent(id)}/versions`,
+    );
+    const versions = data.versions || [];
+    if (versions.length === 0) {
+      console.log(dim('  No versions.'));
+      return;
+    }
+    for (const v of versions) {
+      const active = v.is_active ? green(' (active)') : '';
+      console.log(`  v${v.version}  ${bold(v.id)}${active}  ${dim(v.changelog || '')}`);
+    }
+  } catch (err) {
+    console.error(`Error: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+async function cmdPromptsRender() {
+  const versionId = getFlag('--version-id');
+  const templateId = args[2] && !args[2].startsWith('--') ? args[2] : undefined;
+  if (!templateId && !versionId) {
+    console.error('Error: usage — dashclaw prompts render <templateId> [--var k=v ...] [--record]');
+    console.error('       or:    dashclaw prompts render --version-id <vid> [--var k=v ...]');
+    process.exit(1);
+  }
+  const variables = parseVars();
+  const record = args.includes('--record');
+  try {
+    const data = await apiRequest(promptsClient(), 'POST', '/api/prompts/render', {
+      body: {
+        template_id: templateId,
+        version_id: versionId,
+        variables,
+        agent_id: agentId,
+        record,
+      },
+    });
+    console.log(data.rendered ?? '');
+    if (Array.isArray(data.parameters) && data.parameters.length > 0) {
+      console.log();
+      console.log(dim(`  parameters: ${data.parameters.join(', ')}`));
+    }
+  } catch (err) {
+    console.error(`Error: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+async function cmdPromptsCreate() {
+  const name = getFlag('--name');
+  if (!name) {
+    console.error('Error: --name is required. Usage: dashclaw prompts create --name N [--description D] [--category C]');
+    process.exit(1);
+  }
+  const description = getFlag('--description');
+  const category = getFlag('--category');
+  try {
+    const data = await apiRequest(promptsClient(), 'POST', '/api/prompts/templates', {
+      body: { name, description, category },
+    });
+    console.log(`  ${green('Created')} ${bold(data.id)}  ${data.name}`);
+  } catch (err) {
+    console.error(`Error: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+async function cmdPromptsAddVersion() {
+  const templateId = args[2];
+  if (!templateId || templateId.startsWith('--')) {
+    console.error('Error: usage — dashclaw prompts add-version <templateId> --content C [--changelog L] [--model-hint M]');
+    process.exit(1);
+  }
+  const content = getFlag('--content');
+  if (!content) {
+    console.error('Error: --content is required.');
+    process.exit(1);
+  }
+  const changelog = getFlag('--changelog');
+  const modelHint = getFlag('--model-hint');
+  try {
+    const data = await apiRequest(
+      promptsClient(), 'POST', `/api/prompts/templates/${encodeURIComponent(templateId)}/versions`,
+      { body: { content, changelog, model_hint: modelHint } },
+    );
+    console.log(`  ${green('Added')} v${data.version}  ${bold(data.id)}`);
+  } catch (err) {
+    console.error(`Error: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+async function cmdPromptsActivate() {
+  const templateId = args[2];
+  const versionId = args[3];
+  if (!templateId || !versionId) {
+    console.error('Error: usage — dashclaw prompts activate <templateId> <versionId>');
+    process.exit(1);
+  }
+  try {
+    await apiRequest(
+      promptsClient(), 'POST',
+      `/api/prompts/templates/${encodeURIComponent(templateId)}/versions/${encodeURIComponent(versionId)}`,
+    );
+    console.log(`  ${green('Activated')} version ${bold(versionId)}`);
+  } catch (err) {
+    console.error(`Error: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+async function cmdPromptsStats() {
+  const templateId = getFlag('--template-id');
+  try {
+    const data = await apiRequest(promptsClient(), 'GET', '/api/prompts/stats', {
+      query: { template_id: templateId },
+    });
+    console.log(JSON.stringify(data, null, 2));
+  } catch (err) {
+    console.error(`Error: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+async function cmdPrompts() {
+  const sub = args[1];
+  switch (sub) {
+    case 'list':
+      return cmdPromptsList();
+    case 'get':
+      return cmdPromptsGet();
+    case 'versions':
+      return cmdPromptsVersions();
+    case 'render':
+      return cmdPromptsRender();
+    case 'create':
+      return cmdPromptsCreate();
+    case 'add-version':
+      return cmdPromptsAddVersion();
+    case 'activate':
+      return cmdPromptsActivate();
+    case 'stats':
+      return cmdPromptsStats();
+    default:
+      console.error(`Unknown subcommand: dashclaw prompts ${sub || '(missing)'}\n` +
+                    'Try: dashclaw prompts list [--category C]\n' +
+                    '     dashclaw prompts get <id>\n' +
+                    '     dashclaw prompts versions <id>\n' +
+                    '     dashclaw prompts render <templateId> [--var k=v ...] [--record]\n' +
+                    '     dashclaw prompts create --name N [--description D] [--category C]\n' +
+                    '     dashclaw prompts add-version <templateId> --content C [--changelog L] [--model-hint M]\n' +
+                    '     dashclaw prompts activate <templateId> <versionId>\n' +
+                    '     dashclaw prompts stats [--template-id X]');
+      process.exit(1);
+  }
+}
+
+// -- inbox subcommand group --------------------------------------------------
+//
+// Direct-API calls against /api/messages (durable path, see prompts group).
+// Uses the resolved `agentId` for direction=inbox filtering and PATCH attribution.
+
+function inboxClient() {
+  return { baseUrl, apiKey };
+}
+
+async function cmdInboxList() {
+  const unread = args.includes('--unread');
+  const limitFlag = getFlag('--limit');
+  try {
+    const data = await apiRequest(inboxClient(), 'GET', '/api/messages', {
+      query: {
+        agent_id: agentId,
+        direction: 'inbox',
+        unread: unread ? 'true' : undefined,
+        limit: limitFlag,
+      },
+    });
+    const messages = data.messages || [];
+    if (messages.length === 0) {
+      console.log(dim('  No messages.'));
+    } else {
+      for (const m of messages) {
+        const readMark = m.is_read ? dim('read') : green('unread');
+        console.log(
+          `  ${bold(m.id)}  ${dim('from')} ${m.from_agent_id || '-'}  ${m.subject || dim('(no subject)')}  [${readMark}]`,
+        );
+      }
+    }
+    console.log();
+    console.log(dim(`  unread: ${data.unread_count ?? 0}`));
+  } catch (err) {
+    console.error(`Error: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+async function cmdInboxUpdate(action) {
+  const ids = args.slice(2).filter((a) => !a.startsWith('--'));
+  if (ids.length === 0) {
+    console.error(`Error: usage — dashclaw inbox ${action} <id> [<id> ...]`);
+    process.exit(1);
+  }
+  try {
+    const data = await apiRequest(inboxClient(), 'PATCH', '/api/messages', {
+      body: { message_ids: ids, action, agent_id: agentId },
+    });
+    console.log(`  ${green('Updated')} ${data.updated ?? 0} message(s)`);
+  } catch (err) {
+    console.error(`Error: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+async function cmdInbox() {
+  const sub = args[1];
+  switch (sub) {
+    case 'list':
+      return cmdInboxList();
+    case 'read':
+      return cmdInboxUpdate('read');
+    case 'archive':
+      return cmdInboxUpdate('archive');
+    default:
+      console.error(`Unknown subcommand: dashclaw inbox ${sub || '(missing)'}\n` +
+                    'Try: dashclaw inbox list [--unread] [--limit N]\n' +
+                    '     dashclaw inbox read <id> [<id> ...]\n' +
+                    '     dashclaw inbox archive <id> [<id> ...]');
+      process.exit(1);
+  }
+}
+
 // -- Router -------------------------------------------------------------------
 
-const COMMANDS_NEEDING_CONFIG = new Set(['approvals', 'approve', 'deny', 'doctor', 'code']);
+const COMMANDS_NEEDING_CONFIG = new Set(['approvals', 'approve', 'deny', 'doctor', 'code', 'prompts', 'inbox']);
 // `install` deliberately omitted: provisioning hooks and AGENTS.md shouldn't
 // require the user to have already configured API keys. If config happens to
 // be present, install will pick up baseUrl for the AGENTS.md instance link.
@@ -625,6 +948,12 @@ async function main() {
       break;
     case 'codex':
       await cmdCodex();
+      break;
+    case 'prompts':
+      await cmdPrompts();
+      break;
+    case 'inbox':
+      await cmdInbox();
       break;
     case 'help':
     case '--help':

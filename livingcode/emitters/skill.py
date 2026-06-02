@@ -4,7 +4,13 @@ Consumers run `python -m livingcode emit skill` (optionally with --output) to
 regenerate the skill whenever DashClaw changes. The skill contains a snapshot
 of the current shape plus instructions to prefer live queries.
 """
+
 from livingcode.types import ShapeModel
+
+# Public API. `emit_skill` is dispatched dynamically by `python -m livingcode
+# emit skill` (livingcode/emit.py), so per-file dead-code scanners can't see the
+# call site — declaring it here marks it used.
+__all__ = ["emit_skill"]
 
 
 def _group_routes_by_category(shape: ShapeModel) -> dict[str, list]:
@@ -23,8 +29,12 @@ def _group_routes_by_category(shape: ShapeModel) -> dict[str, list]:
 def emit_skill(shape: ShapeModel) -> str:
     """Render the shape model as a platform-intelligence skill markdown file."""
     active = [r for r in shape.routes if not r.archived]
-    required_env = sorted([e for e in shape.env_vars if e.required], key=lambda e: e.name)
-    optional_env = sorted([e for e in shape.env_vars if not e.required], key=lambda e: e.name)
+    required_env = sorted(
+        [e for e in shape.env_vars if e.required], key=lambda e: e.name
+    )
+    optional_env = sorted(
+        [e for e in shape.env_vars if not e.required], key=lambda e: e.name
+    )
     route_groups = _group_routes_by_category(shape)
 
     lines: list[str] = []
@@ -34,7 +44,8 @@ def emit_skill(shape: ShapeModel) -> str:
         "---",
         "name: dashclaw-platform-intelligence",
         "description: DashClaw platform expert for integration, troubleshooting, and governance. "
-        "Snapshot-based — always prefer live queries via `python -m livingcode query`.",
+        "Snapshot-based — prefer live queries via `python -m livingcode query`, or `GET "
+        "{baseUrl}/api/doctor` when Python/livingcode/the repo are unavailable.",
         "---",
         "",
         "# DashClaw Platform Intelligence",
@@ -60,6 +71,22 @@ def emit_skill(shape: ShapeModel) -> str:
         "```",
         "",
         "If the snapshot below disagrees with a live query, **trust the live query**.",
+        "",
+        "### Fallback: no Python, livingcode, or repo checkout",
+        "",
+        "`python -m livingcode` only works where the livingcode package and the repo",
+        "checkout are present (e.g. a developer machine). In OpenClaw / the Claude app",
+        "neither exists. When you cannot run the queries above, fall back **in this order**:",
+        "",
+        "1. **`GET {baseUrl}/api/doctor`** — live route/shape health straight from the running",
+        "   instance. Requires the workspace API key (`x-api-key: <key>`); returns 401/403",
+        "   without it. This is the authoritative live source when the CLI is unavailable.",
+        "2. **Read the committed static shape** if a repo checkout is reachable:",
+        "   `app/lib/doctor/generated/shape.json` (full machine-readable shape) and",
+        "   `docs/api-inventory.json` (route inventory). These are regenerated on every",
+        "   `npm run livingcode:refresh`, so they track the same facts the queries return.",
+        "3. **Otherwise, treat the snapshot in this SKILL.md as authoritative** — it is the",
+        "   best available source when neither the API nor the repo can be reached.",
         "",
         "## At a Glance",
         "",

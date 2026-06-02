@@ -1,8 +1,8 @@
 {
   "node": {
     "current_version": "2.13.1",
-    "next_bump": "none",
-    "reason": "Agent message read-state methods (markRead / archiveMessages + getSentMessages / getMessages / getMessage) shipped in 2.13.1. Additive — no breaking changes. No further unreleased SDK changes.",
+    "next_bump": "minor",
+    "reason": "Unreleased (pending minor): Prompt Library wrappers (listPromptTemplates/getPromptTemplate/createPromptTemplate/updatePromptTemplate/deletePromptTemplate/listPromptVersions/createPromptVersion/getPromptVersion/activatePromptVersion/getPromptStats/listPromptRuns), recordDecision, getLearningRecommendations, simulatePolicy, previewScorer, deleteKnowledgeCollection. All additive — no breaking changes. current_version stays 2.13.1 until the owner bumps sdk/package.json + publishes via npm run release:sdks.",
     "domains": []
   },
   "python": {

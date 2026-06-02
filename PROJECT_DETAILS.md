@@ -107,7 +107,7 @@ These modules consume core runtime data and add operator value without changing 
 | Artifacts | `/api/artifacts/*` | Durable artifacts linked to actions and workflow steps, plus evidence bundles. |
 | Operations | `/api/operations/feed`, `/api/operations/summary` | Mission Control operational feed and runtime metrics. |
 | Compliance | `/api/compliance/*` | Evidence, mappings, gaps, reports, schedules, and exports. |
-| Evaluations | `/api/evaluations/*` | Scorers, runs, stats, and evaluation outputs. |
+| Evaluations | `/api/evaluations/*` | Scorers, runs, stats, evaluation outputs, and side-effect-free scorer preview (`/api/evaluations/scorers/preview` dry-runs a scorer config without writing an `eval_scores` row). |
 | Scoring | `/api/scoring/*` | Risk profiles, dimensions, templates, calibration, and scoring. |
 | Learning | `/api/learning/*` | Lessons, analytics, recommendations, maturity, and velocity. |
 | Drift | `/api/drift/*` | Drift metrics, snapshots, alerts, and stats. |
@@ -203,11 +203,14 @@ DashClaw ships two Node SDK entry points and a Python SDK.
 | Legacy Node SDK | `import { DashClaw } from 'dashclaw/legacy'` from `sdk/legacy/dashclaw-v1.js` | Compatibility layer for older integrations. |
 | Python SDK | `sdk-python/dashclaw/client.py` | Broad Python surface with route-contract parity for critical domains. |
 
-The canonical Node SDK currently exposes **92 public methods** in `sdk/dashclaw.js` and the Python SDK **227** in `sdk-python/dashclaw/client.py` (both reproducible via `npm run sdk:count` — excludes the constructor and `_`-private methods). The Node surface includes:
+The canonical Node SDK currently exposes **108 public methods** in `sdk/dashclaw.js` and the Python SDK **227** in `sdk-python/dashclaw/client.py` (both reproducible via `npm run sdk:count` — excludes the constructor and `_`-private methods). The Node surface includes:
 
 - core governance: `guard`, `createAction`, `updateOutcome`, `getAction`, `approveAction`, `waitForApproval`, `recordAssumption`
 - durable finality: `reportActionOutcome`, `getActionOutcome`, `reportActionSuccess`, `reportActionFailure`, `reportActionPartial`, `deriveIdempotencyKey`
 - action graph, loops, signals, learning, scoring, messaging, handoffs, security scan, feedback, threads, sync, sessions
+- full Prompt Library management: templates, versions, `activatePromptVersion` (activating one deactivates the others), `getPromptStats`, and `listPromptRuns`
+- learning ledger: `recordDecision` (auto-injects `agent_id`) and `getLearningRecommendations`
+- side-effect-free dry-runs: `simulatePolicy` (replays a proposed policy against recent historical actions) and `previewScorer` (validates a scorer config without writing an `eval_scores` row)
 - workflow templates, model strategies, knowledge collections, and capability registry/runtime methods
 
 Use `docs/sdk-parity.md` for domain-level parity and consolidation status.
