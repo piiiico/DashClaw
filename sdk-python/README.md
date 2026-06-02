@@ -313,6 +313,39 @@ decisions = claw.get_guard_decisions(decision="block", limit=50)
 | `guard(context, include_signals=False)` | Check action context against active policies |
 | `get_guard_decisions(decision=None, limit=20, offset=0, agent_id=None)` | Get guard decision history. Filter by decision type |
 
+### Non-fabrication checks
+
+When a `non_fabrication` guard policy is active, attach the outbound text and the
+facts it may state, and DashClaw verifies the content before the action proceeds —
+every amount, date, percentage, and registered ID must trace to an allowed fact,
+every required fact must be present, and no forbidden pattern may appear. A
+violation blocks (or routes to approval) and is recorded with a signed,
+re-verifiable receipt.
+
+```python
+decision = claw.guard({
+    "action_type": "message",
+    "content": "Hi Jane — your refund of $1,500.00 will arrive by June 1, 2026.",
+    "source_of_truth": {
+        "allowedFacts": [
+            {"label": "refund", "value": "$1,500.00"},
+            {"label": "date", "value": "June 1, 2026"},
+        ],
+        "requiredFacts": [{"label": "name", "value": "Jane"}],
+        # forbiddenPatterns, extract (money/dates/percentages/patterns) are optional
+    },
+})
+# decision["decision"] == "block" if the text states a fact not in source_of_truth.
+# decision["non_fabrication"][0]["receipt"] is an Ed25519-signed proof you can
+# re-verify at POST /api/integrity/verify (public key: /.well-known/jwks.json),
+# or None if the instance has no usable signing key — the verdict is enforced either way.
+```
+
+`create_action(...)` accepts the same `content` + `source_of_truth` kwargs.
+Fail-closed: a missing or malformed `source_of_truth` blocks. A signature proves
+integrity, the verdict, the ruleset version, and the issuer — not
+time-of-issuance or the correctness of prose with no extractable token.
+
 ### Compliance & Governance Patterns
 
 DashClaw's guard + action recording pipeline maps directly to compliance controls.

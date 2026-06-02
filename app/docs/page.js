@@ -636,14 +636,16 @@ npm run livingcode:refresh`}</CodeBlock>
             <MethodEntry
               id="guard"
               signature="claw.guard(context)"
-              description="Evaluate guard policies for a proposed action. Call this before risky operations. The guard response includes a `learning` field with historical performance context when available (recent scores, drift status, learned patterns, feedback summary)."
+              description="Evaluate guard policies for a proposed action. Call this before risky operations. The guard response includes a `learning` field with historical performance context when available (recent scores, drift status, learned patterns, feedback summary). With a non_fabrication policy active, pass `content` + `sourceOfTruth` to verify outbound text before it goes out — a violation blocks (or routes to approval) and is returned under `non_fabrication` with a signed, re-verifiable receipt."
               params={[
                 { name: 'action_type', type: 'string', required: true, desc: 'Proposed action type' },
                 { name: 'risk_score', type: 'number', required: false, desc: '0-100' },
+                { name: 'content', type: 'string', required: false, desc: 'Outbound text to non-fabrication check (used by a non_fabrication policy)' },
+                { name: 'sourceOfTruth', type: 'object', required: false, desc: 'Facts the content may state: { allowedFacts, requiredFacts, forbiddenPatterns?, extract? }' },
               ]}
-              returns="Promise<{ decision: string, reasons: string[], risk_score: number, agent_risk_score: number | null }>"
+              returns="Promise<{ decision: string, reasons: string[], risk_score: number, agent_risk_score: number | null, non_fabrication?: object[] }>"
               example={
-                <DocsCodeTabs 
+                <DocsCodeTabs
                   nodeSnippet="const result = await claw.guard({ action_type: 'deploy', risk_score: 85 });"
                   pythonSnippet='result = claw.guard({"action_type": "deploy", "risk_score": 85})'
                 />

@@ -5,7 +5,7 @@ description: DashClaw platform expert for integration, troubleshooting, and gove
 
 # DashClaw Platform Intelligence
 
-**Shape snapshot:** `sha1:139c2d6f981e1d8352c09e98f88ae3e0c625f5fb`
+**Shape snapshot:** `sha1:5befa785a55522c786da595d2b19fdbf26167268`
 **This file is auto-generated.** Do not edit by hand — regenerate with:
 
 ```bash
@@ -29,9 +29,9 @@ If the snapshot below disagrees with a live query, **trust the live query**.
 
 ## At a Glance
 
-- **212** active API routes across **52** categories
-- **4** required + **130** optional environment variables
-- **85** database tables
+- **214** active API routes across **53** categories
+- **4** required + **131** optional environment variables
+- **86** database tables
 
 ## API Surface
 
@@ -213,6 +213,11 @@ If the snapshot below disagrees with a live query, **trust the live query**.
 
 - `GET` `/api/integrations/health`
 - `POST` `/api/integrations/health/refresh`
+
+### `integrity`
+
+- `GET` `/api/integrity/jwks`
+- `POST` `/api/integrity/verify`
 
 ### `keys`
 
@@ -408,7 +413,7 @@ If the snapshot below disagrees with a live query, **trust the live query**.
 These must be set — DashClaw will fail to start without them.
 
 - **`DASHCLAW_API_KEY`** - referenced in 56 file(s)
-- **`DATABASE_URL`** - referenced in 85 file(s)
+- **`DATABASE_URL`** - referenced in 87 file(s)
 - **`ENCRYPTION_KEY`** - referenced in 4 file(s)
 - **`NEXTAUTH_SECRET`** - referenced in 4 file(s)
 
@@ -458,6 +463,7 @@ These have fallbacks or only activate specific features.
 - `DASHCLAW_PAIRING_TTL_MINUTES` *(undocumented)*
 - `DASHCLAW_RATE_LIMIT_MAX` *(undocumented)*
 - `DASHCLAW_RATE_LIMIT_WINDOW_MS` *(undocumented)*
+- `DASHCLAW_SIGNING_KEY_JWK` *(undocumented)*
 - `DASHCLAW_URL` *(undocumented)*
 - `DISABLE_PROMPT_INJECTION_SCAN` *(undocumented)*
 - `DISCORD_APPROVER_ORG_ID` *(undocumented)*
@@ -549,7 +555,7 @@ These have fallbacks or only activate specific features.
 
 ## Database Tables
 
-All 85 tables defined in `schema/schema.js` (Drizzle ORM):
+All 86 tables defined in `schema/schema.js` (Drizzle ORM):
 
 - `action_embeddings`
 - `action_records`
@@ -619,6 +625,7 @@ All 85 tables defined in `schema/schema.js` (Drizzle ORM):
 - `scheduled_jobs`
 - `scoring_dimensions`
 - `scoring_profiles`
+- `server_signing_keys`
 - `session_events`
 - `shared_docs`
 - `skill_scan_results`

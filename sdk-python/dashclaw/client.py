@@ -332,7 +332,15 @@ class DashClaw:
             return None
 
     def create_action(self, action_type, declared_goal, **kwargs):
-        """I am attempting X."""
+        """I am attempting X.
+
+        Non-fabrication (optional): pass ``content`` (the outbound text) and
+        ``source_of_truth`` ({"allowedFacts": [...], "requiredFacts": [...],
+        "forbiddenPatterns"?: [...], "extract"?: {...}}) to have a
+        ``non_fabrication`` guard policy verify the content before the action
+        proceeds. A violation blocks the action or routes it to approval and is
+        recorded with a signed receipt in the decision ledger.
+        """
         payload = {
             "action_type": action_type,
             "declared_goal": declared_goal,
@@ -1193,6 +1201,11 @@ class DashClaw:
         bearer token; the server verifies it via JWKS and the JWT sub claim
         overrides `agent_id` in the audit record on success. See
         docs/agent-identity.md.
+
+        Non-fabrication (optional): include ``content`` (outbound text) and
+        ``source_of_truth`` in the context to have a ``non_fabrication`` policy
+        verify the content; the decision carries a signed, re-verifiable receipt
+        under ``non_fabrication``.
         """
         payload = {
             **context,
@@ -1709,8 +1722,13 @@ class DashClaw:
         """Get a specific compliance export with full report content."""
         return self._request("GET", f"/api/compliance/exports/{export_id}")
 
-    def download_compliance_export(self, export_id: str) -> str:
-        """Download the raw report content for an export."""
+    def download_compliance_export(self, export_id: str) -> dict:
+        """Download the signed compliance bundle (JSON) for an export.
+
+        Returns the parsed signed bundle dict. The human-readable report is at
+        ``result["payload"]["report"]``; re-verify the whole bundle via
+        ``POST /api/integrity/verify``.
+        """
         return self._request("GET", f"/api/compliance/exports/{export_id}/download")
 
     def delete_compliance_export(self, export_id: str) -> dict:

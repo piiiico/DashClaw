@@ -8,13 +8,15 @@ export async function GET(request, { params }) {
     if (!exp) return NextResponse.json({ error: 'Export not found' }, { status: 404 });
     if (exp.status !== 'completed') return NextResponse.json({ error: 'Export not ready' }, { status: 409 });
 
-    const contentType = exp.format === 'json' ? 'application/json' : 'text/markdown';
-    const ext = exp.format === 'json' ? 'json' : 'md';
-    const filename = `${exp.name.replace(/[^a-zA-Z0-9-_]/g, '_')}_${new Date(exp.completed_at).toISOString().split('T')[0]}.${ext}`;
+    // report_content is now a signed, hash-chained compliance bundle (JSON). The
+    // old unsigned markdown/JSON path is gone — the human-readable report lives
+    // in bundle.payload.report, and the whole bundle re-verifies via
+    // POST /api/integrity/verify or GET /.well-known/jwks.json.
+    const filename = `${exp.name.replace(/[^a-zA-Z0-9-_]/g, '_')}_${new Date(exp.completed_at).toISOString().split('T')[0]}.dcbundle.json`;
 
     return new NextResponse(exp.report_content, {
       headers: {
-        'Content-Type': `${contentType}; charset=utf-8`,
+        'Content-Type': 'application/json; charset=utf-8',
         'Content-Disposition': `attachment; filename="${filename}"`,
       },
     });

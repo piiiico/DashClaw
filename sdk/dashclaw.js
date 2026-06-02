@@ -121,6 +121,14 @@ class DashClaw {
   /**
    * POST /api/guard — "Can I do X?"
    * @param {Object} context
+   * @param {string} [context.content] - Outbound content to fabrication-check
+   *   (e.g. a drafted email/message). Pairs with `sourceOfTruth` and a
+   *   `non_fabrication` guard policy: every operational token (amounts, dates,
+   *   percentages, registered IDs) must trace to an allowed fact, or the action
+   *   is blocked / routed to approval. The response carries a signed,
+   *   re-verifiable receipt under `non_fabrication`.
+   * @param {Object} [context.sourceOfTruth] - The facts `content` is allowed to
+   *   state: `{ allowedFacts, requiredFacts, forbiddenPatterns?, extract? }`.
    * @returns {Promise<{
    *   decision: 'allow'|'block'|'require_approval'|'warn',
    *   action_id: string,
@@ -150,6 +158,13 @@ class DashClaw {
 
   /**
    * POST /api/actions — "I am attempting X."
+   *
+   * Optional non-fabrication fields: pass `content` (the outbound text) and
+   * `sourceOfTruth` ({ allowedFacts, requiredFacts, forbiddenPatterns?, extract? })
+   * to have a `non_fabrication` guard policy verify the content before the
+   * action proceeds. A violation blocks the action or routes it to approval and
+   * is recorded with a signed receipt in the decision ledger.
+   * @param {Object} action
    */
   async createAction(action) {
     return this._request('/api/actions', 'POST', {

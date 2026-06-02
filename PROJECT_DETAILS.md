@@ -83,8 +83,10 @@ These routes define the minimum DashClaw category. They are stable or runtime-cr
 | `/api/approvals/:actionId` | Human approval decision | Also reachable via legacy rewrite `/api/actions/:id/approve`. |
 | `/api/assumptions` | Reasoning integrity records | Assumption tracking linked to actions. |
 | `/api/signals` | Runtime/anomaly signals | Signal listing and detection outputs. |
-| `/api/policies` | Policy CRUD | Guard policy management. |
+| `/api/policies` | Policy CRUD | Guard policy management, including the `non_fabrication` policy type. |
 | `/api/policies/generate` | Natural-language policy generator | Supports dry-run preview. |
+| `/api/integrity/jwks` | Published signing public key (JWKS) | Public. Also at `/.well-known/jwks.json`. Used to re-verify proof receipts and compliance bundles. |
+| `/api/integrity/verify` | Re-verify a receipt or signed bundle | Public, stateless. `POST { receipt }` or `{ bundle }` → `{ ok }`. |
 | `/api/health` | System readiness | Public health/readiness surface. |
 | `/api/keys` | API key management | Stable key lifecycle and reveal path. |
 | `/api/messages` | Agent/system messages | Stable messaging surface used by agent coordination paths. |
@@ -167,6 +169,10 @@ it blocks:
 Schema: `drizzle/0008` (verification), `0010`/`0011` (replay), `0012` (action
 binding). The legacy public-key pairing flow (`/api/pairings`, RSA) remains for
 older integrations but is no longer the primary identity surface.
+
+## Non-fabrication & signed evidence
+
+The `non_fabrication` guard policy adds a deterministic non-fabrication guarantee: given an action's outbound `content` and a `source_of_truth` (allowed/required facts, forbidden patterns, extract options), the verifier in `app/lib/integrity/` confirms that every operational token (currency, date, percentage, and caller-registered patterns like account/invoice IDs) traces verbatim to an allowed fact, that every required fact is present, and that no forbidden pattern appears — returning pass or block with structured violations. It is fail-closed: any error or a missing/malformed source-of-truth blocks, and `on_violation: require_approval` routes through the existing multi-channel approval flow. Each decision is recorded in `guard_decisions` (new `evidence` column) with a signed, independently re-verifiable Ed25519 **proof receipt**, and the compliance exporter now emits a signed, hash-chained **bundle** instead of unsigned markdown/JSON. The instance signing key is hybrid (env `DASHCLAW_SIGNING_KEY_JWK` or auto-generated into `server_signing_keys`) and published at `/.well-known/jwks.json`; receipts and bundles re-verify via `POST /api/integrity/verify`. A signature proves integrity, the verdict, the ruleset version, and the issuer — **not** time-of-issuance (no trusted timestamp) or the semantic correctness of token-free prose. Schema: `drizzle/0013`. Crypto reuses the single canonicalization in `app/lib/canonical-json.js`; the published Ed25519 keys use the same JWKS format the runtime's `app/lib/jwks-verifier.js` already consumes, but receipt/bundle signing and verification run through `app/lib/integrity/{sign,keys}.js` on `node:crypto` directly.
 
 ## Integration model
 

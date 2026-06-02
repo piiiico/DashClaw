@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:139c2d6f981e1d8352c09e98f88ae3e0c625f5fb",
+  "timestamp": "sha1:5befa785a55522c786da595d2b19fdbf26167268",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -1559,6 +1559,24 @@
       "dynamic_params": [],
       "archived": false,
       "file_path": "app/api/integrations/health/refresh/route.js"
+    },
+    {
+      "path": "/api/integrity/jwks",
+      "methods": [
+        "GET"
+      ],
+      "dynamic_params": [],
+      "archived": false,
+      "file_path": "app/api/integrity/jwks/route.js"
+    },
+    {
+      "path": "/api/integrity/verify",
+      "methods": [
+        "POST"
+      ],
+      "dynamic_params": [],
+      "archived": false,
+      "file_path": "app/api/integrity/verify/route.js"
     },
     {
       "path": "/api/keys",
@@ -3123,6 +3141,14 @@
       "in_env_example": false
     },
     {
+      "name": "DASHCLAW_SIGNING_KEY_JWK",
+      "required": false,
+      "files": [
+        "app/lib/integrity/server-key.js"
+      ],
+      "in_env_example": false
+    },
+    {
       "name": "DASHCLAW_URL",
       "required": false,
       "files": [
@@ -3152,6 +3178,7 @@
         "__tests__/unit/compliance-gaps.route.test.js",
         "__tests__/unit/compliance-map.route.test.js",
         "__tests__/unit/compliance-report.route.test.js",
+        "__tests__/unit/compliance-signed-export.test.js",
         "__tests__/unit/cron-auth.test.js",
         "__tests__/unit/cron-outcome-sweep.route.test.js",
         "__tests__/unit/cron-routing-maintenance.route.test.js",
@@ -3163,6 +3190,7 @@
         "__tests__/unit/hosted/check-hosted-ready.test.mjs",
         "__tests__/unit/hosted/middleware-trial-enforcement.test.js",
         "__tests__/unit/hosted/workspace-admin.test.js",
+        "__tests__/unit/integrity-routes.test.js",
         "__tests__/unit/keys.route.test.js",
         "__tests__/unit/learning-recommendation-detail.route.test.js",
         "__tests__/unit/learning-recommendation-events.route.test.js",
@@ -4385,6 +4413,11 @@
     },
     {
       "name": "scoring_profiles",
+      "file_path": "schema/schema.js",
+      "domain": null
+    },
+    {
+      "name": "server_signing_keys",
       "file_path": "schema/schema.js",
       "domain": null
     },

@@ -48,20 +48,20 @@ p.kicker{background:var(--accent-bg);border:1px solid var(--accent-border);borde
 p.kicker b{color:var(--accent-deep)}
 </style></head><body>
 <h1>DashClaw Livingcode Dashboard</h1>
-<div class="sig" id="sig">Shape signature: sha1:139c2d6f981e1d8352c09e98f88ae3e0c625f5fb · signature-stable</div>
+<div class="sig" id="sig">Shape signature: sha1:5befa785a55522c786da595d2b19fdbf26167268 · signature-stable</div>
 <div class="grid">
-      <div class="cell"><div class="n">212</div><div class="k">Active routes</div></div>
+      <div class="cell"><div class="n">214</div><div class="k">Active routes</div></div>
       <div class="cell"><div class="n">48</div><div class="k">Archived routes</div></div>
       <div class="cell"><div class="n">4</div><div class="k">Required env vars</div></div>
-      <div class="cell"><div class="n">130</div><div class="k">Optional env vars</div></div>
-      <div class="cell"><div class="n">85</div><div class="k">Tables</div></div>
+      <div class="cell"><div class="n">131</div><div class="k">Optional env vars</div></div>
+      <div class="cell"><div class="n">86</div><div class="k">Tables</div></div>
       <div class="cell"><div class="n">15</div><div class="k">Events</div></div>
       <div class="cell"><div class="n">10</div><div class="k">Signals</div></div>
       <div class="cell"><div class="n">5</div><div class="k">Adapters</div></div>
       <div class="cell"><div class="n">77</div><div class="k">Setting keys</div></div>
 </div>
 
-<section><h2>Shape</h2><details><summary>Tables (85)</summary><table><thead><tr><th>Name</th><th>Domain</th></tr></thead><tbody>    <tr><td><code>action_embeddings</code></td><td class="sig">—</td></tr>
+<section><h2>Shape</h2><details><summary>Tables (86)</summary><table><thead><tr><th>Name</th><th>Domain</th></tr></thead><tbody>    <tr><td><code>action_embeddings</code></td><td class="sig">—</td></tr>
     <tr><td><code>action_records</code></td><td class="sig">governance</td></tr>
     <tr><td><code>activity_logs</code></td><td class="sig">—</td></tr>
     <tr><td><code>agent_connections</code></td><td class="sig">—</td></tr>
@@ -129,6 +129,7 @@ p.kicker b{color:var(--accent-deep)}
     <tr><td><code>scheduled_jobs</code></td><td class="sig">—</td></tr>
     <tr><td><code>scoring_dimensions</code></td><td class="sig">—</td></tr>
     <tr><td><code>scoring_profiles</code></td><td class="sig">—</td></tr>
+    <tr><td><code>server_signing_keys</code></td><td class="sig">—</td></tr>
     <tr><td><code>session_events</code></td><td class="sig">—</td></tr>
     <tr><td><code>shared_docs</code></td><td class="sig">—</td></tr>
     <tr><td><code>skill_scan_results</code></td><td class="sig">governance</td></tr>
@@ -271,7 +272,11 @@ p.kicker b{color:var(--accent-deep)}
       <div class="cell"><div class="n">1</div><div class="k">TODOs</div></div>
       <div class="cell"><div class="n">128</div><div class="k">Files &gt;300 lines</div></div></div></section>
 
-<section><h2>Changed since last snapshot</h2><p class="kicker"><b>1</b> env_vars added since last snapshot.</p><ul class="diff">    <li><code>added</code> <b>env_vars</b>: DASHCLAW_PAIRING_TTL_MINUTES <span class="sig">New env var (optional, undocumented)</span></li></ul></section>
+<section><h2>Changed since last snapshot</h2><p class="kicker"><b>2</b> env_vars added, <b>2</b> routes added, <b>1</b> tables added since last snapshot.</p><ul class="diff">    <li><code>added</code> <b>routes</b>: /api/integrity/jwks <span class="sig">New route: GET</span></li>
+    <li><code>added</code> <b>routes</b>: /api/integrity/verify <span class="sig">New route: POST</span></li>
+    <li><code>added</code> <b>env_vars</b>: DASHCLAW_PAIRING_TTL_MINUTES <span class="sig">New env var (optional, undocumented)</span></li>
+    <li><code>added</code> <b>env_vars</b>: DASHCLAW_SIGNING_KEY_JWK <span class="sig">New env var (optional, undocumented)</span></li>
+    <li><code>added</code> <b>tables</b>: server_signing_keys <span class="sig">New table in schema</span></li></ul></section>
 
 <section class="routes"><h2>Active routes</h2><input id="route-filter" type="search" placeholder="Filter routes…" oninput="var q=this.value.toLowerCase();document.querySelectorAll('section.routes tr[data-path]').forEach(function(r){r.style.display=r.dataset.path.toLowerCase().includes(q)?'':'none';});document.querySelectorAll('section.routes details').forEach(function(d){var visible=d.querySelectorAll("tr[data-path]:not([style*='none'])").length;d.style.display=visible||!q?'':'none';if(q)d.open=true;});"><details><summary>/actions/* (11)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/actions"><td><code>/api/actions</code></td><td>DELETE, GET, POST</td><td class="sig">app/api/actions/route.js</td></tr>
     <tr data-path="/api/actions/[actionId]"><td><code>/api/actions/[actionId]</code></td><td>GET, PATCH</td><td class="sig">app/api/actions/[actionId]/route.js</td></tr>
@@ -380,6 +385,8 @@ p.kicker b{color:var(--accent-deep)}
     <tr data-path="/api/identities/[agentId]"><td><code>/api/identities/[agentId]</code></td><td>DELETE</td><td class="sig">app/api/identities/[agentId]/route.js</td></tr></tbody></table></details>
 <details><summary>/integrations/* (2)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/integrations/health"><td><code>/api/integrations/health</code></td><td>GET</td><td class="sig">app/api/integrations/health/route.js</td></tr>
     <tr data-path="/api/integrations/health/refresh"><td><code>/api/integrations/health/refresh</code></td><td>POST</td><td class="sig">app/api/integrations/health/refresh/route.js</td></tr></tbody></table></details>
+<details><summary>/integrity/* (2)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/integrity/jwks"><td><code>/api/integrity/jwks</code></td><td>GET</td><td class="sig">app/api/integrity/jwks/route.js</td></tr>
+    <tr data-path="/api/integrity/verify"><td><code>/api/integrity/verify</code></td><td>POST</td><td class="sig">app/api/integrity/verify/route.js</td></tr></tbody></table></details>
 <details><summary>/keys/* (2)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/keys"><td><code>/api/keys</code></td><td>DELETE, GET, POST</td><td class="sig">app/api/keys/route.js</td></tr>
     <tr data-path="/api/keys/reveal"><td><code>/api/keys/reveal</code></td><td>GET</td><td class="sig">app/api/keys/reveal/route.js</td></tr></tbody></table></details>
 <details><summary>/knowledge/* (5)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/knowledge/collections"><td><code>/api/knowledge/collections</code></td><td>GET, POST</td><td class="sig">app/api/knowledge/collections/route.js</td></tr>

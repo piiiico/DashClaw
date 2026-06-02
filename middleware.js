@@ -37,6 +37,11 @@ const PUBLIC_ROUTES = [
   '/api/discord/interactions',  // auth: Ed25519 signature + user_id allowlist (in route)
   // Public read-only content endpoints
   '/api/docs/raw',
+  // Integrity re-verification surfaces — must be reachable without an API key so
+  // an external party can independently verify a receipt/bundle against the
+  // instance's published public key.
+  '/api/integrity/jwks',
+  '/api/integrity/verify',
   // Only the static-markdown /raw endpoints are public (the "Copy ... Prompt"
   // buttons on the public /self-host page fetch them unauthenticated). A bare
   // '/api/prompts' prefix here previously exposed the entire prompts API —
@@ -394,6 +399,24 @@ export async function middleware(request) {
   const { pathname } = request.nextUrl;
   const mode = getDashclawMode();
   const demoCookie = isDemoCookieSet(request);
+
+  // Public JWKS discovery alias. /.well-known/jwks.json rewrites (next.config.js)
+  // to /api/integrity/jwks, but the rewrite resolves below the matcher, so this
+  // alias would otherwise skip the rate limiter and security headers that the
+  // canonical /api path gets. Apply them here, then pass through (public, no auth).
+  if (pathname === '/.well-known/jwks.json') {
+    const trustProxy = ['1', 'true', 'yes', 'on'].includes(String(process.env.TRUST_PROXY || process.env.VERCEL || '').toLowerCase());
+    const fwd = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
+    let ip = (trustProxy ? (fwd || request.headers.get('x-real-ip')) : null) || request.ip || 'unknown';
+    if (ip === 'unknown' && process.env.NODE_ENV === 'development') ip = fwd || '127.0.0.1';
+    if (!(await checkRateLimit(`${ip}:${pathname}`))) {
+      return securedJson(request, { error: 'Rate limit exceeded. Please slow down.' }, { status: 429, headers: { 'Retry-After': '60' } });
+    }
+    const response = NextResponse.next();
+    addSecurityHeaders(response, request);
+    withCors(request, response);
+    return response;
+  }
 
   // /demo is always a public entrypoint: it sets a non-secret cookie and forwards into the dashboard.
   // This makes the live demo work even if the deployment forgot to set DASHCLAW_MODE=demo.
@@ -1340,6 +1363,7 @@ export const config = {
   matcher: [
     '/',
     '/api/:path*',
+    '/.well-known/jwks.json',
     '/demo',
     '/dashboard',
     '/dashboard/:path*',

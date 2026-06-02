@@ -12,6 +12,8 @@ import {
   getGuardDecisionEvidence,
   getActionRecordEvidence,
 } from '../repositories/compliance.repository.js';
+import { signBundle, bundleHash, verifyBundle } from '../integrity/bundle.js';
+import { getServerSigningKey, getServerPublicJwks } from '../integrity/server-key.js';
 
 // -----------------------------------------------
 // Export Generation
@@ -131,27 +133,75 @@ Estimated Total Effort: ${gapAnalysis.summary.estimated_total_effort}
       }
     }
 
-    // Combine all sections
+    // Combine all sections into the human-readable report. This is the report
+    // *content*; it is no longer the stored artifact — it becomes the signed
+    // payload below. The old unsigned markdown/JSON path is gone: report_content
+    // is always a signed, independently re-verifiable bundle now.
     const separator = format === 'json' ? '\n' : '\n---\n\n';
-    let fullReport = '';
+    const issuedAt = new Date().toISOString();
+    let report = '';
     if (format === 'markdown') {
       const header = `# Compliance Export\n\n`;
-      const meta = `**Organization:** org-${orgId}  \n**Generated:** ${new Date().toISOString()}  \n**Frameworks:** ${frameworks.join(', ')}  \n**Evidence Window:** ${windowDays} days\n\n---\n\n`;
-      fullReport = header + meta + sections.join(separator);
+      const meta = `**Organization:** org-${orgId}  \n**Generated:** ${issuedAt}  \n**Frameworks:** ${frameworks.join(', ')}  \n**Evidence Window:** ${windowDays} days\n\n---\n\n`;
+      report = header + meta + sections.join(separator);
     } else {
-      fullReport = sections.join(separator);
+      report = sections.join(separator);
     }
 
-    // Update export record with result
+    // The signed payload: everything a verifier needs to reconstruct the export.
+    const payload = {
+      org: `org-${orgId}`,
+      frameworks,
+      window_days: windowDays,
+      format,
+      report,
+      evidence_summary: evidenceSummary,
+      snapshot_ids: snapshotIds,
+    };
+
+    // Hash-chain to the previous completed export so a tampered or removed export
+    // mid-chain is detectable. Best-effort: a fresh org simply starts the chain.
+    let prevBundleHash = null;
+    try {
+      const prevRows = await sql`
+        SELECT report_content FROM compliance_exports
+        WHERE org_id = ${orgId} AND status = 'completed' AND id <> ${exportId}
+        ORDER BY created_at DESC LIMIT 1
+      `;
+      const prevContent = prevRows[0]?.report_content;
+      if (prevContent) {
+        const prevBundle = typeof prevContent === 'string' ? JSON.parse(prevContent) : prevContent;
+        if (prevBundle?.signature && prevBundle?.payload) {
+          // Verify the prior bundle before chaining to it, so a tampered prior
+          // export is caught at generation time, not only on a later full
+          // re-verify. On failure, start a fresh chain (best-effort).
+          const { keys } = await getServerPublicJwks(sql);
+          if (verifyBundle(prevBundle, keys).ok) {
+            prevBundleHash = bundleHash(prevBundle);
+          } else {
+            console.warn('[compliance] Previous export failed signature verification; starting a fresh hash chain.');
+          }
+        }
+      }
+    } catch {
+      // No prior signed export to chain to (or it predates signed bundles).
+    }
+
+    const key = await getServerSigningKey(sql);
+    const bundle = signBundle(payload, { kid: key.kid, privateKeyJwk: key.privateKeyJwk }, issuedAt, prevBundleHash);
+    const bundleJson = JSON.stringify(bundle);
+    const fileSizeBytes = Buffer.byteLength(bundleJson, 'utf8');
+
+    // Update export record with the signed bundle.
     await sql`
       UPDATE compliance_exports
-      SET status = 'completed', report_content = ${fullReport}, evidence_summary = ${JSON.stringify(evidenceSummary)},
-          snapshot_ids = ${JSON.stringify(snapshotIds)}, file_size_bytes = ${Buffer.byteLength(fullReport, 'utf8')},
+      SET status = 'completed', report_content = ${bundleJson}, evidence_summary = ${JSON.stringify(evidenceSummary)},
+          snapshot_ids = ${JSON.stringify(snapshotIds)}, file_size_bytes = ${fileSizeBytes},
           completed_at = NOW()
       WHERE id = ${exportId} AND org_id = ${orgId}
     `;
 
-    return { id: exportId, status: 'completed', file_size_bytes: Buffer.byteLength(fullReport, 'utf8') };
+    return { id: exportId, status: 'completed', file_size_bytes: fileSizeBytes };
   } catch (err) {
     await sql`UPDATE compliance_exports SET status = 'failed', error_message = ${err.message}, completed_at = NOW() WHERE id = ${exportId} AND org_id = ${orgId}`;
     throw err;

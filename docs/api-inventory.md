@@ -1,7 +1,7 @@
 ---
 source-of-truth: false
 owner: API Governance Lead
-last-verified: 2026-06-01
+last-verified: 2026-06-02
 doc-type: architecture
 ---
 
@@ -13,10 +13,10 @@ doc-type: architecture
 
 ## Summary
 
-- Total routes: `259`
+- Total routes: `261`
 - Stable routes: `46`
 - Beta routes: `24`
-- Experimental routes: `189`
+- Experimental routes: `191`
 
 ## Routes
 
@@ -176,6 +176,8 @@ doc-type: architecture
 | `/api/identities/{agentId}` | `DELETE` | `experimental` | `/api/identities` | `app/api/identities/[agentId]/route.js` |
 | `/api/integrations/health` | `GET` | `experimental` | `(default)` | `app/api/integrations/health/route.js` |
 | `/api/integrations/health/refresh` | `POST` | `experimental` | `(default)` | `app/api/integrations/health/refresh/route.js` |
+| `/api/integrity/jwks` | `GET` | `experimental` | `(default)` | `app/api/integrity/jwks/route.js` |
+| `/api/integrity/verify` | `POST` | `experimental` | `(default)` | `app/api/integrity/verify/route.js` |
 | `/api/keys` | `DELETE, GET, POST` | `stable` | `/api/keys` | `app/api/keys/route.js` |
 | `/api/keys/reveal` | `GET` | `stable` | `/api/keys` | `app/api/keys/reveal/route.js` |
 | `/api/knowledge/collections` | `GET, POST` | `experimental` | `(default)` | `app/api/knowledge/collections/route.js` |

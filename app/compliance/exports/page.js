@@ -143,7 +143,18 @@ export default function ComplianceExportsPage() {
     setExpandedExport(exp.id);
     try {
       const res = await fetch(`/api/compliance/exports/${exp.id}`);
-      if (res.ok) { const d = await res.json(); setExpandedContent(d.report_content || 'No content'); }
+      if (res.ok) {
+        const d = await res.json();
+        // report_content is now a signed compliance bundle (JSON). Surface the
+        // human-readable report inside it; fall back to the raw value for any
+        // older unsigned export still stored as plain text.
+        let content = d.report_content;
+        try {
+          const bundle = typeof content === 'string' ? JSON.parse(content) : content;
+          if (bundle?.payload?.report) content = bundle.payload.report;
+        } catch { /* not a bundle — render as-is */ }
+        setExpandedContent(content || 'No content');
+      }
     } catch { setExpandedContent('Failed to load report'); }
   };
 

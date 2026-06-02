@@ -74,6 +74,7 @@ const TABLES = [
   "scheduled_jobs",
   "scoring_dimensions",
   "scoring_profiles",
+  "server_signing_keys",
   "session_events",
   "shared_docs",
   "skill_scan_results",

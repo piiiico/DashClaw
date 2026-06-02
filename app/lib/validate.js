@@ -60,6 +60,11 @@ const ACTION_RECORD_SCHEMA = {
   // (org_id, idempotency_key), the create call returns that row instead
   // of inserting a duplicate. See docs/architecture/durable-execution-finality.md.
   idempotency_key:      { type: 'string', maxLength: 256 },
+  // Non-fabrication integrity (optional). The outbound content to verify and the
+  // source-of-truth it must trace to. Forwarded into the guard context for a
+  // non_fabrication policy; never persisted as action_records columns.
+  content:              { type: 'string', maxLength: 50000 },
+  source_of_truth:      { type: 'object' },
 };
 
 const OUTCOME_FIELDS = [
@@ -123,6 +128,11 @@ function validateField(key, value, rule) {
         if (typeof value[i] !== 'string') return `${key}[${i}] must be a string`;
         if (value[i].length > 500) return `${key}[${i}] exceeds max length of 500`;
       }
+      break;
+    case 'object':
+      // A free-form JSON object (e.g. a non_fabrication source-of-truth). Arrays
+      // and null are not objects for this purpose.
+      if (typeof value !== 'object' || value === null || Array.isArray(value)) return `${key} must be an object`;
       break;
   }
   return null;
@@ -234,9 +244,13 @@ const GUARD_INPUT_SCHEMA = {
   // token carries a `urn:dashclaw:act-binding` claim. Part of the canonical
   // (action, target, goal) hash tuple.
   target:          { type: 'string', maxLength: 1024 },
+  // Non-fabrication integrity (optional). The outbound content to verify and the
+  // source-of-truth it must trace to, read by a non_fabrication guard policy.
+  content:         { type: 'string', maxLength: 50000 },
+  source_of_truth: { type: 'object' },
 };
 
-const POLICY_TYPES = ['risk_threshold', 'require_approval', 'block_action_type', 'rate_limit', 'webhook_check', 'behavioral_anomaly', 'semantic_check', 'permission_escalation', 'green_contract', 'branch_freshness'];
+const POLICY_TYPES = ['risk_threshold', 'require_approval', 'block_action_type', 'rate_limit', 'webhook_check', 'behavioral_anomaly', 'semantic_check', 'permission_escalation', 'green_contract', 'branch_freshness', 'non_fabrication'];
 const GUARD_ACTIONS = ['allow', 'warn', 'block', 'require_approval'];
 
 const POLICY_SCHEMA = {
@@ -337,6 +351,27 @@ export function validatePolicy(body) {
           result.valid = false;
           result.errors.push('webhook_check rules.on_timeout must be "allow" or "block"');
         }
+      }
+      break;
+    case 'non_fabrication':
+      // All fields optional (sensible defaults applied at evaluation time:
+      // applies to all action types, content_path='content',
+      // source_path='source_of_truth', on_violation='block').
+      if (rules.action_types !== undefined && !Array.isArray(rules.action_types)) {
+        result.valid = false;
+        result.errors.push('non_fabrication policy rules.action_types must be an array when present');
+      }
+      if (rules.on_violation !== undefined && !['block', 'require_approval'].includes(rules.on_violation)) {
+        result.valid = false;
+        result.errors.push('non_fabrication policy rules.on_violation must be "block" or "require_approval"');
+      }
+      if (rules.content_path !== undefined && typeof rules.content_path !== 'string') {
+        result.valid = false;
+        result.errors.push('non_fabrication policy rules.content_path must be a string');
+      }
+      if (rules.source_path !== undefined && typeof rules.source_path !== 'string') {
+        result.valid = false;
+        result.errors.push('non_fabrication policy rules.source_path must be a string');
       }
       break;
   }

@@ -180,6 +180,44 @@ The parent action must exist. DashClaw returns `404` if `action_id` is unknown.
 
 ---
 
+## Non-Fabrication Policy & Signed Evidence
+
+A `non_fabrication` guard policy verifies that an action's outbound **content** states no fabricated operational fact before the action proceeds.
+
+**How it works.** Attach two fields to a guard call or `createAction`:
+
+- `content` — the outbound text to check (e.g. a drafted message or letter).
+- `source_of_truth` (Node SDK: `sourceOfTruth`) — the facts the content is allowed to state: `{ allowedFacts, requiredFacts, forbiddenPatterns?, extract? }`.
+
+The verifier confirms that every operational token (currency amount, date, percentage, and any caller-registered pattern such as an account or invoice ID) traces verbatim to an allowed fact, that every declared required fact is present, and that no forbidden pattern (e.g. an invented statute citation) appears. It returns **pass** or **block** with structured violations.
+
+**Policy config** (the `rules` of a `non_fabrication` policy):
+
+| field | meaning | default |
+|---|---|---|
+| `action_types` | action types the policy applies to | all types |
+| `content_path` | dotted path in the action context holding the content | `content` |
+| `source_path` | dotted path holding the source-of-truth | `source_of_truth` |
+| `on_violation` | `block` or `require_approval` | `block` |
+
+`require_approval` routes through the existing multi-channel approval flow (dashboard / CLI / Telegram / Discord / PWA — all resolving one decision).
+
+**Fail-closed.** Any error, ambiguity, or a missing/malformed source-of-truth **blocks**; extraction over-blocks rather than under-blocks. The decision, matched policy, and violations are recorded in the guard-decision ledger (visible in `/decisions`, `/replay/[actionId]`, and the trace) and returned on the response under `non_fabrication`.
+
+### Signed, re-verifiable evidence
+
+Each `non_fabrication` decision attempts to attach a **signed Ed25519 proof receipt**, and the compliance export is a **signed, hash-chained bundle** rather than unsigned markdown/JSON. Receipt signing is best-effort and never gates the verdict: if the instance signing key is unavailable, the decision is still enforced and recorded, but `receipt` may be `null`.
+
+- Public key: `GET /.well-known/jwks.json` (also `GET /api/integrity/jwks`).
+- Re-verify a receipt or a bundle: `POST /api/integrity/verify` with `{ "receipt": … }` or `{ "bundle": … }`. Returns `{ "ok": true|false }`. No API key required.
+- The compliance export download (`/api/compliance/exports/:id/download`) returns the signed bundle JSON; the human-readable report lives in `bundle.payload.report`.
+
+The signing key is the DashClaw instance's own Ed25519 key — generated and stored on first use, or supplied via the `DASHCLAW_SIGNING_KEY_JWK` env var. It is published once via the JWKS above; there is no separate key system.
+
+**What a signature proves — and does not.** A valid receipt or bundle proves **integrity** (nothing was altered after issuance), the **verdict**, the **ruleset version** (a content hash of the source-of-truth), and the **issuer signature**. It does **not** prove **time-of-issuance** (`issuedAt` is issuer-asserted; there is no trusted timestamp) nor the **semantic correctness** of prose that carries no extractable operational token.
+
+---
+
 ## Minimal SDK Flow
 
 The canonical Node SDK is `dashclaw` on npm. The app currently depends on SDK package `2.11.1`, and the canonical SDK file `sdk/dashclaw.js` exposes 92 public methods across the core runtime and extension surfaces.

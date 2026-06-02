@@ -14,6 +14,9 @@ import { EVENTS, publishOrgEvent } from './events.js';
 import { getLearningContext } from './learning-context.js';
 import { evaluateRecoveryRecipes } from './recovery.js';
 import { getActBindingMode } from './act-binding.js';
+import { verify } from './integrity/verify.js';
+import { issueReceipt } from './integrity/receipt.js';
+import { getServerSigningKey } from './integrity/server-key.js';
 
 const DECISION_SEVERITY = { allow: 0, warn: 1, require_approval: 2, block: 3 };
 
@@ -55,6 +58,28 @@ export function computeRiskScore(context) {
   }
 
   return Math.max(0, Math.min(score, 100));
+}
+
+// Resolve a dotted field path into the guard context (e.g. "content" or
+// "payload.body.text"). Returns undefined for any missing segment.
+function getByPath(obj, path) {
+  if (obj == null || typeof path !== 'string') return undefined;
+  return path.split('.').reduce((acc, key) => (acc == null ? undefined : acc[key]), obj);
+}
+
+// Replace the leaf at `path` with `marker` if present. Used to keep raw
+// non_fabrication inputs (full outbound content, source-of-truth facts) out of
+// the persisted guard_decisions.context row.
+function redactByPath(obj, path, marker) {
+  if (obj == null || typeof path !== 'string') return;
+  const keys = path.split('.');
+  let cur = obj;
+  for (let i = 0; i < keys.length - 1; i++) {
+    if (cur == null || typeof cur !== 'object') return;
+    cur = cur[keys[i]];
+  }
+  const leaf = keys[keys.length - 1];
+  if (cur && typeof cur === 'object' && leaf in cur) cur[leaf] = marker;
 }
 
 function redactAny(value, findings) {
@@ -225,6 +250,10 @@ export async function evaluateGuard(orgId, context, sql, options = {}) {
   const reasons = [];
   const warnings = [];
   const matchedPolicies = [];
+  // Signed non_fabrication evidence (one entry per matched non_fabrication
+  // policy) and the context field-paths to strip from the persisted ledger row.
+  const nonFabEvidence = [];
+  const nonFabStripPaths = new Set();
   let highestDecision = 'allow';
 
   for (const policy of policies) {
@@ -238,6 +267,10 @@ export async function evaluateGuard(orgId, context, sql, options = {}) {
     const result = await evaluatePolicy(policy, rules, context, sql, orgId, adjustedRiskScore);
     if (result) {
       applyResult(result, policy, reasons, warnings, matchedPolicies);
+      if (result.nonFabrication) {
+        nonFabEvidence.push(result.nonFabrication);
+        for (const p of result.stripPaths || []) nonFabStripPaths.add(p);
+      }
       if (DECISION_SEVERITY[result.action] > DECISION_SEVERITY[highestDecision]) {
         highestDecision = result.action;
       }
@@ -312,6 +345,12 @@ export async function evaluateGuard(orgId, context, sql, options = {}) {
   if (dlpFindings.length > 0) {
     console.warn(`[Guard] Redacted ${dlpFindings.length} sensitive pattern(s) from guard_decisions.context before storing.`);
   }
+  // Keep raw non_fabrication inputs (full outbound content + source-of-truth
+  // facts) out of the audit row — they can be large and carry the very PII the
+  // verifier guards. The signed evidence stores only hashes + structured
+  // violations, which is what re-verification needs.
+  for (const p of nonFabStripPaths) redactByPath(safeContextForLog, p, '[redacted:non_fabrication_input]');
+  const evidenceJson = nonFabEvidence.length > 0 ? JSON.stringify(nonFabEvidence) : null;
 
   const verificationStatus = context.verification_status || 'unverified';
   // Phase 2b (issue #120, design by @piiiico): replay-check outcome
@@ -359,7 +398,7 @@ export async function evaluateGuard(orgId, context, sql, options = {}) {
   // `void` makes the floating-promise intent explicit (matches the
   // publishOrgEvent pattern below) so static analysis won't flag it.
   void sql`
-    INSERT INTO guard_decisions (id, org_id, agent_id, agent_name, verification_status, replay_status, jti, act_status, act_hash, decision, reason, matched_policies, context, risk_score, action_type, created_at)
+    INSERT INTO guard_decisions (id, org_id, agent_id, agent_name, verification_status, replay_status, jti, act_status, act_hash, decision, reason, matched_policies, context, evidence, risk_score, action_type, created_at)
     VALUES (
       ${decisionId},
       ${orgId},
@@ -374,6 +413,7 @@ export async function evaluateGuard(orgId, context, sql, options = {}) {
       ${reasons.join('; ') || null},
       ${JSON.stringify(matchedPolicies)},
       ${JSON.stringify(safeContextForLog)},
+      ${evidenceJson},
       ${adjustedRiskScore},
       ${context.action_type || null},
       ${evaluated_at}
@@ -441,6 +481,9 @@ export async function evaluateGuard(orgId, context, sql, options = {}) {
     reason: reasons.join('; ') || null, // Primary reason string
     signals: [...warnings, ...reasons], // Combined signals for the SDK
     matched_policies: matchedPolicies,
+    // Signed non_fabrication evidence (verdict + violations + re-verifiable
+    // receipt) for each matched non_fabrication policy. Omitted when none ran.
+    ...(nonFabEvidence.length > 0 ? { non_fabrication: nonFabEvidence } : {}),
     risk_score: adjustedRiskScore,
     agent_risk_score: agentRiskScore,
     verification_status: verificationStatus,
@@ -522,6 +565,95 @@ export async function evaluatePolicy(policy, rules, context, sql, orgId, effecti
     case 'webhook_check':
       // Handled separately after local policy loop
       return null;
+
+    case 'non_fabrication': {
+      // Scope: when action_types is set, only govern those types.
+      const actionTypes = Array.isArray(rules.action_types) ? rules.action_types : null;
+      if (actionTypes && actionTypes.length > 0 && !actionTypes.includes(context.action_type)) {
+        return null;
+      }
+
+      const contentPath = (typeof rules.content_path === 'string' && rules.content_path) || 'content';
+      const sourcePath = (typeof rules.source_path === 'string' && rules.source_path) || 'source_of_truth';
+      const onViolation = rules.on_violation === 'require_approval' ? 'require_approval' : 'block';
+      const stripPaths = [contentPath, sourcePath];
+
+      const content = getByPath(context, contentPath);
+      // No outbound content attached — the policy governs only actions that
+      // carry checkable content, so this is a no-op (not a violation).
+      if (content == null || content === '') return null;
+
+      // Best-effort receipt issuance. The verdict is ALWAYS enforced; signing
+      // the evidence is a separate concern that never gates block/allow, so a
+      // signing-key misconfiguration cannot let fabricated content through.
+      const issue = async (verifyResult, source) => {
+        try {
+          const key = await getServerSigningKey(sql);
+          return issueReceipt(
+            verifyResult,
+            String(content),
+            source,
+            { kid: key.kid, privateKeyJwk: key.privateKeyJwk },
+            new Date().toISOString(),
+          );
+        } catch (e) {
+          console.warn('[Guard] non_fabrication receipt signing failed (verdict still enforced):', e.message);
+          return null;
+        }
+      };
+
+      const source = getByPath(context, sourcePath);
+      const sourceValid =
+        source && typeof source === 'object' && !Array.isArray(source) &&
+        Array.isArray(source.allowedFacts) && Array.isArray(source.requiredFacts);
+
+      // Content present but unverifiable (non-text content, or a missing /
+      // malformed source-of-truth) → fail closed with the hardest disposition.
+      if (typeof content !== 'string' || !sourceValid) {
+        const verdict = {
+          verdict: 'block',
+          violations: [
+            sourceValid
+              ? { code: 'invalid_content', label: 'content' }
+              : { code: 'missing_source', label: 'source_of_truth' },
+          ],
+        };
+        const receipt = sourceValid && typeof content === 'string' ? await issue(verdict, source) : null;
+        return {
+          action: 'block',
+          reason: sourceValid
+            ? 'Non-fabrication: content is not verifiable text (fail-closed)'
+            : 'Non-fabrication: source-of-truth missing or malformed (fail-closed)',
+          nonFabrication: { policy_id: policy.id, verdict: 'block', violations: verdict.violations, receipt },
+          stripPaths,
+        };
+      }
+
+      const verifyResult = verify(content, source);
+      const receipt = await issue(verifyResult, source);
+
+      if (verifyResult.verdict === 'pass') {
+        // Passing decisions still carry a signed receipt — proof the content was
+        // checked and grounded, which is the point of the integrity guarantee.
+        return {
+          action: 'allow',
+          reason: 'Non-fabrication: pass',
+          nonFabrication: { policy_id: policy.id, verdict: 'pass', violations: [], receipt },
+          stripPaths,
+        };
+      }
+
+      const summary = verifyResult.violations
+        .map((v) => (v.detail ? `${v.label}: ${v.detail}` : v.code === 'missing_required' ? `missing ${v.label}` : v.label))
+        .slice(0, 5)
+        .join(', ');
+      return {
+        action: onViolation,
+        reason: `Non-fabrication: ${verifyResult.violations[0].code} (${summary})`,
+        nonFabrication: { policy_id: policy.id, verdict: 'block', violations: verifyResult.violations, receipt },
+        stripPaths,
+      };
+    }
 
     case 'behavioral_anomaly': {
       if (!isEmbeddingsEnabled()) {

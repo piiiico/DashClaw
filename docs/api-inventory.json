@@ -46,10 +46,10 @@
     ]
   },
   "summary": {
-    "total_routes": 259,
+    "total_routes": 261,
     "stable_routes": 46,
     "beta_routes": 24,
-    "experimental_routes": 189
+    "experimental_routes": 191
   },
   "routes": [
     {
@@ -1502,6 +1502,24 @@
       "maturity": "experimental",
       "matched_prefix": "(default)",
       "file": "app/api/integrations/health/refresh/route.js"
+    },
+    {
+      "path": "/api/integrity/jwks",
+      "methods": [
+        "GET"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/integrity/jwks/route.js"
+    },
+    {
+      "path": "/api/integrity/verify",
+      "methods": [
+        "POST"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/integrity/verify/route.js"
     },
     {
       "path": "/api/keys",

@@ -530,8 +530,24 @@ export const guardDecisions = pgTable('guard_decisions', {
   reason: text('reason'),
   matchedPolicies: text('matched_policies'),
   context: text('context'),
+  // Non-fabrication integrity: the signed proof receipt + structured violations
+  // for a non_fabrication decision. JSON text, null for every other decision.
+  evidence: text('evidence'),
   riskScore: integer('risk_score'),
   actionType: text('action_type'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+// Instance-global Ed25519 signing key (issuer of proof receipts + signed
+// compliance bundles). Not org-scoped; singleton via a constant id. See
+// drizzle/0013_non_fabrication_integrity.sql and app/lib/integrity/server-key.js.
+export const serverSigningKeys = pgTable('server_signing_keys', {
+  id: text('id').primaryKey(),
+  kid: text('kid').notNull(),
+  alg: text('alg').notNull().default('EdDSA'),
+  privateJwk: text('private_jwk').notNull(),
+  publicJwk: text('public_jwk').notNull(),
+  active: integer('active').notNull().default(1),
   createdAt: timestamp('created_at').defaultNow(),
 });
 

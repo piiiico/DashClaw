@@ -46,6 +46,9 @@ const nextConfig = {
       { source: '/api/actions/assumptions', destination: '/api/assumptions' },
       { source: '/api/actions/assumptions/:assumptionId', destination: '/api/assumptions/:assumptionId' },
       { source: '/api/actions/signals', destination: '/api/signals' },
+      // Standard OIDC-style discovery path for the instance's public signing key
+      // (used to re-verify integrity receipts + signed compliance bundles).
+      { source: '/.well-known/jwks.json', destination: '/api/integrity/jwks' },
     ];
   },
   // Permanent redirects for retired surfaces.
