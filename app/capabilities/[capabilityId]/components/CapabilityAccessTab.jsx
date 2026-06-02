@@ -19,6 +19,12 @@ export default function CapabilityAccessTab({ capabilityId }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
 
+  // Dry-run: resolve the effective access decision for a specific agent.
+  const [checkAgentId, setCheckAgentId] = useState('');
+  const [checkResult, setCheckResult] = useState(null);
+  const [checking, setChecking] = useState(false);
+  const [checkError, setCheckError] = useState(null);
+
   async function loadRules() {
     try {
       const res = await fetch(`/api/capabilities/${capabilityId}/access`);
@@ -72,14 +78,72 @@ export default function CapabilityAccessTab({ capabilityId }) {
     } catch { /* ignore */ }
   }
 
+  async function handleCheck() {
+    if (!checkAgentId.trim()) return;
+    setChecking(true);
+    setCheckError(null);
+    setCheckResult(null);
+    try {
+      const res = await fetch(`/api/capabilities/${capabilityId}/access/check?agent_id=${encodeURIComponent(checkAgentId.trim())}`);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setCheckError(data.error || 'Access check failed');
+        return;
+      }
+      setCheckResult(data);
+    } catch {
+      setCheckError('Access check failed');
+    } finally {
+      setChecking(false);
+    }
+  }
+
   if (loading) {
     return <div className="text-sm text-tertiary py-4">Loading access rules...</div>;
   }
 
   const inputClass = 'w-full px-3 py-2 bg-surface-tertiary border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-brand';
 
+  const checkPill = checkResult ? (ACCESS_PILL[checkResult.access] || ACCESS_PILL.deny) : null;
+
   return (
     <div className="space-y-4">
+      {/* Dry-run effective-access check */}
+      <div className="rounded-lg border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] p-4">
+        <div className="mb-2 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-secondary">
+          <ShieldCheck className="w-3.5 h-3.5 text-brand" /> Check effective access
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            type="text"
+            value={checkAgentId}
+            onChange={(e) => setCheckAgentId(e.target.value)}
+            placeholder="Agent ID to resolve"
+            aria-label="Agent ID to check"
+            className="min-w-[160px] flex-1 px-3 py-2 bg-surface-tertiary border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-brand"
+          />
+          <button
+            onClick={handleCheck}
+            disabled={checking || !checkAgentId.trim()}
+            className="px-3 py-2 rounded-lg text-xs font-medium bg-brand/10 text-brand border border-brand/20 hover:bg-brand/20 transition-colors disabled:opacity-50"
+          >
+            {checking ? 'Checking…' : 'Check access'}
+          </button>
+        </div>
+        {checkError && <div className="mt-2 text-xs text-error" role="alert">{checkError}</div>}
+        {checkResult && (
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs" role="status">
+            <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium border ${checkPill.color}`}>{checkPill.label}</span>
+            <span className="text-tertiary">
+              {checkResult.rule
+                ? (checkResult.rule.agent_id ? `Matched rule for ${checkResult.rule.agent_id}` : 'Matched org-wide default rule')
+                : 'No rule matched — default allow'}
+              {checkResult.rule?.reason ? ` · ${checkResult.rule.reason}` : ''}
+            </span>
+          </div>
+        )}
+      </div>
+
       <div className="flex items-center justify-between">
         <span className="text-xs text-tertiary">
           {rules.length === 0 ? 'No access rules — all agents can invoke this capability.' : `${rules.length} rule${rules.length !== 1 ? 's' : ''} configured`}
