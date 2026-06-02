@@ -152,9 +152,20 @@ Six more committed batches working the Medium/Low/partially-wired list, each lin
 
 Read `SYNC_AUDIT.md` (backend `file:line` map) alongside this doc and continue:
 
-- **Scoring (pt 2)**: dimension CRUD on existing profiles (`/profiles/[id]/dimensions[/[dimId]]`); calibrate `metrics`/`agent_id` params.
-- **Settings**: governance flags card (`PREDICTIVE_RISK_*`, cost threshold via POST `/api/settings`); setting DELETE ("Disconnect"); LLM-provider badge from `/api/settings/llm-status`.
-- **Knowledge**: collection edit → PATCH `/collections/[id]`; created/updated timestamps; item status enum alignment.
-- **Editing/orphans**: message-thread resolve/summary (PATCH `/api/messages/threads`); compliance-schedule rename + format/window display; policy `proof` export + `test` runner + `/policies/templates` catalog; `/api/usage/costs`; model-strategy `/complete` test; agent-session PATCH; agent connections POST + `auth_type`/`plan_name` display; org rename + role-scoped keys.
+- **Editing/orphans**: compliance-schedule rename + format/window display; policy `proof` export + `test` runner + `/policies/templates` catalog; `/api/usage/costs`; model-strategy `/complete` test; agent-session PATCH; agent connections POST + `auth_type`/`plan_name` display; org rename + role-scoped keys.
 - **Displays**: capability pricing + `docs_url` + health-summary detail fields; goal/milestone `cost_estimate`; decisions `swarm_id`/`model` filters; guard-decision integrity fields; org-wide artifacts list/delete; drift `drift_type`/`dimension`/ack attribution; code-session stored fields; setup/proof inline breakdown; workflow per-step resume; outcome-sweep indicator.
-- **Stale-frontend bugs (Notes)**: Handoffs tab `GET /api/handoffs` 405 (only POST exists); `/routing` + `/feedback` target archived APIs — decide endpoint-vs-repoint.
+- **Stale-frontend bugs — `/routing` + `/feedback`** (AWAITING USER DECISION): both pages are large (580 / 385 lines), fully-built, demo-aware, and target APIs that live ONLY under `app/api/_archive/` (`/api/routing/*`, `/api/feedback/*`). Per the governance boundary ("do not extend archived") they're dead in non-demo mode. Removal is outward-facing (deletes feature pages + Sidebar nav entries), so it was flagged to the user rather than done autonomously: delete vs. hide-from-nav vs. leave-with-deprecation-notice. (The SDK's `submitFeedback` → `POST /api/feedback` is broken for the same reason; resolve together.)
+
+## Tail pass 3 (2026-06-02, session continuation)
+
+Five more clusters + one real bug fix, each lint + full-suite + build gated (suite 2505 → 2519). New `.jsx` get tests; `.js` display/filter plumbing is build-verified.
+
+| Area | What shipped | Commit |
+|------|-------------|--------|
+| **Scoring (pt 2)** | Post-creation dimension CRUD ("Manage dims" → POST/PATCH/DELETE `/profiles/[id]/dimensions[/[dimId]]`); calibrate `agent_id` + per-metric toggle chips. `scoring-page.test.jsx` +3. | `988afacd` |
+| **Settings governance** | New `/settings?tab=governance` (`GovernancePanel.jsx`): predictive-risk toggle+threshold, cost-alert threshold, outcome timeout; per-setting DELETE ("Remove"); LLM-provider badge from `/api/settings/llm-status`. **Predictive keys stored with `category:'general'`** (guard reads them with that exact filter — the audit's `'system'` would have been a silent no-op). `governance-panel.test.jsx` (3). | `12d46757` |
+| **Knowledge** | Collection edit form → PATCH `/collections/[id]` (the list pencil dead-ended read-only); created/updated timestamps; item-status enum verified-complete (only pending→indexed\|failed). Renamed detail page `.js`→`.jsx`. `knowledge-detail.page.test.jsx` (2). | `162310b9` |
+| **Message threads** | Resolve/Reopen toggle + inline editable summary → PATCH `/api/messages/threads`; `onThreadUpdated` refreshes the parent list. Renamed `ThreadConversation.js`→`.jsx`. `thread-conversation.test.jsx` (2). | `ca04cbf0` + `65128093` (fixup — the rename committed at 100% similarity, so the content landed in a follow-up) |
+| **Handoffs GET (real bug)** | `/api/handoffs` only had POST, so `GET /api/handoffs` 405'd — breaking the Workspace Handoffs tab AND the SDK read methods (Node `getLatestHandoff`, Python `get_handoffs`/`get_latest_handoff`). Added `GET` (list + `?latest=true`) backed by new `listHandoffs()`; the tab now reads the real `bundle` shape (summary/decisions_made/open_loops/state_snapshot). `handoffs.route.test.js` +4. CHANGELOG + api-inventory/OpenAPI regenerated. | `9ca8f2ad` |
+
+**Suite:** 2519 passed / 5 skipped. **Protected areas:** none touched. **`plugins/*`** left unstaged throughout (one livingcode-refresh attempt spuriously zero-byted `dashclaw-governance-plugin.zip` via a transient Windows file lock while rebuilding it from the user's unstaged plugin edits; restored from the pushed tip and kept out of the commit).
