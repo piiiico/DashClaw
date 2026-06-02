@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { mkdirSync, rmSync, cpSync, writeFileSync, existsSync } from 'node:fs';
-import { execFileSync } from 'node:child_process';
+import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { buildMcpbManifest, readMcpServerVersion } from './lib/build-mcpb-manifest.mjs';
@@ -11,9 +11,15 @@ const MCP = join(ROOT, 'mcp-server');
 const STAGE = join(ROOT, 'dist', 'mcpb-build');
 const OUT = join(ROOT, 'dist', 'dashclaw.mcpb');
 
-// Windows uses npm.cmd / npx.cmd; Linux/macOS (Vercel CI) use npm / npx.
-const npmBin = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-const npxBin = process.platform === 'win32' ? 'npx.cmd' : 'npx';
+// npm/npx are .cmd shims on Windows. On modern Node, spawning a .cmd directly
+// (execFile/spawn) throws EINVAL — the CVE-2024-27980 hardening. Run through a
+// shell instead (execSync), which also resolves `npm`/`npx` to their .cmd on
+// Windows and `npm`/`npx` on POSIX/CI. Quote args with spaces (e.g. a repo path
+// containing a space). All args here are build-time constants — no injection risk.
+function run(cmd, args, opts = {}) {
+  const line = [cmd, ...args.map((a) => (/\s/.test(a) ? `"${a}"` : a))].join(' ');
+  execSync(line, { stdio: 'inherit', ...opts });
+}
 
 // 1. Fresh staging dir
 rmSync(STAGE, { recursive: true, force: true });
@@ -26,7 +32,7 @@ for (const f of ['bin', 'lib', 'package.json', 'package-lock.json', 'LICENSE', '
 }
 
 // 3. Install production deps into the bundle
-execFileSync(npmBin, ['ci', '--omit=dev'], { cwd: STAGE, stdio: 'inherit' });
+run('npm', ['ci', '--omit=dev'], { cwd: STAGE });
 
 // 4. Generate manifest.json with the version from package.json (never hardcoded)
 const version = readMcpServerVersion();
@@ -36,9 +42,6 @@ writeFileSync(
 );
 
 // 5. Pack the bundle
-execFileSync(npxBin, ['--yes', '@anthropic-ai/mcpb@latest', 'pack', STAGE, OUT], {
-  cwd: ROOT,
-  stdio: 'inherit',
-});
+run('npx', ['--yes', '@anthropic-ai/mcpb@latest', 'pack', STAGE, OUT], { cwd: ROOT });
 
 console.log(`\nBuilt ${OUT} (v${version})`);
