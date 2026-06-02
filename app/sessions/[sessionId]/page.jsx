@@ -37,11 +37,15 @@ const eventIcons = {
   failed: XCircle,
 };
 
+const TERMINAL_STATUSES = ['finished', 'failed', 'closed'];
+
 export default function SessionDetailPage() {
   const { sessionId } = useParams();
   const [session, setSession] = useState(null);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [patching, setPatching] = useState(false);
+  const [actionError, setActionError] = useState(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -62,6 +66,31 @@ export default function SessionDetailPage() {
       console.error('Failed to fetch session detail:', error);
     } finally {
       setLoading(false);
+    }
+  }, [sessionId]);
+
+  // Status controls — the PATCH route was unreachable from the UI, so a
+  // blocked/stalled session could never be resolved or finished here. Honors
+  // the closed-session 409 by surfacing the error instead of silently failing.
+  const handlePatch = useCallback(async (updates) => {
+    setPatching(true);
+    setActionError(null);
+    try {
+      const res = await fetch(`/api/sessions/${sessionId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setActionError(data.error || 'Update failed');
+        return;
+      }
+      if (data.session) setSession(data.session);
+    } catch {
+      setActionError('Update failed');
+    } finally {
+      setPatching(false);
     }
   }, [sessionId]);
 
@@ -109,13 +138,33 @@ export default function SessionDetailPage() {
       breadcrumbs={['Observe', 'Sessions', session.agent_id]}
       maturity="beta"
       actions={
-        <button
-          onClick={() => { setLoading(true); fetchData(); }}
-          className="flex items-center gap-2 px-3 py-1.5 text-sm text-secondary hover:text-white bg-surface-tertiary border border-[rgba(255,255,255,0.06)] rounded-lg hover:border-[rgba(255,255,255,0.12)] transition-colors duration-150"
-        >
-          <RotateCw size={14} />
-          Refresh
-        </button>
+        <div className="flex items-center gap-2">
+          {session.status === 'blocked' && (
+            <button
+              onClick={() => handlePatch({ status: 'running' })}
+              disabled={patching}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm text-success hover:text-success bg-success-subtle border border-success/20 rounded-lg disabled:opacity-50 transition-colors duration-150"
+            >
+              Clear block
+            </button>
+          )}
+          {!TERMINAL_STATUSES.includes(session.status) && (
+            <button
+              onClick={() => handlePatch({ status: 'finished' })}
+              disabled={patching}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm text-secondary hover:text-white bg-surface-tertiary border border-[rgba(255,255,255,0.06)] rounded-lg hover:border-[rgba(255,255,255,0.12)] disabled:opacity-50 transition-colors duration-150"
+            >
+              Mark finished
+            </button>
+          )}
+          <button
+            onClick={() => { setLoading(true); fetchData(); }}
+            className="flex items-center gap-2 px-3 py-1.5 text-sm text-secondary hover:text-white bg-surface-tertiary border border-[rgba(255,255,255,0.06)] rounded-lg hover:border-[rgba(255,255,255,0.12)] transition-colors duration-150"
+          >
+            <RotateCw size={14} />
+            Refresh
+          </button>
+        </div>
       }
     >
       {/* Back link */}
@@ -124,6 +173,12 @@ export default function SessionDetailPage() {
           <ArrowLeft size={14} /> Back to Sessions
         </Link>
       </div>
+
+      {actionError && (
+        <div role="alert" className="mb-4 px-4 py-2 rounded-lg bg-error-subtle border border-error/20 text-sm text-error">
+          {actionError}
+        </div>
+      )}
 
       {/* Status + Meta */}
       <div className="flex flex-wrap items-center gap-4 mb-6">
