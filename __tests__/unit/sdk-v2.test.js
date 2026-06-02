@@ -601,20 +601,6 @@ describe('DashClaw v2 SDK', () => {
     });
   });
 
-  // --- submitFeedback ---
-
-  describe('submitFeedback', () => {
-    it('POSTs to /api/feedback with agent_id', async () => {
-      await claw.submitFeedback({ action_id: 'act_123', rating: 4, comment: 'Great' });
-      const [url, opts] = fetch.mock.calls[0];
-      expect(url).toBe('http://localhost:3000/api/feedback');
-      const body = JSON.parse(opts.body);
-      expect(body.agent_id).toBe('test-agent');
-      expect(body.rating).toBe(4);
-      expect(body.action_id).toBe('act_123');
-    });
-  });
-
   // --- createThread ---
 
   describe('createThread', () => {

@@ -207,11 +207,11 @@ DashClaw ships two Node SDK entry points and a Python SDK.
 | Legacy Node SDK | `import { DashClaw } from 'dashclaw/legacy'` from `sdk/legacy/dashclaw-v1.js` | Compatibility layer for older integrations. |
 | Python SDK | `sdk-python/dashclaw/client.py` | Broad Python surface with route-contract parity for critical domains. |
 
-The canonical Node SDK currently exposes **108 public methods** in `sdk/dashclaw.js` and the Python SDK **227** in `sdk-python/dashclaw/client.py` (both reproducible via `npm run sdk:count` — excludes the constructor and `_`-private methods). The Node surface includes:
+The canonical Node SDK currently exposes **107 public methods** in `sdk/dashclaw.js` and the Python SDK **211** in `sdk-python/dashclaw/client.py` (both reproducible via `npm run sdk:count` — excludes the constructor and `_`-private methods). The Node surface includes:
 
 - core governance: `guard`, `createAction`, `updateOutcome`, `getAction`, `approveAction`, `waitForApproval`, `recordAssumption`
 - durable finality: `reportActionOutcome`, `getActionOutcome`, `reportActionSuccess`, `reportActionFailure`, `reportActionPartial`, `deriveIdempotencyKey`
-- action graph, loops, signals, learning, scoring, messaging, handoffs, security scan, feedback, threads, sync, sessions
+- action graph, loops, signals, learning, scoring, messaging, handoffs, security scan, threads, sync, sessions
 - full Prompt Library management: templates, versions, `activatePromptVersion` (activating one deactivates the others), `getPromptStats`, and `listPromptRuns`
 - learning ledger: `recordDecision` (auto-injects `agent_id`) and `getLearningRecommendations`
 - side-effect-free dry-runs: `simulatePolicy` (replays a proposed policy against recent historical actions) and `previewScorer` (validates a scorer config without writing an `eval_scores` row)

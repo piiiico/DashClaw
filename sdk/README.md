@@ -447,21 +447,6 @@ if (result.recommendation === 'block') {
 }
 ```
 
-### Feedback
-- `submitFeedback({ action_id, rating, comment, category, tags, metadata })` -- Submit feedback on an action.
-
-```javascript
-// Submit feedback on an action
-await claw.submitFeedback({
-  action_id: 'act_123',
-  rating: 5,
-  comment: 'Deploy was smooth',
-  category: 'deployment',
-  tags: ['fast', 'clean'],
-  metadata: { deploy_duration_ms: 1200 }
-});
-```
-
 ### Context Threads
 - `createThread(thread)` -- Create a context thread for tracking multi-step work.
 - `addThreadEntry(threadId, content, entryType)` -- Add an entry to a context thread.

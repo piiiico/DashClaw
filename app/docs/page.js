@@ -147,8 +147,6 @@ const navItems = [
   { href: '#getLatestHandoff', label: 'getLatestHandoff', indent: true },
   { href: '#security-scanning', label: 'Security Scanning' },
   { href: '#scanPromptInjection', label: 'scanPromptInjection', indent: true },
-  { href: '#feedback', label: 'User Feedback' },
-  { href: '#submitFeedback', label: 'submitFeedback', indent: true },
   { href: '#context-threads', label: 'Context Threads' },
   { href: '#createThread', label: 'createThread', indent: true },
   { href: '#addThreadEntry', label: 'addThreadEntry', indent: true },
@@ -1426,44 +1424,6 @@ if (!result.clean) {
                   pythonSnippet={`result = claw.scan_prompt_injection(user_input)
 if not result["clean"]:
     print(f"Injection risk: {result['risk_level']}")`}
-                />
-              }
-            />
-          </section>
-
-          {/* ── User Feedback ── */}
-          <section id="feedback" className="scroll-mt-20 pt-12 border-t border-border">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-brand-subtle flex items-center justify-center">
-                <MessageSquare size={16} className="text-brand" />
-              </div>
-              <h2 className="text-2xl font-bold tracking-tight">User Feedback</h2>
-            </div>
-
-            <MethodEntry
-              id="submitFeedback"
-              signature="claw.submitFeedback(params) / claw.submit_feedback(**kwargs)"
-              description="Submit feedback for a specific agent action. Used for human evaluation of agent performance."
-              params={[
-                { name: 'action_id', type: 'string', required: true, desc: 'Target action ID' },
-                { name: 'rating', type: 'number', required: true, desc: '1-5 star rating' },
-                { name: 'comment', type: 'string', required: false, desc: 'Textual feedback' },
-                { name: 'category', type: 'string', required: false, desc: 'Grouping tag' },
-              ]}
-              example={
-                <DocsCodeTabs
-                  nodeSnippet={`await claw.submitFeedback({
-  action_id: 'act_4b2s8...',
-  rating: 4,
-  comment: 'Action was safe and effective but took longer than expected.',
-  category: 'performance_review'
-});`}
-                  pythonSnippet={`claw.submit_feedback(
-    action_id="act_4b2s8...",
-    rating=4,
-    comment="Action was safe and effective but took longer than expected.",
-    category="performance_review"
-)`}
                 />
               }
             />

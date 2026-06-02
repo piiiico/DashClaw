@@ -754,25 +754,6 @@ class DashClaw {
   }
 
   // ---------------------------------------------------------------------------
-  // User Feedback
-  // ---------------------------------------------------------------------------
-
-  /**
-   * POST /api/feedback — Submit user feedback linked to an action.
-   */
-  async submitFeedback({ action_id, rating, comment, category, tags, metadata }) {
-    return this._request('/api/feedback', 'POST', {
-      action_id,
-      agent_id: this.agentId,
-      rating,
-      comment,
-      category,
-      tags,
-      metadata,
-    });
-  }
-
-  // ---------------------------------------------------------------------------
   // Context Threads
   // ---------------------------------------------------------------------------
 

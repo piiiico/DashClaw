@@ -1,6 +1,6 @@
 # DashClaw Python SDK: Agent Decision Infrastructure
 
-Full-featured decision governance toolkit for the [DashClaw](https://github.com/ucsandman/DashClaw) platform. Broad, evolving surface area across action recording, guard enforcement, compliance, routing, messaging, and more. Zero dependencies, requires Python 3.7+.
+Full-featured decision governance toolkit for the [DashClaw](https://github.com/ucsandman/DashClaw) platform. Broad, evolving surface area across action recording, guard enforcement, compliance, messaging, and more. Zero dependencies, requires Python 3.7+.
 
 DashClaw treats every agent action as a governed decision. The SDK provides decision recording, policy enforcement, assumption tracking, and compliance mapping.
 
@@ -696,57 +696,6 @@ evidence = claw.get_compliance_evidence(window="30d")
 | `list_frameworks()` | List available compliance frameworks |
 | `get_compliance_evidence(window="7d")` | Get live guard decision evidence. Windows: 7d, 30d, 90d |
 
-## Task Routing
-
-Route tasks to agents based on capabilities, availability, and workload.
-
-```python
-# Register an agent in the routing pool
-agent = claw.register_routing_agent(
-    name="data-analyst",
-    capabilities=["data-analysis", "reporting"],
-    max_concurrent=3,
-    endpoint="https://agents.example.com/analyst",
-)
-
-# Submit a task for auto-routing
-task = claw.submit_routing_task(
-    title="Analyze quarterly metrics",
-    description="Pull Q4 data and generate summary report",
-    required_skills=["data-analysis", "reporting"],
-    urgency="high",
-    timeout_seconds=600,
-    callback_url="https://hooks.example.com/task-done",
-)
-print(f"Task {task['task_id']} assigned to {task.get('assigned_agent', {}).get('name', 'queue')}")
-
-# Complete a task
-claw.complete_routing_task(task["task_id"], result={"summary": "Report generated"})
-
-# List agents and tasks
-agents = claw.list_routing_agents(status="available")
-tasks = claw.list_routing_tasks(status="pending")
-
-# Monitor routing health
-stats = claw.get_routing_stats()
-health = claw.get_routing_health()
-```
-
-**Methods:**
-
-| Method | Description |
-|--------|-------------|
-| `list_routing_agents(status=None)` | List agents. Filter by status: available, busy, offline |
-| `register_routing_agent(name, capabilities=None, max_concurrent=1, endpoint=None)` | Register agent in routing pool |
-| `get_routing_agent(agent_id)` | Get agent with metrics |
-| `update_routing_agent_status(agent_id, status)` | Update agent status |
-| `delete_routing_agent(agent_id)` | Delete agent from pool |
-| `list_routing_tasks(status=None, agent_id=None, limit=50, offset=0)` | List tasks with filters |
-| `submit_routing_task(title, description=None, required_skills=None, urgency="medium", timeout_seconds=None, max_retries=None, callback_url=None)` | Submit task for auto-routing |
-| `complete_routing_task(task_id, result=None)` | Complete a task |
-| `get_routing_stats()` | Get routing statistics |
-| `get_routing_health()` | Get health status |
-
 ## Compliance Schedules
 
 Define cron-based schedules that auto-export compliance evidence (e.g. SOC 2, HIPAA, GDPR) to your S3 bucket or webhook target:
@@ -1141,7 +1090,6 @@ The Node.js v2 SDK exposes a curated subset of **87 methods** focused on agent g
 | Handoffs | `createHandoff` | `create_handoff` | Yes |
 | Handoffs | `getLatestHandoff` | `get_latest_handoff` | Yes |
 | Security | `scanPromptInjection` | `scan_prompt_injection` | Yes |
-| Feedback | `submitFeedback` | `submit_feedback` | Yes |
 | Threads | `createThread` | `create_thread` | Yes |
 | Threads | `addThreadEntry` | `add_thread_entry` | Yes |
 | Threads | `closeThread` | `close_thread` | Yes |

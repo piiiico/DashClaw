@@ -47,7 +47,7 @@ The canonical Node SDK already includes the core runtime and a meaningful portio
 
 - guard, actions, assumptions, approvals,
 - loops, signals, learning, scoring,
-- messaging, handoffs, security scanning, feedback, threads, sync,
+- messaging, handoffs, security scanning, threads, sync,
 - sessions and action graph,
 - durable execution finality (`reportActionOutcome`, `getActionOutcome`, convenience wrappers, `deriveIdempotencyKey`),
 - the full Prompt Library surface (template CRUD, version CRUD, `activatePromptVersion`, `renderPrompt`, `getPromptStats`, `listPromptRuns`),
@@ -121,10 +121,10 @@ That is acceptable temporarily, but it should not define future product directio
 | Prompt management (templates / versions / render) | Yes | Limited overlap | Yes | Canonical in main SDK — full Prompt Library surface (template CRUD, version CRUD + `activatePromptVersion`, `renderPrompt`, `getPromptStats`, `listPromptRuns`) |
 | Learning analytics (velocity / curves / lessons / maturity) | Yes | Limited overlap | Yes | Canonical in main SDK |
 | Security scanning (prompt injection / content) | Yes | Yes | Yes | Canonical in main SDK |
-| Feedback (`/api/feedback`, rating + comment on completed actions) | Partial (`submitFeedback` only) | Yes | Yes | Compatibility-heavy; low-priority canonical promotion. Distinct from the durable-finality `outcome` row above, which is the terminal state of an action, not a rating. |
+| Feedback (`/api/feedback`) | No (removed) | Yes | No (removed) | **Endpoint archived** (`app/api/_archive/feedback/*`). Canonical `submitFeedback` and the Python feedback suite (`submit_feedback`/`list_feedback`/`get_feedback`/`resolve_feedback`/`delete_feedback`/`get_feedback_stats`) were removed as a **breaking** change — they only ever 404'd. Legacy Node retains its frozen shims. |
 | Drift detection | No canonical wrapper yet | Yes | Yes | Admin-heavy; future promotion candidate |
 | Pairing / identities | No canonical wrapper yet for full shape | Yes | Yes | Compatibility-heavy, future promotion candidate |
-| Routing | No canonical wrapper yet for full shape | Yes | Yes | Future promotion candidate |
+| Routing (`/api/routing/*`) | No | Yes | No (removed) | **Endpoints archived** (`app/api/_archive/routing/*`). The Python routing suite (`list_routing_agents`/`register_routing_agent`/`get_routing_agent`/`update_routing_agent_status`/`delete_routing_agent`/`list_routing_tasks`/`submit_routing_task`/`complete_routing_task`/`get_routing_stats`/`get_routing_health`) was removed as a **breaking** change — they only ever 404'd. Legacy Node retains its frozen shims. The live agent-registry/matching logic in `app/lib/routing/*` is unrelated and stays. |
 | Compliance | No canonical wrapper yet for full shape | Yes | Yes | Remain compatibility and admin-heavy for now |
 | Webhooks / activity logs | No canonical wrapper yet for full shape | Yes | Yes | Remain compatibility and admin-heavy for now |
 | Preferences / digest / ideas | No | Yes | Yes | Low-priority consolidation |
