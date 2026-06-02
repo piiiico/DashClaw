@@ -132,3 +132,29 @@ Still open from `SYNC_AUDIT.md` — each route exists; only the UI is missing. B
 **Modified (13):** `app/scoring/page.jsx`, `app/compliance/exports/page.js`, `app/swarm/page.js`, `app/decisions/[actionId]/page.js`, `app/actions/[actionId]/page.js`, `app/mission-control/components/RuntimeSummaryCard.jsx`, `app/agents/page.js`, `app/assumptions/page.js`, `app/workflows/[templateId]/runs/[runActionId]/page.jsx`, `app/workflows/[templateId]/runs/[runActionId]/components/WorkflowRunHeader.jsx`, `app/components/ArtifactsTab.jsx`, `app/drift/page.js`, `app/evaluations/page.js`, `app/capabilities/[capabilityId]/components/CapabilityAccessTab.jsx`.
 
 **Migrations:** none. **Protected areas touched:** none (no OAuth/MCP/auth/middleware/billing; `plugins/*` left unstaged throughout).
+
+---
+
+## Tail pass 2 (2026-06-02) — Medium/Low continuation
+
+Six more committed batches working the Medium/Low/partially-wired list, each lint + build + full-suite verified (suite steady at 2505 pass):
+
+| Area | What shipped |
+|------|-------------|
+| **Learning** | Suggested Policies card (GET `/api/learning/suggestions` + one-click Accept → real policy); Code Signals card (`/code-signals`, 7d/30d/90d + savings); recommendation metrics now show the dropped deltas (failure_reduction, latency, cost) + applied-vs-baseline outcomes. |
+| **Prompts** | Template edit → PATCH `/api/prompts/templates/[id]`; "Usage by Version" card (`stats.by_version`); runs-tab template filter (`template_id`). |
+| **Detail pages** | `decisions/[actionId]` + `actions/[actionId]` now show per-action `model` + learning-recommendation linkage (applied/overrode + reason) below the metrics grid. |
+| **Scoring (pt 1)** | Active/Archived profile filter + Unarchive; profile-score stats strip (`?view=stats`); risk-template edit → PATCH; Score-Explorer `raw_value`/`weight` per dimension. |
+| **Workflows** | Templates-list status filter (`?status=`); detail Runs-tab status filter + surfaced `total`. |
+| **Evaluations** | Cancel a stuck run (PATCH `{status:'failed'}`); per-run score-distribution detail (`/runs/[id]`). |
+
+### Still remaining (precise next steps for a fresh session)
+
+Read `SYNC_AUDIT.md` (backend `file:line` map) alongside this doc and continue:
+
+- **Scoring (pt 2)**: dimension CRUD on existing profiles (`/profiles/[id]/dimensions[/[dimId]]`); calibrate `metrics`/`agent_id` params.
+- **Settings**: governance flags card (`PREDICTIVE_RISK_*`, cost threshold via POST `/api/settings`); setting DELETE ("Disconnect"); LLM-provider badge from `/api/settings/llm-status`.
+- **Knowledge**: collection edit → PATCH `/collections/[id]`; created/updated timestamps; item status enum alignment.
+- **Editing/orphans**: message-thread resolve/summary (PATCH `/api/messages/threads`); compliance-schedule rename + format/window display; policy `proof` export + `test` runner + `/policies/templates` catalog; `/api/usage/costs`; model-strategy `/complete` test; agent-session PATCH; agent connections POST + `auth_type`/`plan_name` display; org rename + role-scoped keys.
+- **Displays**: capability pricing + `docs_url` + health-summary detail fields; goal/milestone `cost_estimate`; decisions `swarm_id`/`model` filters; guard-decision integrity fields; org-wide artifacts list/delete; drift `drift_type`/`dimension`/ack attribution; code-session stored fields; setup/proof inline breakdown; workflow per-step resume; outcome-sweep indicator.
+- **Stale-frontend bugs (Notes)**: Handoffs tab `GET /api/handoffs` 405 (only POST exists); `/routing` + `/feedback` target archived APIs — decide endpoint-vs-repoint.
