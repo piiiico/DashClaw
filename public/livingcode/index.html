@@ -48,12 +48,12 @@ p.kicker{background:var(--accent-bg);border:1px solid var(--accent-border);borde
 p.kicker b{color:var(--accent-deep)}
 </style></head><body>
 <h1>DashClaw Livingcode Dashboard</h1>
-<div class="sig" id="sig">Shape signature: sha1:5befa785a55522c786da595d2b19fdbf26167268 · signature-stable</div>
+<div class="sig" id="sig">Shape signature: sha1:3f98fffa369cd3397b69e01aa0628c6386c7130c · signature-stable</div>
 <div class="grid">
       <div class="cell"><div class="n">214</div><div class="k">Active routes</div></div>
       <div class="cell"><div class="n">48</div><div class="k">Archived routes</div></div>
       <div class="cell"><div class="n">4</div><div class="k">Required env vars</div></div>
-      <div class="cell"><div class="n">131</div><div class="k">Optional env vars</div></div>
+      <div class="cell"><div class="n">132</div><div class="k">Optional env vars</div></div>
       <div class="cell"><div class="n">86</div><div class="k">Tables</div></div>
       <div class="cell"><div class="n">15</div><div class="k">Events</div></div>
       <div class="cell"><div class="n">10</div><div class="k">Signals</div></div>
@@ -272,10 +272,11 @@ p.kicker b{color:var(--accent-deep)}
       <div class="cell"><div class="n">1</div><div class="k">TODOs</div></div>
       <div class="cell"><div class="n">128</div><div class="k">Files &gt;300 lines</div></div></div></section>
 
-<section><h2>Changed since last snapshot</h2><p class="kicker"><b>2</b> env_vars added, <b>2</b> routes added, <b>1</b> tables added since last snapshot.</p><ul class="diff">    <li><code>added</code> <b>routes</b>: /api/integrity/jwks <span class="sig">New route: GET</span></li>
+<section><h2>Changed since last snapshot</h2><p class="kicker"><b>3</b> env_vars added, <b>2</b> routes added, <b>1</b> tables added since last snapshot.</p><ul class="diff">    <li><code>added</code> <b>routes</b>: /api/integrity/jwks <span class="sig">New route: GET</span></li>
     <li><code>added</code> <b>routes</b>: /api/integrity/verify <span class="sig">New route: POST</span></li>
     <li><code>added</code> <b>env_vars</b>: DASHCLAW_PAIRING_TTL_MINUTES <span class="sig">New env var (optional, undocumented)</span></li>
     <li><code>added</code> <b>env_vars</b>: DASHCLAW_SIGNING_KEY_JWK <span class="sig">New env var (optional, undocumented)</span></li>
+    <li><code>added</code> <b>env_vars</b>: S <span class="sig">New env var (optional, undocumented)</span></li>
     <li><code>added</code> <b>tables</b>: server_signing_keys <span class="sig">New table in schema</span></li></ul></section>
 
 <section class="routes"><h2>Active routes</h2><input id="route-filter" type="search" placeholder="Filter routes…" oninput="var q=this.value.toLowerCase();document.querySelectorAll('section.routes tr[data-path]').forEach(function(r){r.style.display=r.dataset.path.toLowerCase().includes(q)?'':'none';});document.querySelectorAll('section.routes details').forEach(function(d){var visible=d.querySelectorAll("tr[data-path]:not([style*='none'])").length;d.style.display=visible||!q?'':'none';if(q)d.open=true;});"><details><summary>/actions/* (11)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/actions"><td><code>/api/actions</code></td><td>DELETE, GET, POST</td><td class="sig">app/api/actions/route.js</td></tr>

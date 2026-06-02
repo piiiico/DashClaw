@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:5befa785a55522c786da595d2b19fdbf26167268",
+  "timestamp": "sha1:3f98fffa369cd3397b69e01aa0628c6386c7130c",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -3868,6 +3868,14 @@
       "required": false,
       "files": [
         "app/lib/notifications.js"
+      ],
+      "in_env_example": false
+    },
+    {
+      "name": "S",
+      "required": false,
+      "files": [
+        "scripts/build-desktop-plugin.mjs"
       ],
       "in_env_example": false
     },

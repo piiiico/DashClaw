@@ -53,8 +53,11 @@ export async function POST(request) {
 
     switch (method) {
       case 'initialize':
+        // Echo the client's requested protocol version so newer remote clients
+        // (e.g. Claude Desktop sends 2025-11-25) accept the handshake instead of
+        // rejecting an older server-declared version. Falls back to ours.
         return jsonrpc(id, {
-          protocolVersion: PROTOCOL_VERSION,
+          protocolVersion: params?.protocolVersion || PROTOCOL_VERSION,
           serverInfo: SERVER_INFO,
           capabilities: {
             tools: { listChanged: false },
