@@ -503,6 +503,12 @@ except Exception as e:
     "headers": {"x-api-key": "oc_live_..."},
     "name": "dashclaw"
 }]`}</CodeBlock>
+                <CodeBlock title="Custom connector — Claude app (web / Desktop / Cowork), OAuth, no key">{`Settings → Connectors → Add custom connector
+
+  https://your-instance.vercel.app/api/mcp
+
+Connect → log in to DashClaw → Authorize. No API key in the UI: the
+instance runs its own OAuth (DCR + PKCE). Guide: docs/CLAUDE-DESKTOP-PLUGIN.md`}</CodeBlock>
               </div>
             </div>
           </section>

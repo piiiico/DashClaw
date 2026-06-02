@@ -1,90 +1,80 @@
-# DashClaw in Claude Desktop — install guide
+# DashClaw in the Claude app — connect guide
 
-Gets the DashClaw **skills + the 23 governance tools** (`dashclaw_guard`, `dashclaw_record`, …) into Claude Desktop, using a **remote** connection to your deployed instance. No local Node process runs, so nothing crashes — it works in both chat and Cowork.
+Get the **23 governance tools** (`dashclaw_guard`, `dashclaw_record`, …) into the Claude consumer app (web chat / Claude Desktop / Cowork) as a **custom connector**. You paste one URL and authorize once — **no API key in the UI, no env var, no ZIP, no plugin upload.** Claude's connector flow requires OAuth, and your deployed DashClaw instance is now its own OAuth server.
 
 ## TL;DR
-1. Build the plugin zip.
-2. Set ONE environment variable: `DASHCLAW_API_KEY`.
-3. Upload the zip in Customize → Plugins.
-4. Uninstall the old `.mcpb` extension if you have one.
-5. Fully restart Claude, test.
+1. Deploy your DashClaw instance and make sure you can log in to it.
+2. Claude → **Settings → Connectors → Add custom connector**.
+3. Paste `https://YOUR-INSTANCE.vercel.app/api/mcp`.
+4. Click **Connect** → log in to DashClaw → **Authorize** → done.
+
+Works on Free/Pro/Max/Team/Enterprise (Free is capped at one custom connector).
 
 ---
 
-## 1. Build the plugin
+## 1. Prerequisites
 
-From the repo root:
-
-```bash
-node scripts/build-desktop-plugin.mjs --url https://YOUR-INSTANCE.vercel.app
-```
-
-`--url` is your deployed DashClaw URL (e.g. `https://my-dashclaw.vercel.app`). Output: **`dist/dashclaw-plugin.zip`**.
-
-## 2. Set the API key — ONE env var, not a file
-
-The plugin reads **`DASHCLAW_API_KEY`** from your environment. It must be a key your **deployed** instance accepts (the `DASHCLAW_API_KEY` you set in Vercel, or one minted in that instance's `/api-keys` page).
-
-> **It is NOT a folder or a file you edit.** The plugin does **not** read the repo's `.env` (`C:\Projects\DashClaw\.env`) — editing that does nothing.
-
-**Windows (PowerShell):**
-
-```powershell
-setx DASHCLAW_API_KEY "oc_live_your_real_key"
-```
-
-- `setx` writes a persistent **user** environment variable.
-- It only affects programs started **after** you run it → you must **fully quit and relaunch Claude** (close it from the system tray too, not just the window). A window reload is not enough.
-
-**Confirm the key works first (no Claude involved):**
-
-```powershell
-curl.exe https://YOUR-INSTANCE.vercel.app/api/health
-curl.exe -H "x-api-key: oc_live_your_real_key" https://YOUR-INSTANCE.vercel.app/api/policies
-```
-
-- `/api/health` → `status: healthy` means the instance is up.
-- `/api/policies` returns JSON → your key is valid. `401` → wrong/expired key.
-
-## 3. Upload the plugin
-
-In Claude Desktop:
-
-**Customize** (left sidebar) → **Personal plugins** → **`+`** → **Create plugin** → **Upload plugin** → select **`dist/dashclaw-plugin.zip`**.
-
-## 4. Remove the old `.mcpb` extension (important)
-
-If you ever installed the `.mcpb`:
-
-**Settings → Extensions →** if **`dashclaw`** is listed, **Uninstall** it.
-
-It runs on Desktop's bundled Node (crashes) and collides with this plugin (same name `dashclaw`). Remove it so there's exactly one.
-
-## 5. Restart + test
-
-Fully quit and relaunch Claude. In a new chat:
-
-```
-list my dashclaw policies
-```
-
-Returns your policies → done. The governance tools are live.
-
----
-
-## If it still doesn't work
-
-- **Tools appear but every call 401s** → the key is wrong, or `${DASHCLAW_API_KEY}` didn't resolve in the environment Claude handed the connector. Re-run the `curl` test to confirm the key; redo `setx` + a full restart. **Guaranteed fallback — bake the key into the plugin:**
-
+- A **deployed** DashClaw instance (e.g. `https://my-dashclaw.vercel.app`). Confirm it's up:
   ```bash
-  node scripts/build-desktop-plugin.mjs --url https://YOUR-INSTANCE.vercel.app --key oc_live_your_real_key
+  curl.exe https://YOUR-INSTANCE.vercel.app/api/health     # → "status":"healthy"
   ```
+- A **login on that instance**. The connector authorizes against your DashClaw session (the account you use at `/login`), not an API key. If you've never logged in, open `https://YOUR-INSTANCE.vercel.app/login` once first.
+- Use your instance's **public production domain** (the `*.vercel.app` alias or your custom domain) — not a per-deployment preview URL (those sit behind Vercel deployment protection).
 
-  then re-upload. (Personal use only — the key now lives in the plugin file; never commit or share that build.)
+## 2. Add the connector
 
-- **Tools don't appear at all** → the env var resolved empty and Claude skipped the server. Set the key (step 2) and fully restart.
-- **Can't reach the instance** → confirm `--url` is your real, live instance (`curl.exe https://YOUR-INSTANCE.vercel.app/api/health` returns `status: healthy`).
+In Claude:
 
-## Why remote, not the `.mcpb` bundle
+**Settings → Connectors → Add custom connector** → paste:
 
-Claude Desktop's main chat runs local MCP servers on its **bundled Node**, where the DashClaw stdio server exits right after `initialize`. A **remote** server (`type: http` → your `/api/mcp`) has no local process to crash, so it works in chat and Cowork alike — reusing the endpoint your deployment already serves. (The `.mcpb`/stdio path only runs cleanly where *system* Node launches it: Claude Code and Cowork.)
+```
+https://YOUR-INSTANCE.vercel.app/api/mcp
+```
+
+→ **Connect**.
+
+What happens next is automatic OAuth (you don't configure any of it):
+1. Claude discovers `/.well-known/oauth-protected-resource` and registers itself (Dynamic Client Registration).
+2. You're redirected to your DashClaw **login**, then a **consent screen** ("Authorize Claude").
+3. Click **Authorize** → you're sent back to Claude with the connection live.
+
+The 23 governance tools now show under the connector, scoped to your workspace and attributed to agent **`claude-desktop`**.
+
+## 3. Test it
+
+In a new chat:
+
+```
+Using DashClaw, list my active governance policies and the available capabilities.
+```
+
+Returns your policies + capabilities → you're done. Then try the core loop:
+
+```
+I'm about to deploy a schema migration to the production billing DB (risk ~70, goal: ship the billing schema). Use DashClaw to guard this action, give me the decision and reasoning, then record it to the audit trail.
+```
+
+Check your instance's **`/decisions`** (filter agent `claude-desktop`) to see the governed actions land.
+
+## 4. Remove any old `.mcpb` extension / plugin
+
+If you previously installed the `.mcpb` extension or a uploaded plugin named `dashclaw`, **uninstall it** (Settings → Extensions / Plugins). It collides on the name and the bundled-Node stdio server crash-loops. The URL connector replaces it.
+
+---
+
+## Troubleshooting
+
+- **"Couldn't register with DashClaw's sign-in service" (DCR fails).** You're almost certainly pointed at a protection-walled URL. Use the **public production domain**, and confirm discovery is consistent:
+  ```bash
+  curl.exe https://YOUR-INSTANCE.vercel.app/.well-known/oauth-protected-resource
+  # "resource" and "authorization_servers" must both be your public domain, not a *-<hash>-*.vercel.app preview URL
+  ```
+- **The Authorize button does nothing.** Reload the consent tab (it must be served by the current deploy) and click again. If it persists, open DevTools → Console; a CSP `form-action` error means the page is stale — reconnect from Claude.
+- **Tools appear but calls return errors / HTML.** Re-run the health check; confirm the instance is up. (A past bug where the proxy called the protection-walled deployment URL and got an HTML SSO page is fixed — the callback uses the public production domain.)
+- **Tools don't appear at all.** The connection didn't finish OAuth — remove the connector and re-add it by URL.
+
+## Other integration paths (not the consumer connector)
+
+- **Claude Code / Cowork (stdio via npx):** `claude_desktop_config.json` with `command: npx @dashclaw/mcp-server` + `DASHCLAW_URL`/`DASHCLAW_API_KEY`. Runs on system Node (works in Code/Cowork). See `mcp-server/README.md`.
+- **Managed Agents (Streamable HTTP + x-api-key):** `{ type: "url", url: ".../api/mcp", headers: { "x-api-key": "oc_live_…" } }`. The `x-api-key` path is unchanged and coexists with OAuth.
+- **DashClaw skills (governance protocol + platform intelligence):** install via the marketplace — Customize → Plugins → Add marketplace → `github: ucsandman/DashClaw`.

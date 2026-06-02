@@ -90,7 +90,8 @@ These routes define the minimum DashClaw category. They are stable or runtime-cr
 | `/api/health` | System readiness | Public health/readiness surface. |
 | `/api/keys` | API key management | Stable key lifecycle and reveal path. |
 | `/api/messages` | Agent/system messages | Stable messaging surface used by agent coordination paths. |
-| `/api/mcp` | Streamable HTTP MCP endpoint | Remote MCP transport for DashClaw tool calls and resources. |
+| `/api/mcp` | Streamable HTTP MCP endpoint | Remote MCP transport for DashClaw tool calls and resources. OAuth-protected (Bearer) for Claude custom connectors; `x-api-key` still works for managed agents. |
+| `/api/oauth/*` | OAuth 2.1 authorization server | DCR + PKCE S256 so the Claude consumer app can add `/api/mcp` as a custom connector. Public discovery at `/.well-known/oauth-{authorization-server,protected-resource}`. See `docs/CLAUDE-DESKTOP-PLUGIN.md`. |
 
 Route aliases in `next.config.js` preserve legacy paths such as `/api/actions/signals`, `/api/actions/assumptions`, and `/api/actions/:id/approve`. New integrations should prefer the canonical routes above.
 
@@ -181,6 +182,7 @@ DashClaw is intentionally multi-surface. Claude Code hooks are one strong integr
 | Path | Best for | Artifact |
 |:---|:---|:---|
 | MCP server | MCP-capable agents, Claude Desktop/Code, managed agents, remote tool access | `@dashclaw/mcp-server`, `POST /api/mcp` |
+| Claude custom connector (OAuth) | The Claude consumer app (web chat / Desktop / Cowork) — paste a URL, no API key in the UI | `POST /api/mcp` + `/api/oauth/*` (DCR + PKCE), `docs/CLAUDE-DESKTOP-PLUGIN.md` |
 | Node SDK | JavaScript/TypeScript agents and apps | `sdk/dashclaw.js`, npm package `dashclaw` version `2.13.1` |
 | Python SDK | Python agents and backend workflows | `sdk-python/dashclaw/client.py` |
 | Claude Code hooks | Coding-agent tool governance (incl. sub-agent spawns and delegated work — see `hooks/README.md` "Sub-agent governance & tracking") without per-call SDK code | `hooks/`, `npm run hooks:install`, `plugins/dashclaw/.claude-plugin/` |
