@@ -176,8 +176,12 @@ export function buildPolicySummary(formState) {
     }
     case 'semantic_check':
       return `Use a semantic check to evaluate whether the action violates the instruction: "${cleanString(form.instruction)}"${scoped}.`;
-    case 'non_fabrication':
-      return `${form.onViolation === 'require_approval' ? 'Require approval for' : 'Block'} ${actionListText(form.actionTypes)} actions whose outbound content states a fact not traceable to its source-of-truth${scoped}.`;
+    case 'non_fabrication': {
+      const nfScope = Array.isArray(form.actionTypes) && form.actionTypes.length > 0
+        ? `${actionListText(form.actionTypes)} actions`
+        : 'any action';
+      return `${form.onViolation === 'require_approval' ? 'Require approval for' : 'Block'} ${nfScope} whose outbound content states a fact not traceable to its source-of-truth${scoped}.`;
+    }
     default:
       return 'Configure a policy rule.';
   }

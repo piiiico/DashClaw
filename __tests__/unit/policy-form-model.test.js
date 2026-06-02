@@ -108,6 +108,10 @@ describe('policyFormModel', () => {
     expect(
       buildPolicySummary({ type: 'non_fabrication', actionTypes: ['message'], onViolation: 'block', agentIds: [] })
     ).toMatch(/source-of-truth/i);
+    // applies-to-all reads cleanly (no doubled "selected actions actions")
+    const all = buildPolicySummary({ type: 'non_fabrication', actionTypes: [], onViolation: 'require_approval', agentIds: [] });
+    expect(all).toContain('any action');
+    expect(all).not.toContain('selected actions actions');
   });
 
   it('decompiles persisted policy into type-specific form state', () => {
