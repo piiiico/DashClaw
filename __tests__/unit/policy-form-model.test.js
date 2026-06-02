@@ -57,6 +57,59 @@ describe('policyFormModel', () => {
     });
   });
 
+  it('compiles non_fabrication state into the route payload', () => {
+    const payload = compilePolicyPayload({
+      name: 'No fabricated facts',
+      type: 'non_fabrication',
+      actionTypes: ['message'],
+      onViolation: 'require_approval',
+      contentPath: 'content',
+      sourcePath: 'source_of_truth',
+      agentIds: [],
+    });
+
+    expect(payload).toEqual({
+      name: 'No fabricated facts',
+      policy_type: 'non_fabrication',
+      rules: JSON.stringify({
+        action_types: ['message'],
+        content_path: 'content',
+        source_path: 'source_of_truth',
+        on_violation: 'require_approval',
+      }),
+      agent_ids: null,
+    });
+  });
+
+  it('omits action_types from non_fabrication rules when none are selected (applies to all)', () => {
+    const payload = compilePolicyPayload({ name: 'NF all', type: 'non_fabrication', actionTypes: [], agentIds: [] });
+    expect(JSON.parse(payload.rules)).toEqual({
+      content_path: 'content',
+      source_path: 'source_of_truth',
+      on_violation: 'block',
+    });
+  });
+
+  it('round-trips a non_fabrication policy through decompile', () => {
+    const form = decompilePolicyForm({
+      name: 'NF',
+      policy_type: 'non_fabrication',
+      rules: JSON.stringify({ action_types: ['message'], content_path: 'body', source_path: 'facts', on_violation: 'block' }),
+      agent_ids: null,
+    });
+    expect(form.type).toBe('non_fabrication');
+    expect(form.actionTypes).toEqual(['message']);
+    expect(form.contentPath).toBe('body');
+    expect(form.sourcePath).toBe('facts');
+    expect(form.onViolation).toBe('block');
+  });
+
+  it('summarizes a non_fabrication policy', () => {
+    expect(
+      buildPolicySummary({ type: 'non_fabrication', actionTypes: ['message'], onViolation: 'block', agentIds: [] })
+    ).toMatch(/source-of-truth/i);
+  });
+
   it('decompiles persisted policy into type-specific form state', () => {
     const form = decompilePolicyForm({
       id: 'gp_1',

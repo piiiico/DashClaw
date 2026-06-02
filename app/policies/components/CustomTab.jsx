@@ -25,6 +25,7 @@ const POLICY_TYPES = [
   { value: 'rate_limit', label: 'Rate Limit', desc: 'Warn or block when an agent exceeds action frequency' },
   { value: 'webhook_check', label: 'Webhook Check', desc: 'Call an external endpoint for custom decision logic' },
   { value: 'semantic_check', label: 'Semantic Check', desc: 'Use an LLM to evaluate action intent against natural language rules' },
+  { value: 'non_fabrication', label: 'Non-Fabrication', desc: 'Block or route to approval outbound content that states a fact not traceable to its source-of-truth' },
 ];
 
 const ACTION_OPTIONS = [
@@ -44,6 +45,7 @@ function formatRules(policy) {
     case 'rate_limit': return `Max ${rules.max_actions} / ${rules.window_minutes}min \u2192 ${rules.action || 'warn'}`;
     case 'webhook_check': { try { return `Webhook \u2192 ${new URL(rules.url).hostname}`; } catch { return 'Webhook'; } }
     case 'semantic_check': return `Semantic: "${(rules.instruction || '').slice(0, 50)}..."`;
+    case 'non_fabrication': return `Non-fabrication → ${rules.on_violation || 'block'}`;
     default: return type;
   }
 }
@@ -433,6 +435,7 @@ export default function CustomTab() {
           <option value="rate_limit">Rate limit</option>
           <option value="webhook_check">Webhook check</option>
           <option value="semantic_check">Semantic check</option>
+          <option value="non_fabrication">Non-fabrication</option>
         </select>
         <label htmlFor="policy-status-filter" className="sr-only">Filter by status</label>
         <select

@@ -195,6 +195,77 @@ export default function PolicyRuleBuilderSection({
           </div>
         </div>
       )}
+
+      {form.type === 'non_fabrication' && (
+        <div className="space-y-4">
+          <p className="text-[11px] text-tertiary">
+            Verifies the action&apos;s outbound content against a source-of-truth: every amount, date,
+            percentage, and registered ID must trace to an allowed fact, and no forbidden pattern may
+            appear. Attach <code className="text-secondary">content</code> and{' '}
+            <code className="text-secondary">source_of_truth</code> to the action (SDK:{' '}
+            <code className="text-secondary">content</code> + <code className="text-secondary">sourceOfTruth</code>).
+            Fail-closed: a missing or malformed source-of-truth blocks.
+          </p>
+          <div>
+            <label className="block text-xs text-secondary mb-2">
+              Action Types <span className="text-tertiary">(optional — leave empty to apply to all)</span>
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {actionOptions.map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  aria-pressed={form.actionTypes.includes(type)}
+                  onClick={() => toggleActionType(type)}
+                  className={`px-2.5 py-1 rounded-md text-xs transition-colors ${
+                    form.actionTypes.includes(type)
+                      ? 'bg-brand text-white'
+                      : 'bg-[#1a1a1a] text-secondary border border-[rgba(255,255,255,0.06)] hover:text-white'
+                  }`}
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs text-secondary mb-1">On Violation</label>
+              <select
+                aria-label="On Violation"
+                value={form.onViolation}
+                onChange={(event) => onChange('onViolation', event.target.value)}
+                className={selectClass}
+              >
+                <option value="block">Block (fail-closed)</option>
+                <option value="require_approval">Require Approval</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-secondary mb-1">Content field path</label>
+              <input
+                aria-label="Content field path"
+                type="text"
+                value={form.contentPath}
+                onChange={(event) => onChange('contentPath', event.target.value)}
+                placeholder="content"
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-secondary mb-1">Source-of-truth field path</label>
+              <input
+                aria-label="Source-of-truth field path"
+                type="text"
+                value={form.sourcePath}
+                onChange={(event) => onChange('sourcePath', event.target.value)}
+                placeholder="source_of_truth"
+                className={inputClass}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

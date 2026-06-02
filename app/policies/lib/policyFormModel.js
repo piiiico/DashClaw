@@ -11,6 +11,10 @@ const DEFAULT_FORM_STATE = {
   webhookOnTimeout: 'allow',
   instruction: '',
   fallback: 'allow',
+  // non_fabrication
+  contentPath: 'content',
+  sourcePath: 'source_of_truth',
+  onViolation: 'block',
   agentIds: [],
 };
 
@@ -95,6 +99,16 @@ export function compilePolicyPayload(formState) {
         fallback: form.fallback || 'allow',
       };
       break;
+    case 'non_fabrication':
+      rules = {
+        ...(Array.isArray(form.actionTypes) && form.actionTypes.length > 0
+          ? { action_types: form.actionTypes }
+          : {}),
+        content_path: cleanString(form.contentPath) || 'content',
+        source_path: cleanString(form.sourcePath) || 'source_of_truth',
+        on_violation: form.onViolation === 'require_approval' ? 'require_approval' : 'block',
+      };
+      break;
     default:
       rules = {};
       break;
@@ -128,6 +142,9 @@ export function decompilePolicyForm(policy) {
     webhookOnTimeout: rules.on_timeout || DEFAULT_FORM_STATE.webhookOnTimeout,
     instruction: rules.instruction || '',
     fallback: rules.fallback || DEFAULT_FORM_STATE.fallback,
+    contentPath: rules.content_path || DEFAULT_FORM_STATE.contentPath,
+    sourcePath: rules.source_path || DEFAULT_FORM_STATE.sourcePath,
+    onViolation: rules.on_violation || DEFAULT_FORM_STATE.onViolation,
     agentIds: parseAgentIds(policy),
   };
 }
@@ -159,6 +176,8 @@ export function buildPolicySummary(formState) {
     }
     case 'semantic_check':
       return `Use a semantic check to evaluate whether the action violates the instruction: "${cleanString(form.instruction)}"${scoped}.`;
+    case 'non_fabrication':
+      return `${form.onViolation === 'require_approval' ? 'Require approval for' : 'Block'} ${actionListText(form.actionTypes)} actions whose outbound content states a fact not traceable to its source-of-truth${scoped}.`;
     default:
       return 'Configure a policy rule.';
   }

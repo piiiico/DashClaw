@@ -21,6 +21,7 @@ function formatPolicyRules(policy) {
     case 'rate_limit': return `Max ${rules.max_actions} / ${rules.window_minutes}min`;
     case 'webhook_check': return 'Webhook check';
     case 'semantic_check': return `Semantic: "${(rules.instruction || '').slice(0, 40)}..."`;
+    case 'non_fabrication': return `Non-fabrication → ${rules.on_violation || 'block'}`;
     default: return policyType;
   }
 }
