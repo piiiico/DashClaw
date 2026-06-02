@@ -36,6 +36,8 @@ export default function ScoringPage() {
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState(null);
+  const [scoringId, setScoringId] = useState(null);      // profile id currently being scored
+  const [scoreSummary, setScoreSummary] = useState(null); // { profileId, summary? , error? }
 
   // --- Create Profile Form State --------------------------
   const [newProfile, setNewProfile] = useState({
@@ -181,6 +183,40 @@ export default function ScoringPage() {
     }
   };
 
+  // Run a profile against real ledger actions. Solves "profiles can be built
+  // but never run from the UI": fetch recent actions (scoped to the profile's
+  // action_type when set) and batch-score them via POST /api/scoring/score.
+  const handleScoreRecent = async (profile) => {
+    setScoringId(profile.id);
+    setScoreSummary(null);
+    try {
+      const at = profile.action_type ? `&action_type=${encodeURIComponent(profile.action_type)}` : '';
+      const actionsRes = await fetch(`/api/actions?limit=25${at}`);
+      const actionsData = await actionsRes.json().catch(() => ({}));
+      const actions = actionsData.actions || [];
+      if (actions.length === 0) {
+        setScoreSummary({ profileId: profile.id, error: 'No recent actions to score.' });
+        return;
+      }
+      const res = await fetch('/api/scoring/score', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ profile_id: profile.id, actions }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setScoreSummary({ profileId: profile.id, error: data.error || 'Scoring failed' });
+        return;
+      }
+      setScoreSummary({ profileId: profile.id, summary: data.summary });
+      if (selectedProfile?.id === profile.id) fetchScores(profile.id);
+    } catch {
+      setScoreSummary({ profileId: profile.id, error: 'Scoring failed' });
+    } finally {
+      setScoringId(null);
+    }
+  };
+
   const handleArchiveProfile = async (profileId) => {
     await fetch(`/api/scoring/profiles/${profileId}`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
@@ -323,12 +359,36 @@ export default function ScoringPage() {
                     </div>
                   </div>
                   <div className="flex gap-2">
+                    {!isDemoMode() && (
+                      <button onClick={() => handleScoreRecent(profile)} disabled={scoringId === profile.id}
+                        className="text-xs text-brand hover:text-brand/80 disabled:opacity-50">
+                        {scoringId === profile.id ? 'Scoring…' : 'Score recent'}
+                      </button>
+                    )}
                     <button onClick={() => { setSelectedProfile(profile); fetchScores(profile.id); setActiveTab('Score Explorer'); }}
                       className="text-xs text-brand hover:text-brand/80">View Scores</button>
                     <button onClick={() => handleArchiveProfile(profile.id)}
                       className="text-xs text-tertiary hover:text-error">Archive</button>
                   </div>
                 </div>
+
+                {/* Score-run summary (POST /api/scoring/score) */}
+                {scoreSummary?.profileId === profile.id && (
+                  <div className="mt-2 text-xs" role="status">
+                    {scoreSummary.error ? (
+                      <span className="text-error">{scoreSummary.error}</span>
+                    ) : (
+                      <span className="text-success">
+                        Scored {scoreSummary.summary?.scored ?? 0}/{scoreSummary.summary?.total ?? 0} recent actions · avg{' '}
+                        {scoreSummary.summary?.avg_score ?? '—'} ·{' '}
+                        <button
+                          onClick={() => { setSelectedProfile(profile); fetchScores(profile.id); setActiveTab('Score Explorer'); }}
+                          className="text-brand hover:text-brand/80"
+                        >View →</button>
+                      </span>
+                    )}
+                  </div>
+                )}
 
                 {/* Dimension breakdown */}
                 {profile.dimensions && profile.dimensions.length > 0 && (

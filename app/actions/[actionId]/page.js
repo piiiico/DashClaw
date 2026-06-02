@@ -599,18 +599,30 @@ export default function DecisionReplayPage() {
               <Card hover={false}>
                 <CardHeader title="Drift Detection" icon={Activity} />
                 <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-secondary">Current Drift Score</span>
-                      <span className="text-sm font-bold text-success">0.02 (Nominal)</span>
-                    </div>
-                    <div className="h-2 bg-tertiary rounded-full overflow-hidden">
-                      <div className="h-full bg-status-success" style={{ width: '2%' }} />
-                    </div>
-                    <p className="text-xs text-tertiary">
-                      Drift is calculated by comparing actual outcomes against declared intent and verified assumptions. A nominal score indicates high alignment.
-                    </p>
-                  </div>
+                  {assumptions.length > 0 ? (() => {
+                    const invalidated = assumptions.filter(a => a.invalidated).length;
+                    const driftPct = Math.round((invalidated / assumptions.length) * 100);
+                    const label = driftPct === 0 ? 'Nominal' : driftPct < 34 ? 'Low' : driftPct < 67 ? 'Elevated' : 'High';
+                    const tone = driftPct < 34 ? 'text-success' : driftPct < 67 ? 'text-warning' : 'text-error';
+                    const bar = driftPct < 34 ? 'bg-status-success' : driftPct < 67 ? 'bg-status-warning' : 'bg-status-error';
+                    return (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-secondary">Assumption drift</span>
+                          <span className={`text-sm font-bold ${tone}`}>{invalidated}/{assumptions.length} invalidated ({label})</span>
+                        </div>
+                        <div className="h-2 bg-tertiary rounded-full overflow-hidden">
+                          <div className={`h-full ${bar}`} style={{ width: `${Math.max(driftPct, 2)}%` }} />
+                        </div>
+                        <p className="text-xs text-tertiary">
+                          Drift reflects how many of this decision&apos;s recorded assumptions have since been invalidated.
+                          {driftPct === 0 ? ' None have drifted.' : ` ${invalidated} of ${assumptions.length} no longer hold.`}
+                        </p>
+                      </div>
+                    );
+                  })() : (
+                    <div className="py-8 text-center text-tertiary text-sm">No assumptions recorded to assess drift.</div>
+                  )}
                 </CardContent>
               </Card>
             </div>

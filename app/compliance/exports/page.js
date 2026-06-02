@@ -12,6 +12,7 @@ import { Card, CardHeader, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ListSkeleton } from '../../components/ui/Skeleton';
+import VerifyReceiptPanel from '../../components/VerifyReceiptPanel';
 
 const FRAMEWORKS = [
   { id: 'soc2', label: 'SOC 2' },
@@ -473,6 +474,9 @@ export default function ComplianceExportsPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Independent receipt/bundle verification */}
+        <VerifyReceiptPanel />
 
         {/* Schedules */}
         {schedules.length > 0 && (

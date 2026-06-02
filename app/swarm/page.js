@@ -746,7 +746,6 @@ export default function SwarmIntelligencePage() {
                         <h3 className="text-lg font-bold text-white mb-0.5">{selectedAgent.name}</h3>
                         <code className="text-[10px] text-tertiary font-mono">{selectedAgent.id.substring(0, 12)}...</code>
                         <div className="mt-3 flex flex-wrap gap-2">
-                          <Badge variant="outline" className="text-[9px] bg-white/5 border-white/10 uppercase tracking-tighter">AGENT_CLASS_V2</Badge>
                           <Badge variant="outline" className={`text-[9px] border-none ${(selectedAgent.risk || 0) > 40 ? 'bg-status-warning/10 text-warning' : 'bg-status-success/10 text-success'}`}>RISK: {(selectedAgent.risk || 0).toFixed(0)}%</Badge>
                         </div>
                       </div>
@@ -756,7 +755,7 @@ export default function SwarmIntelligencePage() {
                       <h4 className="text-[10px] font-bold text-tertiary uppercase tracking-widest flex items-center gap-2"><Zap size={10} className="text-brand" /> Live Performance</h4>
                       <div className="grid grid-cols-2 gap-2">
                         <div className="p-3 rounded-lg bg-black/40 border border-white/5"><div className="text-[9px] text-tertiary mb-1">Actions</div><div className="text-lg font-mono text-white">{selectedAgent.actions || 0}</div></div>
-                        <div className="p-3 rounded-lg bg-black/40 border border-white/5"><div className="text-[9px] text-tertiary mb-1">Stability</div><div className="text-lg font-mono text-success">99.8%</div></div>
+                        <div className="p-3 rounded-lg bg-black/40 border border-white/5"><div className="text-[9px] text-tertiary mb-1">Cost</div><div className="text-lg font-mono text-white">${(selectedAgent.cost || 0).toFixed(2)}</div></div>
                       </div>
                     </div>
 
@@ -811,8 +810,8 @@ export default function SwarmIntelligencePage() {
         {/* ROW 2: STATS ROW */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-12">
           <div className="p-4 rounded-xl bg-surface-secondary/30 border border-white/5 backdrop-blur-sm flex items-center justify-center"><StatCompact label="Neural Links" value={graphData.links.length} color="text-white" /></div>
-          <div className="p-4 rounded-xl bg-surface-secondary/30 border border-white/5 backdrop-blur-sm flex items-center justify-center"><StatCompact label="Sync Latency" value="12ms" color="text-brand" /></div>
-          <div className="p-4 rounded-xl bg-surface-secondary/30 border border-white/5 backdrop-blur-sm flex items-center justify-center"><StatCompact label="Drift State" value="Nominal" color="text-info" /></div>
+          <div className="p-4 rounded-xl bg-surface-secondary/30 border border-white/5 backdrop-blur-sm flex items-center justify-center"><StatCompact label="Total Actions" value={graphData.nodes.reduce((s, n) => s + (Number(n.actions) || 0), 0)} color="text-brand" /></div>
+          <div className="p-4 rounded-xl bg-surface-secondary/30 border border-white/5 backdrop-blur-sm flex items-center justify-center"><StatCompact label="Total Cost" value={`$${graphData.nodes.reduce((s, n) => s + (Number(n.cost) || 0), 0).toFixed(2)}`} color="text-info" /></div>
         </div>
       </div>
     </PageLayout>
