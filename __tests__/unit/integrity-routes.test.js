@@ -29,12 +29,14 @@ function makeReceipt() {
 }
 
 describe('GET /api/integrity/jwks', () => {
-  it('publishes the public JWKS (public half only)', async () => {
+  it('publishes the public JWKS (public half only) and caches a non-empty set', async () => {
     const res = await JwksGET();
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data.keys[0].kid).toBe('route-test-kid');
     expect(data.keys[0].d).toBeUndefined();
+    // A real key set is cacheable; an empty one must not be (asserted via the live cache-bust).
+    expect(res.headers.get('Cache-Control')).toMatch(/max-age/);
   });
 });
 

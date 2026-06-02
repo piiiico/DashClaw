@@ -17,9 +17,15 @@ export async function GET() {
   try {
     const sql = getSql();
     const jwks = await getServerPublicJwks(sql);
+    const hasKeys = Array.isArray(jwks.keys) && jwks.keys.length > 0;
     return NextResponse.json(jwks, {
       status: 200,
-      headers: { 'Cache-Control': 'public, max-age=300' },
+      headers: {
+        // Cache real key sets, but never an empty one: a fetch before the first
+        // key is generated would otherwise pin `[]` at the edge for the full TTL
+        // even after a key exists (mirrors jwks-verifier's "don't cache empty").
+        'Cache-Control': hasKeys ? 'public, max-age=300' : 'no-store',
+      },
     });
   } catch (err) {
     console.error('[integrity/jwks] GET error:', err);
