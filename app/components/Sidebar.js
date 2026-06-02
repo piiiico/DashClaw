@@ -9,7 +9,7 @@ import {
   Settings, BarChart3, Clock, PanelLeftClose,
   PanelLeft, Menu, X, Activity, Shield, Microscope,
   Terminal, TrendingUp, GraduationCap, Plug,
-  MessageSquare, Download, Workflow, Cpu, BookOpen, Wrench, Fingerprint, Bell, Inbox,
+  Download, Workflow, Cpu, BookOpen, Wrench, Fingerprint, Bell, Inbox,
   FlaskConical, ChevronDown, GitBranch, Stethoscope, ClipboardCheck, Lock,
 } from 'lucide-react';
 import DashClawLogo from './DashClawLogo';
@@ -59,7 +59,6 @@ const navGroups = [
       { href: '/quality', icon: BarChart3, label: 'Quality' },
       { href: '/evaluations', icon: ClipboardCheck, label: 'Evaluations' },
       { href: '/prompts', icon: Terminal, label: 'Prompts' },
-      { href: '/feedback', icon: MessageSquare, label: 'Feedback' },
       { href: '/messages', icon: Inbox, label: 'Messages' },
       { href: '/workflows', icon: Workflow, label: 'Workflows' },
       { href: '/model-strategies', icon: Cpu, label: 'Model Strategies' },
