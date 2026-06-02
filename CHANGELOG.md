@@ -43,6 +43,7 @@ A real operating loop that uses the Labs surfaces together to finish a Claude Co
 
 - **MCP inbox tools.** Added `dashclaw_inbox_list` and `dashclaw_messages_mark_read` MCP tools — MCP-only agents (Claude app / OpenClaw) can now read and mark their inbox read without an SDK install (previously no tool existed for this).
 - **Platform-intelligence skill (OpenClaw fallback).** The generated `dashclaw-platform-intelligence` skill no longer assumes `python -m livingcode` is available. The emitter (`livingcode/emitters/skill.py`) now documents an HTTP/repo fallback (`GET {baseUrl}/api/doctor` with the workspace key, then the committed `shape.json`/`api-inventory.json`, else the snapshot) for environments without Python/livingcode/the repo.
+- **Branch-finish runner robustness.** `scripts/branch-finish.mjs` treats a not-yet-deployed scorer-preview endpoint (HTTP 405/404 — `POST /api/evaluations/scorers/preview` is shadowed by `/scorers/[scorerId]` until its deploy lands) as a calm warning rather than a loop failure, and uses `process.exitCode` instead of `process.exit()` after network I/O so it exits cleanly on Windows (avoids a libuv `UV_HANDLE_CLOSING` abort during undici socket teardown).
 
 ### Sub-agent governance & tracking (Claude Code)
 

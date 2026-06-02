@@ -217,6 +217,19 @@ The canonical Node SDK currently exposes **108 public methods** in `sdk/dashclaw
 
 Use `docs/sdk-parity.md` for domain-level parity and consolidation status.
 
+## DashClaw Labs: branch-finish loop
+
+A dogfooded operating loop — `MoltFire + Claude Code Branch Finish` — that drives the Labs surfaces together to finish a branch with governance. Run it from the repo:
+
+| Command | Purpose |
+|:---|:---|
+| `npm run seed:branch-finish` | Idempotently seed the loop's assets: 6 prompt templates (`branch-finish` category), a "Branch Finish — Wes Coding Standards" knowledge collection (item bodies stored in metadata so search works without an embedding key), and a draft workflow template linking them. Requires an admin API key. |
+| `npm run branch-finish -- --dry-run` | Run the loop. `--dry-run` performs zero writes (no learning record, no mark-read) and never touches anything external. |
+
+Each run, in order: renders the branch-finish review prompt (Prompt Library), searches the standards knowledge with a local-substring fallback when no embedding key is configured (Knowledge), guard-gates the push to main (Guard/Policies), simulates a risk-threshold policy against recent history (Policies, side-effect-free), checks capability health (Capabilities), dry-run-scores the outcome via `POST /api/evaluations/scorers/preview` (Evaluations, writes no `eval_scores`), reads prior recommendations and — outside `--dry-run` — records the outcome (Learning) and marks the inbox read (Messages).
+
+Flags `--branch`, `--summary`, `--tests`, `--risks`, `--agent` override the git-derived context; config comes from `DASHCLAW_URL` / `DASHCLAW_API_KEY` (auto-loaded from `.env.local` by the npm scripts). The same surfaces are exposed as a wired operator page at `/labs/branch-finish`. Definitions live in `scripts/lib/branch-finish-defs.mjs`.
+
 ## Operations and deployment
 
 ### Required local commands
