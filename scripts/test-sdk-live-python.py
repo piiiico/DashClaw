@@ -466,14 +466,6 @@ def test_webhooks(sdk):
     check(isinstance(webhooks, list), "get_webhooks: returns an array")
 
 
-def test_bulk_sync(sdk):
-    print("\n--- Category 15: Bulk Sync ---")
-
-    res = sdk.sync_state({"goals": [{"title": "sdk-live-test-py: sync state field mapping"}]})
-    check(isinstance(res.get("total_synced"), int), f'sync_state: returns total_synced (got {res.get("total_synced")})')
-    check(isinstance(res.get("duration_ms"), (int, float)), "sync_state: returns duration_ms")
-
-
 # -- Main runner --------------------------------------------------------
 
 def run_category(label, fn, *args):
@@ -524,7 +516,6 @@ def main():
     run_category("Agent Messaging", test_messaging, sdk)
     run_category("Behavior Guard", test_behavior_guard, sdk)
     run_category("Webhooks", test_webhooks, sdk)
-    run_category("Bulk Sync", test_bulk_sync, sdk)
 
     # Summary
     total = passed + failed

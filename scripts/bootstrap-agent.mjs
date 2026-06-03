@@ -1488,63 +1488,6 @@ async function main() {
     return;
   }
 
-  // Live mode — push via SDK
-  const baseUrl = args.local
-    ? 'http://localhost:3000'
-    : (args.baseUrl || 'http://localhost:3000');
-  const apiKey = args.apiKey || process.env.DASHCLAW_API_KEY;
-
-  if (!apiKey) {
-    console.error('Error: No API key. Use --api-key or set DASHCLAW_API_KEY env var.');
-    process.exit(1);
-  }
-
-  // Dynamic import of SDK from project
-  const sdkPath = resolve(projectRoot, 'sdk', 'dashclaw.js');
-  const { DashClaw } = await import(`file://${sdkPath.replace(/\\/g, '/')}`);
-
-  const claw = new DashClaw({
-    baseUrl,
-    apiKey,
-    agentId: args.agentId,
-    agentName: args.agentName || args.agentId,
-  });
-
-  // If --org-id provided, include it so sync route targets the right org
-  if (args.orgId) {
-    payload.target_org_id = args.orgId;
-  }
-
-  console.log(`Pushing to ${baseUrl}...`);
-
-  const hasData = Object.keys(payload).length > 0;
-  if (!hasData) {
-    console.log('\nNo data discovered to sync. Check your agent workspace structure.');
-    return;
-  }
-
-  try {
-    const result = await claw.syncState(payload);
-    console.log(`\nSync complete in ${result.duration_ms}ms`);
-    console.log(`  Total synced:  ${result.total_synced}`);
-    console.log(`  Total errors:  ${result.total_errors}`);
-
-    if (result.results) {
-      console.log('\nPer-category results:');
-      for (const [cat, res] of Object.entries(result.results)) {
-        const status = res.errors?.length ? `${res.synced} synced, ${res.errors.length} errors` : `${res.synced} synced`;
-        console.log(`  ${cat}: ${status}`);
-        if (res.errors?.length) {
-          for (const err of res.errors.slice(0, 3)) {
-            console.log(`    ! ${err}`);
-          }
-        }
-      }
-    }
-  } catch (e) {
-    console.error(`\nSync failed: ${e.message}`);
-    process.exit(1);
-  }
 }
 
 main();

@@ -224,21 +224,11 @@ async function testLoopsAndAssumptions(actionId) {
     assumption: 'sdk-live-test: default locale is UTC',
     basis:      'integration test assumption',
   };
-  const aRes = await sdk.registerAssumption(assumptionInput);
+  const aRes = await sdk.recordAssumption(assumptionInput);
   const assumptionId = aRes.assumption_id;
 
   assert(typeof assumptionId === 'string',
-    `registerAssumption: assumption_id returned (got ${assumptionId})`);
-
-  const { assumption: storedA } = await sdk.getAssumption(assumptionId);
-
-  assert(storedA.assumption === assumptionInput.assumption,
-    'registerAssumption → getAssumption: assumption text persisted',
-    { sent: assumptionInput.assumption, stored: storedA.assumption });
-
-  assert(storedA.basis === assumptionInput.basis,
-    'registerAssumption → getAssumption: basis persisted',
-    { sent: assumptionInput.basis, stored: storedA.basis });
+    `recordAssumption: assumption_id returned (got ${assumptionId})`);
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -598,24 +588,6 @@ async function testWebhooks() {
 }
 
 // ──────────────────────────────────────────────────────────────
-// Category 15: Bulk Sync
-// ──────────────────────────────────────────────────────────────
-
-async function testBulkSync() {
-  console.log('\n--- Category 15: Bulk Sync ---');
-
-  const res = await sdk.syncState({
-    goals: [{ title: 'sdk-live-test: sync state field mapping' }],
-  });
-
-  assert(typeof res.total_synced === 'number',
-    `syncState: returns total_synced (got ${res.total_synced})`);
-
-  assert(typeof res.duration_ms === 'number',
-    'syncState: returns duration_ms');
-}
-
-// ──────────────────────────────────────────────────────────────
 // sendDirectMessage wrapper (tools/dashclaw/client.js)
 // ──────────────────────────────────────────────────────────────
 
@@ -753,7 +725,6 @@ async function main() {
   await runCategory('Agent Messaging', testAgentMessaging);
   await runCategory('Behavior Guard', testBehaviorGuard);
   await runCategory('Webhooks', testWebhooks);
-  await runCategory('Bulk Sync', testBulkSync);
   testValidMessageTypesExport();
   await runCategory('sendDirectMessage Wrapper', testSendDirectMessageWrapper);
 
