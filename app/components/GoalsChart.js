@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link';
-import { Target, ArrowRight } from 'lucide-react';
+import { Target } from 'lucide-react';
 import { Card, CardHeader, CardContent } from './ui/Card';
 import { StatCompact } from './ui/Stat';
 import { ProgressBar } from './ui/ProgressBar';
@@ -65,17 +64,11 @@ export default function GoalsChart() {
     );
   }
 
-  const viewAllLink = (
-    <Link href="/goals" className="text-xs text-brand hover:text-brand-hover transition-colors inline-flex items-center gap-1">
-      View all <ArrowRight size={12} />
-    </Link>
-  );
-
   const topGoals = goals.slice(0, 5);
 
   return (
     <Card className="h-full">
-      <CardHeader title={<span className="flex items-center">Goal Progress<HelpIcon sectionKey="goals" tip={HELP_TIPS['goals']} /></span>} icon={Target} count={totalGoals} action={viewAllLink} />
+      <CardHeader title={<span className="flex items-center">Goal Progress<HelpIcon sectionKey="goals" tip={HELP_TIPS['goals']} /></span>} icon={Target} count={totalGoals} />
 
       <CardContent>
         {/* Stats row */}
