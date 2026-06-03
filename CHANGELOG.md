@@ -15,7 +15,7 @@ DashClaw ships two independently versioned artifacts from this repo:
   database migrations land on this track.
 - **SDK** — the `dashclaw` npm package published from `sdk/` and the
   `dashclaw` PyPI package published from `sdk-python/`. Current:
-  **Node 2.13.1** (agent message read-state methods) / **Python 2.13.0**.
+  **Node 4.0.0** / **Python 4.0.0**.
   This is what agents install with `npm install dashclaw` or `pip install dashclaw`.
   Entries on this track are prefixed `## SDK [x.y.z]` so they don't
   visually collide with platform entries.
@@ -28,6 +28,14 @@ Plugin and tooling entries (e.g. `@dashclaw/openclaw-plugin`, `@dashclaw/cli`)
 are prefixed with the package name.
 
 ## [Unreleased]
+
+### Retired the archived "Context" surface (key points + threads)
+
+The `/api/context/*` namespace has been archived since the platform-convergence cleanup — it lives only under `app/api/_archive/`, has no `next.config` rewrite, and its `context_threads` table was never created, so every call 404'd. This release removes the last live remnants that still pointed at it:
+
+- **Removed — the `/workspace` Context tab.** It fetched `/api/context/points` + `/api/context/threads` in one `Promise.all` and threw "Failed to fetch context data" on load. Workspace now shows 5 tabs: Overview, Handoffs, Snippets, Preferences, Memory.
+- **Removed — the `/docs` "Context Manager" section.** It documented Node SDK methods (`captureKeyPoint`, `getContextSummary`) that never existed in the Node SDK.
+- **Left as pre-existing dead code.** The archived routes (`app/api/_archive/context/*`) and the now-orphaned `context_points` / `context_entries` tables (no live reader or writer).
 
 ### AI policy authoring is now iterative
 
@@ -49,6 +57,15 @@ A passive learning loop that records real, **redacted, local-only** Claude Code 
 - **Added — new `protected_path` guard policy type** (`app/lib/validate.js` + `app/lib/guard.js`), authorable from `/policies` and matched with the same path matcher the Policy Coach simulates with. `risk_threshold` covers the destructive-command type. The other four suggestion types are advisory observations in v1.
 - **Added — surfaces.** CLI `dashclaw behavior status|suggestions`; MCP tool `dashclaw_behavior_suggestions` (read-only).
 - **Storage.** Local files only (samples + dismissals); **no database migration**. The only DB write is the inactive policy draft on adopt.
+
+### SDK [4.0.0] — 2026-06-03 — BREAKING: removed the archived context namespace (threads + key points)
+
+Continues the dead-archived-endpoint cleanup behind SDK 3.0.0. The `/api/context/*` namespace lives only under `app/api/_archive/` (no `next.config` rewrite; the `context_threads` table was never created), so every wrapped call always 404'd. Removed as a **breaking** change; both SDKs ship as a **major** — **Node 4.0.0** (npm) and **Python 4.0.0** (PyPI).
+
+- **Removed (Node, 107 → 104).** Context-thread methods `createThread`, `addThreadEntry`, `closeThread` (`/api/context/threads*`). Canonical public-method count **107 → 104**. (Removed in source by `bbbb517b`; 4.0.0 is the release that publishes and documents it.)
+- **Removed (Python, 211 → 204).** Context-thread methods `create_thread`, `add_thread_entry`, `close_thread`, `get_threads` (211 → 207, also `bbbb517b`), plus the key-point methods `capture_key_point`, `get_key_points`, `get_context_summary` (`/api/context/points`) — 207 → **204**.
+- **Unchanged.** The legacy Node SDK (`dashclaw/legacy`) keeps its frozen context shims (points + threads).
+- **Release sequencing.** The root `package.json` self-dependency (`dashclaw`) stays at `^3.0.0` until 4.0.0 is published to npm; bumping it before publish would desync `package-lock.json` (registry-pinned 3.0.0) and break `npm ci`.
 
 ### SDK [3.0.0] — 2026-06-02 — BREAKING: removed methods that targeted archived endpoints
 
