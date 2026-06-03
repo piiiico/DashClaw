@@ -184,3 +184,50 @@ Five more clusters + one real bug fix, each lint + full-suite + build gated (sui
 | **Agent-session controls** | Session detail "Clear block" (→ `status:running`) and "Mark finished" (→ `status:finished`) wiring the previously-unreachable PATCH, honoring the closed-session 409. Renamed `page.js`→`.jsx`. `session-detail.page.test.jsx` (3). | `8804d5d9` |
 
 **Suite:** 2525 passed / 5 skipped. The governance-zip Windows file-lock is now self-healing (the generator keeps the prior zip on a build failure) — root cause was Claude Desktop holding the skill's SKILL.md open.
+
+## Tail pass 5 (2026-06-03) — remaining "wire existing backend → UI" items
+
+Eight committed clusters, each TDD'd (`.jsx`/component surfaces) or build-verified
+(server-component `.js` display plumbing), every cluster gated on lint + the **full**
+`vitest` suite + `next build` before commit + push. Suite **2582 → 2605** (+23 cases
+across 7 new test files + 1 extended). Protected areas: none touched (no
+OAuth/MCP/auth/middleware/billing). The local `.dashclaw/` recorder output and the
+untracked `examples/governed-chat-harness/` were left unstaged throughout.
+
+Ground truth for each item was established by a read-only recon fan-out first, which
+corrected two recon assumptions: the policy test-runner is **not** hollow (`convertPolicy`
+always emits `tests`), and the code-session detail page is an **async server component**
+(so it stays `.js` + build-verified, not the `.jsx` rename the per-item blueprint assumed).
+
+| Area | What shipped | Commit |
+|------|-------------|--------|
+| **Policies** | Orphaned endpoints wired into the Custom tab: Export proof (new `ProofExportPanel`, GET `/api/policies/proof` md/json + copy/download), Run tests (POST `/api/policies/test`, per-policy pass/fail), and the import pack picker now driven by GET `/api/policies/templates` (`policy_count` + per-policy `rules_summary`). `proof-export-panel.test.jsx` (5), `policy-custom-tab.test.jsx` (3). | `138da6a0` |
+| **Compliance schedule** | Inline rename (PATCH `{name}`, using the full row the route returns) + `format`/`window_days`/`include_*` badges. `page.js`→`.jsx`. `compliance-exports.page.test.jsx` (2). | `e520d5fe` |
+| **Artifacts** | Per-row delete in `ArtifactsTab` (DELETE `/api/artifacts/[artifactId]`), removing the row on success + not-found/failure message. `artifacts-tab.test.jsx` (+2). | `fe33865c` |
+| **Code sessions** | `naive_cost_usd` + `cache_savings_usd` + naive token grid + parser metadata (`parser_version`/`model_requests`/`stuck_loops`) on the session detail Summary, coerced with `Number()`. Server component — build-verified. | `e2ec0905` |
+| **Setup proof** | `ProofPanel` now renders an aggregate pass/fail/warn score + per-category/check breakdown (was download-only). `.js`→`.jsx`. `proof-panel.test.jsx` (3). | `432c21b9` |
+| **Workflows** | Per-step "Resume from here" (POST `{from_step}`) on non-completed steps of a failed run, threaded page→timeline→card; `handleResume` treats only a string arg as a step_id (header still passes a click event = global resume). `workflow-run-step-card.test.jsx` (3). | `724862d8` |
+| **Model strategies** | Live failover test panel (POST `/api/model-strategies/[id]/complete`, BYOK) rendering provider/model/cost/output, the `provider_errors` chain on a 502, and a clear live-billed warning. `model-strategy-test-panel.test.jsx` (3). | `db9c8db8` |
+| **Agents** | Read-only `AgentConnectionsSection` on the agent detail — provider + `auth_type`/`plan_name`/`status`/last-reported. `agent-connections-section.test.jsx` (2). | `c1b5c72a` |
+
+### Still remaining — flagged for user decision (out of the "wire existing backend" scope)
+
+Each of these is **not** a straight UI-wiring of an existing route, so they were deliberately
+left for a decision rather than auto-implemented:
+
+- **Org rename + role-scoped keys** — touches `/api/orgs/*` (org/key management). The org-rename
+  PATCH is low-risk wiring, but `/api/orgs/[orgId]/route.js` carries a **pre-existing direct-SQL
+  violation** (the route-sql baseline tolerates it; left as-is, not fixed) and role-scoped key
+  **minting** duplicates the existing `/api-keys` surface. Org/key management is auth/billing-adjacent.
+- **Outcome-sweep manual trigger** — the *indicator* (the `lost_confirmation` `OutcomeBadge` + the
+  decisions `filterOutcome` dropdown) already ships. What's missing is a **net-new mutating admin
+  endpoint** (`POST /api/admin/trigger-outcome-sweep`); the existing `/api/cron/outcome-sweep` is
+  `CRON_SECRET`-only. Relevant for free-tier (no cron), but it is new backend, not UI wiring.
+- **Agent connections write form** — the read side shipped (`c1b5c72a`); the batch-upsert **editor**
+  (POST `/api/agents/connections`, up to 50) is a net-new writer that the SDK `reportConnections`
+  already covers.
+- **DEAD PAGE `/goals`** — still AWAITING USER DECISION (carried from Tail pass 2). `app/goals/page.js`
+  fetches `/api/goals`, which exists **only** under `app/api/_archive/goals/`, so `/goals` is dead in
+  non-demo mode (demo-only fixtures) and not in the main nav — the same situation as the already-removed
+  `/routing` + `/feedback`. Recommend the same treatment (delete), flagged because it wasn't in the
+  original audit's stale-frontend list.
