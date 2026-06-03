@@ -18,6 +18,8 @@ import {
   buildPolicySummary,
   POLICY_TYPE_OPTIONS as POLICY_TYPES,
 } from '../lib/policyFormModel';
+import PolicyGeneratedDraftEditor from './PolicyGeneratedDraftEditor';
+import { normalizeGeneratedPolicyDrafts } from '../lib/policyGeneratorDrafts.js';
 import { PACK_PREVIEWS } from '../../lib/policyPackPreviews.js';
 
 const ACTION_OPTIONS = [
@@ -87,6 +89,12 @@ export default function CustomTab() {
   const [genLoading, setGenLoading] = useState(false);
   const [genError, setGenError] = useState(null);
   const [genSuccess, setGenSuccess] = useState(null);
+  const [genDrafts, setGenDrafts] = useState([]);
+  const [genDraftForm, setGenDraftForm] = useState(null);
+  const [genAssumptions, setGenAssumptions] = useState([]);
+  const [genClarifications, setGenClarifications] = useState([]);
+  const [genAnswers, setGenAnswers] = useState({}); // { [id]: string|string[] }
+  const [genAgents, setGenAgents] = useState([]);
 
   // Row actions
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
@@ -121,6 +129,14 @@ export default function CustomTab() {
       .then(r => (r.ok ? r.json() : { templates: [] }))
       .then(d => setTemplates(d.templates || []))
       .catch(() => { /* fall back to static previews */ });
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/agents').then((r) => (r.ok ? r.json() : { agents: [] }))
+      .then((d) => { if (!cancelled) setGenAgents(d.agents || []); })
+      .catch(() => { if (!cancelled) setGenAgents([]); });
+    return () => { cancelled = true; };
   }, []);
 
   const filtered = policies.filter(p => {
@@ -263,24 +279,55 @@ export default function CustomTab() {
     }
   };
 
-  const handleGenerate = async () => {
+  const runGenerator = async (answers) => {
     setGenLoading(true);
     setGenError(null);
     setGenSuccess(null);
     try {
+      const answerList = Object.entries(answers || {}).map(([id, value]) => ({ id, value }));
       const res = await fetch('/api/policies/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ input_text: genInput, dry_run: false }),
+        body: JSON.stringify({ input_text: genInput, answers: answerList, dry_run: true }),
       });
       const data = await res.json();
-      if (!res.ok) {
-        setGenError(data.error || 'Failed to generate policies');
-        return;
-      }
-      const count = data.created_policies?.length || 0;
-      setGenSuccess(`Created ${count} ${count === 1 ? 'policy' : 'policies'} from your description.`);
-      setGenInput('');
+      if (!res.ok) { setGenError(data.error || 'Failed to generate policy drafts'); return; }
+      const drafts = normalizeGeneratedPolicyDrafts(data.drafts || []);
+      setGenDrafts(drafts);
+      setGenAssumptions(data.assumptions || []);
+      setGenClarifications(data.clarifications || []);
+      setGenDraftForm(drafts.length ? JSON.parse(JSON.stringify(drafts[0].formState)) : null);
+    } catch (err) {
+      setGenError(err.message);
+    } finally {
+      setGenLoading(false);
+    }
+  };
+
+  const handleGenerate = () => runGenerator({});
+  const handleRefine = () => runGenerator(genAnswers);
+
+  const toggleAnswer = (id, value, multi) => {
+    setGenAnswers((prev) => {
+      if (!multi) return { ...prev, [id]: value };
+      const cur = Array.isArray(prev[id]) ? prev[id] : [];
+      return { ...prev, [id]: cur.includes(value) ? cur.filter((v) => v !== value) : [...cur, value] };
+    });
+  };
+
+  const handleCreateDraft = async () => {
+    if (!genDraftForm) return;
+    setGenLoading(true);
+    setGenError(null);
+    try {
+      const payload = compilePolicyPayload(genDraftForm);
+      const res = await fetch('/api/policies', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) { setGenError(data.error || 'Failed to create policy'); return; }
+      setGenSuccess(`Created policy "${payload.name}".`);
+      setGenInput(''); setGenDrafts([]); setGenDraftForm(null); setGenAssumptions([]); setGenClarifications([]); setGenAnswers({});
       fetchPolicies();
     } catch (err) {
       setGenError(err.message);
@@ -423,35 +470,81 @@ export default function CustomTab() {
               <span className="text-sm font-semibold text-white">AI policy generator</span>
             </div>
             <button
-              onClick={() => { setShowGenerator(false); setGenError(null); setGenSuccess(null); }}
+              onClick={() => { setShowGenerator(false); setGenError(null); setGenSuccess(null); setGenDrafts([]); setGenDraftForm(null); setGenAssumptions([]); setGenClarifications([]); setGenAnswers({}); }}
               className="text-tertiary transition-colors hover:text-white"
               aria-label="Close AI generator"
             >
               <X size={16} />
             </button>
           </div>
-          <p className="text-xs text-secondary">Describe what you want DashClaw to prevent or enforce in plain English.</p>
+          <p className="text-xs text-secondary">Describe what you want DashClaw to prevent or enforce in plain English. DashClaw drafts a policy and asks follow-ups to pin it down — it never just says no.</p>
           {genSuccess && <div className="rounded-lg border border-success/30 bg-success-subtle px-3 py-2 text-xs text-success">{genSuccess}</div>}
           {genError && <div className="rounded-lg border border-error/30 bg-error-subtle px-3 py-2 text-xs text-error">{genError}</div>}
           <textarea
             value={genInput}
-            onChange={e => setGenInput(e.target.value)}
-            placeholder="e.g. Require approval before any agent can deploy to production or send external messages"
+            onChange={(e) => setGenInput(e.target.value)}
+            placeholder="e.g. Stop my agents from deleting things I care about"
             rows={3}
             maxLength={5000}
             className="w-full resize-none rounded-lg border border-border bg-surface-tertiary px-3 py-2 text-xs text-secondary placeholder:text-disabled transition-colors hover:border-border-hover focus:border-brand/50 focus:outline-none focus:ring-2 focus:ring-brand/20"
           />
           <div className="flex items-center justify-between">
             <span className="text-[11px] tabular-nums text-tertiary">{genInput.length}/5000</span>
-            <button
-              onClick={handleGenerate}
-              disabled={genLoading || !genInput.trim()}
-              className="flex items-center gap-1.5 rounded-lg border border-brand/20 bg-brand/10 px-3 py-1.5 text-xs font-medium text-brand transition-colors hover:border-brand/40 hover:bg-brand/15 disabled:opacity-50"
-            >
-              <Sparkles size={12} aria-hidden="true" />
-              {genLoading ? 'Generating…' : 'Generate & create'}
+            <button onClick={handleGenerate} disabled={genLoading || !genInput.trim()}
+              className="flex items-center gap-1.5 rounded-lg border border-brand/20 bg-brand/10 px-3 py-1.5 text-xs font-medium text-brand transition-colors hover:border-brand/40 hover:bg-brand/15 disabled:opacity-50">
+              <Sparkles size={12} aria-hidden="true" /> {genLoading ? 'Working…' : (genDrafts.length || genClarifications.length ? 'Regenerate' : 'Generate')}
             </button>
           </div>
+
+          {genAssumptions.length > 0 && (
+            <div className="rounded-lg border border-border bg-surface-tertiary px-3 py-2 text-[11px] text-tertiary">
+              <span className="font-medium text-secondary">Assumptions:</span> {genAssumptions.join('; ')}
+            </div>
+          )}
+
+          {genClarifications.length > 0 && (
+            <div className="space-y-2 rounded-lg border border-brand/20 bg-brand/5 p-3">
+              <div className="text-xs font-medium text-white">Help me get this right:</div>
+              {genClarifications.map((c) => (
+                <div key={c.id} className="space-y-1">
+                  <div className="text-[11px] text-secondary">{c.question}</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {c.suggestions.map((s) => {
+                      const active = c.multi ? (genAnswers[c.id] || []).includes(s) : genAnswers[c.id] === s;
+                      return (
+                        <button key={s} onClick={() => toggleAnswer(c.id, s, c.multi)}
+                          className={`rounded-full border px-2.5 py-1 text-[11px] transition-colors ${active ? 'border-brand bg-brand/15 text-brand' : 'border-border bg-surface-tertiary text-secondary hover:border-border-hover'}`}>
+                          {s}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+              <button onClick={handleRefine} disabled={genLoading}
+                className="mt-1 flex items-center gap-1.5 rounded-lg border border-brand/20 bg-brand/10 px-3 py-1.5 text-xs font-medium text-brand transition-colors hover:border-brand/40 hover:bg-brand/15 disabled:opacity-50">
+                <Sparkles size={12} aria-hidden="true" /> {genLoading ? 'Refining…' : 'Refine with my answers'}
+              </button>
+            </div>
+          )}
+
+          {genDraftForm && (
+            <div className="space-y-3 rounded-lg border border-border bg-surface-tertiary p-3">
+              <div className="text-xs font-medium text-white">Review &amp; save</div>
+              <PolicyGeneratedDraftEditor
+                draft={genDrafts[0] || null}
+                form={genDraftForm}
+                setForm={setGenDraftForm}
+                policyTypes={POLICY_TYPES}
+                actionOptions={ACTION_OPTIONS}
+                agents={genAgents}
+                summary={buildPolicySummary(genDraftForm)}
+                saving={genLoading}
+                onSave={handleCreateDraft}
+                saveDisabled={!genDraftForm?.name?.trim()}
+              />
+            </div>
+          )}
         </div>
       )}
 

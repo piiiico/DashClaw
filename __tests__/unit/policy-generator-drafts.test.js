@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   normalizeGeneratedPolicyDraft,
   normalizeGeneratedPolicyDrafts,
-} from '../../app/policies/generate/lib/policyGeneratorDrafts.js';
+} from '../../app/policies/lib/policyGeneratorDrafts.js';
 
 describe('policyGeneratorDrafts', () => {
   it('normalizes a risk threshold draft into shared policy form state', () => {

@@ -1,4 +1,4 @@
-import PolicyAuthoringPanel from '../../components/PolicyAuthoringPanel';
+import PolicyAuthoringPanel from './PolicyAuthoringPanel';
 import PolicyGeneratedAdvancedDetails from './PolicyGeneratedAdvancedDetails';
 
 export default function PolicyGeneratedDraftEditor({

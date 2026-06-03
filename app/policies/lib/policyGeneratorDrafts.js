@@ -1,4 +1,4 @@
-import { buildPolicySummary, createDefaultPolicyFormState } from '../../lib/policyFormModel.js';
+import { buildPolicySummary, createDefaultPolicyFormState } from './policyFormModel.js';
 
 const CORE_TOP_LEVEL_KEYS = new Set(['name', 'policy_type', 'rules', 'confidence']);
 const RISK_THRESHOLD_RULE_KEYS = new Set(['threshold', 'action']);
