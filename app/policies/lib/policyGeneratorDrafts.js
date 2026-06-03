@@ -1,20 +1,18 @@
-import { buildPolicySummary, createDefaultPolicyFormState } from './policyFormModel.js';
+import { buildPolicySummary, compilePolicyPayload, decompilePolicyForm } from './policyFormModel.js';
 
-const CORE_TOP_LEVEL_KEYS = new Set(['name', 'policy_type', 'rules', 'confidence']);
-const RISK_THRESHOLD_RULE_KEYS = new Set(['threshold', 'action']);
-const REQUIRE_APPROVAL_RULE_KEYS = new Set(['action_types', 'action']);
+// Top-level keys the draft editor understands natively. Anything else (e.g. a
+// model-supplied `recovery_recipe`) is surfaced via advancedDetails for review.
+const CORE_TOP_LEVEL_KEYS = new Set(['name', 'policy_type', 'rules', 'confidence', 'agent_ids']);
 
-function cleanString(value) {
-  return typeof value === 'string' ? value.trim() : '';
-}
-
-function toNumber(value, fallback) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : fallback;
-}
-
-function normalizeArray(value) {
-  return Array.isArray(value) ? value.filter((item) => typeof item === 'string' && item.trim()) : [];
+// Recognized rule keys for a draft = the keys compilePolicyPayload emits for
+// that policy type. Any rule key the form model doesn't round-trip is flagged.
+function supportedRuleKeysFor(formState) {
+  try {
+    const compiled = compilePolicyPayload(formState);
+    return new Set(Object.keys(JSON.parse(compiled.rules || '{}')));
+  } catch {
+    return new Set();
+  }
 }
 
 function collectAdvancedDetails(generatedPolicy, supportedRuleKeys) {
@@ -38,45 +36,19 @@ function collectAdvancedDetails(generatedPolicy, supportedRuleKeys) {
   return Object.keys(advancedDetails).length > 0 ? advancedDetails : null;
 }
 
-function normalizeRiskThresholdDraft(generatedPolicy) {
-  const rules = generatedPolicy?.rules && typeof generatedPolicy.rules === 'object' ? generatedPolicy.rules : {};
-  const formState = {
-    ...createDefaultPolicyFormState(),
-    name: cleanString(generatedPolicy?.name),
-    type: 'risk_threshold',
-    threshold: toNumber(rules.threshold, 0),
-    action: cleanString(rules.action) || 'block',
-  };
-
-  return {
-    formState,
-    advancedDetails: collectAdvancedDetails(generatedPolicy, RISK_THRESHOLD_RULE_KEYS),
-  };
-}
-
-function normalizeRequireApprovalDraft(generatedPolicy) {
-  const rules = generatedPolicy?.rules && typeof generatedPolicy.rules === 'object' ? generatedPolicy.rules : {};
-  const formState = {
-    ...createDefaultPolicyFormState(),
-    name: cleanString(generatedPolicy?.name),
-    type: 'require_approval',
-    actionTypes: normalizeArray(rules.action_types),
-    action: cleanString(rules.action) || 'require_approval',
-  };
-
-  return {
-    formState,
-    advancedDetails: collectAdvancedDetails(generatedPolicy, REQUIRE_APPROVAL_RULE_KEYS),
-  };
-}
-
 export function normalizeGeneratedPolicyDraft(generatedPolicy, index = 0) {
-  const policyType = generatedPolicy?.policy_type || generatedPolicy?.type || 'risk_threshold';
-  const normalizer = policyType === 'require_approval'
-    ? normalizeRequireApprovalDraft
-    : normalizeRiskThresholdDraft;
+  // decompilePolicyForm is the inverse of compilePolicyPayload and maps every
+  // policy type's rules into the shared form state (e.g. rules.paths ->
+  // protectedPaths). It expects `rules`/`agent_ids` as JSON strings, but a
+  // generated draft carries them as objects/arrays — so stringify them.
+  const formState = decompilePolicyForm({
+    name: generatedPolicy?.name,
+    policy_type: generatedPolicy?.policy_type || generatedPolicy?.type,
+    rules: JSON.stringify(generatedPolicy?.rules ?? {}),
+    agent_ids: generatedPolicy?.agent_ids ? JSON.stringify(generatedPolicy.agent_ids) : null,
+  });
 
-  const { formState, advancedDetails } = normalizer(generatedPolicy);
+  const advancedDetails = collectAdvancedDetails(generatedPolicy, supportedRuleKeysFor(formState));
 
   return {
     id: `generated-${index}`,

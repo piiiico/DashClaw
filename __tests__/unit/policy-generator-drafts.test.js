@@ -3,6 +3,7 @@ import {
   normalizeGeneratedPolicyDraft,
   normalizeGeneratedPolicyDrafts,
 } from '../../app/policies/lib/policyGeneratorDrafts.js';
+import { compilePolicyPayload } from '../../app/policies/lib/policyFormModel.js';
 
 describe('policyGeneratorDrafts', () => {
   it('normalizes a risk threshold draft into shared policy form state', () => {
@@ -83,5 +84,45 @@ describe('policyGeneratorDrafts', () => {
     expect(drafts[0].id).toBe('generated-0');
     expect(drafts[1].id).toBe('generated-1');
     expect(drafts[1].summary).toContain('Require approval for migrate actions');
+  });
+
+  it('normalizes a protected_path draft and round-trips its paths', () => {
+    const [draft] = normalizeGeneratedPolicyDrafts([
+      {
+        name: 'Protect secrets',
+        policy_type: 'protected_path',
+        rules: { paths: ['.env', 'secrets/'], action: 'block' },
+      },
+    ]);
+
+    expect(draft.id).toBe('generated-0');
+    expect(draft.name).toBe('Protect secrets');
+    expect(draft.formState.type).toBe('protected_path');
+    expect(draft.formState.protectedPaths).toEqual(['.env', 'secrets/']);
+    expect(draft.formState.action).toBe('block');
+
+    // Round-trip: the paths must NOT be dropped when the form is compiled back.
+    const payload = compilePolicyPayload(draft.formState);
+    expect(payload.policy_type).toBe('protected_path');
+    const rules = JSON.parse(payload.rules);
+    expect(rules.paths).toEqual(expect.arrayContaining(['.env', 'secrets/']));
+    expect(rules.action).toBe('block');
+  });
+
+  it('normalizes a semantic_check draft and round-trips the instruction', () => {
+    const draft = normalizeGeneratedPolicyDraft({
+      name: 'No secrets in output',
+      policy_type: 'semantic_check',
+      rules: { instruction: 'block if it contains secrets', action: 'warn' },
+    });
+
+    expect(draft.formState.type).toBe('semantic_check');
+    expect(draft.formState.instruction).toBe('block if it contains secrets');
+    expect(draft.formState.action).toBe('warn');
+
+    const payload = compilePolicyPayload(draft.formState);
+    expect(payload.policy_type).toBe('semantic_check');
+    const rules = JSON.parse(payload.rules);
+    expect(rules.instruction).toBe('block if it contains secrets');
   });
 });
