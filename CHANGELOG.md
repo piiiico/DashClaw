@@ -29,6 +29,15 @@ are prefixed with the package name.
 
 ## [Unreleased]
 
+### AI policy authoring is now iterative
+
+The natural-language policy generator no longer dead-ends on vague input. Instead of rejecting a request with "be more specific," it returns a best-effort draft, the assumptions it made, and targeted clarifying questions you answer with one-click chips — refining the draft until it is right, then saving your reviewed edits.
+
+- **Changed — the generator never rejects.** `POST /api/policies/generate` (dry-run) now returns `{ drafts, assumptions, clarifications }` instead of an empty array on ambiguity. The model is instructed to always make progress: a draft with stated assumptions, clarifying questions with suggested values, or both. Answered clarifications thread back in to refine. (`app/lib/policy-generator.js`.)
+- **Added — `protected_path`, `semantic_check`, and `behavioral_anomaly`** to the generator's vocabulary. Requests like "stop my agents from deleting things I care about" now map to a real `protected_path` policy; previously the generator knew only 7 of the 12 enforceable policy types and returned nothing for the rest.
+- **Changed — one authoring loop, one place.** The generate → review → refine → save loop lives in the discoverable Policies → Custom → **AI generator** panel. Edits are preserved on save (the reviewed draft is stored via `POST /api/policies`, never silently re-generated).
+- **Removed — the orphaned `/policies/generate` standalone page**, which nothing in the app linked to. Its review-before-save step is folded into the panel.
+
 ### Behavior Learning Mode / Policy Coach (v1, observe-only)
 
 A passive learning loop that records real, **redacted, local-only** Claude Code + agent usage, analyzes it deterministically, and suggests evidence-backed DashClaw policies per agent. v1 is **observe-only** — it never blocks, never changes approvals, and never auto-enforces. Full docs: `docs/behavior-learning.md`.

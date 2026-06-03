@@ -87,7 +87,7 @@ These routes define the minimum DashClaw category. They are stable or runtime-cr
 | `/api/assumptions` | Reasoning integrity records | Assumption tracking linked to actions. |
 | `/api/signals` | Runtime/anomaly signals | Signal listing and detection outputs. |
 | `/api/policies` | Policy CRUD | Guard policy management, including the `non_fabrication` policy type. |
-| `/api/policies/generate` | Natural-language policy generator | Supports dry-run preview. |
+| `/api/policies/generate` | Iterative natural-language policy generator | Dry-run returns `{ drafts, assumptions, clarifications }` and never dead-ends; accepts answered clarifications to refine. Authored from Policies → Custom → AI generator. |
 | `/api/integrity/jwks` | Published signing public key (JWKS) | Public. Also at `/.well-known/jwks.json`. Used to re-verify proof receipts and compliance bundles. |
 | `/api/integrity/verify` | Re-verify a receipt or signed bundle | Public, stateless. `POST { receipt }` or `{ bundle }` → `{ ok }`. |
 | `/api/health` | System readiness | Public health/readiness surface. |
