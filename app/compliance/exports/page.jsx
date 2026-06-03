@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   FileDown, Plus, Trash2, Download, RefreshCw, Clock,
   CheckCircle, XCircle, Loader2, Calendar, Shield, Eye,
-  ChevronDown, ChevronRight,
+  ChevronDown, ChevronRight, Pencil, Check, X,
 } from 'lucide-react';
 import Link from 'next/link';
 import PageLayout from '../../components/PageLayout';
@@ -66,6 +66,10 @@ export default function ComplianceExportsPage() {
   // Expanded export for viewing report
   const [expandedExport, setExpandedExport] = useState(null);
   const [expandedContent, setExpandedContent] = useState('');
+
+  // Inline schedule rename
+  const [editingScheduleId, setEditingScheduleId] = useState(null);
+  const [editingScheduleName, setEditingScheduleName] = useState('');
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -137,6 +141,28 @@ export default function ComplianceExportsPage() {
 
   const handleToggleSchedule = async (id, enabled) => {
     try { await fetch(`/api/compliance/schedules/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enabled: !enabled }) }); fetchData(); } catch { alert('Failed to toggle schedule'); }
+  };
+
+  const startRenameSchedule = (sch) => {
+    setEditingScheduleId(sch.id);
+    setEditingScheduleName(sch.name);
+  };
+
+  const handleRenameSchedule = async (id) => {
+    const name = editingScheduleName.trim();
+    if (!name) { setEditingScheduleId(null); return; }
+    try {
+      const res = await fetch(`/api/compliance/schedules/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setSchedules(prev => prev.map(s => (s.id === id ? { ...s, ...updated } : s)));
+      }
+    } catch { alert('Failed to rename schedule'); }
+    finally { setEditingScheduleId(null); }
   };
 
   const handleViewExport = async (exp) => {
@@ -491,14 +517,60 @@ export default function ComplianceExportsPage() {
                       key={sch.id}
                       className="flex items-center justify-between gap-3 rounded-lg border border-border bg-surface-tertiary px-3 py-2"
                     >
-                      <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex min-w-0 flex-wrap items-center gap-2">
                         <span
                           aria-hidden="true"
                           className={`h-1.5 w-1.5 shrink-0 rounded-full ${sch.enabled ? 'bg-status-success' : 'bg-zinc-500'}`}
                         />
-                        <span className="truncate text-sm font-medium text-white">{sch.name}</span>
+                        {editingScheduleId === sch.id ? (
+                          <span className="flex items-center gap-1">
+                            <label htmlFor={`rename-${sch.id}`} className="sr-only">Schedule name</label>
+                            <input
+                              id={`rename-${sch.id}`}
+                              value={editingScheduleName}
+                              onChange={e => setEditingScheduleName(e.target.value)}
+                              onKeyDown={e => { if (e.key === 'Enter') handleRenameSchedule(sch.id); if (e.key === 'Escape') setEditingScheduleId(null); }}
+                              autoFocus
+                              className="rounded border border-border bg-surface-secondary px-2 py-0.5 text-sm text-white focus:border-brand/50 focus:outline-none"
+                            />
+                            <button
+                              onClick={() => handleRenameSchedule(sch.id)}
+                              className="rounded p-1 text-tertiary transition-colors hover:bg-white/5 hover:text-success"
+                              aria-label="Save"
+                            >
+                              <Check size={13} />
+                            </button>
+                            <button
+                              onClick={() => setEditingScheduleId(null)}
+                              className="rounded p-1 text-tertiary transition-colors hover:bg-white/5 hover:text-white"
+                              aria-label="Cancel rename"
+                            >
+                              <X size={13} />
+                            </button>
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-1">
+                            <span className="truncate text-sm font-medium text-white">{sch.name}</span>
+                            <button
+                              onClick={() => startRenameSchedule(sch)}
+                              className="rounded p-1 text-tertiary transition-colors hover:bg-white/5 hover:text-white"
+                              aria-label={`Rename ${sch.name}`}
+                            >
+                              <Pencil size={12} />
+                            </button>
+                          </span>
+                        )}
                         {fws.map(fw => <Badge key={fw} size="xs">{fw}</Badge>)}
                         <Badge size="xs" variant="info">{sch.cron_expression}</Badge>
+                        <Badge size="xs" variant={sch.format === 'json' ? 'info' : 'default'}>{sch.format}</Badge>
+                        <Badge size="xs">{`${sch.window_days}d`}</Badge>
+                        {[
+                          sch.include_evidence && 'evidence',
+                          sch.include_remediation && 'remediation',
+                          sch.include_trends && 'trends',
+                        ].filter(Boolean).map(flag => (
+                          <Badge key={flag} size="xs" variant="default">{flag}</Badge>
+                        ))}
                       </div>
                       <div className="flex shrink-0 items-center gap-2">
                         <button
