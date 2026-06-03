@@ -23,6 +23,9 @@ const POLICY_TYPE_SCHEMAS = {
   permission_escalation: '{ "enforce": true }',
   green_contract: '{ "action_types": ["deploy"], "required_level": "targeted"|"package"|"workspace"|"merge_ready", "action": "block"|"require_approval" }',
   branch_freshness: '{ "action_types": ["deploy"], "freshness": ["stale", "diverged"], "max_commits_behind": <number>, "action": "block"|"require_approval" }',
+  protected_path: '{ "paths": ["glob", ...], "action": "block"|"warn"|"require_approval" }  // protects files/dirs from being written or deleted; use for "don\'t delete/touch X"',
+  semantic_check: '{ "instruction": "what to check for in the action content", "action": "block"|"warn"|"require_approval" }',
+  behavioral_anomaly: '{ "similarity_threshold": <0.0-1.0, default 0.75>, "min_history": <number, default 5>, "action": "warn"|"block"|"require_approval" }',
 };
 
 const FEW_SHOT_EXAMPLES = [
@@ -75,20 +78,51 @@ ${ACTION_TYPES.join(', ')}
 ## Examples
 ${examples}
 
-## Instructions
-- Return a JSON array of policy objects.
-- Each object must have: name (string), policy_type (one of the valid types above), rules (object matching the schema for that type), confidence (0.0-1.0).
-- Optionally include recovery_recipe: { signal: string, suggestion: string, auto_action: string|null }.
-- If the input describes multiple policies, generate one object per policy.
-- If the input is unclear or cannot be mapped to a valid policy type, return an empty array.
-- Return ONLY the JSON array, no markdown fences, no explanation.`;
+## Output Format
+Return ONLY a single JSON object (no markdown fences, no prose) with exactly these keys:
+{
+  "drafts": [ { "name": string, "policy_type": one of the types above, "rules": object matching that type's schema, "confidence": 0.0-1.0 } ],
+  "assumptions": [ string ],      // plain-English assumptions you made to fill gaps
+  "clarifications": [ { "id": string, "question": string, "field": "rules.<key>"|"policy_type", "suggestions": [string], "multi": boolean } ]
+}
+
+## Rules
+- NEVER return an empty response and NEVER refuse. Always make progress.
+- If the request is clear: return one or more drafts and list any assumptions you made.
+- If the request is workable but vague (e.g. "protect things I care about"): return a BEST-EFFORT draft AND clarifications that tighten it. State your assumptions.
+- If you genuinely cannot draft yet: return drafts: [] and 1-3 clarifications with concrete, clickable \`suggestions\`.
+- \`suggestions\` must be concrete values the user can pick (e.g. paths like ".env", "secrets/", "migrations/"; or "warn"/"block"/"require approval"). For enum fields use only allowed values.
+- Map "delete/remove/protect files or paths" to \`protected_path\`.
+- If the input describes multiple distinct policies, return one draft per policy.`;
+}
+
+function makeGenericClarification() {
+  return {
+    id: 'intent',
+    question: 'What should this policy govern, and how strict should it be?',
+    field: 'policy_type',
+    suggestions: ['block deploys', 'protect a path from deletion', 'require approval over a risk level', 'rate-limit an agent'],
+    multi: false,
+  };
+}
+
+function sanitizeClarifications(raw) {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((c) => c && typeof c.question === 'string')
+    .slice(0, 4)
+    .map((c, i) => ({
+      id: typeof c.id === 'string' && c.id ? c.id : `q${i}`,
+      question: c.question,
+      field: typeof c.field === 'string' ? c.field : null,
+      suggestions: Array.isArray(c.suggestions) ? c.suggestions.filter((s) => typeof s === 'string').slice(0, 8) : [],
+      multi: Boolean(c.multi),
+    }));
 }
 
 export function parseGeneratedPolicies(rawContent) {
-  const policies = [];
   const warnings = [];
-
-  let cleaned = rawContent.trim();
+  let cleaned = (rawContent || '').trim();
   if (cleaned.startsWith('```')) {
     cleaned = cleaned.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
   }
@@ -97,23 +131,20 @@ export function parseGeneratedPolicies(rawContent) {
   try {
     parsed = JSON.parse(cleaned);
   } catch {
-    return { policies: [], warnings: ['Failed to parse LLM response as JSON'] };
+    return { drafts: [], assumptions: [], clarifications: [makeGenericClarification()], warnings: ['Failed to parse model response as JSON'] };
   }
 
-  if (!Array.isArray(parsed)) {
-    return { policies: [], warnings: ['LLM response is not a JSON array'] };
+  // Back-compat: a bare array means drafts-only.
+  const obj = Array.isArray(parsed) ? { drafts: parsed } : (parsed && typeof parsed === 'object' ? parsed : null);
+  if (!obj) {
+    return { drafts: [], assumptions: [], clarifications: [makeGenericClarification()], warnings: ['Model response was not a JSON object'] };
   }
 
-  for (const item of parsed) {
-    const validationInput = {
-      name: item.name,
-      policy_type: item.policy_type,
-      rules: JSON.stringify(item.rules || {}),
-    };
-
-    const result = validatePolicy(validationInput);
+  const drafts = [];
+  for (const item of Array.isArray(obj.drafts) ? obj.drafts : []) {
+    const result = validatePolicy({ name: item.name, policy_type: item.policy_type, rules: JSON.stringify(item.rules || {}) });
     if (result.valid) {
-      policies.push({
+      drafts.push({
         name: item.name,
         policy_type: item.policy_type,
         rules: item.rules,
@@ -125,7 +156,15 @@ export function parseGeneratedPolicies(rawContent) {
     }
   }
 
-  return { policies, warnings };
+  const assumptions = Array.isArray(obj.assumptions) ? obj.assumptions.filter((a) => typeof a === 'string') : [];
+  const clarifications = sanitizeClarifications(obj.clarifications);
+
+  // Never dead-end.
+  if (drafts.length === 0 && clarifications.length === 0) {
+    clarifications.push(makeGenericClarification());
+  }
+
+  return { drafts, assumptions, clarifications, warnings };
 }
 
 const DEFAULT_STRATEGY_CONFIG = {
