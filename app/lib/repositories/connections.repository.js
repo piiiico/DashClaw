@@ -58,6 +58,7 @@ export async function upsertConnection(sql, orgId, agentId, connection) {
     provider,
     auth_type = 'api_key',
     status = 'active',
+    plan_name = null,
     metadata = null
   } = connection;
 
@@ -70,6 +71,9 @@ export async function upsertConnection(sql, orgId, agentId, connection) {
   }
   if (status && !VALID_STATUSES.includes(status)) {
     throw new Error(`status must be one of: ${VALID_STATUSES.join(', ')}`);
+  }
+  if (plan_name != null && (typeof plan_name !== 'string' || plan_name.length > 256)) {
+    throw new Error('plan_name must be a string <= 256 chars');
   }
 
   const metadataStr = metadata
@@ -85,10 +89,11 @@ export async function upsertConnection(sql, orgId, agentId, connection) {
   const now = new Date().toISOString();
 
   const rows = await sql`
-    INSERT INTO agent_connections (id, org_id, agent_id, provider, auth_type, status, metadata, reported_at, updated_at)
-    VALUES (${id}, ${orgId}, ${agentId}, ${provider}, ${auth_type}, ${status}, ${metadataStr}, ${now}, ${now})
+    INSERT INTO agent_connections (id, org_id, agent_id, provider, auth_type, plan_name, status, metadata, reported_at, updated_at)
+    VALUES (${id}, ${orgId}, ${agentId}, ${provider}, ${auth_type}, ${plan_name}, ${status}, ${metadataStr}, ${now}, ${now})
     ON CONFLICT (org_id, agent_id, provider) DO UPDATE SET
       auth_type = EXCLUDED.auth_type,
+      plan_name = EXCLUDED.plan_name,
       status = EXCLUDED.status,
       metadata = EXCLUDED.metadata,
       updated_at = EXCLUDED.updated_at
