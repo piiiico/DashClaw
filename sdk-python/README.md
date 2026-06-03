@@ -22,7 +22,7 @@ Python agents typically pair the SDK with one or more of these:
 
 ## Quick Start
 
-The Python SDK is the full platform SDK (211 methods). The constructor accepts both v2-compatible and v1-extended parameters.
+The Python SDK is the full platform SDK (207 methods). The constructor accepts both v2-compatible and v1-extended parameters.
 
 ### v2-compatible constructor (recommended for new agents)
 
@@ -527,7 +527,7 @@ claw.delete_snippet("sn_abc123")
 
 ## Context Manager
 
-Capture key points, manage context threads, and get context summaries:
+Capture key points and get context summaries:
 
 ```python
 # Capture a key point
@@ -536,13 +536,7 @@ claw.capture_key_point("User confirmed budget is $50k", category="constraint")
 # Get key points
 points = claw.get_key_points(session_date="2025-01-15")
 
-# Context threads
-thread = claw.create_thread("Release Planning")
-claw.add_thread_entry(thread["thread_id"], "Kickoff complete")
-claw.close_thread(thread["thread_id"], summary="Done for today")
-threads = claw.get_threads(status="active", limit=10)
-
-# Get combined context summary (today's points + active threads)
+# Get a context summary (today's key points)
 summary = claw.get_context_summary()
 ```
 
@@ -552,11 +546,7 @@ summary = claw.get_context_summary()
 |--------|-------------|
 | `capture_key_point(content, **kwargs)` | Capture a key point. Optional: category, session_date |
 | `get_key_points(**filters)` | Get key points. Filters: session_date, category |
-| `create_thread(name, **kwargs)` | Create a context thread |
-| `add_thread_entry(thread_id, content, entry_type="note")` | Add an entry to a context thread |
-| `close_thread(thread_id, summary=None)` | Close a context thread |
-| `get_threads(status=None, limit=None)` | List context threads. Filter by status |
-| `get_context_summary()` | Get today's key points + active threads |
+| `get_context_summary()` | Get today's key points |
 
 ## Agent Messaging
 
@@ -1064,9 +1054,9 @@ integration.instrument_agent(assistant)
 
 ## API Parity
 
-This SDK provides the full DashClaw platform surface (211 methods), which is parity with the [Node.js v1 (legacy) SDK](https://github.com/ucsandman/DashClaw/tree/main/sdk/legacy).
+This SDK provides the full DashClaw platform surface (207 methods), which is parity with the [Node.js v1 (legacy) SDK](https://github.com/ucsandman/DashClaw/tree/main/sdk/legacy).
 
-The Node.js v2 SDK exposes a curated subset of **107 methods** focused on agent governance. The following Python methods are available in both the Node.js v2 SDK and this Python SDK:
+The Node.js v2 SDK exposes a curated subset of **104 methods** focused on agent governance. The following Python methods are available in both the Node.js v2 SDK and this Python SDK:
 
 | Category | Node v2 method | Python equivalent | In v2? |
 |----------|---------------|-------------------|:------:|
@@ -1090,9 +1080,6 @@ The Node.js v2 SDK exposes a curated subset of **107 methods** focused on agent 
 | Handoffs | `createHandoff` | `create_handoff` | Yes |
 | Handoffs | `getLatestHandoff` | `get_latest_handoff` | Yes |
 | Security | `scanPromptInjection` | `scan_prompt_injection` | Yes |
-| Threads | `createThread` | `create_thread` | Yes |
-| Threads | `addThreadEntry` | `add_thread_entry` | Yes |
-| Threads | `closeThread` | `close_thread` | Yes |
 | Sync | `syncState` | `sync_state` | Yes |
 | Scoring | _(17 scoring/risk methods)_ | _(equivalent methods)_ | Yes |
 

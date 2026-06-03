@@ -601,19 +601,6 @@ describe('DashClaw v2 SDK', () => {
     });
   });
 
-  // --- createThread ---
-
-  describe('createThread', () => {
-    it('POSTs to /api/context/threads with agent_id', async () => {
-      await claw.createThread({ name: 'Deploy analysis', summary: 'Checking safety' });
-      const [url, opts] = fetch.mock.calls[0];
-      expect(url).toBe('http://localhost:3000/api/context/threads');
-      const body = JSON.parse(opts.body);
-      expect(body.agent_id).toBe('test-agent');
-      expect(body.name).toBe('Deploy analysis');
-    });
-  });
-
   // --- execution.capabilities ---
 
   describe('execution.capabilities', () => {
@@ -686,33 +673,6 @@ describe('DashClaw v2 SDK', () => {
       expect(url).toContain('limit=5');
       expect(opts.method).toBe('GET');
       expect(opts.body).toBeUndefined();
-    });
-  });
-
-  // --- addThreadEntry ---
-
-  describe('addThreadEntry', () => {
-    it('POSTs to /api/context/threads/:id/entries', async () => {
-      await claw.addThreadEntry('ct_abc', 'Staging is green', 'observation');
-      const [url, opts] = fetch.mock.calls[0];
-      expect(url).toBe('http://localhost:3000/api/context/threads/ct_abc/entries');
-      const body = JSON.parse(opts.body);
-      expect(body.content).toBe('Staging is green');
-      expect(body.entry_type).toBe('observation');
-    });
-  });
-
-  // --- closeThread ---
-
-  describe('closeThread', () => {
-    it('PATCHes /api/context/threads/:id with closed status', async () => {
-      await claw.closeThread('ct_abc', 'Deploy approved');
-      const [url, opts] = fetch.mock.calls[0];
-      expect(url).toBe('http://localhost:3000/api/context/threads/ct_abc');
-      expect(opts.method).toBe('PATCH');
-      const body = JSON.parse(opts.body);
-      expect(body.status).toBe('closed');
-      expect(body.summary).toBe('Deploy approved');
     });
   });
 

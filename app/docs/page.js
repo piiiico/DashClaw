@@ -147,10 +147,6 @@ const navItems = [
   { href: '#getLatestHandoff', label: 'getLatestHandoff', indent: true },
   { href: '#security-scanning', label: 'Security Scanning' },
   { href: '#scanPromptInjection', label: 'scanPromptInjection', indent: true },
-  { href: '#context-threads', label: 'Context Threads' },
-  { href: '#createThread', label: 'createThread', indent: true },
-  { href: '#addThreadEntry', label: 'addThreadEntry', indent: true },
-  { href: '#closeThread', label: 'closeThread', indent: true },
   { href: '#bulk-sync', label: 'Bulk Sync' },
   { href: '#syncState', label: 'syncState', indent: true },
   { href: '#agent-identity', label: 'Agent Identity' },
@@ -1435,66 +1431,6 @@ if not result["clean"]:
             />
           </section>
 
-          {/* ── Context Threads ── */}
-          <section id="context-threads" className="scroll-mt-20 pt-12 border-t border-border">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-brand-subtle flex items-center justify-center">
-                <CircleDot size={16} className="text-brand" />
-              </div>
-              <h2 className="text-2xl font-bold tracking-tight">Context Threads</h2>
-            </div>
-
-            <MethodEntry
-              id="createThread"
-              signature="claw.createThread(options) / claw.create_thread(**kwargs)"
-              description="Create a new context thread to track a multi-step reasoning chain or investigation."
-              params={[
-                { name: 'name', type: 'string', required: true, desc: 'Thread name' },
-                { name: 'summary', type: 'string', required: false, desc: 'Initial thread summary' },
-              ]}
-              returns="Promise<{ thread, thread_id }>"
-              example={
-                <DocsCodeTabs
-                  nodeSnippet={`const { thread } = await claw.createThread({ name: 'Deploy analysis', summary: 'Evaluating safety' });`}
-                  pythonSnippet={`result = claw.create_thread(name="Deploy analysis", summary="Evaluating safety")`}
-                />
-              }
-            />
-
-            <MethodEntry
-              id="addThreadEntry"
-              signature="claw.addThreadEntry(threadId, content, entryType) / claw.add_thread_entry(...)"
-              description="Append an observation, conclusion, or decision to an existing context thread."
-              params={[
-                { name: 'threadId', type: 'string', required: true, desc: 'Thread ID to append to' },
-                { name: 'content', type: 'string', required: true, desc: 'Entry content' },
-                { name: 'entryType', type: 'string', required: true, desc: "'observation' | 'conclusion' | 'decision'" },
-              ]}
-              example={
-                <DocsCodeTabs
-                  nodeSnippet={`await claw.addThreadEntry('ct_abc123', 'Staging checks passed', 'observation');`}
-                  pythonSnippet={`claw.add_thread_entry("ct_abc123", "Staging checks passed", "observation")`}
-                />
-              }
-            />
-
-            <MethodEntry
-              id="closeThread"
-              signature="claw.closeThread(threadId, summary?) / claw.close_thread(thread_id, summary=None)"
-              description="Close a context thread, optionally providing a final summary."
-              params={[
-                { name: 'threadId', type: 'string', required: true, desc: 'Thread ID to close' },
-                { name: 'summary', type: 'string', required: false, desc: 'Final summary of the thread' },
-              ]}
-              example={
-                <DocsCodeTabs
-                  nodeSnippet={`await claw.closeThread('ct_abc123', 'Deploy approved after staging check');`}
-                  pythonSnippet={`claw.close_thread("ct_abc123", "Deploy approved after staging check")`}
-                />
-              }
-            />
-          </section>
-
           {/* ── Bulk Sync ── */}
           <section id="bulk-sync" className="scroll-mt-20 pt-12 border-t border-border">
             <div className="flex items-center gap-3 mb-2">
@@ -2662,10 +2598,10 @@ await sendToSlack(redacted_text);`}
                   }
                 />
                 <MethodEntry 
-                  id="getContextSummary" 
-                  signature="claw.getContextSummary()" 
-                  description="Get a combined context summary: today's key points + active threads."
-                  returns="Promise<{points: Object[], threads: Object[]}>"
+                  id="getContextSummary"
+                  signature="claw.getContextSummary()"
+                  description="Get a context summary: today's key points."
+                  returns="Promise<{points: Object[]}>"
                 />
               </section>
 

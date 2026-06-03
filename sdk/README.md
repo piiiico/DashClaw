@@ -447,21 +447,6 @@ if (result.recommendation === 'block') {
 }
 ```
 
-### Context Threads
-- `createThread(thread)` -- Create a context thread for tracking multi-step work.
-- `addThreadEntry(threadId, content, entryType)` -- Add an entry to a context thread.
-- `closeThread(threadId, summary)` -- Close a context thread with an optional summary.
-
-```javascript
-// Create a thread, add entries, and close it
-const thread = await claw.createThread({ name: 'Release Planning' });
-
-await claw.addThreadEntry(thread.thread_id, 'Kickoff complete', 'note');
-await claw.addThreadEntry(thread.thread_id, 'Tests green on staging', 'milestone');
-
-await claw.closeThread(thread.thread_id, 'Release shipped successfully');
-```
-
 ### Bulk Sync
 - `syncState(state)` -- Push a full agent state snapshot in a single call.
 

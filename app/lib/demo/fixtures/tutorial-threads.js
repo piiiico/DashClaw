@@ -399,7 +399,6 @@ const sharedDocs = [
       '',
       '| Node.js | Python | Description |',
       '|---------|--------|-------------|',
-      '| `dc.createThread(opts)` | `dc.create_thread(**opts)` | Start a thread |',
       '| `dc.sendMessage(threadId, opts)` | `dc.send_message(thread_id, **opts)` | Send a message |',
       '',
       '## Security',

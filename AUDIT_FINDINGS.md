@@ -135,3 +135,33 @@ Complete grounded list (every `file:line` + evidence + verifier reasoning) is in
 - **Frontend (low/info):** `matcher-omits-protected-pages`, `agents-401-swallowed`, `draggabledashboard-dead-imports`, `feedbackcard-broken-route-and-api`, `orphaned-components-zero-importers`, `goalschart-archived-api-refs`, `blog-stale-mirror-comment`, `scoring-pagelayout-description-prop`, `workflows-single-delete-no-feedback`, `workflows-misleading-client-admin-header`, `model-strategies-dead-createdefault`, `swarm-unused-lucide-imports`, `policies-customtab-type-filter-incomplete`, `relationships-hardcoded-today`, `usage-dead-state-imports`, `tokens-monthly-equals-weekly`.
 - **Logic (low/info):** `eval-run-no-after`, `sse-maxduration-timer-leak`, `orgs-seed-no-await-no-after`, `token-dead-imports-and-diverging-formatcost`, `guard-get-selfhost-branch-redundant`, `connect-page-stale-card-counts`.
 - **Tooling/Docs/Staleness (low/info):** `refresh-pricing-stale-vercel-comment`, `monetization-plan-stale-tool-count`, `readme-bashbackground-not-in-catalog`, `installed-claude-hooks-stale-vs-source`, `sdk-reference-stale-method-counts`, `build-dashclaw-approvals-bare-path`, `runtime-api-title-version`, `gemini-stack-mismatch`, `platform-intel-snapshot-259-routes`, `pytest-generator-dead-stub`, `stale-policy-firewall-framing`, `eslint-config-next-major-behind-framework`, `dompurify-override-pin-still-valid-not-redundant`.
+
+---
+
+## Remediation pass — 2026-06-03 (operator directive: fix P1–P4, retire P2)
+
+All gates green after this pass: lint · **2611 JS tests** · **85 Python tests** · `next build` · 6 guard scripts (`docs/version/openapi/api-inventory/route-sql/contracts`) · `npm audit` 0 vulns.
+
+**P1 — governance/security (all fixed):**
+- `/api/policies/generate` now admin-gates the write path (`dry_run=false`), matching sibling policy routes.
+- Guard validation: `GUARD_INPUT_SCHEMA` now passes through `intel` / `tool` / `write_paths` (were stripped → 4 policy types dead over HTTP); `permission_escalation` reads `context.intel.tool ?? context.tool` to match both hook and SDK shapes; added a `validate.test.js` regression test.
+- `workflow-execute` now honors `require_approval` (creates a pending_approval record, fires approval surfaces, returns 202 — no longer runs the workflow).
+- `capability-invoke` both `require_approval` branches now fire operator approval surfaces (Telegram/Discord/webhook) via a new shared `app/lib/approvalSurfaces.js` (mirrors POST /api/actions).
+
+**P2 — retired (per directive):**
+- Context-thread SDK methods removed from Node (`createThread`/`addThreadEntry`/`closeThread`) and Python (+`get_threads`); they called the archived `/api/context/threads`. Doc cascade updated across both READMEs, `app/docs/page.js`, `docs/sdk-parity.md`, `PROJECT_DETAILS.md`, `runtime-api.md`; **method counts 107/211 → 104/207** everywhere; parity tests updated.
+- Orphaned pages deleted: `app/tokens`, `app/calendar`, `app/relationships`, `app/content` + their dead widgets (`TokenBudgetCard`, `TokenChart`, `CalendarWidget`, `FollowUpsCard`) + the dead imports in `DraggableDashboard.js`.
+
+**P3 — infra (fixed):**
+- Added `drizzle/0015_api_keys_key_hash_index.sql` (+ mirrored `keyHashIdx` in `schema/schema.js`), applied locally via `db:migrate`.
+- Bumped self-dep `dashclaw` `^2.13.0 → ^3.0.0`; lockfile refreshed to 3.0.0, 0 vulns.
+
+**P4 — frontend (fixed; recommend a manual browser check per no-DevTools rule):**
+- Policy generator now fetches `/api/agents` and passes them to the draft editor (agent scoping was impossible).
+- Audit-log pagination: `offset` moved to a `useRef` so `fetchLogs` is stable — "Load more" appends instead of snapping back to page 0 (also removed a latent duplicate-first-page).
+
+**NEW discoveries during the retire (flagged — the audit missed these; same restore-vs-retire decision as threads):**
+- **`/api/context/points` is ALSO archived** — so the entire key-points feature is dead: Python `capture_key_point` / `get_key_points` / `get_context_summary` still call the 404 route (left in place; retiring them is a product decision beyond "retire the thread methods").
+- **`/workspace` "Context" tab is wholly dead** — its `Promise.all` fetches both archived `/api/context/points` and `/api/context/threads`, so the tab errors on load. Left intact (removing it makes the key-points product call). Recommend deciding restore-vs-retire for the whole `/api/context/*` namespace.
+- `app/docs/page.js` documents Node `captureKeyPoint` / `getContextSummary` methods that **do not exist** in the Node SDK (pre-existing doc rot; trimmed the retired-threads mention from `getContextSummary`).
+- Residual demo flavor text in `app/lib/demo/fixtures/persona-agents.js` references the retired context-thread feature (and methods that never existed) — harmless demo seed content.

@@ -248,6 +248,16 @@ const GUARD_INPUT_SCHEMA = {
   // source-of-truth it must trace to, read by a non_fabrication guard policy.
   content:         { type: 'string', maxLength: 50000 },
   source_of_truth: { type: 'object' },
+  // Hook/SDK-supplied governance signals the guard engine reads. Without these in
+  // the schema, validate() strips them and green_contract / branch_freshness /
+  // permission_escalation / protected_path silently no-op. `intel` carries the
+  // branch/mcp/green/tool sub-objects (engine reads context.intel.*); `tool` is the
+  // hook's top-level tool descriptor (permission_escalation falls back to it); and
+  // `write_paths` is the path set a protected_path policy matches. Free-form
+  // object / string-array — passed through, not deep-validated.
+  intel:           { type: 'object' },
+  tool:            { type: 'object' },
+  write_paths:     { type: 'array', maxItems: 100 },
 };
 
 const POLICY_TYPES = ['risk_threshold', 'require_approval', 'block_action_type', 'rate_limit', 'webhook_check', 'behavioral_anomaly', 'semantic_check', 'permission_escalation', 'green_contract', 'branch_freshness', 'non_fabrication', 'protected_path'];

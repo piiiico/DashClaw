@@ -3,7 +3,7 @@ export const revalidate = 0;
 
 import { NextResponse } from 'next/server';
 import { randomUUID } from 'node:crypto';
-import { getOrgId } from '../../../lib/org';
+import { getOrgId, getOrgRole } from '../../../lib/org';
 import { getSql } from '../../../lib/db.js';
 import { apiErrorResponse } from '../../../lib/apiErrors.js';
 import { generatePolicies } from '../../../lib/policy-generator.js';
@@ -27,6 +27,12 @@ export async function POST(request) {
     const body = await request.json();
 
     const { input_text, dry_run = true } = body;
+
+    // Creating policies is an admin-only write, matching /api/policies and
+    // /api/policies/import. dry_run previews stay open to any org member.
+    if (!dry_run && getOrgRole(request) !== 'admin') {
+      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
+    }
 
     if (!input_text || typeof input_text !== 'string' || input_text.trim().length === 0) {
       return NextResponse.json(

@@ -41,6 +41,38 @@ describe('validators tolerate a null or non-object body (no 500 crash)', () => {
   });
 });
 
+describe('validateGuardInput preserves governance signals the guard engine reads', () => {
+  // Regression: GUARD_INPUT_SCHEMA previously omitted intel/tool/write_paths, so
+  // validate() stripped them before evaluateGuard ran — silently disabling
+  // green_contract, branch_freshness, permission_escalation, and protected_path
+  // over HTTP. These must survive validation and reach context.* unchanged.
+  it('keeps intel (with nested branch/green/tool), top-level tool, and write_paths', () => {
+    const result = validateGuardInput({
+      action_type: 'deploy',
+      agent_id: 'claude-code',
+      intel: {
+        branch: { freshness: 'stale' },
+        green: { observed_level: 'red' },
+        tool: { required_permission: 'danger' },
+        mcp: { healthy: false },
+      },
+      tool: { name: 'Bash', category: 'execution', required_permission: 'danger' },
+      write_paths: ['app/lib/guard.js', '.env'],
+    });
+    expect(result.valid).toBe(true);
+    expect(result.data.intel?.branch?.freshness).toBe('stale');
+    expect(result.data.intel?.green?.observed_level).toBe('red');
+    expect(result.data.intel?.tool?.required_permission).toBe('danger');
+    expect(result.data.tool?.required_permission).toBe('danger');
+    expect(result.data.write_paths).toEqual(['app/lib/guard.js', '.env']);
+  });
+
+  it('rejects a write_paths array containing a non-string', () => {
+    const result = validateGuardInput({ action_type: 'deploy', write_paths: ['ok', 123] });
+    expect(result.valid).toBe(false);
+  });
+});
+
 describe('validateActionRecord', () => {
   it('should validate a correct action record', () => {
     const validRecord = {

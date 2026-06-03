@@ -63,6 +63,8 @@ export const apiKeys = pgTable('api_keys', {
   createdAt: timestamp('created_at').defaultNow(),
 }, (table) => ({
   roleCheck: check('api_keys_role_check', sql`${table.role} IN ('admin', 'member')`),
+  // Hot path: middleware resolveApiKey() looks up by key_hash on every cache-miss.
+  keyHashIdx: index('idx_api_keys_key_hash').on(table.keyHash),
 }));
 
 // @domain governance

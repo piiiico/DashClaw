@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Clock, KeyRound, Mail, UsersRound, Settings,
   ShieldAlert, Webhook, Filter, ChevronDown, User, Cog, BarChart3,
@@ -25,15 +25,17 @@ export default function AuditLogPage() {
   const [actionFilter, setActionFilter] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
 
-  // Pagination
-  const [offset, setOffset] = useState(0);
+  // Pagination. offset is a ref (not state) so fetchLogs does not depend on it —
+  // otherwise paging would recreate fetchLogs and re-fire the reset effect,
+  // snapping "Load more" back to page 0.
+  const offsetRef = useRef(0);
   const limit = 50;
 
   const fetchLogs = useCallback(async (reset = false) => {
     try {
       if (reset) {
         setLoading(true);
-        setOffset(0);
+        offsetRef.current = 0;
       } else {
         setLoadingMore(true);
       }
@@ -57,7 +59,7 @@ export default function AuditLogPage() {
         return;
       }
 
-      const currentOffset = reset ? 0 : offset;
+      const currentOffset = reset ? 0 : offsetRef.current;
       const params = new URLSearchParams({ limit: limit.toString(), offset: currentOffset.toString() });
       if (actionFilter !== 'all') {
         params.set('action', actionFilter);
@@ -81,16 +83,16 @@ export default function AuditLogPage() {
       setStats(json.stats || { total: json.total || 0, today: 0, unique_actors: 0 });
       setHasMore(newItems.length === limit);
 
-      if (!reset) {
-        setOffset(currentOffset + limit);
-      }
+      // Advance the running offset by the actual items loaded (covers both the
+      // reset and load-more paths; no duplicate first page).
+      offsetRef.current = currentOffset + newItems.length;
     } catch {
       setError('Failed to connect to API');
     } finally {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [offset, actionFilter, limit]);
+  }, [actionFilter, limit]);
 
   useEffect(() => {
     fetchLogs(true);

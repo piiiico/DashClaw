@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   buildPolicySummary,
   compilePolicyPayload,
@@ -48,6 +48,18 @@ export default function PolicyGeneratePage() {
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [agents, setAgents] = useState([]);
+
+  // Load agents so generated policies can be scoped to specific agents — the
+  // draft editor's scope picker reads the `agents` prop (it does not self-fetch).
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/agents')
+      .then((res) => (res.ok ? res.json() : { agents: [] }))
+      .then((data) => { if (!cancelled) setAgents(data.agents || []); })
+      .catch(() => { if (!cancelled) setAgents([]); });
+    return () => { cancelled = true; };
+  }, []);
 
   const selectedDraft = useMemo(
     () => drafts.find((draft) => draft.id === selectedDraftId) || null,
@@ -205,7 +217,7 @@ export default function PolicyGeneratePage() {
             setForm={setDraftForm}
             policyTypes={POLICY_TYPES}
             actionOptions={ACTION_OPTIONS}
-            agents={[]}
+            agents={agents}
             summary={summary}
             saving={creating}
             onSave={handleCreate}

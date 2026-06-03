@@ -7,6 +7,7 @@ import { getSql } from '../../../../lib/db.js';
 import { getOrgId } from '../../../../lib/org.js';
 import { apiErrorResponse } from '../../../../lib/apiErrors.js';
 import { evaluateGuard } from '../../../../lib/guard.js';
+import { fireApprovalSurfaces } from '../../../../lib/approvalSurfaces.js';
 import {
   createActionRecord,
   createBlockedActionRecord,
@@ -158,7 +159,7 @@ export async function POST(request, { params }) {
 
     // 5. Handle require_approval
     if (guardDecision.decision === 'require_approval' || capability.requires_approval) {
-      await createActionRecord(sql, {
+      const createdAction = await createActionRecord(sql, {
         orgId,
         action_id,
         data: { ...actionData, status: 'pending_approval' },
@@ -168,6 +169,9 @@ export async function POST(request, { params }) {
         verified: false,
         timestamp_start,
       });
+
+      // Notify operators (Telegram/Discord/webhook) like POST /api/actions does.
+      fireApprovalSurfaces(createdAction, sql, orgId, guardDecision);
 
       return NextResponse.json(
         {
@@ -227,7 +231,7 @@ export async function POST(request, { params }) {
       }, { status: 403 });
     }
     if (accessResult.access === 'require_approval') {
-      await createActionRecord(sql, {
+      const createdAction = await createActionRecord(sql, {
         orgId,
         action_id,
         data: { ...actionData, status: 'pending_approval' },
@@ -237,6 +241,9 @@ export async function POST(request, { params }) {
         verified: false,
         timestamp_start,
       });
+
+      // Notify operators (Telegram/Discord/webhook) like POST /api/actions does.
+      fireApprovalSurfaces(createdAction, sql, orgId, guardDecision);
 
       return NextResponse.json(
         {

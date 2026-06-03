@@ -47,7 +47,7 @@ The canonical Node SDK already includes the core runtime and a meaningful portio
 
 - guard, actions, assumptions, approvals,
 - loops, signals, learning, scoring,
-- messaging, handoffs, security scanning, threads, sync,
+- messaging, handoffs, security scanning, sync,
 - sessions and action graph,
 - durable execution finality (`reportActionOutcome`, `getActionOutcome`, convenience wrappers, `deriveIdempotencyKey`),
 - the full Prompt Library surface (template CRUD, version CRUD, `activatePromptVersion`, `renderPrompt`, `getPromptStats`, `listPromptRuns`),

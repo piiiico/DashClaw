@@ -910,37 +910,12 @@ class DashClaw:
         query = urllib.parse.urlencode({k: v for k, v in filters.items() if v is not None})
         return self._request(f"/api/context/points?{query}")
 
-    def create_thread(self, name, **kwargs):
-        payload = {"name": name, "agent_id": self.agent_id, **kwargs}
-        return self._request("/api/context/threads", method="POST", body=payload)
-
-    def add_thread_entry(self, thread_id, content, entry_type="note"):
-        payload = {"content": content, "entry_type": entry_type}
-        return self._request(f"/api/context/threads/{thread_id}/entries", method="POST", body=payload)
-
-    def close_thread(self, thread_id, summary=None):
-        payload = {"status": "closed"}
-        if summary:
-            payload["summary"] = summary
-        return self._request(f"/api/context/threads/{thread_id}", method="PATCH", body=payload)
-
-    def get_threads(self, status=None, limit=None):
-        params = {"agent_id": self.agent_id}
-        if status is not None:
-            params["status"] = status
-        if limit is not None:
-            params["limit"] = limit
-        query = urllib.parse.urlencode(params)
-        return self._request(f"/api/context/threads?{query}")
-
     def get_context_summary(self):
+        # Context threads were retired (route archived); the summary is now
+        # today's key points.
         today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         points_result = self.get_key_points(session_date=today)
-        threads_result = self.get_threads(status="active")
-        return {
-            "points": points_result.get("points", []),
-            "threads": threads_result.get("threads", []),
-        }
+        return {"points": points_result.get("points", [])}
 
     # --- Category 7: Automation Snippets ---
 

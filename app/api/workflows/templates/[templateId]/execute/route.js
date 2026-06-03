@@ -8,6 +8,7 @@ import { getSql } from '../../../../../lib/db.js';
 import { getOrgId } from '../../../../../lib/org.js';
 import { apiErrorResponse } from '../../../../../lib/apiErrors.js';
 import { evaluateGuard } from '../../../../../lib/guard.js';
+import { fireApprovalSurfaces } from '../../../../../lib/approvalSurfaces.js';
 import { getWorkflowTemplate } from '../../../../../lib/repositories/workflow-templates.repository.js';
 import { getModelStrategy } from '../../../../../lib/repositories/model-strategies.repository.js';
 import {
@@ -130,6 +131,35 @@ export async function POST(request, { params }) {
           },
         },
         { status: 403 },
+      );
+    }
+
+    // 4b. Handle guard require_approval — create a pending_approval record, notify
+    // operators, and return 202. The workflow does NOT run until an operator
+    // approves; the caller polls GET /api/actions/{id} for the outcome. (Mirrors
+    // the capability-invoke route so require_approval policies actually gate workflows.)
+    if (guardDecision.decision === 'require_approval') {
+      const createdAction = await createActionRecord(sql, {
+        orgId,
+        action_id,
+        data: { ...actionData, status: 'pending_approval' },
+        actionStatus: 'pending_approval',
+        costEstimate: 0,
+        signature: null,
+        verified: false,
+        timestamp_start,
+      });
+
+      fireApprovalSurfaces(createdAction, sql, orgId, guardDecision);
+
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'pending_approval',
+          action_id,
+          message: `Workflow execution requires human approval. Poll GET /api/actions/${action_id} for status.`,
+        },
+        { status: 202 },
       );
     }
 

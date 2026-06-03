@@ -796,7 +796,10 @@ export async function evaluatePolicy(policy, rules, context, sql, orgId, effecti
 
     case 'permission_escalation': {
       if (!rules.enforce) return null;
-      const toolPerm = context.intel?.tool?.required_permission;
+      // The Claude Code hook sends the tool descriptor top-level (context.tool);
+      // SDK callers may nest it under intel. Accept either so the policy fires
+      // regardless of caller shape.
+      const toolPerm = context.intel?.tool?.required_permission ?? context.tool?.required_permission;
       if (!toolPerm) return null;
       // A composed sub-agent id (`<parent>:<type>`) inherits the parent's pairing
       // when it has none of its own; an exact pairing for the sub-agent wins.

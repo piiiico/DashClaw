@@ -20,24 +20,11 @@ class RecordingDashClaw(DashClaw):
 
 
 class WS5M3ParityTests(unittest.TestCase):
-    def test_context_thread_endpoints(self):
-        client = RecordingDashClaw()
-
-        client.close_thread("ct_1", summary="wrapped up")
-        self.assertEqual(client.calls[-1]["path"], "/api/context/threads/ct_1")
-        self.assertEqual(client.calls[-1]["method"], "PATCH")
-        self.assertEqual(client.calls[-1]["body"], {"status": "closed", "summary": "wrapped up"})
-
-        client.get_threads(status="active", limit=5)
-        self.assertIn("/api/context/threads?", client.calls[-1]["path"])
-        self.assertIn("agent_id=agent-1", client.calls[-1]["path"])
-        self.assertIn("status=active", client.calls[-1]["path"])
-        self.assertIn("limit=5", client.calls[-1]["path"])
-
-    def test_get_context_summary_composes_points_and_threads(self):
+    def test_get_context_summary_returns_points(self):
+        # Context threads were retired (route archived, SDK methods removed); the
+        # summary is now just today's key points.
         client = RecordingDashClaw()
         client.get_key_points = lambda **filters: {"points": [{"id": "p1"}]}
-        client.get_threads = lambda **filters: {"threads": [{"id": "t1"}]}
 
         # Freeze date behavior via monkeypatch-style replacement.
         import dashclaw.client as client_module
@@ -59,7 +46,7 @@ class WS5M3ParityTests(unittest.TestCase):
         finally:
             client_module.datetime = original_datetime
 
-        self.assertEqual(summary, {"points": [{"id": "p1"}], "threads": [{"id": "t1"}]})
+        self.assertEqual(summary, {"points": [{"id": "p1"}]})
 
     def test_message_actions_and_thread_endpoints(self):
         client = RecordingDashClaw()

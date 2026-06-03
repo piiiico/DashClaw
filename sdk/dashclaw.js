@@ -754,40 +754,6 @@ class DashClaw {
   }
 
   // ---------------------------------------------------------------------------
-  // Context Threads
-  // ---------------------------------------------------------------------------
-
-  /**
-   * POST /api/context/threads — Create a reasoning context thread.
-   */
-  async createThread(thread) {
-    return this._request('/api/context/threads', 'POST', {
-      agent_id: this.agentId,
-      ...thread,
-    });
-  }
-
-  /**
-   * POST /api/context/threads/:id/entries — Append a reasoning step.
-   */
-  async addThreadEntry(threadId, content, entryType) {
-    return this._request(`/api/context/threads/${threadId}/entries`, 'POST', {
-      content,
-      entry_type: entryType,
-    });
-  }
-
-  /**
-   * PATCH /api/context/threads/:id — Close a reasoning thread.
-   */
-  async closeThread(threadId, summary) {
-    return this._request(`/api/context/threads/${threadId}`, 'PATCH', {
-      status: 'closed',
-      ...(summary ? { summary } : {}),
-    });
-  }
-
-  // ---------------------------------------------------------------------------
   // Bulk Sync
   // ---------------------------------------------------------------------------
 
