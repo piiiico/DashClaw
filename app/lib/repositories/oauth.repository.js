@@ -84,3 +84,26 @@ export async function rotateRefreshToken(sql, refreshTokenHash) {
   const r = rows[0];
   return { clientId: r.client_id, orgId: r.org_id, userId: r.user_id, scope: r.scope, agentId: r.agent_id };
 }
+
+/**
+ * Garbage-collect OAuth rows that can no longer authenticate anything. Safe to run
+ * on a schedule — every resolution path already rejects these rows:
+ *  - authorization codes are one-time and short-lived: drop once consumed or expired.
+ *  - access tokens: drop once revoked, or older than the 30-day refresh window
+ *    (rotateRefreshToken refuses anything with created_at older than 30 days, so
+ *    such rows are dead for both access and refresh — never for live tokens).
+ * Returns the per-table delete counts.
+ */
+export async function purgeExpired(sql) {
+  const codes = await sql`
+    DELETE FROM oauth_authorization_codes
+    WHERE consumed_at IS NOT NULL OR expires_at < NOW()
+    RETURNING 1
+  `;
+  const tokens = await sql`
+    DELETE FROM oauth_access_tokens
+    WHERE revoked_at IS NOT NULL OR created_at < NOW() - INTERVAL '30 days'
+    RETURNING 1
+  `;
+  return { codes: codes.length, tokens: tokens.length };
+}

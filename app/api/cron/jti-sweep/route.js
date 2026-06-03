@@ -6,15 +6,18 @@ import { NextResponse } from 'next/server';
 import { getSql } from '../../../lib/db.js';
 import { timingSafeCompare } from '../../../lib/timing-safe.js';
 import { sweep } from '../../../lib/repositories/jti-replay.repository.js';
+import { purgeExpired as purgeOAuth } from '../../../lib/repositories/oauth.repository.js';
 
 /**
- * GET /api/cron/jti-sweep — delete expired rows from jwt_replay_log.
+ * GET /api/cron/jti-sweep — scheduled GC for short-lived auth rows.
  *
  * Phase 2b (issue #120, design by @piiiico). The repository runs a
  * probabilistic in-line sweep on ~1% of writes, but low-traffic periods
  * can leave expired rows around indefinitely. This endpoint is the
  * scheduled belt-and-suspenders, called every 5 minutes by
- * .github/workflows/jti-sweep.yml.
+ * .github/workflows/jti-sweep.yml. It also purges spent OAuth rows
+ * (consumed/expired authorization codes and revoked/aged access tokens),
+ * which otherwise accumulate unbounded — neither has an in-line sweep.
  *
  * Authentication: CRON_SECRET (same pattern as outcome-sweep).
  */
@@ -31,8 +34,15 @@ export async function GET(request) {
 
     const sql = getSql();
     const deleted = await sweep(sql);
+    // OAuth GC is best-effort: a failure here must not fail the jti sweep.
+    let oauthPurged = null;
+    try {
+      oauthPurged = await purgeOAuth(sql);
+    } catch (oauthErr) {
+      console.error('[cron/jti-sweep] OAuth purge failed:', oauthErr);
+    }
 
-    return NextResponse.json({ ok: true, deleted });
+    return NextResponse.json({ ok: true, deleted, oauth_purged: oauthPurged });
   } catch (err) {
     console.error('[cron/jti-sweep] Error:', err);
     return NextResponse.json({ error: 'Sweep failed' }, { status: 500 });

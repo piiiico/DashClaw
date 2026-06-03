@@ -2,7 +2,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import {
   registerClient, getClient, insertAuthCode, consumeAuthCode,
-  insertAccessToken, resolveAccessToken, rotateRefreshToken,
+  insertAccessToken, resolveAccessToken, rotateRefreshToken, purgeExpired,
 } from '../../app/lib/repositories/oauth.repository.js';
 
 // A tagged-template stub: records the last call and returns a queued result.
@@ -58,5 +58,13 @@ describe('oauth.repository', () => {
 
   it('rotateRefreshToken returns null for an unknown/revoked refresh token', async () => {
     expect(await rotateRefreshToken(makeSql([]), 'gone')).toBeNull();
+  });
+
+  it('purgeExpired runs two DELETEs and returns per-table counts', async () => {
+    // Each DELETE…RETURNING 1 resolves to the stub array (codes then tokens).
+    const sql = makeSql([1, 1]);
+    const result = await purgeExpired(sql);
+    expect(sql).toHaveBeenCalledTimes(2);
+    expect(result).toEqual({ codes: 2, tokens: 2 });
   });
 });

@@ -155,6 +155,8 @@ All gates green after this pass: lint · **2611 JS tests** · **85 Python tests*
 **P3 — infra (fixed):**
 - Added `drizzle/0015_api_keys_key_hash_index.sql` (+ mirrored `keyHashIdx` in `schema/schema.js`), applied locally via `db:migrate`.
 - Bumped self-dep `dashclaw` `^2.13.0 → ^3.0.0`; lockfile refreshed to 3.0.0, 0 vulns.
+- `expired-oauth-rows-not-purged` (info): added `purgeExpired()` to `oauth.repository.js` (drops consumed/expired auth codes + revoked/aged-out access tokens — never live or refreshable rows) and wired it into the existing `/api/cron/jti-sweep` (best-effort; won't fail the jti sweep). + repo test.
+- `revoked-key-cache-staleness` (info): documented the ≤5-min per-instance cache-propagation window at the revoke handler. A cross-instance invalidation is architecturally out of scope on the free-tier serverless design (the Node route can't reach the middleware-runtime cache); revocation is immediate in the DB.
 
 **P4 — frontend (fixed; recommend a manual browser check per no-DevTools rule):**
 - Policy generator now fetches `/api/agents` and passes them to the draft editor (agent scoping was impossible).

@@ -152,6 +152,15 @@ export async function DELETE(request) {
       UPDATE api_keys SET revoked_at = CURRENT_TIMESTAMP WHERE id = ${keyId} AND org_id = ${orgId}
     `;
 
+    // NOTE: middleware caches resolved API keys per-instance for up to 5 minutes
+    // (API_KEY_CACHE_TTL in middleware.js). A just-revoked key can therefore still
+    // authenticate against a warm serverless instance until that entry expires
+    // (≤5 min). On the free-tier serverless design there is no shared/cross-instance
+    // cache to invalidate from this Node route (middleware runs in a separate
+    // runtime), so this propagation window is a known, bounded tradeoff — revocation
+    // is immediate in the DB; only the in-memory cache lags. Same accepted staleness
+    // as the trial-counter cache.
+
     // Fire-and-forget meter decrement
     incrementMeter(orgId, 'api_keys', sql, -1).catch(() => {
       console.warn('[Keys] Failed to decrement api_keys meter');
