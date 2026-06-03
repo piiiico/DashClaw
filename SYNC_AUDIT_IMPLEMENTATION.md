@@ -231,3 +231,21 @@ left for a decision rather than auto-implemented:
   non-demo mode (demo-only fixtures) and not in the main nav — the same situation as the already-removed
   `/routing` + `/feedback`. Recommend the same treatment (delete), flagged because it wasn't in the
   original audit's stale-frontend list.
+
+### Adversarial review pass (2026-06-03)
+
+A multi-agent review (one reviewer per cluster vs the real route/repository, each finding
+independently verified) ran over all eight clusters. It surfaced **6 real bugs**, all fixed
+(suite 2605 → 2608, still lint + full-suite + build gated):
+
+| Fix | Commit |
+|-----|--------|
+| **Workflow resume dropped prior step outputs** — `buildResumeContext` read `step.output_json`, but the only caller passes steps already shaped through `shapeStepResult` (`output`). Pre-existing; the test fixtures fed raw rows (a shape production never passes), masking it. Fixed + fixtures corrected. | `407a38ff` |
+| **`plan_name` never persisted** — `upsertConnection` omitted `plan_name` from the INSERT/UPDATE, so the new agent-connections `plan_name` display would always be empty. Now persisted (validated). | `bdf8e17e` |
+| **Model-strategy `max_tokens`** — `Number(x) \|\| undefined` replaced with an explicit `> 0` guard + `min="1"`. | `5aad20ff` |
+| **Policies import-result error reporting** (3 findings, one root) — the panel treated the route's `errors` **array** as a number, so error badges/messages never rendered, and it referenced a non-existent `details` field. Now reads `errors.length`, lists the messages, and handles the `{error}` failed-import shape. Pre-existing. | `9a27b34f` |
+
+**Not fixed (1, by design):** a `JSON.parse(frameworks)` without try/catch on the compliance exports
+list (pre-existing; the verifier rated it unlikely under normal operation since the backend
+`JSON.stringify`s + validates that column). Left as-is to avoid speculative error-handling for a
+case that can't occur via normal writes — flagged here rather than hardened.
