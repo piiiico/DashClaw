@@ -137,6 +137,7 @@ const navItems = [
   { href: '#scoring-profiles', label: 'Scoring Profiles' },
   { href: '#policies', label: 'Policies' },
   { href: '#simulatePolicy', label: 'simulatePolicy', indent: true },
+  { href: '#policies-generate', label: 'AI Policy Generator', indent: true },
   { href: '#messaging', label: 'Agent Messaging' },
   { href: '#sendMessage', label: 'sendMessage', indent: true },
   { href: '#getInbox', label: 'getInbox', indent: true },
@@ -1267,6 +1268,71 @@ console.log(sim.summary.block, 'of', sim.summary.total, 'would block');`}
                 </CodeBlock>
               }
             />
+
+            {/* AI Policy Generator (HTTP) */}
+            <div id="policies-generate" className="scroll-mt-20 pt-10">
+              <h3 className="text-lg font-semibold text-text-primary mb-2 font-mono">AI Policy Generator</h3>
+              <p className="text-xs text-text-tertiary mb-4">
+                Turns a plain-English request into guard-policy drafts. The flow is iterative and never dead-ends: a clear request returns drafts; a vague one returns a best-effort draft plus suggested clarifications; an underspecified one returns clarifications only — never an empty &quot;be more specific&quot; rejection. Send the answered clarifications back in <code className="font-mono text-text-secondary">answers</code> to refine. Authored from <strong className="text-text-secondary">Policies → Custom → AI generator</strong> in the dashboard. Requires an LLM provider key in Settings; without one the endpoint returns <code className="font-mono text-text-secondary">422</code> with <code className="font-mono text-text-secondary">&quot;No LLM provider configured.&quot;</code>
+              </p>
+
+              <MethodEntry
+                id="generatePolicies"
+                signature="POST /api/policies/generate"
+                description="Generate guard-policy drafts from natural language. dry_run (default true) previews drafts and is open to any org member; dry_run: false creates the drafts and is admin-only. The dashboard saves the reviewed/edited draft via POST /api/policies rather than creating with dry_run: false."
+                params={[
+                  { name: 'input_text', type: 'string', required: true, desc: 'Plain-English description of the policy you want (max 5000 chars)' },
+                  { name: 'dry_run', type: 'boolean', required: false, desc: 'Preview only (default true). false creates the drafts and requires an admin key' },
+                  { name: 'answers', type: '[{ id, value }]', required: false, desc: 'Answers to clarifications from a prior dry-run call, used to refine the drafts' },
+                ]}
+                returns="dry_run: { drafts: [{ name, policy_type, rules, confidence }], assumptions: string[], clarifications: [{ id, question, field, suggestions: string[], multi }], warnings, input_hash }"
+                example={
+                  <CodeBlock title="Iterative dry-run">
+{`const res = await fetch(\`\${baseUrl}/api/policies/generate\`, {
+  method: 'POST',
+  headers: { 'x-api-key': apiKey, 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    input_text: 'stop my agents from deleting things I care about',
+    dry_run: true
+  })
+});
+const { drafts, assumptions, clarifications } = await res.json();
+
+// drafts → a best-effort protected_path draft
+// [{
+//   name: 'Protect critical paths from deletion',
+//   policy_type: 'protected_path',
+//   rules: { paths: ['.env', 'secrets/', 'migrations/'], action: 'block' },
+//   confidence: 0.6
+// }]
+//
+// assumptions → ['Assumed "things I care about" means config and secret files']
+//
+// clarifications → suggested-value chip sets to tighten the draft
+// [
+//   { id: 'paths', question: 'Which paths should be protected?', field: 'rules.paths',
+//     suggestions: ['.env', 'secrets/', 'migrations/', 'src/'], multi: true },
+//   { id: 'strictness', question: 'How strict should the guard be?', field: 'rules.action',
+//     suggestions: ['block', 'require approval', 'warn'], multi: false }
+// ]
+
+// Refine by sending the picked answers back:
+await fetch(\`\${baseUrl}/api/policies/generate\`, {
+  method: 'POST',
+  headers: { 'x-api-key': apiKey, 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    input_text: 'stop my agents from deleting things I care about',
+    dry_run: true,
+    answers: [
+      { id: 'paths', value: ['.env', 'secrets/', 'migrations/'] },
+      { id: 'strictness', value: 'block' }
+    ]
+  })
+});`}
+                  </CodeBlock>
+                }
+              />
+            </div>
           </section>
 
           {/* ── Agent Messaging ── */}

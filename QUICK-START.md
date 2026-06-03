@@ -1,6 +1,6 @@
 # Quick Start Guide (v2 Governance Runtime)
 
-DashClaw is a policy firewall for AI agents. This guide will get you from zero to your first **governed agent action** in under 8 minutes.
+DashClaw is a governance runtime for AI agents. This guide will get you from zero to your first **governed agent action** in under 8 minutes.
 
 ## ⚡ The 1-Minute Governance Test (Fastest Path)
 

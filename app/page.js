@@ -40,7 +40,7 @@ export default function LandingPage() {
 
           {/* Headline */}
           <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold tracking-tight leading-tight text-text-primary">
-            The policy firewall for AI agents.
+            The governance runtime for AI agents.
           </h1>
 
           {/* Subhead */}

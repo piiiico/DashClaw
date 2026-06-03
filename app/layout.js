@@ -10,7 +10,7 @@ const inter = Inter({
 })
 
 export const metadata = {
-  title: 'DashClaw, the policy firewall for AI agents',
+  title: 'DashClaw, the governance runtime for AI agents',
   description: 'DashClaw intercepts agent actions before they reach the real world. Enforce policies, require human approval, and record verifiable evidence.',
   icons: {
     icon: [
@@ -21,7 +21,7 @@ export const metadata = {
   },
   manifest: '/config/site.webmanifest',
   openGraph: {
-    title: 'DashClaw, the policy firewall for AI agents',
+    title: 'DashClaw, the governance runtime for AI agents',
     description: 'DashClaw intercepts agent actions before they reach the real world. Enforce policies, require human approval, and record verifiable evidence.',
     url: 'https://dashclaw.io',
     siteName: 'DashClaw',
@@ -31,13 +31,13 @@ export const metadata = {
         url: '/social/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'DashClaw, the policy firewall for AI agents',
+        alt: 'DashClaw, the governance runtime for AI agents',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'DashClaw, the policy firewall for AI agents',
+    title: 'DashClaw, the governance runtime for AI agents',
     description: 'DashClaw intercepts agent actions before they reach the real world. Enforce policies, require human approval, and record verifiable evidence.',
     images: ['/social/twitter-card.png'],
   },
