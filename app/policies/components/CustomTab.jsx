@@ -3,13 +3,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   Plus, Upload, Sparkles, Trash2, Play, Copy, Check, Pencil,
-  ToggleLeft, ToggleRight, X,
+  ToggleLeft, ToggleRight, X, FlaskConical, ShieldCheck,
 } from 'lucide-react';
 import { Badge } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { EmptyState } from '../../components/ui/EmptyState';
 import PolicyAuthoringPanel from './PolicyAuthoringPanel';
 import PolicyAdvancedImportPanel from './PolicyAdvancedImportPanel';
+import ProofExportPanel from './ProofExportPanel';
 import {
   createDefaultPolicyFormState,
   compilePolicyPayload,
@@ -72,6 +73,13 @@ export default function CustomTab() {
   const [importYaml, setImportYaml] = useState('');
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState(null);
+  const [templates, setTemplates] = useState([]);
+
+  // Proof report + test runner state
+  const [showProof, setShowProof] = useState(false);
+  const [showTests, setShowTests] = useState(false);
+  const [testRunning, setTestRunning] = useState(false);
+  const [testResults, setTestResults] = useState(null);
 
   // AI Generator state
   const [showGenerator, setShowGenerator] = useState(false);
@@ -107,6 +115,13 @@ export default function CustomTab() {
   }, []);
 
   useEffect(() => { fetchPolicies(); }, [fetchPolicies]);
+
+  useEffect(() => {
+    fetch('/api/policies/templates')
+      .then(r => (r.ok ? r.json() : { templates: [] }))
+      .then(d => setTemplates(d.templates || []))
+      .catch(() => { /* fall back to static previews */ });
+  }, []);
 
   const filtered = policies.filter(p => {
     if (search && !p.name?.toLowerCase().includes(search.toLowerCase())) return false;
@@ -274,6 +289,33 @@ export default function CustomTab() {
     }
   };
 
+  const handleRunTests = async () => {
+    setShowTests(true);
+    setTestRunning(true);
+    setTestResults(null);
+    setShowProof(false);
+    try {
+      const res = await fetch('/api/policies/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+      const data = await res.json();
+      setTestResults(res.ok ? data.results : { error: data.error || 'Failed to run tests' });
+    } catch {
+      setTestResults({ error: 'Failed to run tests' });
+    } finally {
+      setTestRunning(false);
+    }
+  };
+
+  const openProof = () => {
+    setShowProof(true);
+    setShowTests(false);
+    setShowGenerator(false);
+    setShowAuthoring(false);
+  };
+
   const summary = buildPolicySummary(authoringForm);
   const isFormInvalid = !authoringForm.name?.trim();
 
@@ -299,7 +341,78 @@ export default function CustomTab() {
         >
           <Sparkles size={12} aria-hidden="true" /> AI generator
         </button>
+        <button
+          onClick={handleRunTests}
+          disabled={testRunning}
+          className="flex items-center gap-1.5 rounded-lg border border-border bg-surface-tertiary px-3 py-1.5 text-xs text-secondary transition-colors hover:border-border-hover hover:text-white disabled:opacity-50"
+        >
+          <FlaskConical size={12} aria-hidden="true" /> {testRunning ? 'Running…' : 'Run tests'}
+        </button>
+        <button
+          onClick={openProof}
+          className="flex items-center gap-1.5 rounded-lg border border-border bg-surface-tertiary px-3 py-1.5 text-xs text-secondary transition-colors hover:border-border-hover hover:text-white"
+        >
+          <ShieldCheck size={12} aria-hidden="true" /> Export proof
+        </button>
       </div>
+
+      {/* Proof report panel */}
+      <ProofExportPanel open={showProof} onClose={() => setShowProof(false)} />
+
+      {/* Test runner results */}
+      {showTests && (
+        <div className="space-y-3 rounded-xl border border-border bg-surface-secondary p-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <FlaskConical size={14} className="text-brand" aria-hidden="true" />
+              <span className="text-sm font-semibold text-white">Guardrail test results</span>
+            </div>
+            <button
+              onClick={() => setShowTests(false)}
+              className="text-tertiary transition-colors hover:text-white"
+              aria-label="Close test results"
+            >
+              <X size={16} />
+            </button>
+          </div>
+          {testRunning && <p className="text-xs text-secondary">Running policy tests…</p>}
+          {testResults?.error && (
+            <div className="rounded-lg border border-error/30 bg-error-subtle px-3 py-2 text-xs text-error">{testResults.error}</div>
+          )}
+          {testResults && !testResults.error && (
+            <>
+              <div className="flex items-center gap-2">
+                <Badge variant={testResults.success ? 'success' : 'error'} size="xs">
+                  {`${testResults.passed}/${testResults.total_tests} passed`}
+                </Badge>
+                <span className="text-xs text-tertiary">{testResults.total_policies} policies</span>
+              </div>
+              {testResults.total_tests === 0 ? (
+                <p className="text-xs text-tertiary">No active policies to test.</p>
+              ) : (
+                <div className="space-y-2">
+                  {testResults.details.map(d => (
+                    <div key={d.policy_id} className="rounded-lg border border-border bg-surface-tertiary p-3">
+                      <div className="text-xs font-medium text-white">{d.policy_name}</div>
+                      <div className="mt-1.5 space-y-1">
+                        {d.tests.map((t, i) => (
+                          <div key={i} className="flex items-center gap-2 text-[11px]">
+                            {t.passed
+                              ? <Check size={11} className="text-success" aria-hidden="true" />
+                              : <X size={11} className="text-error" aria-hidden="true" />}
+                            <span className="text-secondary">{t.name}</span>
+                            {!t.passed && t.reason && <span className="text-tertiary">— {t.reason}</span>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
 
       {/* AI Generator panel */}
       {showGenerator && (
@@ -403,6 +516,7 @@ export default function CustomTab() {
         importResult={importResult}
         handleImport={handleImport}
         packPreviews={PACK_PREVIEWS}
+        templates={templates}
       />
 
       {/* Search + filters */}

@@ -21,6 +21,7 @@ export default function PolicyAdvancedImportPanel({
   importResult,
   handleImport,
   packPreviews,
+  templates,
 }) {
   useEffect(() => {
     if (!open) return undefined;
@@ -37,7 +38,9 @@ export default function PolicyAdvancedImportPanel({
 
   if (!open) return null;
 
-  const preview = packPreviews?.[importPack];
+  const hasCatalog = Array.isArray(templates) && templates.length > 0;
+  const selectedTemplate = hasCatalog ? templates.find(t => t.id === importPack) : null;
+  const preview = selectedTemplate || packPreviews?.[importPack];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
@@ -146,19 +149,42 @@ export default function PolicyAdvancedImportPanel({
                     onChange={(e) => setImportPack(e.target.value)}
                     className={selectClass}
                   >
-                    <option value="enterprise-strict">Enterprise Strict</option>
-                    <option value="smb-safe">SMB Safe</option>
-                    <option value="startup-growth">Startup Growth</option>
-                    <option value="development">Development</option>
+                    {hasCatalog ? (
+                      templates.map(t => (
+                        <option key={t.id} value={t.id}>{t.name}</option>
+                      ))
+                    ) : (
+                      <>
+                        <option value="enterprise-strict">Enterprise Strict</option>
+                        <option value="smb-safe">SMB Safe</option>
+                        <option value="startup-growth">Startup Growth</option>
+                        <option value="development">Development</option>
+                      </>
+                    )}
                   </select>
                 </div>
 
                 {preview && (
                   <div className="rounded-lg bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.06)] p-3">
-                    <span className="text-xs font-medium text-white">{preview.name}</span>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-medium text-white">{preview.name}</span>
+                      {selectedTemplate && (
+                        <Badge variant="info" size="xs">{`${selectedTemplate.policy_count} policies`}</Badge>
+                      )}
+                    </div>
                     <p className="text-[10px] text-tertiary mt-1">{preview.description}</p>
                     {preview.recommended_for && (
                       <p className="text-[10px] text-disabled mt-1">Recommended for: {preview.recommended_for}</p>
+                    )}
+                    {selectedTemplate?.policies?.length > 0 && (
+                      <ul className="mt-2 space-y-1 border-t border-[rgba(255,255,255,0.06)] pt-2">
+                        {selectedTemplate.policies.map((p, i) => (
+                          <li key={i} className="text-[10px] text-secondary">
+                            <span className="text-white">{p.name}</span>
+                            <span className="text-tertiary"> — {p.rules_summary}</span>
+                          </li>
+                        ))}
+                      </ul>
                     )}
                   </div>
                 )}
