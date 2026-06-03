@@ -223,26 +223,30 @@ export default function PolicyAdvancedImportPanel({
             </div>
 
             {importResult && (
-              <div className="p-3 rounded-lg bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.06)] text-sm space-y-1">
-                <div className="flex items-center gap-2">
-                  <Badge variant="success">{importResult.imported ?? 0} imported</Badge>
-                  {(importResult.skipped ?? 0) > 0 && (
-                    <Badge variant="warning">{importResult.skipped} skipped</Badge>
-                  )}
-                  {(importResult.errors ?? 0) > 0 && (
-                    <Badge variant="error">{importResult.errors} errors</Badge>
-                  )}
-                  {(importResult.skipped ?? 0) === 0 && (
-                    <Badge variant="warning">0 skipped</Badge>
-                  )}
-                  {(importResult.errors ?? 0) === 0 && (
-                    <Badge variant="error">0 errors</Badge>
+              importResult.error ? (
+                <div className="p-3 rounded-lg bg-error-subtle border border-error/20 text-sm text-error">
+                  {importResult.error}
+                </div>
+              ) : (
+                <div className="p-3 rounded-lg bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.06)] text-sm space-y-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant="success">{`${importResult.imported ?? 0} imported`}</Badge>
+                    {(importResult.skipped ?? 0) > 0 && (
+                      <Badge variant="warning">{`${importResult.skipped} skipped`}</Badge>
+                    )}
+                    {(importResult.errors?.length ?? 0) > 0 && (
+                      <Badge variant="error">{`${importResult.errors.length} errors`}</Badge>
+                    )}
+                  </div>
+                  {(importResult.errors?.length ?? 0) > 0 && (
+                    <ul className="space-y-1">
+                      {importResult.errors.map((e, i) => (
+                        <li key={i} className="text-xs text-error">{typeof e === 'string' ? e : (e?.error || JSON.stringify(e))}</li>
+                      ))}
+                    </ul>
                   )}
                 </div>
-                {importResult.details && (
-                  <p className="text-xs text-secondary mt-1">{importResult.details}</p>
-                )}
-              </div>
+              )
             )}
           </div>
         </CardContent>
