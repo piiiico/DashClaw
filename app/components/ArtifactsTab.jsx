@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FileJson, Package, ChevronDown, ChevronRight } from 'lucide-react';
+import { FileJson, Package, ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
 
 const TYPE_PILL = {
   json: 'bg-blue-400/10 text-info border-blue-400/20',
@@ -12,30 +12,40 @@ const TYPE_PILL = {
   patch: 'bg-orange-400/10 text-brand border-active/20',
 };
 
-function ArtifactRow({ artifact }) {
+function ArtifactRow({ artifact, onDelete, deleting }) {
   const [expanded, setExpanded] = useState(false);
   const pill = TYPE_PILL[artifact.artifact_type] || TYPE_PILL.file;
 
   return (
     <div className="rounded-lg border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)]">
-      <button
-        onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center gap-3 px-4 py-3 text-left"
-      >
-        <FileJson className="w-4 h-4 text-tertiary flex-shrink-0" />
-        <span className="text-sm text-secondary flex-1">{artifact.name}</span>
-        <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium border ${pill}`}>
-          {artifact.artifact_type}
-        </span>
-        <span className="text-[10px] text-disabled">
-          {artifact.created_at ? new Date(artifact.created_at).toLocaleString() : ''}
-        </span>
-        {expanded ? (
-          <ChevronDown className="w-3 h-3 text-tertiary" />
-        ) : (
-          <ChevronRight className="w-3 h-3 text-tertiary" />
-        )}
-      </button>
+      <div className="flex items-center">
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="flex flex-1 items-center gap-3 px-4 py-3 text-left"
+        >
+          <FileJson className="w-4 h-4 text-tertiary flex-shrink-0" />
+          <span className="text-sm text-secondary flex-1">{artifact.name}</span>
+          <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium border ${pill}`}>
+            {artifact.artifact_type}
+          </span>
+          <span className="text-[10px] text-disabled">
+            {artifact.created_at ? new Date(artifact.created_at).toLocaleString() : ''}
+          </span>
+          {expanded ? (
+            <ChevronDown className="w-3 h-3 text-tertiary" />
+          ) : (
+            <ChevronRight className="w-3 h-3 text-tertiary" />
+          )}
+        </button>
+        <button
+          onClick={() => onDelete(artifact.artifact_id)}
+          disabled={deleting}
+          aria-label={`Delete ${artifact.name}`}
+          className="mr-2 rounded p-1.5 text-tertiary transition-colors hover:bg-error-subtle hover:text-error disabled:opacity-50"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+        </button>
+      </div>
       {expanded && artifact.content && (
         <div className="px-4 pb-4 border-t border-[rgba(255,255,255,0.04)]">
           <pre className="text-xs text-secondary bg-black/30 rounded p-2 overflow-auto max-h-48 mt-3">
@@ -53,6 +63,7 @@ export default function ArtifactsTab({ actionId }) {
   const [generating, setGenerating] = useState(false);
   const [bundleSummary, setBundleSummary] = useState(null);
   const [error, setError] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
     async function load() {
@@ -105,6 +116,24 @@ export default function ArtifactsTab({ actionId }) {
     }
   }
 
+  async function handleDelete(artifactId) {
+    setDeletingId(artifactId);
+    setError(null);
+    try {
+      const res = await fetch(`/api/artifacts/${artifactId}`, { method: 'DELETE' });
+      if (res.ok) {
+        setArtifacts((prev) => prev.filter((a) => a.artifact_id !== artifactId));
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error === 'artifact_not_found' ? 'Artifact not found.' : 'Failed to delete artifact.');
+      }
+    } catch {
+      setError('Failed to delete artifact.');
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
   if (loading) {
     return <div className="text-sm text-tertiary py-4">Loading artifacts...</div>;
   }
@@ -145,7 +174,12 @@ export default function ArtifactsTab({ actionId }) {
       ) : (
         <div className="space-y-2">
           {artifacts.map((a) => (
-            <ArtifactRow key={a.artifact_id} artifact={a} />
+            <ArtifactRow
+              key={a.artifact_id}
+              artifact={a}
+              onDelete={handleDelete}
+              deleting={deletingId === a.artifact_id}
+            />
           ))}
         </div>
       )}
