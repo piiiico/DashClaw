@@ -182,7 +182,7 @@ const DEFAULT_STRATEGY_CONFIG = {
   maxBudgetUsd: 0.10,
 };
 
-export async function generatePolicies(sql, orgId, inputText) {
+export async function generatePolicies(sql, orgId, inputText, priorAnswers = []) {
   const { getSettings } = await import('./repositories/settings.repository.js');
   const settings = await getSettings(sql, orgId, { category: 'integration' });
   const providerKeys = ['OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'GROQ_API_KEY', 'TOGETHER_API_KEY', 'PERPLEXITY_API_KEY'];
@@ -192,10 +192,17 @@ export async function generatePolicies(sql, orgId, inputText) {
     return { error: 'No LLM provider configured. Add an API key in Settings or /setup.' };
   }
 
-  const systemPrompt = buildSystemPrompt();
+  const answersText = (Array.isArray(priorAnswers) ? priorAnswers : [])
+    .filter((a) => a && a.id)
+    .map((a) => `- ${a.id}: ${Array.isArray(a.value) ? a.value.join(', ') : a.value}`)
+    .join('\n');
+  const userContent = answersText
+    ? `${inputText}\n\nClarifications the user provided:\n${answersText}`
+    : inputText;
+
   const messages = [
-    { role: 'system', content: systemPrompt },
-    { role: 'user', content: inputText },
+    { role: 'system', content: buildSystemPrompt() },
+    { role: 'user', content: userContent },
   ];
 
   const completion = await executeCompletion(sql, orgId, DEFAULT_STRATEGY_CONFIG, messages, {
@@ -203,18 +210,15 @@ export async function generatePolicies(sql, orgId, inputText) {
     temperature: 0.3,
   });
 
-  const { policies, warnings } = parseGeneratedPolicies(completion.content);
-
+  const { drafts, assumptions, clarifications, warnings } = parseGeneratedPolicies(completion.content);
   const inputHash = createHash('sha256').update(inputText).digest('hex').slice(0, 16);
 
   return {
-    generated_policies: policies,
+    drafts,
+    assumptions,
+    clarifications,
     warnings,
     input_hash: inputHash,
-    llm_metadata: {
-      provider: completion.provider,
-      model: completion.model,
-      cost_usd: completion.cost_usd,
-    },
+    llm_metadata: { provider: completion.provider, model: completion.model, cost_usd: completion.cost_usd },
   };
 }
