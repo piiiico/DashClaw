@@ -249,3 +249,19 @@ independently verified) ran over all eight clusters. It surfaced **6 real bugs**
 list (pre-existing; the verifier rated it unlikely under normal operation since the backend
 `JSON.stringify`s + validates that column). Left as-is to avoid speculative error-handling for a
 case that can't occur via normal writes — flagged here rather than hardened.
+
+### Flagged-decision outcomes (user-approved 2026-06-03)
+
+The four flagged items above were resolved by explicit user decision:
+
+| Item | Decision | Result |
+|------|----------|--------|
+| **`/goals` dead page** | Delete | Removed `app/goals/page.js` + the now-dangling `View all → /goals` link in `GoalsChart`. `GoalsChart` itself (a demo-only dead `/dashboard` widget on archived `/api/goals`) flagged for a separate decision. `e01a554c` |
+| **Org rename + role-scoped keys** | Org rename only | New `OrgNameEditor` wires PATCH `/api/orgs/[orgId] {name}` on the Team page (admin-gated). Key minting left on `/api-keys`; the orgs route's pre-existing direct-SQL left as-is. `898680bd` |
+| **Outcome-sweep manual trigger** | Build it | New admin-gated, org-scoped POST `/api/admin/trigger-outcome-sweep` (repositories only, no direct SQL) + a "Run sweep now" button on `/decisions`, so free-tier (no cron) instances can finalize timed-out actions. `463f02b1` |
+| **Agent-connections write form** | Skip | Read display already ships (`c1b5c72a`); writes go through the SDK `reportConnections`. No editor built. |
+
+**Suite 2608 → 2612.** With these, the SYNC_AUDIT "Still remaining" list is fully resolved — every
+item is either implemented, deleted by decision, or explicitly skipped by decision. Net-new this
+session: 1 route (`267 → 271` total across the session's additions), ~16 components/pages, and 27
+test cases across the tail-pass-5 + review + decision work.
