@@ -1,6 +1,6 @@
 {
   "name": "dashclaw-platform",
-  "version": "2.18.0",
+  "version": "2.19.0",
   "description": "Decision infrastructure for AI agents — governance runtime with policy enforcement, decision recording, and human-in-the-loop approval.",
   "private": true,
   "license": "MIT",
@@ -81,7 +81,7 @@
     "d3-drag": "^3.0.0",
     "d3-force": "^3.0.0",
     "d3-selection": "^3.0.0",
-    "dashclaw": "^3.0.0",
+    "dashclaw": "^4.0.0",
     "docx": "^9.7.1",
     "drizzle-orm": "^0.45.2",
     "esbuild": "^0.28.0",

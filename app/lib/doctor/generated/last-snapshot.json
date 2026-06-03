@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:f4a20a38c5398dfb1d1c12f82078e19b4f7f885d",
+  "timestamp": "sha1:9bb5ba476bdd63a4e0d38c90edbb6f127b419ee5",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -3043,8 +3043,7 @@
         "scripts/test-full-api.mjs",
         "scripts/test-presence.mjs",
         "scripts/test-realtime.mjs",
-        "scripts/test-sdk-live.mjs",
-        "verify.js"
+        "scripts/test-sdk-live.mjs"
       ],
       "in_env_example": true
     },
@@ -3094,8 +3093,7 @@
         "scripts/branch-finish.mjs",
         "scripts/demo-agent.mjs",
         "scripts/fuzz-api.mjs",
-        "scripts/seed-branch-finish-loop.mjs",
-        "verify.js"
+        "scripts/seed-branch-finish-loop.mjs"
       ],
       "in_env_example": false
     },

@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 DashClaw ships two independently versioned artifacts from this repo:
 
 - **Platform** — the Next.js app, API routes, dashboard, and supporting
-  libraries. Current: **2.18.0**. This is the version of the DashClaw instance
+  libraries. Current: **2.19.0**. This is the version of the DashClaw instance
   you deploy to Vercel. Governance features, UI changes, new API routes, and
   database migrations land on this track.
 - **SDK** — the `dashclaw` npm package published from `sdk/` and the
@@ -27,7 +27,7 @@ releases only ship client changes, platform releases can ship anything.
 Plugin and tooling entries (e.g. `@dashclaw/openclaw-plugin`, `@dashclaw/cli`)
 are prefixed with the package name.
 
-## [Unreleased]
+## [2.19.0] — 2026-06-03
 
 ### Retired the archived "Context" surface (key points + threads)
 

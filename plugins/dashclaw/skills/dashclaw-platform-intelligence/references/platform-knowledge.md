@@ -38,11 +38,11 @@ Both modes serve the same landing page. `/demo` sets a cookie and redirects to `
 - Next.js 16 (App Router), JavaScript, Tailwind CSS 3
 - Postgres (TCP via `postgres`, serverless via `@neondatabase/serverless`)
 - Auth: NextAuth v4 for UI (GitHub, Google, or OIDC), `x-api-key` header for agents/tools
-- **Platform version:** 2.13.1 (see `CHANGELOG.md`). **`dashclaw` npm SDK:** 2.11.1.
+- **Platform version:** 2.19.0 (see `CHANGELOG.md`). **`dashclaw` SDK:** 4.0.0 (Node + Python).
 - SDKs:
-  - **Node v2 — governance runtime** (`sdk/dashclaw.js`, 80 methods across Core Governance, Scoring, Execution Studio, Messaging, Sessions, and Capability Runtime). This is the SDK that ships as the `dashclaw` package.
+  - **Node v2 — governance runtime** (`sdk/dashclaw.js`, 104 methods across Core Governance, Scoring, Execution Studio, Messaging, Sessions, and Capability Runtime). This is the SDK that ships as the `dashclaw` package.
   - **Node v1 — full platform legacy** (`sdk/legacy/dashclaw-v1.js`, 187 methods), re-exported as `dashclaw/legacy` for older integrations (see `docs/sdk-parity.md`).
-  - **Python — full platform** (`sdk-python/dashclaw/client.py`, 211 methods).
+  - **Python — full platform** (`sdk-python/dashclaw/client.py`, 204 methods).
 - Node SDK naming: camelCase. Python SDK naming: snake_case.
 
 ## Auth Chain

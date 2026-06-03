@@ -331,40 +331,6 @@ async function testHandoffs() {
 }
 
 // ──────────────────────────────────────────────────────────────
-// Category 6: Context Manager
-// ──────────────────────────────────────────────────────────────
-
-async function testContextManager() {
-  console.log('\n--- Category 6: Context Manager ---');
-
-  const threadName = `sdk-live-test-${Date.now()}`;
-
-  const input = {
-    name:    threadName,
-    summary: 'sdk-live-test: context thread field mapping',
-  };
-
-  const res = await sdk.createThread(input);
-  const threadId = res.thread_id;
-
-  assert(typeof threadId === 'string' && threadId.startsWith('ct_'),
-    `createThread: thread_id has ct_ prefix (got ${threadId})`);
-
-  // Read back via getThreads
-  const listRes = await sdk.getThreads({ status: 'active', limit: 50 });
-  const stored  = listRes.threads?.find(t => t.id === threadId || t.thread_id === threadId);
-
-  assert(!!stored,
-    `createThread → getThreads: can find thread ${threadId} in list`);
-
-  if (stored) {
-    assert(stored.name === threadName,
-      'createThread → getThreads: name persisted',
-      { sent: threadName, stored: stored.name });
-  }
-}
-
-// ──────────────────────────────────────────────────────────────
 // Category 7: Automation Snippets
 // ──────────────────────────────────────────────────────────────
 
@@ -780,7 +746,6 @@ async function main() {
   await runCategory('Signals', testSignals);
   await runCategory('Dashboard Data', testDashboardData);
   await runCategory('Handoffs', testHandoffs);
-  await runCategory('Context Manager', testContextManager);
   await runCategory('Snippets', testSnippets);
   await runCategory('User Preferences', testUserPreferences);
   await runCategory('Daily Digest', testDailyDigest);
