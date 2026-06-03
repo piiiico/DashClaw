@@ -13,6 +13,7 @@ import AgentSignals from './components/AgentSignals';
 import AgentDecisionTable from './components/AgentDecisionTable';
 import AgentAssumptions from './components/AgentAssumptions';
 import AgentPoliciesSection from './components/AgentPoliciesSection';
+import AgentConnectionsSection from './components/AgentConnectionsSection';
 
 export default function AgentProfilePage() {
   const { agentId } = useParams();
@@ -127,6 +128,8 @@ export default function AgentProfilePage() {
           agentId={decodedAgentId}
           summary={profile.assumptions_summary}
         />
+
+        <AgentConnectionsSection agentId={decodedAgentId} />
 
         <AgentPoliciesSection
           agentId={decodedAgentId}
