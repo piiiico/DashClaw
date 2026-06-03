@@ -20,34 +20,6 @@ class RecordingDashClaw(DashClaw):
 
 
 class WS5M3ParityTests(unittest.TestCase):
-    def test_get_context_summary_returns_points(self):
-        # Context threads were retired (route archived, SDK methods removed); the
-        # summary is now just today's key points.
-        client = RecordingDashClaw()
-        client.get_key_points = lambda **filters: {"points": [{"id": "p1"}]}
-
-        # Freeze date behavior via monkeypatch-style replacement.
-        import dashclaw.client as client_module
-
-        original_datetime = client_module.datetime
-        try:
-            class FixedDatetime:
-                @staticmethod
-                def now(_tz=None):
-                    class _Now:
-                        @staticmethod
-                        def strftime(fmt):
-                            return "2026-02-14"
-
-                    return _Now()
-
-            client_module.datetime = FixedDatetime
-            summary = client.get_context_summary()
-        finally:
-            client_module.datetime = original_datetime
-
-        self.assertEqual(summary, {"points": [{"id": "p1"}]})
-
     def test_message_actions_and_thread_endpoints(self):
         client = RecordingDashClaw()
 

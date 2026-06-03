@@ -899,24 +899,6 @@ class DashClaw:
     def get_latest_handoff(self):
         return self._request(f"/api/handoffs?agent_id={self.agent_id}&latest=true")
 
-    # --- Category 6: Context Manager ---
-
-    def capture_key_point(self, content, **kwargs):
-        payload = {"content": content, "agent_id": self.agent_id, **kwargs}
-        return self._request("/api/context/points", method="POST", body=payload)
-
-    def get_key_points(self, **filters):
-        filters["agent_id"] = self.agent_id
-        query = urllib.parse.urlencode({k: v for k, v in filters.items() if v is not None})
-        return self._request(f"/api/context/points?{query}")
-
-    def get_context_summary(self):
-        # Context threads were retired (route archived); the summary is now
-        # today's key points.
-        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        points_result = self.get_key_points(session_date=today)
-        return {"points": points_result.get("points", [])}
-
     # --- Category 7: Automation Snippets ---
 
     def save_snippet(self, name, code, **kwargs):

@@ -186,7 +186,6 @@ const navItems = [
   { href: '#behavioral-drift', label: 'Behavioral Drift', indent: true, legacy: true },
   { href: '#compliance-exports', label: 'Compliance Exports', indent: true, legacy: true },
   { href: '#dashboard-data', label: 'Dashboard Data', indent: true, legacy: true },
-  { href: '#context-manager', label: 'Context Manager', indent: true, legacy: true },
   { href: '#automation-snippets', label: 'Automation Snippets', indent: true, legacy: true },
   { href: '#user-preferences', label: 'User Preferences', indent: true, legacy: true },
   { href: '#daily-digest', label: 'Daily Digest', indent: true, legacy: true },
@@ -2643,31 +2642,6 @@ if (!clean) {
 await sendToSlack(redacted_text);`}
                     </CodeBlock>
                   }
-                />
-              </section>
-
-              {/* Context Manager */}
-              <section id="context-manager" className="scroll-mt-20 pt-12 border-t border-border">
-                <h3 className="text-lg font-semibold text-text-primary mb-2 font-mono underline decoration-border-hover underline-offset-8">Context Manager</h3>
-                <MethodEntry 
-                  id="captureKeyPoint" 
-                  signature="claw.captureKeyPoint(point)" 
-                  description="Capture a high-importance insight or decision point during a session."
-                  example={
-                    <CodeBlock>
-{`await claw.captureKeyPoint({
-  content: 'Switched to using PostgreSQL for the vector store due to performance issues.',
-  category: 'decision',
-  importance: 9
-});`}
-                    </CodeBlock>
-                  }
-                />
-                <MethodEntry 
-                  id="getContextSummary"
-                  signature="claw.getContextSummary()"
-                  description="Get a context summary: today's key points."
-                  returns="Promise<{points: Object[]}>"
                 />
               </section>
 

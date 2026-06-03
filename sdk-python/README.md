@@ -22,7 +22,7 @@ Python agents typically pair the SDK with one or more of these:
 
 ## Quick Start
 
-The Python SDK is the full platform SDK (207 methods). The constructor accepts both v2-compatible and v1-extended parameters.
+The Python SDK is the full platform SDK (204 methods). The constructor accepts both v2-compatible and v1-extended parameters.
 
 ### v2-compatible constructor (recommended for new agents)
 
@@ -524,29 +524,6 @@ claw.delete_snippet("sn_abc123")
 | `get_snippet(snippet_id)` | Get a single snippet by ID |
 | `use_snippet(snippet_id)` | Mark a snippet as used (increments use_count) |
 | `delete_snippet(snippet_id)` | Delete a snippet |
-
-## Context Manager
-
-Capture key points and get context summaries:
-
-```python
-# Capture a key point
-claw.capture_key_point("User confirmed budget is $50k", category="constraint")
-
-# Get key points
-points = claw.get_key_points(session_date="2025-01-15")
-
-# Get a context summary (today's key points)
-summary = claw.get_context_summary()
-```
-
-**Methods:**
-
-| Method | Description |
-|--------|-------------|
-| `capture_key_point(content, **kwargs)` | Capture a key point. Optional: category, session_date |
-| `get_key_points(**filters)` | Get key points. Filters: session_date, category |
-| `get_context_summary()` | Get today's key points |
 
 ## Agent Messaging
 
@@ -1054,7 +1031,7 @@ integration.instrument_agent(assistant)
 
 ## API Parity
 
-This SDK provides the full DashClaw platform surface (207 methods), which is parity with the [Node.js v1 (legacy) SDK](https://github.com/ucsandman/DashClaw/tree/main/sdk/legacy).
+This SDK provides the full DashClaw platform surface (204 methods), which is parity with the [Node.js v1 (legacy) SDK](https://github.com/ucsandman/DashClaw/tree/main/sdk/legacy).
 
 The Node.js v2 SDK exposes a curated subset of **104 methods** focused on agent governance. The following Python methods are available in both the Node.js v2 SDK and this Python SDK:
 
