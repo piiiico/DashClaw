@@ -1538,18 +1538,18 @@ class DashClaw:
 
     def create_compliance_export(self, frameworks: list, name: str = "Compliance Export", format: str = "markdown", window_days: int = 30, include_evidence: bool = True, include_remediation: bool = True, include_trends: bool = False) -> dict:
         """Generate a compliance export for one or more frameworks."""
-        return self._request("POST", "/api/compliance/exports", body={
+        return self._request("/api/compliance/exports", method="POST", body={
             "name": name, "frameworks": frameworks, "format": format, "window_days": window_days,
             "include_evidence": include_evidence, "include_remediation": include_remediation, "include_trends": include_trends,
         })
 
     def list_compliance_exports(self, limit: int = 20) -> dict:
         """List compliance export records."""
-        return self._request("GET", f"/api/compliance/exports?limit={limit}")
+        return self._request(f"/api/compliance/exports?limit={limit}")
 
     def get_compliance_export(self, export_id: str) -> dict:
         """Get a specific compliance export with full report content."""
-        return self._request("GET", f"/api/compliance/exports/{export_id}")
+        return self._request(f"/api/compliance/exports/{export_id}")
 
     def download_compliance_export(self, export_id: str) -> dict:
         """Download the signed compliance bundle (JSON) for an export.
@@ -1558,29 +1558,29 @@ class DashClaw:
         ``result["payload"]["report"]``; re-verify the whole bundle via
         ``POST /api/integrity/verify``.
         """
-        return self._request("GET", f"/api/compliance/exports/{export_id}/download")
+        return self._request(f"/api/compliance/exports/{export_id}/download")
 
     def delete_compliance_export(self, export_id: str) -> dict:
         """Delete a compliance export."""
-        return self._request("DELETE", f"/api/compliance/exports/{export_id}")
+        return self._request(f"/api/compliance/exports/{export_id}", method="DELETE")
 
     def create_compliance_schedule(self, frameworks: list, cron_expression: str, name: str = "Scheduled Export", **kwargs) -> dict:
         """Create a recurring compliance export schedule."""
-        return self._request("POST", "/api/compliance/schedules", body={
+        return self._request("/api/compliance/schedules", method="POST", body={
             "name": name, "frameworks": frameworks, "cron_expression": cron_expression, **kwargs,
         })
 
     def list_compliance_schedules(self) -> dict:
         """List compliance export schedules."""
-        return self._request("GET", "/api/compliance/schedules")
+        return self._request("/api/compliance/schedules")
 
     def update_compliance_schedule(self, schedule_id: str, **fields) -> dict:
         """Update a compliance schedule (toggle enabled, rename)."""
-        return self._request("PATCH", f"/api/compliance/schedules/{schedule_id}", body=fields)
+        return self._request(f"/api/compliance/schedules/{schedule_id}", method="PATCH", body=fields)
 
     def delete_compliance_schedule(self, schedule_id: str) -> dict:
         """Delete a compliance schedule."""
-        return self._request("DELETE", f"/api/compliance/schedules/{schedule_id}")
+        return self._request(f"/api/compliance/schedules/{schedule_id}", method="DELETE")
 
     def get_compliance_trends(self, framework: str = None, limit: int = 30) -> dict:
         """Get compliance coverage trend data from snapshots."""
@@ -1588,7 +1588,7 @@ class DashClaw:
         if framework: params.append(f"framework={framework}")
         if limit: params.append(f"limit={limit}")
         qs = f"?{'&'.join(params)}" if params else ""
-        return self._request("GET", f"/api/compliance/trends{qs}")
+        return self._request(f"/api/compliance/trends{qs}")
 
     # -----------------------------------------------
     # Drift Detection
@@ -1596,15 +1596,15 @@ class DashClaw:
 
     def compute_drift_baselines(self, agent_id: str = None, lookback_days: int = 30) -> dict:
         """Compute statistical baselines from historical agent data."""
-        return self._request("POST", "/api/drift/alerts", json={"action": "compute_baselines", "agent_id": agent_id, "lookback_days": lookback_days})
+        return self._request("/api/drift/alerts", method="POST", json={"action": "compute_baselines", "agent_id": agent_id, "lookback_days": lookback_days})
 
     def detect_drift(self, agent_id: str = None, window_days: int = 7) -> dict:
         """Run drift detection comparing recent window to baseline."""
-        return self._request("POST", "/api/drift/alerts", json={"action": "detect", "agent_id": agent_id, "window_days": window_days})
+        return self._request("/api/drift/alerts", method="POST", json={"action": "detect", "agent_id": agent_id, "window_days": window_days})
 
     def record_drift_snapshots(self) -> dict:
         """Record daily metric snapshots for trend visualization."""
-        return self._request("POST", "/api/drift/alerts", json={"action": "record_snapshots"})
+        return self._request("/api/drift/alerts", method="POST", json={"action": "record_snapshots"})
 
     def list_drift_alerts(self, agent_id: str = None, severity: str = None, acknowledged: bool = None, limit: int = 50) -> dict:
         """List drift alerts with optional filters."""
@@ -1614,20 +1614,20 @@ class DashClaw:
         if acknowledged is not None: params.append(f"acknowledged={str(acknowledged).lower()}")
         if limit: params.append(f"limit={limit}")
         qs = f"?{'&'.join(params)}" if params else ""
-        return self._request("GET", f"/api/drift/alerts{qs}")
+        return self._request(f"/api/drift/alerts{qs}")
 
     def acknowledge_drift_alert(self, alert_id: str) -> dict:
         """Acknowledge a drift alert."""
-        return self._request("PATCH", f"/api/drift/alerts/{alert_id}")
+        return self._request(f"/api/drift/alerts/{alert_id}", method="PATCH")
 
     def delete_drift_alert(self, alert_id: str) -> dict:
         """Delete a drift alert."""
-        return self._request("DELETE", f"/api/drift/alerts/{alert_id}")
+        return self._request(f"/api/drift/alerts/{alert_id}", method="DELETE")
 
     def get_drift_stats(self, agent_id: str = None) -> dict:
         """Get drift detection statistics."""
         params = f"?agent_id={agent_id}" if agent_id else ""
-        return self._request("GET", f"/api/drift/stats{params}")
+        return self._request(f"/api/drift/stats{params}")
 
     def get_drift_snapshots(self, agent_id: str = None, metric: str = None, limit: int = 30) -> dict:
         """Get metric trend snapshots."""
@@ -1636,11 +1636,11 @@ class DashClaw:
         if metric: params.append(f"metric={metric}")
         if limit: params.append(f"limit={limit}")
         qs = f"?{'&'.join(params)}" if params else ""
-        return self._request("GET", f"/api/drift/snapshots{qs}")
+        return self._request(f"/api/drift/snapshots{qs}")
 
     def get_drift_metrics(self) -> dict:
         """List available drift detection metrics."""
-        return self._request("GET", "/api/drift/metrics")
+        return self._request("/api/drift/metrics")
 
     # -----------------------------------------------
     # Learning Analytics
@@ -1648,7 +1648,7 @@ class DashClaw:
 
     def compute_learning_velocity(self, agent_id: str = None, lookback_days: int = 30, period: str = "daily") -> dict:
         """Compute learning velocity (rate of score improvement) for agents."""
-        return self._request("POST", "/api/learning/analytics/velocity", json={"agent_id": agent_id, "lookback_days": lookback_days, "period": period})
+        return self._request("/api/learning/analytics/velocity", method="POST", json={"agent_id": agent_id, "lookback_days": lookback_days, "period": period})
 
     def get_learning_velocity(self, agent_id: str = None, limit: int = 30) -> dict:
         """Get computed velocity data."""
@@ -1656,11 +1656,11 @@ class DashClaw:
         if agent_id: params.append(f"agent_id={agent_id}")
         if limit: params.append(f"limit={limit}")
         qs = f"?{'&'.join(params)}" if params else ""
-        return self._request("GET", f"/api/learning/analytics/velocity{qs}")
+        return self._request(f"/api/learning/analytics/velocity{qs}")
 
     def compute_learning_curves(self, agent_id: str = None, lookback_days: int = 60) -> dict:
         """Compute learning curves per action type."""
-        return self._request("POST", "/api/learning/analytics/curves", json={"agent_id": agent_id, "lookback_days": lookback_days})
+        return self._request("/api/learning/analytics/curves", method="POST", json={"agent_id": agent_id, "lookback_days": lookback_days})
 
     def get_learning_curves(self, agent_id: str = None, action_type: str = None, limit: int = 50) -> dict:
         """Get learning curve data."""
@@ -1669,73 +1669,73 @@ class DashClaw:
         if action_type: params.append(f"action_type={action_type}")
         if limit: params.append(f"limit={limit}")
         qs = f"?{'&'.join(params)}" if params else ""
-        return self._request("GET", f"/api/learning/analytics/curves{qs}")
+        return self._request(f"/api/learning/analytics/curves{qs}")
 
     def get_learning_analytics_summary(self, agent_id: str = None) -> dict:
         """Get comprehensive learning analytics summary."""
         params = f"?agent_id={agent_id}" if agent_id else ""
-        return self._request("GET", f"/api/learning/analytics/summary{params}")
+        return self._request(f"/api/learning/analytics/summary{params}")
 
     def get_maturity_levels(self) -> dict:
         """Get the maturity level definitions."""
-        return self._request("GET", "/api/learning/analytics/maturity")
+        return self._request("/api/learning/analytics/maturity")
 
     # --- Scoring Profiles -----------------------------------
 
     def create_scoring_profile(self, **kwargs):
-        return self._request("POST", "/api/scoring/profiles", json=kwargs)
+        return self._request("/api/scoring/profiles", method="POST", json=kwargs)
 
     def list_scoring_profiles(self, **params):
-        return self._request("GET", "/api/scoring/profiles", params=params)
+        return self._request("/api/scoring/profiles", params=params)
 
     def get_scoring_profile(self, profile_id):
-        return self._request("GET", f"/api/scoring/profiles/{profile_id}")
+        return self._request(f"/api/scoring/profiles/{profile_id}")
 
     def update_scoring_profile(self, profile_id, **kwargs):
-        return self._request("PATCH", f"/api/scoring/profiles/{profile_id}", json=kwargs)
+        return self._request(f"/api/scoring/profiles/{profile_id}", method="PATCH", json=kwargs)
 
     def delete_scoring_profile(self, profile_id):
-        return self._request("DELETE", f"/api/scoring/profiles/{profile_id}")
+        return self._request(f"/api/scoring/profiles/{profile_id}", method="DELETE")
 
     def add_scoring_dimension(self, profile_id, **kwargs):
-        return self._request("POST", f"/api/scoring/profiles/{profile_id}/dimensions", json=kwargs)
+        return self._request(f"/api/scoring/profiles/{profile_id}/dimensions", method="POST", json=kwargs)
 
     def update_scoring_dimension(self, profile_id, dimension_id, **kwargs):
-        return self._request("PATCH", f"/api/scoring/profiles/{profile_id}/dimensions/{dimension_id}", json=kwargs)
+        return self._request(f"/api/scoring/profiles/{profile_id}/dimensions/{dimension_id}", method="PATCH", json=kwargs)
 
     def delete_scoring_dimension(self, profile_id, dimension_id):
-        return self._request("DELETE", f"/api/scoring/profiles/{profile_id}/dimensions/{dimension_id}")
+        return self._request(f"/api/scoring/profiles/{profile_id}/dimensions/{dimension_id}", method="DELETE")
 
     def score_with_profile(self, profile_id, action):
-        return self._request("POST", "/api/scoring/score", json={"profile_id": profile_id, "action": action})
+        return self._request("/api/scoring/score", method="POST", json={"profile_id": profile_id, "action": action})
 
     def batch_score_with_profile(self, profile_id, actions):
-        return self._request("POST", "/api/scoring/score", json={"profile_id": profile_id, "actions": actions})
+        return self._request("/api/scoring/score", method="POST", json={"profile_id": profile_id, "actions": actions})
 
     def get_profile_scores(self, **params):
-        return self._request("GET", "/api/scoring/score", params=params)
+        return self._request("/api/scoring/score", params=params)
 
     def get_profile_score_stats(self, profile_id):
-        return self._request("GET", "/api/scoring/score", params={"profile_id": profile_id, "view": "stats"})
+        return self._request("/api/scoring/score", params={"profile_id": profile_id, "view": "stats"})
 
     # --- Risk Templates ------------------------------------
 
     def create_risk_template(self, **kwargs):
-        return self._request("POST", "/api/scoring/risk-templates", json=kwargs)
+        return self._request("/api/scoring/risk-templates", method="POST", json=kwargs)
 
     def list_risk_templates(self, **params):
-        return self._request("GET", "/api/scoring/risk-templates", params=params)
+        return self._request("/api/scoring/risk-templates", params=params)
 
     def update_risk_template(self, template_id, **kwargs):
-        return self._request("PATCH", f"/api/scoring/risk-templates/{template_id}", json=kwargs)
+        return self._request(f"/api/scoring/risk-templates/{template_id}", method="PATCH", json=kwargs)
 
     def delete_risk_template(self, template_id):
-        return self._request("DELETE", f"/api/scoring/risk-templates/{template_id}")
+        return self._request(f"/api/scoring/risk-templates/{template_id}", method="DELETE")
 
     # --- Auto-Calibration ----------------------------------
 
     def auto_calibrate(self, **options):
-        return self._request("POST", "/api/scoring/calibrate", json=options)
+        return self._request("/api/scoring/calibrate", method="POST", json=options)
 
     # --- Session Lifecycle ----------------------------------
 
