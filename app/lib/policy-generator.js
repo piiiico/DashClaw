@@ -93,7 +93,7 @@ Return ONLY a single JSON object (no markdown fences, no prose) with exactly the
 - If you genuinely cannot draft yet: return drafts: [] and 1-3 clarifications with concrete, clickable \`suggestions\`.
 - \`suggestions\` must be concrete values the user can pick (e.g. paths like ".env", "secrets/", "migrations/"; or "warn"/"block"/"require approval"). For enum fields use only allowed values.
 - Map "delete/remove/protect files or paths" to \`protected_path\`.
-- If the input describes multiple distinct policies, return one draft per policy.`;
+- If the input describes multiple distinct policies, draft the single most important one now and add a clarification listing the others so the user can author them one at a time. Return at most one draft per response — the reviewer saves one policy per pass.`;
 }
 
 function makeGenericClarification() {

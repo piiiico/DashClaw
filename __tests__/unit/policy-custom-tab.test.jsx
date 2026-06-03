@@ -14,6 +14,14 @@ vi.mock('@/components/ui/Card.js', () => ({
 vi.mock('@/components/ui/EmptyState.js', () => ({
   EmptyState: ({ title, description }) => <div>{title}{description}</div>,
 }));
+// The draft editor renders the full guided authoring panel; this test exercises
+// the generate -> refine -> save LOOP in CustomTab, not the editor internals, so
+// stub it down to the save affordance it exposes.
+vi.mock('@/policies/components/PolicyGeneratedDraftEditor.jsx', () => ({
+  default: ({ onSave, saveDisabled }) => (
+    <button type="button" onClick={onSave} disabled={saveDisabled}>Create Policy</button>
+  ),
+}));
 
 const { default: CustomTab } = await import('@/policies/components/CustomTab.jsx');
 
@@ -102,5 +110,99 @@ describe('CustomTab — orphaned policy surfaces', () => {
 
     expect(await screen.findByText(/4 policies/i)).toBeTruthy();
     expect(screen.getByText(/action_types: \[deploy\]/)).toBeTruthy();
+  });
+});
+
+describe('CustomTab — AI generator loop', () => {
+  it('clarifies instead of dead-ending, then refines into a saveable draft', async () => {
+    let genCall = 0;
+    const fetchMock = mockFetch({
+      'POST /api/policies/generate': () => {
+        genCall += 1;
+        // First pass: no draft yet — a clarifying question, never a dead-end.
+        if (genCall === 1) {
+          return {
+            drafts: [],
+            assumptions: [],
+            clarifications: [
+              { id: 'path', question: 'Which path should be protected?', field: 'rules.paths', suggestions: ['.env', 'secrets/'], multi: false },
+            ],
+            warnings: [],
+          };
+        }
+        // After the user answers: one concrete protected_path draft.
+        return {
+          drafts: [
+            { name: 'Protect .env', policy_type: 'protected_path', rules: { paths: ['.env'], on_violation: 'block' }, confidence: 0.9 },
+          ],
+          assumptions: [],
+          clarifications: [],
+          warnings: [],
+        };
+      },
+      'POST /api/policies': () => ({ policy: { id: 'pol_new' } }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(<CustomTab />);
+    await screen.findByPlaceholderText(/search policies/i);
+
+    // Open the AI generator and describe an intent.
+    fireEvent.click(screen.getByRole('button', { name: /ai generator/i }));
+    const textarea = await screen.findByPlaceholderText(/stop my agents from deleting/i);
+    fireEvent.change(textarea, { target: { value: 'protect my files' } });
+    fireEvent.click(screen.getByRole('button', { name: /^generate$/i }));
+
+    // First pass: a clarification chip appears and there is NO dead-end error.
+    expect(await screen.findByText(/which path should be protected/i)).toBeTruthy();
+    expect(screen.queryByText(/couldn't draft a policy/i)).toBeNull();
+
+    // Answer the clarification and refine.
+    fireEvent.click(screen.getByRole('button', { name: '.env' }));
+    fireEvent.click(screen.getByRole('button', { name: /refine with my answers/i }));
+
+    // Second pass: the review-and-save editor appears.
+    expect(await screen.findByText(/review & save/i)).toBeTruthy();
+
+    // Save the reviewed draft — POST /api/policies fires and success is reported.
+    fireEvent.click(screen.getByRole('button', { name: /create policy/i }));
+
+    await waitFor(() => {
+      expect(
+        fetchMock.mock.calls.some(([url, opts]) => url === '/api/policies' && opts?.method === 'POST'),
+      ).toBe(true);
+    });
+    expect(await screen.findByText(/created policy "Protect \.env"/i)).toBeTruthy();
+  });
+
+  it('warns instead of silently dropping when a compound request yields multiple drafts', async () => {
+    const fetchMock = mockFetch({
+      // Defense-in-depth: even though the prompt asks for one draft, if the model
+      // returns several, the UI must surface it (only the first is editable).
+      'POST /api/policies/generate': () => ({
+        drafts: [
+          { name: 'Protect .env', policy_type: 'protected_path', rules: { paths: ['.env'], on_violation: 'block' }, confidence: 0.9 },
+          { name: 'Protect secrets', policy_type: 'protected_path', rules: { paths: ['secrets/'], on_violation: 'block' }, confidence: 0.8 },
+        ],
+        assumptions: [],
+        clarifications: [],
+        warnings: [],
+      }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(<CustomTab />);
+    await screen.findByPlaceholderText(/search policies/i);
+
+    fireEvent.click(screen.getByRole('button', { name: /ai generator/i }));
+    const textarea = await screen.findByPlaceholderText(/stop my agents from deleting/i);
+    fireEvent.change(textarea, { target: { value: 'block deploys and protect .env' } });
+    fireEvent.click(screen.getByRole('button', { name: /^generate$/i }));
+
+    // The multi-draft warning names the count and the surviving (first) draft.
+    expect(await screen.findByText(/generated 2 policies from one request/i)).toBeTruthy();
+    expect(screen.getByText(/showing the first \("Protect \.env"\)/i)).toBeTruthy();
+    // The first draft is still saveable (no dead-end).
+    expect(screen.getByText(/review & save/i)).toBeTruthy();
   });
 });

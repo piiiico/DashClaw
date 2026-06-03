@@ -286,10 +286,17 @@ export default function CustomTab() {
       if (!res.ok) { setGenError(data.error || 'Failed to generate policy drafts'); return; }
       const drafts = normalizeGeneratedPolicyDrafts(data.drafts || []);
       const clarifications = data.clarifications || [];
+      const warnings = [...(data.warnings || [])];
+      // The generator is asked to return a single best draft for compound
+      // requests (and clarify the rest). If it returns more anyway, surface it
+      // instead of silently dropping drafts 2..N — the editor only shows the first.
+      if (drafts.length > 1) {
+        warnings.push(`Generated ${drafts.length} policies from one request — showing the first ("${drafts[0].name || 'draft'}"). Save it, then refine to author the others one at a time.`);
+      }
       setGenDrafts(drafts);
       setGenAssumptions(data.assumptions || []);
       setGenClarifications(clarifications);
-      setGenWarnings(data.warnings || []);
+      setGenWarnings(warnings);
       setGenDraftForm(drafts.length ? JSON.parse(JSON.stringify(drafts[0].formState)) : null);
       if (!drafts.length && !clarifications.length) {
         setGenError("DashClaw couldn't draft a policy or a follow-up. Try describing the action, risk, or paths to protect.");
