@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:5e65b89a2a6387282f387448b7a18aeeda909aa6",
+  "timestamp": "sha1:f4a20a38c5398dfb1d1c12f82078e19b4f7f885d",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -616,6 +616,15 @@
       "dynamic_params": [],
       "archived": false,
       "file_path": "app/api/activity/route.js"
+    },
+    {
+      "path": "/api/admin/trigger-outcome-sweep",
+      "methods": [
+        "POST"
+      ],
+      "dynamic_params": [],
+      "archived": false,
+      "file_path": "app/api/admin/trigger-outcome-sweep/route.js"
     },
     {
       "path": "/api/agents",

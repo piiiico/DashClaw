@@ -70,6 +70,7 @@ export default function DecisionsLedger() {
   const [expandedId, setExpandedId] = useState(null);
   const [expandedData, setExpandedData] = useState({});
   const [clearing, setClearing] = useState(false);
+  const [sweeping, setSweeping] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [selectedActions, setSelectedActions] = useState(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
@@ -172,6 +173,24 @@ export default function DecisionsLedger() {
       alert('Failed to delete actions');
     } finally {
       setClearing(false);
+    }
+  };
+
+  const handleRunSweep = async () => {
+    setSweeping(true);
+    try {
+      const res = await fetch('/api/admin/trigger-outcome-sweep', { method: 'POST' });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        alert(`Swept ${data.rows_swept} timed-out action(s).`);
+        fetchActions();
+      } else {
+        alert(data.error || 'Sweep failed');
+      }
+    } catch {
+      alert('Sweep failed');
+    } finally {
+      setSweeping(false);
     }
   };
 
@@ -307,6 +326,17 @@ export default function DecisionsLedger() {
             >
               <Trash2 size={14} />
               {bulkDeleting ? 'Deleting…' : `Delete ${selectedActions.size} selected`}
+            </button>
+          )}
+          {isAdmin && (
+            <button
+              onClick={handleRunSweep}
+              disabled={sweeping}
+              title="Finalize actions that passed their outcome timeout without an agent report"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface-tertiary px-3 py-1.5 text-sm font-medium text-secondary transition-colors hover:border-border-hover hover:text-white disabled:opacity-50"
+            >
+              <Clock size={14} className={sweeping ? 'animate-spin' : ''} />
+              {sweeping ? 'Sweeping…' : 'Run sweep now'}
             </button>
           )}
           {isAdmin && (
