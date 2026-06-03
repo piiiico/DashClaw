@@ -280,6 +280,33 @@ export default async function CodeSessionDetailPage({ params }) {
                 <div><span className="text-tertiary">cache read: </span>{(session.cache_read_tokens || 0).toLocaleString()}</div>
               </div>
             </div>
+            <div className="border-t border-border pt-2 mt-2">
+              <div className="text-xs font-medium text-tertiary">Without caching (naive)</div>
+              <div className="mt-1 tabular-nums text-xs">
+                <div>Naive cost: <strong>${Number(session.naive_cost_usd || 0).toFixed(4)}</strong></div>
+                <div className="text-emerald-400">
+                  Cache savings: <strong>${Number(session.cache_savings_usd || 0).toFixed(4)}</strong>
+                </div>
+              </div>
+              <div className="mt-1.5 grid grid-cols-2 gap-x-3 gap-y-0.5 text-xs tabular-nums">
+                <div><span className="text-tertiary">input: </span>{Number(session.naive_input_tokens || 0).toLocaleString()}</div>
+                <div><span className="text-tertiary">output: </span>{Number(session.naive_output_tokens || 0).toLocaleString()}</div>
+                <div><span className="text-tertiary">cache write: </span>{Number(session.naive_cache_creation_tokens || 0).toLocaleString()}</div>
+                <div><span className="text-tertiary">cache read: </span>{Number(session.naive_cache_read_tokens || 0).toLocaleString()}</div>
+              </div>
+            </div>
+            <div className="border-t border-border pt-2 mt-2">
+              <div className="text-xs font-medium text-tertiary">Parser</div>
+              <div className="mt-1 grid grid-cols-2 gap-x-3 gap-y-0.5 text-xs tabular-nums">
+                <div><span className="text-tertiary">version: </span>{session.parser_version}</div>
+                <div><span className="text-tertiary">model requests: </span>{Number(session.model_requests || 0).toLocaleString()}</div>
+                {Number(session.stuck_loops || 0) > 0 && (
+                  <div className="text-orange-400">
+                    <span className="text-tertiary">stuck loops: </span>{session.stuck_loops}
+                  </div>
+                )}
+              </div>
+            </div>
           </dl>
         </div>
 
