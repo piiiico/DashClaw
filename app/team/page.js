@@ -11,6 +11,7 @@ import { Card, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { StatCompact } from '../components/ui/Stat';
 import { EmptyState } from '../components/ui/EmptyState';
+import OrgNameEditor from './components/OrgNameEditor';
 import { isDemoMode } from '../lib/isDemoMode';
 
 export default function TeamPage() {
@@ -239,6 +240,14 @@ export default function TeamPage() {
         ) : null
       }
     >
+      {data?.org && (
+        <OrgNameEditor
+          orgId={data.org.id}
+          name={data.org.name}
+          isAdmin={canEdit}
+          onRenamed={(name) => setData((d) => ({ ...d, org: { ...d.org, name } }))}
+        />
+      )}
       {isDemo && (
         <div className="mb-4 p-3 rounded-lg bg-zinc-500/10 border border-zinc-500/20 text-secondary text-sm">
           Demo mode: team management is read-only.
