@@ -1,0 +1,15 @@
+{
+  "name": "governed-chat-harness",
+  "version": "1.0.0",
+  "description": "DashClaw + Anthropic Claude SDK: a chat runtime that governs and records EVERY tool call into the Decisions Ledger",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "chat": "node index.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "dashclaw": "file:../../sdk",
+    "dotenv": "^16.4.5"
+  }
+}

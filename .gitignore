@@ -120,3 +120,9 @@ secrets/
 .organism/kill-switch
 .organism/paused
 .organism/consecutive-failures.json
+
+# Behavior-learning telemetry (machine-local; redacted samples + dismissals)
+.dashclaw/
+
+# Full audit evidence log (untracked working artifact)
+.audit-findings-full.md
