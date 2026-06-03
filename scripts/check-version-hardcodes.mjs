@@ -66,7 +66,6 @@ const FILE_ALLOWLIST = new Set([
   'app/lib/demo/fixtures/journey-agents.js',       // Demo agent fixtures
   'app/lib/demo/fixtures/persona-agents.js',       // Demo agent fixtures
   'app/lib/demo/fixtures/tutorial-assumptions.js', // Demo agent fixtures
-  'app/lib/guardrails/generators/jest.js',         // Generates user-project package.json (default 1.0.0)
 ]);
 
 // Require EITHER a `v` prefix OR surrounding quote/backtick to avoid matching
