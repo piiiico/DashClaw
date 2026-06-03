@@ -12,7 +12,7 @@ import { ConnectNextStepPanel } from './components/ConnectNextStepPanel.js';
 import { WorkflowPanel } from './components/WorkflowPanel.js';
 import { VerificationSection } from './components/VerificationSection.js';
 import { RecommendedSteps } from './components/RecommendedSteps.js';
-import { ProofPanel } from './components/ProofPanel.js';
+import { ProofPanel } from './components/ProofPanel.jsx';
 import { ApiKeyReveal } from './components/ApiKeyReveal.js';
 import ModelPricingPanel from './components/ModelPricingPanel.js';
 import GovernancePanel from './components/GovernancePanel.jsx';
