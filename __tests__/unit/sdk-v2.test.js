@@ -676,19 +676,6 @@ describe('DashClaw v2 SDK', () => {
     });
   });
 
-  // --- syncState ---
-
-  describe('syncState', () => {
-    it('POSTs to /api/sync with agent_id', async () => {
-      await claw.syncState({ decisions: [{ id: 'd1' }], lessons: [] });
-      const [url, opts] = fetch.mock.calls[0];
-      expect(url).toBe('http://localhost:3000/api/sync');
-      const body = JSON.parse(opts.body);
-      expect(body.agent_id).toBe('test-agent');
-      expect(body.decisions).toEqual([{ id: 'd1' }]);
-    });
-  });
-
   // --- Error classes ---
 
   describe('GuardBlockedError', () => {

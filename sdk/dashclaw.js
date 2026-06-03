@@ -225,7 +225,10 @@ class DashClaw {
    */
   async *_connectSSE(controller) {
     const res = await fetch(`${this.baseUrl}/api/stream`, {
-      headers: { 'x-api-key': this.apiKey },
+      headers: {
+        'x-api-key': this.apiKey,
+        ...(this.authToken ? { 'Authorization': `Bearer ${this.authToken}` } : {}),
+      },
       signal: controller.signal,
     });
 
@@ -754,20 +757,6 @@ class DashClaw {
   }
 
   // ---------------------------------------------------------------------------
-  // Bulk Sync
-  // ---------------------------------------------------------------------------
-
-  /**
-   * POST /api/sync — Bulk state sync for periodic updates or bootstrap.
-   */
-  async syncState(state) {
-    return this._request('/api/sync', 'POST', {
-      agent_id: this.agentId,
-      ...state,
-    });
-  }
-
-  // ---------------------------------------------------------------------------
   // Session Lifecycle
   // ---------------------------------------------------------------------------
 
@@ -1129,6 +1118,13 @@ class DashClaw {
    */
   async updateCapability(capabilityId, patch) {
     return this._request(`/api/capabilities/${capabilityId}`, 'PATCH', patch);
+  }
+
+  /**
+   * DELETE /api/capabilities/:id — Delete a capability.
+   */
+  async deleteCapability(capabilityId) {
+    return this._request(`/api/capabilities/${capabilityId}`, 'DELETE');
   }
 
   /**
