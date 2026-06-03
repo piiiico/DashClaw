@@ -136,40 +136,6 @@ class DashClaw:
         except Exception as e:
             raise DashClawError(f"Request failed: {str(e)}")
 
-    def _guard_check(self, action_def):
-        if self.guard_mode == "off":
-            return
-
-        context = {
-            "action_type": action_def.get("action_type"),
-            "risk_score": action_def.get("risk_score"),
-            "systems_touched": action_def.get("systems_touched"),
-            "reversible": action_def.get("reversible"),
-            "declared_goal": action_def.get("declared_goal"),
-        }
-
-        try:
-            decision = self.guard(context)
-        except Exception as e:
-            print(f"[DashClaw] Guard check failed (proceeding): {str(e)}")
-            return
-
-        if self.guard_callback:
-            try:
-                self.guard_callback(decision)
-            except:
-                pass
-
-        is_blocked = decision.get("decision") in ["block", "require_approval"]
-
-        if self.guard_mode == "warn" and is_blocked:
-            reasons = "; ".join(decision.get("reasons", [])) or "no reason"
-            print(f"[DashClaw] Guard {decision.get('decision')}: {reasons}. Proceeding in warn mode.")
-            return
-
-        if self.guard_mode == "enforce" and is_blocked:
-            raise GuardBlockedError(decision)
-
     def _is_restrictive_decision(self, decision):
         return isinstance(decision, dict) and decision.get("decision") in ["block", "require_approval"]
 
@@ -366,11 +332,14 @@ class DashClaw:
         """
         import json as _json
         url = f"{self.base_url}/api/stream"
-        req = urllib.request.Request(url, headers={
+        headers = {
             "x-api-key": self.api_key,
             "Accept": "text/event-stream",
             "Cache-Control": "no-cache",
-        })
+        }
+        if self.auth_token:
+            headers["Authorization"] = f"Bearer {self.auth_token}"
+        req = urllib.request.Request(url, headers=headers)
 
         try:
             resp = urllib.request.urlopen(req, timeout=timeout)
@@ -1384,12 +1353,6 @@ class DashClaw:
         query = urllib.parse.urlencode({k: v for k, v in filters.items() if v is not None})
         path = f"/api/activity?{query}" if query else "/api/activity"
         return self._request(path)
-
-    # --- Bulk Sync ---
-
-    def sync_state(self, state):
-        payload = {"agent_id": self.agent_id, **state}
-        return self._request("/api/sync", method="POST", body=payload)
 
     # -----------------------------------------------
     # Prompt Management

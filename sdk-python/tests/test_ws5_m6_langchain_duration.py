@@ -25,8 +25,8 @@ class RecordingClient:
         self.updated.append({"action_id": action_id, **kwargs})
         return {"ok": True}
 
-    def report_token_usage(self, payload):
-        self.tokens.append(payload)
+    def report_token_usage(self, tokens_in, tokens_out, **kwargs):
+        self.tokens.append({"tokens_in": tokens_in, "tokens_out": tokens_out, **kwargs})
         return {"ok": True}
 
 

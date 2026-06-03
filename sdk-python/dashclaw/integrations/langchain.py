@@ -106,12 +106,7 @@ class DashClawCallbackHandler(BaseCallbackHandler):
             
             # Also report to dedicated token API for aggregated stats
             if tokens_in or tokens_out:
-                self.client.report_token_usage({
-                    "tokens_in": tokens_in,
-                    "tokens_out": tokens_out,
-                    "model": model,
-                    "session_key": str(parent_run_id or run_id)
-                })
+                self.client.report_token_usage(tokens_in, tokens_out, model=model, session_key=str(parent_run_id or run_id))
 
         except Exception as e:
             print(f"[DashClaw] Failed to log LLM end: {e}")
