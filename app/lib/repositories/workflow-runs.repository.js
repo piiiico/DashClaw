@@ -162,8 +162,12 @@ export function buildResumeContext(stepResults, fromStepId = null) {
   for (const step of stepResults) {
     if (step.step_index >= resumeFromIndex) break;
     if (step.status !== 'completed') continue; // skip skipped/failed steps
+    // Steps arrive already shaped (getWorkflowRun maps rows through
+    // shapeStepResult), so the parsed output is on `output`, not the raw
+    // `output_json` column — reading output_json silently dropped every
+    // prior step's output on resume.
     priorSteps[step.step_id] = {
-      output: safeJsonParse(step.output_json),
+      output: step.output,
     };
   }
 
