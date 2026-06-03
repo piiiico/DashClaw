@@ -15,10 +15,10 @@ const MAX_INPUT_LENGTH = 5000;
  * POST /api/policies/generate
  *
  * Generate guard policies from natural language input.
- * Body: { input_text: string, dry_run?: boolean (default true) }
+ * Body: { input_text: string, dry_run?: boolean (default true), answers?: [{ id, value }] }
  *
- * dry_run=true: Returns preview of generated policies.
- * dry_run=false: Creates the policies in the database.
+ * dry_run=true: Returns { drafts, assumptions, clarifications, warnings, input_hash }.
+ * dry_run=false: Creates the drafts in the database (admin only).
  */
 export async function POST(request) {
   try {
@@ -26,7 +26,7 @@ export async function POST(request) {
     const sql = getSql();
     const body = await request.json();
 
-    const { input_text, dry_run = true } = body;
+    const { input_text, dry_run = true, answers = [] } = body;
 
     // Creating policies is an admin-only write, matching /api/policies and
     // /api/policies/import. dry_run previews stay open to any org member.
@@ -48,7 +48,7 @@ export async function POST(request) {
       );
     }
 
-    const result = await generatePolicies(sql, orgId, input_text.trim());
+    const result = await generatePolicies(sql, orgId, input_text.trim(), Array.isArray(answers) ? answers : []);
 
     if (result.error) {
       return NextResponse.json({ error: result.error }, { status: 422 });
@@ -56,15 +56,17 @@ export async function POST(request) {
 
     if (dry_run) {
       return NextResponse.json({
-        generated_policies: result.generated_policies,
+        drafts: result.drafts,
+        assumptions: result.assumptions,
+        clarifications: result.clarifications,
         warnings: result.warnings,
         input_hash: result.input_hash,
       });
     }
 
-    // dry_run=false — create the policies via repository
+    // dry_run=false — create the drafts via repository
     const createdPolicies = [];
-    for (const policy of result.generated_policies) {
+    for (const policy of result.drafts) {
       const policyId = `gp_${randomUUID().replace(/-/g, '').slice(0, 16)}`;
       await insertPolicy(sql, orgId, {
         id: policyId,
