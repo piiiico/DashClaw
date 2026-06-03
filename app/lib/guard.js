@@ -544,11 +544,11 @@ export async function evaluatePolicy(policy, rules, context, sql, orgId, effecti
     }
 
     case 'protected_path': {
-      // Behavior Learning protected-path gate. Matches the action's target path
-      // (and any write_paths a caller provides) against the policy's globs using
-      // the same matcher the Policy Coach simulates with, so enforcement and
-      // simulation agree. `target` is the only path field that survives guard
-      // input validation today (see GUARD_INPUT_SCHEMA).
+      // Behavior Learning protected-path gate. Matches the action's target path and
+      // any write_paths a caller provides against the policy's globs using the same
+      // matcher the Policy Coach simulates with, so enforcement and simulation agree.
+      // Both `target` and `write_paths` now survive guard input validation (see
+      // GUARD_INPUT_SCHEMA).
       const paths = Array.isArray(rules.paths) ? rules.paths : [];
       if (paths.length === 0) return null;
       const candidates = [];
