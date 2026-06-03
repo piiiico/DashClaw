@@ -59,6 +59,15 @@ describe('GET /api/analytics', () => {
     expect(mockGetAnalytics).toHaveBeenCalledWith(expect.anything(), 'org_test', 365);
   });
 
+  it('falls back to 30 days when days is non-numeric (no NaN reaches the repository)', async () => {
+    mockGetAnalytics.mockResolvedValueOnce({ period: {}, hero: {}, daily: [], by_agent: [], by_action_type: [], policy_enforcement: {}, tokens: {} });
+
+    const res = await GET(getReq('?days=abc'));
+
+    expect(res.status).toBe(200);
+    expect(mockGetAnalytics).toHaveBeenCalledWith(expect.anything(), 'org_test', 30);
+  });
+
   it('returns 500 on error', async () => {
     mockGetAnalytics.mockRejectedValueOnce(new Error('DB down'));
 

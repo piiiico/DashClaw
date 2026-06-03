@@ -13,6 +13,17 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const period = searchParams.get('period') || getCurrentPeriod();
 
+    // Reject malformed periods before they reach the date math / SQL. An
+    // unvalidated `?period` (e.g. "garbage") produces NaN year/month and a
+    // bogus timestamp literal that Postgres rejects with an opaque 500; a
+    // YYYY-MM check turns that into a clear 400.
+    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(period)) {
+      return NextResponse.json(
+        { error: 'Invalid period. Expected YYYY-MM (e.g. 2026-06).', code: 'INVALID_PERIOD' },
+        { status: 400 },
+      );
+    }
+
     const periodStart = `${period}-01T00:00:00Z`;
     const [year, month] = period.split('-').map(Number);
     const nextMonth = month === 12 ? `${year + 1}-01` : `${year}-${String(month + 1).padStart(2, '0')}`;
