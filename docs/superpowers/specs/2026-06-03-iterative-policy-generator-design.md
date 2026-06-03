@@ -70,9 +70,13 @@ the generator can't currently emit. Each schema must match what `evaluateGuard`
 - `protected_path`: `{ "paths": ["glob", …], "action": "block"|"warn"|"require_approval" }`
   (engine: `guard.js` `case 'protected_path'`, matches `rules.paths` against
   `context.target` / `context.write_paths`; default action `require_approval`).
-- `semantic_check`, `behavioral_anomaly`, `webhook_check` — add with schemas matching
-  their `guard.js` cases.
-- Keep the existing 7. (`non_fabrication` intentionally excluded — see Non-goals.)
+- `semantic_check`: `{ "instruction": "…", "action": "block"|"warn"|"require_approval" }`
+  (engine reads `rules.instruction`; optional `model`/`fallback` keep defaults).
+- `behavioral_anomaly`: `{ "similarity_threshold": <0-1, default 0.75>, "min_history":
+  <int, default 5>, "action": "warn"|"block"|"require_approval" }`.
+- Keep the existing 7. **Excluded** (need structured config that doesn't map from a
+  sentence): `webhook_check` (requires an external webhook URL) and `non_fabrication`
+  (requires a structured source-of-truth).
 
 **New LLM output contract.** Replace "return `[]` when unclear" with a structured
 object the model must always populate:
