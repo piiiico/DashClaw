@@ -220,7 +220,7 @@ The signing key is the DashClaw instance's own Ed25519 key — generated and sto
 
 ## Minimal SDK Flow
 
-The canonical Node SDK is `dashclaw` on npm. The app currently depends on SDK package `2.11.1`, and the canonical SDK file `sdk/dashclaw.js` exposes 92 public methods across the core runtime and extension surfaces.
+The canonical Node SDK is `dashclaw` on npm (version tracked in `sdk/package.json`). The canonical SDK file `sdk/dashclaw.js` exposes 107 public methods across the core runtime and extension surfaces (verify with `npm run sdk:count`).
 
 The minimal governance loop uses only a small subset:
 

@@ -39,7 +39,7 @@ async function sendViaSendGrid(signals, creds) {
     },
     body: JSON.stringify({
       personalizations: [{ to: [{ email: to }] }],
-      from: { email: creds.SENDGRID_FROM_EMAIL || 'alerts@dashclaw.com' },
+      from: { email: creds.SENDGRID_FROM_EMAIL || 'alerts@dashclaw.io' },
       subject: `[DashClaw] ${signals.length} signal${signals.length > 1 ? 's' : ''} — ${redCount} critical, ${amberCount} amber`,
       content: [{
         type: 'text/plain',

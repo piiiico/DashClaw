@@ -25,7 +25,7 @@ Generated inventories remain authoritative for generated facts:
 | SDK parity by domain | `docs/sdk-parity.md` |
 | Durable execution finality spec | `docs/architecture/durable-execution-finality.md` |
 
-As of this verification, generated API inventory reports **270 routes**: **46 stable**, **24 beta**, **200 experimental**.
+As of this verification, generated API inventory reports **271 routes**: **46 stable**, **24 beta**, **201 experimental**.
 
 ## Product boundary
 
@@ -205,7 +205,7 @@ DashClaw ships two Node SDK entry points and a Python SDK.
 
 | Surface | Entry point | Version or role |
 |:---|:---|:---|
-| Canonical Node SDK | `import { DashClaw } from 'dashclaw'` from `sdk/dashclaw.js` | npm package `dashclaw` version `2.13.1`; primary SDK for new work. |
+| Canonical Node SDK | `import { DashClaw } from 'dashclaw'` from `sdk/dashclaw.js` | npm package `dashclaw`; primary SDK for new work (version tracked in `sdk/package.json`). |
 | Legacy Node SDK | `import { DashClaw } from 'dashclaw/legacy'` from `sdk/legacy/dashclaw-v1.js` | Compatibility layer for older integrations. |
 | Python SDK | `sdk-python/dashclaw/client.py` | Broad Python surface with route-contract parity for critical domains. |
 

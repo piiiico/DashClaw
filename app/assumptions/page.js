@@ -21,7 +21,7 @@ const STATUS_CONFIG = {
 };
 
 export default function AssumptionsPage() {
-  const { selectedAgentId } = useAgentFilter();
+  const { agentId: selectedAgentId } = useAgentFilter();
   const [assumptions, setAssumptions] = useState([]);
   const [total, setTotal] = useState(0);
   const [driftSummary, setDriftSummary] = useState(null);

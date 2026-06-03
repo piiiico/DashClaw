@@ -27,7 +27,8 @@ export async function GET(request) {
       ORDER BY created_at DESC
     `;
 
-    // Mask secrets: show only last 4 chars
+    // Mask secrets: reveal 4 chars (6th-through-3rd from the end), keeping the
+    // final 2 hidden so the full suffix is never exposed.
     const masked = webhooks.map(wh => ({
       ...wh,
       secret: wh.secret ? `${'•'.repeat(28)}${wh.secret.slice(-6, -2)}` : null,

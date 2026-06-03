@@ -25,14 +25,14 @@ v2 hooks classify every Claude Code tool into a semantic category and govern bas
 | `execution` | Bash, BashBackground |
 | `orchestration` | Agent, Skill, TodoWrite |
 | `file_io` | Edit, Write, MultiEdit, NotebookEdit |
-| `interactive` | WebFetch, RemoteTrigger |
+| `interactive` | AskUserQuestion, SendUserMessage, SendMessage |
 | `mcp` | Any `mcp__*` tool call |
 
 **Default ungoverned categories:**
 
 | Category | Example tools |
 |---|---|
-| `search` | Read, Glob, Grep |
+| `search` | Read, Glob, Grep, WebFetch, WebSearch |
 | `system` | EnterPlanMode, ExitPlanMode, Config, Sleep |
 
 Configure which categories are governed via the `DASHCLAW_GOVERNED_CATEGORIES` environment variable (comma-separated list). Unknown tools that do not match any category fail-safe to governed.
@@ -106,7 +106,7 @@ node scripts/install-hooks.mjs
 node /path/to/DashClaw/scripts/install-hooks.mjs --target=.
 ```
 
-This copies all three hook scripts (`dashclaw_pretool.py`, `dashclaw_posttool.py`, `dashclaw_stop.py`) and the vendored `dashclaw_agent_intel/` Python module into `.claude/hooks/`, then merges the matching `PreToolUse` / `PostToolUse` / `Stop` entries into `.claude/settings.json`. Re-run after `git pull` to refresh.
+This copies all four hook scripts (`dashclaw_pretool.py`, `dashclaw_posttool.py`, `dashclaw_stop.py`, and the opt-in `dashclaw_code_session_reporter.py`) and the vendored `dashclaw_agent_intel/` Python module into `.claude/hooks/`, then merges the matching `PreToolUse` / `PostToolUse` / `Stop` entries into `.claude/settings.json`. Re-run after `git pull` to refresh.
 
 ### Global capture across every project (capture-only)
 
@@ -127,6 +127,7 @@ mkdir -p .claude/hooks
 cp hooks/dashclaw_pretool.py .claude/hooks/
 cp hooks/dashclaw_posttool.py .claude/hooks/
 cp hooks/dashclaw_stop.py    .claude/hooks/
+cp hooks/dashclaw_code_session_reporter.py .claude/hooks/   # opt-in: Code Sessions (DASHCLAW_CODE_SESSIONS_ENABLED=1)
 cp -r hooks/dashclaw_agent_intel .claude/hooks/
 ```
 
@@ -265,14 +266,14 @@ All tools in governed categories are evaluated against DashClaw policies. With t
 - **execution**: Bash, BashBackground. Shell commands are enriched with bash intent classification. Git operations, deployments, infrastructure commands, destructive operations, and HTTP calls get elevated risk scores.
 - **file_io**: Edit, Write, MultiEdit, NotebookEdit. File operations are enriched with security scan results. Sensitive files (`.env`, secrets, credentials), migrations, infrastructure configs, and auth-related files get elevated risk scores.
 - **orchestration**: Agent (plus the legacy `Task` alias), Skill, TodoWrite. The `Agent`/`Task` spawn tools **are** in the shipped matcher, so sub-agent spawns are governed and recorded as `orchestration` actions (see "Sub-agent governance & tracking"). `Skill`/`TodoWrite` are classified but not in the default matcher — add them if you want them intercepted.
-- **interactive**: WebFetch, RemoteTrigger. Network-facing interactive tools are governed by default.
+- **interactive**: AskUserQuestion, SendUserMessage, SendMessage. Prompt/interaction tools are governed by default.
 - **mcp**: Any `mcp__*` tool call. Enriched with server health signals. `mcp__*` is in the shipped matcher, so MCP tool calls **are** intercepted by the `PreToolUse` hook before execution (connected-MCP actions like Gmail/Stripe/Calendar sends). The DashClaw MCP server remains the governance path for hosts that don't run Claude Code hooks.
 
 Unknown tools that do not match any configured category fail-safe to governed.
 
 ## What does not get governed
 
-- Tools in ungoverned categories: **search** (Read, Glob, Grep) and **system** (EnterPlanMode, ExitPlanMode, Config, Sleep) pass through without evaluation by default.
+- Tools in ungoverned categories: **search** (Read, Glob, Grep, WebFetch, WebSearch) and **system** (EnterPlanMode, ExitPlanMode, Config, Sleep) pass through without evaluation by default.
 - Any tool call when `DASHCLAW_BASE_URL` or `DASHCLAW_API_KEY` is not set.
 
 Configured but unreachable behavior is controlled by `DASHCLAW_GUARD_UNAVAILABLE_POLICY` (see Failure safety above). With the default `block` policy, unreachable means the tool call is denied, not waived.

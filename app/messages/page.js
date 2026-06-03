@@ -61,7 +61,10 @@ export default function MessagesPage() {
   const fetchDocs = useCallback(async () => {
     const params = new URLSearchParams({ limit: '20' });
     const res = await fetch(`/api/messages/docs?${params}`);
-    if (!res.ok) throw new Error('Failed to fetch docs');
+    // Fail-soft: the docs surface is optional. A non-ok response (e.g. the
+    // route is not present on this instance) must not block the inbox/threads
+    // render via the shared Promise.all below.
+    if (!res.ok) return { docs: [], total: 0 };
     return res.json();
   }, []);
 

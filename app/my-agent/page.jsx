@@ -80,7 +80,7 @@ export default function MyAgentPage() {
       const actionsJson = await actionsRes.json();
       const guardJson = await guardRes.json();
       setActions(actionsJson.actions || []);
-      setGuardDecisions(guardJson.evaluations || []);
+      setGuardDecisions(guardJson.decisions || []);
     } catch (err) {
       console.warn('[my-agent] fetch failed:', err?.message || err);
     } finally {

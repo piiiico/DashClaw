@@ -174,7 +174,7 @@ export async function POST(request, { params }) {
           success: false,
           error: 'pending_approval',
           action_id,
-          message: `Invocation requires human approval. Poll /api/approvals/${action_id} for status.`,
+          message: `Invocation requires human approval. Poll GET /api/actions/${action_id} for status.`,
         },
         { status: 202 },
       );
@@ -243,7 +243,7 @@ export async function POST(request, { params }) {
           success: false,
           error: 'pending_approval',
           action_id,
-          message: `Invocation requires human approval. Poll /api/approvals/${action_id} for status.`,
+          message: `Invocation requires human approval. Poll GET /api/actions/${action_id} for status.`,
           reason: accessResult.rule?.reason || null,
         },
         { status: 202 },

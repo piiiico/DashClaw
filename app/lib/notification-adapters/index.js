@@ -3,6 +3,7 @@ import { discordAdapter } from './discord.js';
 import { linearAdapter } from './linear.js';
 import { githubAdapter } from './github.js';
 import { emailAdapter } from './email.js';
+import { decrypt } from '../encryption.js';
 
 export const ADAPTERS = [
   slackAdapter,
@@ -17,8 +18,19 @@ export const ADAPTERS = [
  * @returns {{ provider: string, success: boolean, message: string }[]}
  */
 export async function deliverNativeNotifications(orgId, signals, settings, sql) {
+  // Settings rows are stored raw (encrypted values are ciphertext); decrypt
+  // sensitive values before handing them to adapters, mirroring the read-site
+  // decryption in integration-health.js / GET /api/settings. Non-encrypted
+  // rows pass through unchanged.
   const creds = {};
-  for (const s of settings) creds[s.key] = s.value;
+  for (const s of settings) {
+    let val = s.value;
+    if (s.encrypted && val) {
+      const decrypted = decrypt(val, `${orgId}:${s.key}`);
+      if (decrypted) val = decrypted;
+    }
+    creds[s.key] = val;
+  }
 
   const results = [];
   for (const adapter of ADAPTERS) {

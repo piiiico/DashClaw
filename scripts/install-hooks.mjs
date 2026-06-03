@@ -309,8 +309,11 @@ function main() {
 
   ensureDir(hooksDest);
 
-  // Copy the three Python hook scripts.
-  for (const name of ['dashclaw_pretool.py', 'dashclaw_posttool.py', 'dashclaw_stop.py']) {
+  // Copy the Python hook scripts. The code-session reporter is lazily imported
+  // by dashclaw_stop.py when DASHCLAW_CODE_SESSIONS_ENABLED=1; copy it
+  // unconditionally (it is a runtime no-op when the feature is off) so the
+  // Code Sessions feature doesn't silently break after a local install.
+  for (const name of ['dashclaw_pretool.py', 'dashclaw_posttool.py', 'dashclaw_stop.py', 'dashclaw_code_session_reporter.py']) {
     const src = join(HOOKS_SRC, name);
     if (!existsSync(src)) {
       console.error(`✗ Missing hook script: ${src}`);

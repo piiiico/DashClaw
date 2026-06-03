@@ -856,7 +856,7 @@ export default function DecisionReplayPage() {
                     <div className="my-4 border-t border-success/20" />
                     <div className="text-success font-bold mt-4">VERIFIABLE_SIGNATURE:</div>
                     <div className="break-all mt-1 opacity-60">
-                      dc_sig_v1_{Buffer.from(JSON.stringify({ id: actionId, status: action.status, salt: Math.random() })).toString('base64').substring(0, 128)}
+                      dc_sig_v1_{btoa(JSON.stringify({ id: actionId, status: action.status, salt: Math.random() })).substring(0, 128)}
                     </div>
                   </div>
                 </CardContent>

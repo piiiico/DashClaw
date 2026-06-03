@@ -84,7 +84,9 @@ function stubFetch({ actions = [], evaluations = [] } = {}) {
       return { ok: true, status: 200, json: async () => ({ actions }) };
     }
     if (u.startsWith('/api/guard')) {
-      return { ok: true, status: 200, json: async () => ({ evaluations }) };
+      // GET /api/guard returns { decisions: [...] } (see listGuardDecisions);
+      // the stub's `evaluations` arg is the list of guard decisions to return.
+      return { ok: true, status: 200, json: async () => ({ decisions: evaluations }) };
     }
     if (u === '/api/session/effective') {
       return {

@@ -11,7 +11,7 @@ export async function PATCH(request, { params }) {
     const sql = getSql();
     const orgId = getOrgId(request);
     const role = getOrgRole(request);
-    const { scorerId } = params;
+    const { scorerId } = await params;
 
     if (role !== 'admin' && role !== 'owner') {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
@@ -43,7 +43,7 @@ export async function DELETE(request, { params }) {
     const sql = getSql();
     const orgId = getOrgId(request);
     const role = getOrgRole(request);
-    const { scorerId } = params;
+    const { scorerId } = await params;
 
     if (role !== 'admin' && role !== 'owner') {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });

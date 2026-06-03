@@ -128,7 +128,7 @@ Response:
 
 ### Cron sweep
 
-A new endpoint `/api/cron/outcome-sweep` runs **daily** via the existing Vercel cron mechanism on the Hobby (free) tier. Operators who want a tighter loop can register hourly cadence externally (GitHub Actions, system cron) hitting the same endpoint with `Authorization: Bearer $CRON_SECRET` — or, on Vercel Pro, change `vercel.json` to `0 * * * *`. Daily is a conscious tradeoff to stay $0 to deploy; the per-row gate still enforces idempotency, so a slower sweep does not weaken correctness, it only delays surfacing of `lost_confirmation` for stale rows.
+A new endpoint `/api/cron/outcome-sweep` is swept every 15 minutes by the GitHub Actions workflow `.github/workflows/outcome-sweep.yml` (cron `*/15 * * * *`), which hits the endpoint with `Authorization: Bearer $CRON_SECRET`. GitHub Actions — not Vercel cron — is the scheduler, because the project targets the Vercel Hobby (free) tier, which does not run scheduled functions; `vercel.json` therefore has no `crons` key. Operators on Vercel Pro could instead add a `crons` entry to `vercel.json`, and free-tier instances can also trigger the sweep manually from the admin UI. The per-row gate enforces idempotency, so cadence affects only how quickly `lost_confirmation` surfaces for stale rows, never correctness.
 
 ```sql
 UPDATE action_records

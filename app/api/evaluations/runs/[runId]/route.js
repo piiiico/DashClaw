@@ -13,7 +13,7 @@ export async function GET(request, { params }) {
   try {
     const sql = getSql();
     const orgId = getOrgId(request);
-    const { runId } = params;
+    const { runId } = await params;
 
     const result = await getEvalRun(sql, orgId, runId);
 
@@ -32,7 +32,7 @@ export async function PATCH(request, { params }) {
   try {
     const sql = getSql();
     const orgId = getOrgId(request);
-    const { runId } = params;
+    const { runId } = await params;
     const body = await request.json();
 
     if (body.status) {
