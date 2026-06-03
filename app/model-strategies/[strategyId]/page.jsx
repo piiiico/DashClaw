@@ -11,6 +11,7 @@ import ModelStrategyExecutionSection from '../components/ModelStrategyExecutionS
 import ModelStrategyConstraintsSection from '../components/ModelStrategyConstraintsSection';
 import ModelStrategySummaryCard from '../components/ModelStrategySummaryCard';
 import ModelStrategyAdvancedSection from '../components/ModelStrategyAdvancedSection';
+import ModelStrategyTestPanel from '../components/ModelStrategyTestPanel';
 import {
   buildModelStrategySummary,
   compileModelStrategyConfig,
@@ -229,6 +230,8 @@ export default function ModelStrategyDetailPage() {
             }))
           }
         />
+
+        <ModelStrategyTestPanel strategyId={strategyId} />
       </div>
     </PageLayout>
   );
