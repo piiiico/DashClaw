@@ -29,7 +29,8 @@ export default function ModelStrategyTestPanel({ strategyId }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: [{ role: 'user', content: message }],
-          max_tokens: Number(maxTokens) || undefined,
+          // Only send a positive budget; otherwise let the route default apply.
+          max_tokens: Number(maxTokens) > 0 ? Number(maxTokens) : undefined,
           temperature: Number(temperature),
         }),
       });
@@ -82,6 +83,7 @@ export default function ModelStrategyTestPanel({ strategyId }) {
           <input
             id="ms-test-max"
             type="number"
+            min="1"
             value={maxTokens}
             onChange={e => setMaxTokens(e.target.value)}
             className="w-24 rounded-lg border border-border bg-surface-tertiary px-2.5 py-1.5 text-xs text-secondary focus:border-brand/50 focus:outline-none"
