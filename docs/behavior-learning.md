@@ -33,25 +33,48 @@ Policy Coach UI  →  Simulate (replay over samples)  →  Adopt (inactive draft
 
 ## Setup
 
-The recorder is **opt-in**. In your hook environment (the `.env` / `.env.local` the
-hooks already read), set:
+The recorder is **opt-in**. Enable it in whichever environment your hooks read — two options:
+
+**A) Claude Code `settings.json`** (`~/.claude/settings.json`, or a project's `.claude/settings.local.json`) — set it in the `env` block, where values are JSON **strings**:
+
+```json
+"env": {
+  "DASHCLAW_BEHAVIOR_SAMPLES_ENABLED": "1"
+}
+```
+
+**B) The repo's `.env` / `.env.local`** (loaded by the hooks via their dotenv walk) — `.env` files use the `KEY=value` form, unquoted:
 
 ```
 DASHCLAW_BEHAVIOR_SAMPLES_ENABLED=1
 ```
 
-Optionally override the output directory (defaults to `<workspace>/.dashclaw/behavior-samples`):
+The recorder accepts `1`, `true`, or `yes` (case-insensitive). Use the quoted-string form **only** inside JSON (`settings.json`); use the bare `KEY=1` form **only** inside `.env` files — never mix them.
+
+Then use Claude Code normally — samples accumulate locally. Suggestions appear once an agent has at least **8 samples** (configurable) and a pattern repeats at least **3 times**. Watch progress with `dashclaw behavior status` or `/policy-coach`.
+
+> Behavior Learning needs **no LLM key** — and no `DASHCLAW_BASE_URL` / `DASHCLAW_API_KEY`. Recording is local-only and writes even when the guard API is unreachable; the analyzer is deterministic and never calls a model.
+
+### Where samples land vs. where the Policy Coach reads them (important)
+
+By default the recorder writes to **`<cwd>/.dashclaw/behavior-samples/`** — the directory Claude Code is running in — while the Policy Coach UI reads from **the DashClaw app's own cwd**. So:
+
+- **Dogfooding on the DashClaw repo itself** (Claude Code's cwd *is* the DashClaw checkout): the two line up automatically — nothing else to do.
+- **Capturing other projects** and viewing them in one Policy Coach: point both the recorder *and* the server at the same absolute directory via `DASHCLAW_BEHAVIOR_SAMPLES_DIR` — set it in the hook env (`settings.json`) **and** in the DashClaw server's `.env.local`:
+
+```json
+"env": {
+  "DASHCLAW_BEHAVIOR_SAMPLES_ENABLED": "1",
+  "DASHCLAW_BEHAVIOR_SAMPLES_DIR": "C:/Users/you/.dashclaw/behavior-samples"
+}
+```
 
 ```
-DASHCLAW_BEHAVIOR_SAMPLES_DIR=/absolute/path/to/behavior-samples
+# DashClaw server .env.local
+DASHCLAW_BEHAVIOR_SAMPLES_DIR=C:/Users/you/.dashclaw/behavior-samples
 ```
 
-Then use Claude Code normally. Samples accumulate locally. Open `/policy-coach` (or run
-`dashclaw behavior status`) to watch them build up. Suggestions appear once an agent has
-at least **8 samples** (configurable) and a pattern repeats at least **3 times**.
-
-> Behavior Learning needs **no LLM key**. The analyzer is deterministic; the
-> governance runtime does not call models.
+`.dashclaw/` is gitignored — sample data stays local and is never committed.
 
 ## Privacy model & guarantees
 
