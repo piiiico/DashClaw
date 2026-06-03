@@ -18,28 +18,44 @@ const TYPE_LABELS = {
   prompt: 'Prompt',
 };
 
-export default function WorkflowRunStepCard({ step }) {
+export default function WorkflowRunStepCard({ step, runStatus, onResumeFromStep }) {
   const [expanded, setExpanded] = useState(step.status === 'failed');
   const config = STATUS_CONFIG[step.status] || STATUS_CONFIG.pending;
   const Icon = config.icon;
+  const canResume =
+    runStatus === 'failed' &&
+    step.status !== 'completed' &&
+    Boolean(step.step_id) &&
+    typeof onResumeFromStep === 'function';
 
   return (
     <div className={`rounded-lg border border-[rgba(255,255,255,0.06)] ${config.bg}`}>
-      <button
-        onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center gap-3 px-4 py-3 text-left"
-      >
-        <Icon className={`w-4 h-4 ${config.color} flex-shrink-0`} />
-        <span className="font-medium text-sm text-secondary flex-1">{step.step_name}</span>
-        <span className="text-[10px] font-mono text-tertiary uppercase">{TYPE_LABELS[step.step_type] || step.step_type}</span>
-        {step.retry_count > 0 && (
-          <span className="text-[10px] font-mono text-warning">{step.retry_count + 1} attempts</span>
+      <div className="flex items-center">
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="flex flex-1 items-center gap-3 px-4 py-3 text-left"
+        >
+          <Icon className={`w-4 h-4 ${config.color} flex-shrink-0`} />
+          <span className="font-medium text-sm text-secondary flex-1">{step.step_name}</span>
+          <span className="text-[10px] font-mono text-tertiary uppercase">{TYPE_LABELS[step.step_type] || step.step_type}</span>
+          {step.retry_count > 0 && (
+            <span className="text-[10px] font-mono text-warning">{step.retry_count + 1} attempts</span>
+          )}
+          {step.duration_ms != null && (
+            <span className="text-xs font-mono text-tertiary">{(step.duration_ms / 1000).toFixed(1)}s</span>
+          )}
+          {expanded ? <ChevronDown className="w-3 h-3 text-tertiary" /> : <ChevronRight className="w-3 h-3 text-tertiary" />}
+        </button>
+        {canResume && (
+          <button
+            onClick={() => onResumeFromStep(step.step_id)}
+            title="Resume from this step and reuse prior completed steps"
+            className="mr-2 flex items-center gap-1 rounded-lg border border-brand/20 bg-brand/10 px-2.5 py-1 text-[11px] font-medium text-brand transition-colors hover:bg-brand/20"
+          >
+            <RotateCcw className="w-3 h-3" /> Resume from here
+          </button>
         )}
-        {step.duration_ms != null && (
-          <span className="text-xs font-mono text-tertiary">{(step.duration_ms / 1000).toFixed(1)}s</span>
-        )}
-        {expanded ? <ChevronDown className="w-3 h-3 text-tertiary" /> : <ChevronRight className="w-3 h-3 text-tertiary" />}
-      </button>
+      </div>
 
       {expanded && (
         <div className="px-4 pb-4 space-y-3 border-t border-[rgba(255,255,255,0.04)]">

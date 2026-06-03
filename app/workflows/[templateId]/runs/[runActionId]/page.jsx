@@ -71,13 +71,16 @@ export default function WorkflowRunDetailPage() {
     }
   }
 
-  async function handleResume() {
+  async function handleResume(stepId) {
+    // The header's Resume button passes a click event; only a string is a
+    // real step_id (the per-step "Resume from here" affordance).
+    const fromStep = typeof stepId === 'string' ? stepId : null;
     setResuming(true);
     try {
       const res = await fetch(`/api/workflows/templates/${templateId}/runs/${runActionId}/resume`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
+        body: JSON.stringify(fromStep ? { from_step: fromStep } : {}),
       });
       if (res.ok) {
         const data = await res.json();
@@ -133,7 +136,7 @@ export default function WorkflowRunDetailPage() {
         <WorkflowRunHeader run={run} templateId={templateId} onResume={handleResume} resuming={resuming} onCancel={handleCancel} cancelling={cancelling} />
         <div>
           <h2 className="text-sm font-medium text-secondary mb-3">Steps</h2>
-          <WorkflowRunTimeline steps={run.steps} />
+          <WorkflowRunTimeline steps={run.steps} runStatus={run.status} onResumeFromStep={handleResume} />
         </div>
         <div>
           <h2 className="text-sm font-medium text-secondary mb-3">Artifacts</h2>
