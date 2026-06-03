@@ -1525,8 +1525,6 @@ export const config = {
     '/activity/:path*',
     '/webhooks',
     '/webhooks/:path*',
-    '/notifications',
-    '/notifications/:path*',
     '/messages',
     '/messages/:path*',
     '/workspace',
