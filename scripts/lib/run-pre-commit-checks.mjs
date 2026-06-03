@@ -63,6 +63,15 @@ const STEPS = [
     failHook: true,
   },
   {
+    // Enforce ONE DashClaw version across the platform + both SDK manifests
+    // (package.json, sdk/package.json, sdk-python/pyproject.toml). Bump them
+    // together with `npm run version:set <x.y.z>`.
+    id: 'version-sync',
+    label: 'Check platform + SDK version sync',
+    command: [process.execPath, 'scripts/check-version-sync.mjs'],
+    failHook: true,
+  },
+  {
     id: 'contracts-check',
     label: 'Run contracts check (warn-only)',
     command: [process.execPath, 'scripts/check-contracts.mjs', '--mode=warn'],

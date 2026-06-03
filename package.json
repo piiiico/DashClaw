@@ -1,6 +1,6 @@
 {
   "name": "dashclaw-platform",
-  "version": "2.19.0",
+  "version": "4.0.0",
   "description": "Decision infrastructure for AI agents — governance runtime with policy enforcement, decision recording, and human-in-the-loop approval.",
   "private": true,
   "license": "MIT",
@@ -31,6 +31,8 @@
     "route-sql:baseline:generate": "node scripts/generate-route-sql-baseline.mjs",
     "route-sql:check": "node scripts/check-route-sql-guard.mjs",
     "version:check": "node scripts/check-version-hardcodes.mjs",
+    "version:sync:check": "node scripts/check-version-sync.mjs",
+    "version:set": "node scripts/set-version.mjs",
     "sdk:count": "node scripts/count-sdk-methods.mjs",
     "pricing:refresh": "node scripts/refresh-model-pricing.mjs",
     "pricing:refresh:apply": "node scripts/refresh-model-pricing.mjs --apply",

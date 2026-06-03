@@ -46,6 +46,9 @@ jobs:
       - name: Check version-string drift in user-facing code
         run: npm run version:check
 
+      - name: Check platform + SDK version sync
+        run: npm run version:sync:check
+
       - name: Check contract convergence
         run: npm run contracts:check
 

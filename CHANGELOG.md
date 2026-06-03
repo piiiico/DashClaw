@@ -5,29 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Two version tracks
+## Versioning
 
-DashClaw ships two independently versioned artifacts from this repo:
+As of **4.0.0**, DashClaw uses **one version across the platform and both SDKs**. The Next.js app (`package.json`), the npm SDK (`sdk/package.json`), and the PyPI SDK (`sdk-python/pyproject.toml`) always share the same version — enforced by `npm run version:sync:check` in CI and the pre-commit hook. Bump all three together with `npm run version:set <x.y.z>`; every release ships the platform deploy and (re)publishes both SDK packages at that number.
 
-- **Platform** — the Next.js app, API routes, dashboard, and supporting
-  libraries. Current: **2.19.0**. This is the version of the DashClaw instance
-  you deploy to Vercel. Governance features, UI changes, new API routes, and
-  database migrations land on this track.
-- **SDK** — the `dashclaw` npm package published from `sdk/` and the
-  `dashclaw` PyPI package published from `sdk-python/`. Current:
-  **Node 4.0.0** / **Python 4.0.0**.
-  This is what agents install with `npm install dashclaw` or `pip install dashclaw`.
-  Entries on this track are prefixed `## SDK [x.y.z]` so they don't
-  visually collide with platform entries.
+Through 3.x the platform and the SDKs versioned independently, which is why older entries below carry separate platform `[2.x]` numbers and `### SDK [3.0.0]`-style numbers, listed newest-first by release date. The `dashclaw` plugin bundle and CLI keep their own manifest versions and are prefixed with the package name.
 
-Entries are listed newest-first by **release date**, not by version number,
-which is why SDK 2.11.1 (2026-04-11) appears above platform 2.13.1
-(2026-04-10). The two tracks move at different cadences on purpose — SDK
-releases only ship client changes, platform releases can ship anything.
-Plugin and tooling entries (e.g. `@dashclaw/openclaw-plugin`, `@dashclaw/cli`)
-are prefixed with the package name.
+## [4.0.0] — 2026-06-03
 
-## [2.19.0] — 2026-06-03
+> First release on the unified version line — the platform jumps from 2.19.0 to **4.0.0** to align with the SDK; from here the platform and both SDKs move together.
 
 ### Retired the archived "Context" surface (key points + threads)
 
@@ -58,14 +44,14 @@ A passive learning loop that records real, **redacted, local-only** Claude Code 
 - **Added — surfaces.** CLI `dashclaw behavior status|suggestions`; MCP tool `dashclaw_behavior_suggestions` (read-only).
 - **Storage.** Local files only (samples + dismissals); **no database migration**. The only DB write is the inactive policy draft on adopt.
 
-### SDK [4.0.0] — 2026-06-03 — BREAKING: removed the archived context namespace (threads + key points)
+### SDK — BREAKING: removed the archived context namespace (threads + key points)
 
 Continues the dead-archived-endpoint cleanup behind SDK 3.0.0. The `/api/context/*` namespace lives only under `app/api/_archive/` (no `next.config` rewrite; the `context_threads` table was never created), so every wrapped call always 404'd. Removed as a **breaking** change; both SDKs ship as a **major** — **Node 4.0.0** (npm) and **Python 4.0.0** (PyPI).
 
 - **Removed (Node, 107 → 104).** Context-thread methods `createThread`, `addThreadEntry`, `closeThread` (`/api/context/threads*`). Canonical public-method count **107 → 104**. (Removed in source by `bbbb517b`; 4.0.0 is the release that publishes and documents it.)
 - **Removed (Python, 211 → 204).** Context-thread methods `create_thread`, `add_thread_entry`, `close_thread`, `get_threads` (211 → 207, also `bbbb517b`), plus the key-point methods `capture_key_point`, `get_key_points`, `get_context_summary` (`/api/context/points`) — 207 → **204**.
 - **Unchanged.** The legacy Node SDK (`dashclaw/legacy`) keeps its frozen context shims (points + threads).
-- **Release sequencing.** The root `package.json` self-dependency (`dashclaw`) stays at `^3.0.0` until 4.0.0 is published to npm; bumping it before publish would desync `package-lock.json` (registry-pinned 3.0.0) and break `npm ci`.
+- **Versioning.** From 4.0.0 the platform and both SDKs share one version, enforced by `npm run version:sync:check`; the root `package.json` self-dependency tracks the published SDK.
 
 ### SDK [3.0.0] — 2026-06-02 — BREAKING: removed methods that targeted archived endpoints
 
