@@ -94,7 +94,7 @@ export default function CustomTab() {
   const [genAssumptions, setGenAssumptions] = useState([]);
   const [genClarifications, setGenClarifications] = useState([]);
   const [genAnswers, setGenAnswers] = useState({}); // { [id]: string|string[] }
-  const [genAgents, setGenAgents] = useState([]);
+  const [genWarnings, setGenWarnings] = useState([]);
 
   // Row actions
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
@@ -129,14 +129,6 @@ export default function CustomTab() {
       .then(r => (r.ok ? r.json() : { templates: [] }))
       .then(d => setTemplates(d.templates || []))
       .catch(() => { /* fall back to static previews */ });
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetch('/api/agents').then((r) => (r.ok ? r.json() : { agents: [] }))
-      .then((d) => { if (!cancelled) setGenAgents(d.agents || []); })
-      .catch(() => { if (!cancelled) setGenAgents([]); });
-    return () => { cancelled = true; };
   }, []);
 
   const filtered = policies.filter(p => {
@@ -293,10 +285,15 @@ export default function CustomTab() {
       const data = await res.json();
       if (!res.ok) { setGenError(data.error || 'Failed to generate policy drafts'); return; }
       const drafts = normalizeGeneratedPolicyDrafts(data.drafts || []);
+      const clarifications = data.clarifications || [];
       setGenDrafts(drafts);
       setGenAssumptions(data.assumptions || []);
-      setGenClarifications(data.clarifications || []);
+      setGenClarifications(clarifications);
+      setGenWarnings(data.warnings || []);
       setGenDraftForm(drafts.length ? JSON.parse(JSON.stringify(drafts[0].formState)) : null);
+      if (!drafts.length && !clarifications.length) {
+        setGenError("DashClaw couldn't draft a policy or a follow-up. Try describing the action, risk, or paths to protect.");
+      }
     } catch (err) {
       setGenError(err.message);
     } finally {
@@ -327,7 +324,7 @@ export default function CustomTab() {
       const data = await res.json();
       if (!res.ok) { setGenError(data.error || 'Failed to create policy'); return; }
       setGenSuccess(`Created policy "${payload.name}".`);
-      setGenInput(''); setGenDrafts([]); setGenDraftForm(null); setGenAssumptions([]); setGenClarifications([]); setGenAnswers({});
+      setGenInput(''); setGenDrafts([]); setGenDraftForm(null); setGenAssumptions([]); setGenClarifications([]); setGenAnswers({}); setGenWarnings([]);
       fetchPolicies();
     } catch (err) {
       setGenError(err.message);
@@ -470,7 +467,7 @@ export default function CustomTab() {
               <span className="text-sm font-semibold text-white">AI policy generator</span>
             </div>
             <button
-              onClick={() => { setShowGenerator(false); setGenError(null); setGenSuccess(null); setGenDrafts([]); setGenDraftForm(null); setGenAssumptions([]); setGenClarifications([]); setGenAnswers({}); }}
+              onClick={() => { setShowGenerator(false); setGenError(null); setGenSuccess(null); setGenDrafts([]); setGenDraftForm(null); setGenAssumptions([]); setGenClarifications([]); setGenAnswers({}); setGenWarnings([]); }}
               className="text-tertiary transition-colors hover:text-white"
               aria-label="Close AI generator"
             >
@@ -502,6 +499,12 @@ export default function CustomTab() {
             </div>
           )}
 
+          {genWarnings.length > 0 && (
+            <div className="rounded-lg border border-yellow-500/20 bg-status-warning/10 px-3 py-2 text-[11px] text-warning">
+              <span className="font-medium">Warnings:</span> {genWarnings.join('; ')}
+            </div>
+          )}
+
           {genClarifications.length > 0 && (
             <div className="space-y-2 rounded-lg border border-brand/20 bg-brand/5 p-3">
               <div className="text-xs font-medium text-white">Help me get this right:</div>
@@ -512,7 +515,7 @@ export default function CustomTab() {
                     {c.suggestions.map((s) => {
                       const active = c.multi ? (genAnswers[c.id] || []).includes(s) : genAnswers[c.id] === s;
                       return (
-                        <button key={s} onClick={() => toggleAnswer(c.id, s, c.multi)}
+                        <button key={s} onClick={() => toggleAnswer(c.id, s, c.multi)} aria-pressed={active}
                           className={`rounded-full border px-2.5 py-1 text-[11px] transition-colors ${active ? 'border-brand bg-brand/15 text-brand' : 'border-border bg-surface-tertiary text-secondary hover:border-border-hover'}`}>
                           {s}
                         </button>
@@ -537,7 +540,7 @@ export default function CustomTab() {
                 setForm={setGenDraftForm}
                 policyTypes={POLICY_TYPES}
                 actionOptions={ACTION_OPTIONS}
-                agents={genAgents}
+                agents={agents}
                 summary={buildPolicySummary(genDraftForm)}
                 saving={genLoading}
                 onSave={handleCreateDraft}
