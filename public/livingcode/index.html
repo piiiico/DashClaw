@@ -48,9 +48,9 @@ p.kicker{background:var(--accent-bg);border:1px solid var(--accent-border);borde
 p.kicker b{color:var(--accent-deep)}
 </style></head><body>
 <h1>DashClaw Livingcode Dashboard</h1>
-<div class="sig" id="sig">Shape signature: sha1:3e67bedbd2d127b9d6253ebd24a443bb5ba12240 · signature-stable</div>
+<div class="sig" id="sig">Shape signature: sha1:8213b1737604e2dfddbacfd73968448014f85a45 · signature-stable</div>
 <div class="grid">
-      <div class="cell"><div class="n">238</div><div class="k">Active routes</div></div>
+      <div class="cell"><div class="n">239</div><div class="k">Active routes</div></div>
       <div class="cell"><div class="n">48</div><div class="k">Archived routes</div></div>
       <div class="cell"><div class="n">4</div><div class="k">Required env vars</div></div>
       <div class="cell"><div class="n">137</div><div class="k">Optional env vars</div></div>
@@ -279,7 +279,7 @@ p.kicker b{color:var(--accent-deep)}
       <div class="cell"><div class="n">1</div><div class="k">TODOs</div></div>
       <div class="cell"><div class="n">128</div><div class="k">Files &gt;300 lines</div></div></div></section>
 
-<section><h2>Changed since last snapshot</h2><p class="kicker"><b>8</b> env_vars added, <b>26</b> routes added, <b>1</b> routes changed, <b>4</b> tables added since last snapshot.</p><ul class="diff">    <li><code>added</code> <b>routes</b>: /api/admin/trigger-outcome-sweep <span class="sig">New route: POST</span></li>
+<section><h2>Changed since last snapshot</h2><p class="kicker"><b>8</b> env_vars added, <b>27</b> routes added, <b>1</b> routes changed, <b>4</b> tables added since last snapshot.</p><ul class="diff">    <li><code>added</code> <b>routes</b>: /api/admin/trigger-outcome-sweep <span class="sig">New route: POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/agents/invoke <span class="sig">New route: POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/agents/registry <span class="sig">New route: GET, POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/agents/registry/[id] <span class="sig">New route: GET, PATCH</span></li>
@@ -305,6 +305,7 @@ p.kicker b{color:var(--accent-deep)}
     <li><code>added</code> <b>routes</b>: /api/reputation/leaderboard <span class="sig">New route: GET</span></li>
     <li><code>added</code> <b>routes</b>: /api/reputation/verify <span class="sig">New route: POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/x402/providers <span class="sig">New route: GET, POST</span></li>
+    <li><code>added</code> <b>routes</b>: /api/x402/providers/[id] <span class="sig">New route: GET, PATCH</span></li>
     <li><code>changed</code> <b>routes</b>: /api/handoffs <span class="sig">Methods: POST -&gt; GET, POST</span></li>
     <li><code>added</code> <b>env_vars</b>: ANTHROPIC_MODEL <span class="sig">New env var (optional, undocumented)</span></li>
     <li><code>added</code> <b>env_vars</b>: DASHCLAW_BEHAVIOR_SAMPLES_DIR <span class="sig">New env var (optional, undocumented)</span></li>
@@ -556,6 +557,7 @@ p.kicker b{color:var(--accent-deep)}
     <tr data-path="/api/workflows/templates/[templateId]/runs/[runActionId]"><td><code>/api/workflows/templates/[templateId]/runs/[runActionId]</code></td><td>GET</td><td class="sig">app/api/workflows/templates/[templateId]/runs/[runActionId]/route.js</td></tr>
     <tr data-path="/api/workflows/templates/[templateId]/runs/[runActionId]/cancel"><td><code>/api/workflows/templates/[templateId]/runs/[runActionId]/cancel</code></td><td>POST</td><td class="sig">app/api/workflows/templates/[templateId]/runs/[runActionId]/cancel/route.js</td></tr>
     <tr data-path="/api/workflows/templates/[templateId]/runs/[runActionId]/resume"><td><code>/api/workflows/templates/[templateId]/runs/[runActionId]/resume</code></td><td>POST</td><td class="sig">app/api/workflows/templates/[templateId]/runs/[runActionId]/resume/route.js</td></tr></tbody></table></details>
-<details><summary>/x402/* (1)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/x402/providers"><td><code>/api/x402/providers</code></td><td>GET, POST</td><td class="sig">app/api/x402/providers/route.js</td></tr></tbody></table></details></section>
+<details><summary>/x402/* (2)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/x402/providers"><td><code>/api/x402/providers</code></td><td>GET, POST</td><td class="sig">app/api/x402/providers/route.js</td></tr>
+    <tr data-path="/api/x402/providers/[id]"><td><code>/api/x402/providers/[id]</code></td><td>GET, PATCH</td><td class="sig">app/api/x402/providers/[id]/route.js</td></tr></tbody></table></details></section>
 
 </body></html>

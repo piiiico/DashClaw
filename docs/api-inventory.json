@@ -47,10 +47,10 @@
     ]
   },
   "summary": {
-    "total_routes": 285,
+    "total_routes": 286,
     "stable_routes": 47,
     "beta_routes": 24,
-    "experimental_routes": 214
+    "experimental_routes": 215
   },
   "routes": [
     {
@@ -2745,6 +2745,16 @@
       "maturity": "experimental",
       "matched_prefix": "(default)",
       "file": "app/api/x402/providers/route.js"
+    },
+    {
+      "path": "/api/x402/providers/{id}",
+      "methods": [
+        "GET",
+        "PATCH"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/x402/providers/[id]/route.js"
     }
   ]
 }

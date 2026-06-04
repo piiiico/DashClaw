@@ -13,10 +13,10 @@ doc-type: architecture
 
 ## Summary
 
-- Total routes: `285`
+- Total routes: `286`
 - Stable routes: `47`
 - Beta routes: `24`
-- Experimental routes: `214`
+- Experimental routes: `215`
 
 ## Routes
 
@@ -307,4 +307,5 @@ doc-type: architecture
 | `/api/workflows/templates/{templateId}/runs/{runActionId}/cancel` | `POST` | `experimental` | `/api/workflows` | `app/api/workflows/templates/[templateId]/runs/[runActionId]/cancel/route.js` |
 | `/api/workflows/templates/{templateId}/runs/{runActionId}/resume` | `POST` | `experimental` | `/api/workflows` | `app/api/workflows/templates/[templateId]/runs/[runActionId]/resume/route.js` |
 | `/api/x402/providers` | `GET, POST` | `experimental` | `(default)` | `app/api/x402/providers/route.js` |
+| `/api/x402/providers/{id}` | `GET, PATCH` | `experimental` | `(default)` | `app/api/x402/providers/[id]/route.js` |
 
