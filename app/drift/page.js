@@ -60,6 +60,8 @@ export default function DriftPage() {
   const [snapshots, setSnapshots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [running, setRunning] = useState(false);
+  // Outcome of the last "Run detection" so the button is never a silent no-op.
+  const [runResult, setRunResult] = useState(null); // { tone: 'success'|'info'|'error', message }
 
   // Alert filters (backend supports severity / acknowledged / metric).
   const [severity, setSeverity] = useState('all');
@@ -115,28 +117,56 @@ export default function DriftPage() {
 
   const handleRunDetection = async () => {
     setRunning(true);
+    setRunResult(null);
+    // Run the three phases in order, checking each response. Previously these
+    // POSTs were fired without reading res.ok or the body, so a 403 (admin
+    // required), a 500, and a clean run that found nothing were all
+    // indistinguishable — the button just spun and the page looked unchanged.
+    const post = async (action) => {
+      const res = await fetch('/api/drift/alerts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const err = new Error(data.error || `Drift ${action} failed (${res.status})`);
+        err.status = res.status;
+        throw err;
+      }
+      return data;
+    };
     try {
-      // Step 1: Compute baselines
-      await fetch('/api/drift/alerts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'compute_baselines' }),
-      });
-      // Step 2: Run detection
-      await fetch('/api/drift/alerts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'detect' }),
-      });
-      // Step 3: Record snapshots
-      await fetch('/api/drift/alerts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'record_snapshots' }),
-      });
+      const baselines = await post('compute_baselines');
+      const detection = await post('detect');
+      await post('record_snapshots');
+
+      const nBaselines = baselines.baselines_computed ?? 0;
+      const nAlerts = detection.alerts_generated ?? 0;
+      if (nBaselines === 0) {
+        setRunResult({
+          tone: 'info',
+          message: 'Detection ran, but there is not enough recorded activity yet to baseline. Drift needs at least 5 recorded actions per agent over the last 30 days before it can compare behavior.',
+        });
+      } else if (nAlerts === 0) {
+        setRunResult({
+          tone: 'success',
+          message: `Detection ran across ${nBaselines} baseline${nBaselines === 1 ? '' : 's'} — no significant drift detected. Behavior is within normal range.`,
+        });
+      } else {
+        setRunResult({
+          tone: 'success',
+          message: `Detection complete: ${nAlerts} drift alert${nAlerts === 1 ? '' : 's'} generated from ${nBaselines} baseline${nBaselines === 1 ? '' : 's'}.`,
+        });
+      }
       fetchData();
     } catch (err) {
-      alert('Drift detection failed');
+      setRunResult({
+        tone: 'error',
+        message: err.status === 403
+          ? 'Running drift detection requires an admin role on this workspace.'
+          : (err.message || 'Drift detection failed.'),
+      });
     } finally {
       setRunning(false);
     }
@@ -170,6 +200,7 @@ export default function DriftPage() {
   }
 
   const overall = stats?.overall || {};
+  const baselineCount = stats?.recent_baselines?.length || 0;
   const selectClass = 'rounded-lg border border-border bg-surface-tertiary px-2.5 py-1.5 text-xs text-secondary transition-colors hover:border-border-hover focus:border-brand/50 focus:outline-none focus:ring-2 focus:ring-brand/20';
 
   return (
@@ -224,6 +255,36 @@ export default function DriftPage() {
             </div>
           </div>
         </div>
+
+        {/* Run-detection result — turns the button from a silent no-op into feedback */}
+        {runResult && (
+          <div
+            role="status"
+            className={`flex items-start justify-between gap-3 rounded-lg border p-3 text-sm ${
+              runResult.tone === 'error'
+                ? 'border-error/30 bg-error-subtle text-error'
+                : runResult.tone === 'info'
+                  ? 'border-info/30 bg-info-subtle text-info'
+                  : 'border-success/30 bg-success-subtle text-success'
+            }`}
+          >
+            <div className="flex items-start gap-2">
+              {runResult.tone === 'error'
+                ? <AlertTriangle size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
+                : runResult.tone === 'info'
+                  ? <Info size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
+                  : <CheckCircle size={16} className="mt-0.5 shrink-0" aria-hidden="true" />}
+              <span>{runResult.message}</span>
+            </div>
+            <button
+              onClick={() => setRunResult(null)}
+              aria-label="Dismiss"
+              className="shrink-0 text-current opacity-60 transition-opacity hover:opacity-100"
+            >
+              <XCircle size={16} aria-hidden="true" />
+            </button>
+          </div>
+        )}
 
         {/* Tabs */}
         <div role="tablist" className="flex items-center gap-1 border-b border-border">
@@ -282,10 +343,16 @@ export default function DriftPage() {
               {alerts.length === 0 ? (
                 <EmptyState
                   icon={Activity}
-                  title={filtersActive ? 'No alerts match these filters' : 'No drift detected'}
+                  title={filtersActive
+                    ? 'No alerts match these filters'
+                    : baselineCount === 0
+                      ? 'No baseline data yet'
+                      : 'No drift detected'}
                   description={filtersActive
                     ? 'Adjust or clear the filters to see more alerts.'
-                    : 'Run drift detection to analyze behavioral patterns against baselines.'}
+                    : baselineCount === 0
+                      ? 'Drift compares recent behavior against a baseline of past activity. It needs at least 5 recorded actions per agent over the last 30 days before it can build that baseline — keep running governed actions, then click “Run detection”.'
+                      : `Behavior is within normal range across ${baselineCount} baseline${baselineCount === 1 ? '' : 's'}. Click “Run detection” to re-check.`}
                 />
               ) : (
                 <div className="space-y-2">
