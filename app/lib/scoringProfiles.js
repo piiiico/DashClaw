@@ -556,7 +556,7 @@ export async function autoCalibrate(sql, orgId, options = {}) {
   // Fetch historical data
   const actions = await sql`
     SELECT action_type, risk_score, confidence, duration_ms, cost_estimate,
-           prompt_tokens, completion_tokens, metadata
+           tokens_in, tokens_out, metadata
     FROM action_records
     WHERE org_id = ${orgId}
       AND created_at >= ${cutoff}
@@ -583,7 +583,7 @@ export async function autoCalibrate(sql, orgId, options = {}) {
         switch (metric) {
           case 'duration_ms': return Number(a.duration_ms);
           case 'cost_estimate': return Number(a.cost_estimate);
-          case 'tokens_total': return (Number(a.prompt_tokens) || 0) + (Number(a.completion_tokens) || 0);
+          case 'tokens_total': return (Number(a.tokens_in) || 0) + (Number(a.tokens_out) || 0);
           case 'risk_score': return Number(a.risk_score);
           case 'confidence': return Number(a.confidence);
           default: return null;
