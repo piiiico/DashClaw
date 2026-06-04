@@ -13,6 +13,7 @@ import { Badge } from '../../components/ui/Badge';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ListSkeleton } from '../../components/ui/Skeleton';
 import VerifyReceiptPanel from '../../components/VerifyReceiptPanel';
+import MarkdownBody from '../../messages/_components/MarkdownBody';
 
 const FRAMEWORKS = [
   { id: 'soc2', label: 'SOC 2' },
@@ -489,9 +490,15 @@ export default function ComplianceExportsPage() {
                         </div>
                       </div>
                       {isOpen && (
-                        <pre className="mx-3 mt-1 max-h-[500px] overflow-y-auto whitespace-pre-wrap rounded-lg border border-border bg-surface-primary p-4 font-mono text-xs text-secondary">
-                          {expandedContent}
-                        </pre>
+                        exp.format === 'json' ? (
+                          <pre className="mx-3 mt-1 max-h-[500px] overflow-y-auto whitespace-pre-wrap rounded-lg border border-border bg-surface-primary p-4 font-mono text-xs text-secondary">
+                            {expandedContent}
+                          </pre>
+                        ) : (
+                          <div className="mx-3 mt-1 max-h-[500px] overflow-y-auto rounded-lg border border-border bg-surface-primary p-4">
+                            <MarkdownBody content={expandedContent} />
+                          </div>
+                        )
                       )}
                     </div>
                   );

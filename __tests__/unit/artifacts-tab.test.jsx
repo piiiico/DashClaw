@@ -5,6 +5,9 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 // Pins the evidence-bundle fix: the returned bundle is surfaced (was discarded)
 // and failures are shown (the handler previously swallowed errors in catch {}).
 
+// MarkdownBody lives in a .js file containing JSX (not vitest-transformable) — mock it.
+vi.mock('@/messages/_components/MarkdownBody', () => ({ default: ({ content }) => <div>{content}</div> }));
+
 const { default: ArtifactsTab } = await import('@/components/ArtifactsTab.jsx');
 
 afterEach(() => { vi.unstubAllGlobals(); });

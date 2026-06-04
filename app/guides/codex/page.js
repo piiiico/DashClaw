@@ -5,6 +5,7 @@ import { ChevronRight } from 'lucide-react';
 import PublicNavbar from '../../components/PublicNavbar';
 import PublicFooter from '../../components/PublicFooter';
 import GuideClient from '../GuideClient';
+import MarkdownBody from '../../messages/_components/MarkdownBody';
 import { getGuideBaseUrl } from '../../lib/guideContent';
 
 export const dynamic = 'force-dynamic';
@@ -260,18 +261,14 @@ config on first install for full restore.`;
             <p className="text-xs uppercase tracking-[0.32em] text-tertiary">
               Codex-specific notes
             </p>
-            <pre className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-secondary">
-              {codexNotesBlock}
-            </pre>
+            <MarkdownBody content={codexNotesBlock} className="mt-4" />
           </section>
 
           <section className="mt-6 rounded-xl border border-border-hover bg-surface-secondary p-6 sm:p-8">
             <p className="text-xs uppercase tracking-[0.32em] text-tertiary">
               Discord setup
             </p>
-            <pre className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-secondary">
-              {discordPortalWalkthrough}
-            </pre>
+            <MarkdownBody content={discordPortalWalkthrough} className="mt-4" />
           </section>
         </div>
       </main>

@@ -1,7 +1,49 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, ChevronRight, CheckCircle2, XCircle, Loader2, SkipForward, RotateCcw } from 'lucide-react';
+import { ChevronDown, ChevronRight, CheckCircle2, XCircle, Loader2, SkipForward, RotateCcw, Copy, Check } from 'lucide-react';
+
+function CopyButton({ text, label = 'Copy' }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        navigator.clipboard.writeText(text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }}
+      className="inline-flex items-center gap-1.5 rounded border border-border bg-surface-tertiary px-2 py-1 text-[10px] font-medium text-tertiary transition-colors hover:text-secondary hover:border-border-hover"
+    >
+      {copied ? <Check size={12} className="text-success" /> : <Copy size={12} />}
+      {copied ? 'Copied' : label}
+    </button>
+  );
+}
+
+// Pull top-level scalar fields into a one-line labeled summary so a human can
+// scan the step without reading the raw JSON dump below.
+function scalarFields(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return [];
+  return Object.entries(value)
+    .filter(([, v]) => v != null && (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean'))
+    .map(([k, v]) => [k, String(v)]);
+}
+
+function FieldSummary({ value }) {
+  const fields = scalarFields(value);
+  if (fields.length === 0) return null;
+  return (
+    <div className="mb-2 flex flex-wrap gap-x-4 gap-y-1">
+      {fields.map(([k, v]) => (
+        <span key={k} className="text-[11px] text-secondary">
+          <span className="text-tertiary">{k}:</span>{' '}
+          <span className="font-mono break-all">{v.length > 80 ? `${v.slice(0, 80)}…` : v}</span>
+        </span>
+      ))}
+    </div>
+  );
+}
 
 const STATUS_CONFIG = {
   completed: { icon: CheckCircle2, color: 'text-success', bg: 'bg-emerald-400/10' },
@@ -64,13 +106,21 @@ export default function WorkflowRunStepCard({ step, runStatus, onResumeFromStep 
           )}
           {step.input && (
             <div className="mt-3">
-              <div className="text-[10px] font-mono text-tertiary uppercase mb-1">Input</div>
+              <div className="mb-1 flex items-center justify-between">
+                <span className="text-[10px] font-mono text-tertiary uppercase">Input</span>
+                <CopyButton text={JSON.stringify(step.input, null, 2)} />
+              </div>
+              <FieldSummary value={step.input} />
               <pre className="text-xs text-secondary bg-black/30 rounded p-2 overflow-auto max-h-48">{JSON.stringify(step.input, null, 2)}</pre>
             </div>
           )}
           {step.output && (
             <div>
-              <div className="text-[10px] font-mono text-tertiary uppercase mb-1">Output</div>
+              <div className="mb-1 flex items-center justify-between">
+                <span className="text-[10px] font-mono text-tertiary uppercase">Output</span>
+                <CopyButton text={JSON.stringify(step.output, null, 2)} />
+              </div>
+              <FieldSummary value={step.output} />
               <pre className="text-xs text-secondary bg-black/30 rounded p-2 overflow-auto max-h-48">{JSON.stringify(step.output, null, 2)}</pre>
             </div>
           )}

@@ -5,6 +5,7 @@ import { ChevronRight } from 'lucide-react';
 import PublicNavbar from '../../components/PublicNavbar';
 import PublicFooter from '../../components/PublicFooter';
 import GuideClient from '../GuideClient';
+import MarkdownBody from '../../messages/_components/MarkdownBody';
 import { getGuideBaseUrl } from '../../lib/guideContent';
 
 export const dynamic = 'force-dynamic';
@@ -233,9 +234,7 @@ DASHCLAW_GUARD_TIMEOUT=5`,
             <p className="text-xs uppercase tracking-[0.32em] text-tertiary">
               Discord setup
             </p>
-            <pre className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-secondary">
-              {discordPortalWalkthrough}
-            </pre>
+            <MarkdownBody content={discordPortalWalkthrough} className="mt-4" />
           </section>
         </div>
       </main>

@@ -1,7 +1,33 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FileJson, Package, ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
+import { FileJson, Package, ChevronDown, ChevronRight, Trash2, Copy, Check } from 'lucide-react';
+import MarkdownBody from '../messages/_components/MarkdownBody';
+
+function CopyButton({ text, label = 'Copy' }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        navigator.clipboard.writeText(text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }}
+      className="inline-flex items-center gap-1.5 rounded border border-border bg-surface-tertiary px-2 py-1 text-[10px] font-medium text-tertiary transition-colors hover:text-secondary hover:border-border-hover"
+    >
+      {copied ? <Check size={12} className="text-success" /> : <Copy size={12} />}
+      {copied ? 'Copied' : label}
+    </button>
+  );
+}
+
+const MARKDOWN_TYPES = new Set(['report', 'markdown', 'md', 'transcript']);
+
+function isMarkdownArtifact(type) {
+  if (!type) return false;
+  return MARKDOWN_TYPES.has(String(type).toLowerCase());
+}
 
 const TYPE_PILL = {
   json: 'bg-blue-400/10 text-info border-blue-400/20',
@@ -46,13 +72,25 @@ function ArtifactRow({ artifact, onDelete, deleting }) {
           <Trash2 className="w-3.5 h-3.5" />
         </button>
       </div>
-      {expanded && artifact.content && (
-        <div className="px-4 pb-4 border-t border-[rgba(255,255,255,0.04)]">
-          <pre className="text-xs text-secondary bg-black/30 rounded p-2 overflow-auto max-h-48 mt-3">
-            {JSON.stringify(artifact.content, null, 2)}
-          </pre>
-        </div>
-      )}
+      {expanded && artifact.content != null && (() => {
+        const isString = typeof artifact.content === 'string';
+        const text = isString ? artifact.content : JSON.stringify(artifact.content, null, 2);
+        const renderMarkdown = isString && isMarkdownArtifact(artifact.artifact_type);
+        return (
+          <div className="px-4 pb-4 border-t border-[rgba(255,255,255,0.04)]">
+            <div className="mt-3 mb-2 flex justify-end">
+              <CopyButton text={text} />
+            </div>
+            {renderMarkdown ? (
+              <MarkdownBody content={text} className="max-h-48 overflow-auto" />
+            ) : (
+              <pre className="text-xs text-secondary bg-black/30 rounded p-2 overflow-auto max-h-48">
+                {text}
+              </pre>
+            )}
+          </div>
+        );
+      })()}
     </div>
   );
 }

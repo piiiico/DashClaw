@@ -6,6 +6,8 @@ vi.mock('next/link', () => ({
   default: ({ href, children, ...props }) => <a href={href} {...props}>{children}</a>,
 }));
 
+vi.mock('@/messages/_components/MarkdownBody', () => ({ default: ({ content }) => <div>{content}</div> }));
+
 vi.mock('next/navigation', () => ({
   useParams: () => ({ templateId: 'wft_abc', runActionId: 'act_1' }),
 }));

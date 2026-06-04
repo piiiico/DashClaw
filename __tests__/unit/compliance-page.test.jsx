@@ -9,6 +9,7 @@ import { render, screen } from '@testing-library/react';
 // rendered the `?? 0` fallback even while enforcement was active.
 
 vi.mock('next/link', () => ({ default: ({ href, children }) => <a href={href}>{children}</a> }));
+vi.mock('@/messages/_components/MarkdownBody', () => ({ default: ({ content }) => <div>{content}</div> }));
 vi.mock('@/components/PageLayout', () => ({ default: ({ children }) => <div>{children}</div> }));
 vi.mock('@/components/ui/Card', () => ({
   Card: ({ children }) => <div>{children}</div>,

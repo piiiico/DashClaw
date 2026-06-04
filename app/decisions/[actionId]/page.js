@@ -8,7 +8,7 @@ import {
   RefreshCw, MapPin, Microscope, IdCard, Rocket, Search, ArrowUp,
   Link2, AlertTriangle, ShieldCheck, ShieldAlert, Scale, FileText,
   Activity, Info, ChevronRight, Fingerprint, Database, LayoutPanelLeft, ExternalLink,
-  Package
+  Package, Copy, Check
 } from 'lucide-react';
 import PageLayout from '../../components/PageLayout';
 import { Card, CardHeader, CardContent } from '../../components/ui/Card';
@@ -19,6 +19,26 @@ import ExecutionGraph from '../../components/ExecutionGraph';
 import { TimelineMessage } from '../../components/MessageTrail';
 import ArtifactsTab from '../../components/ArtifactsTab';
 import { parseJsonArray } from '../../lib/parseJson';
+
+function CopyButton({ text, label = 'Copy' }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        navigator.clipboard.writeText(text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }}
+      className="inline-flex items-center gap-1.5 rounded border border-border bg-surface-tertiary px-2 py-1 text-[10px] font-medium text-tertiary transition-colors hover:text-secondary hover:border-border-hover"
+    >
+      {copied ? <Check size={12} className="text-success" /> : <Copy size={12} />}
+      {copied ? 'Copied' : label}
+    </button>
+  );
+}
 
 export default function DecisionReplayPage() {
   const params = useParams();
@@ -1091,11 +1111,20 @@ export default function DecisionReplayPage() {
               </Card>
 
               <Card hover={false}>
-                <CardHeader title="Raw Decision Object" icon={LayoutPanelLeft} />
+                <CardHeader title="Raw payload (export / debug)" icon={LayoutPanelLeft} />
                 <CardContent>
-                  <pre className="p-4 bg-primary rounded border border-white/5 text-[10px] text-secondary font-mono overflow-auto max-h-[400px]">
-                    {JSON.stringify(action, null, 2)}
-                  </pre>
+                  <details className="group">
+                    <summary className="flex cursor-pointer select-none items-center gap-2 text-xs text-tertiary transition-colors hover:text-secondary [&::-webkit-details-marker]:hidden">
+                      <ChevronRight size={12} className="transition-transform group-open:rotate-90" />
+                      <span>Show full decision object (JSON)</span>
+                    </summary>
+                    <div className="mt-3 flex justify-end">
+                      <CopyButton text={JSON.stringify(action, null, 2)} label="Copy JSON" />
+                    </div>
+                    <pre className="mt-2 p-4 bg-primary rounded border border-white/5 text-[10px] text-secondary font-mono overflow-auto max-h-[400px]">
+                      {JSON.stringify(action, null, 2)}
+                    </pre>
+                  </details>
                 </CardContent>
               </Card>
             </div>

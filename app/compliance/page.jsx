@@ -16,6 +16,7 @@ import { HelpIcon } from '../components/HelpIcon';
 import { HELP_TIPS } from '../lib/demo/fixtures/help-tips.js';
 import { isDemoMode } from '../lib/isDemoMode';
 import { gapToPolicyDraft } from '../lib/compliance/gap-to-policy.js';
+import MarkdownBody from '../messages/_components/MarkdownBody';
 
 const FRAMEWORK_LABELS = {
   'soc2': 'SOC 2',
@@ -605,9 +606,15 @@ export default function CompliancePage() {
                       <FileDown size={12} aria-hidden="true" /> Download
                     </button>
                   </div>
-                  <pre className="max-h-[500px] overflow-y-auto whitespace-pre-wrap rounded-lg border border-border bg-surface-tertiary p-4 font-mono text-xs text-secondary">
-                    {report}
-                  </pre>
+                  {reportFormat === 'json' ? (
+                    <pre className="max-h-[500px] overflow-y-auto whitespace-pre-wrap rounded-lg border border-border bg-surface-tertiary p-4 font-mono text-xs text-secondary">
+                      {report}
+                    </pre>
+                  ) : (
+                    <div className="max-h-[500px] overflow-y-auto rounded-lg border border-border bg-surface-tertiary p-4">
+                      <MarkdownBody content={report} />
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>

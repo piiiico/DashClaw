@@ -687,15 +687,73 @@ export default function SwarmTopologyPage() {
             const meta = typeof action.metadata === 'string'
               ? (() => { try { return JSON.parse(action.metadata); } catch { return null; } })()
               : action.metadata;
-            if (!meta || (typeof meta === 'object' && Object.keys(meta).length === 0)) return null;
+            if (!meta || typeof meta !== 'object' || Array.isArray(meta) || Object.keys(meta).length === 0) {
+              // Non-object metadata (string/array/number) has no key/value shape — show the raw value.
+              if (meta === null || meta === undefined || (typeof meta === 'object' && Object.keys(meta).length === 0)) return null;
+              return (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">
+                    <Terminal size={14} className="text-tertiary" /> Contextual metadata
+                  </div>
+                  <pre className="overflow-x-auto rounded-xl border border-border bg-surface-tertiary p-5 font-mono text-[11px] leading-relaxed text-secondary">
+                    {JSON.stringify(meta, null, 2)}
+                  </pre>
+                </div>
+              );
+            }
+            // Humanize governance-meaningful keys into a labeled key/value list. Scalar
+            // values render as labeled fields; nested objects/arrays collapse into a
+            // small code block so the human-readable fields stay scannable.
+            const LABELS = {
+              model: 'Model',
+              provider: 'Provider',
+              capability: 'Capability',
+              cost: 'Cost',
+              cost_estimate: 'Cost estimate',
+              tokens: 'Tokens',
+              input_tokens: 'Input tokens',
+              output_tokens: 'Output tokens',
+              risk_score: 'Risk score',
+              policy: 'Policy',
+              decision: 'Decision',
+              tool: 'Tool',
+              agent_id: 'Agent',
+              duration_ms: 'Duration (ms)',
+            };
+            const humanize = (key) =>
+              LABELS[key] || key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+            const entries = Object.entries(meta);
+            const isScalar = (v) => v === null || ['string', 'number', 'boolean'].includes(typeof v);
+            const scalarEntries = entries.filter(([, v]) => isScalar(v));
+            const complexEntries = entries.filter(([, v]) => !isScalar(v));
             return (
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">
                   <Terminal size={14} className="text-tertiary" /> Contextual metadata
                 </div>
-                <pre className="overflow-x-auto rounded-xl border border-border bg-surface-tertiary p-5 font-mono text-[11px] leading-relaxed text-secondary">
-                  {JSON.stringify(meta, null, 2)}
-                </pre>
+                <dl className="grid grid-cols-2 gap-x-4 gap-y-3 rounded-xl border border-border bg-surface-secondary p-5">
+                  {scalarEntries.map(([key, value]) => (
+                    <div key={key} className="min-w-0">
+                      <dt className="mb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary">
+                        {humanize(key)}
+                      </dt>
+                      <dd className="break-words font-mono text-xs text-secondary">
+                        {value === null ? '—' : String(value)}
+                      </dd>
+                    </div>
+                  ))}
+                  {complexEntries.map(([key, value]) => (
+                    <details key={key} className="group col-span-2 min-w-0">
+                      <summary className="flex cursor-pointer select-none items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary [&::-webkit-details-marker]:hidden">
+                        <ChevronRight size={12} className="transition-transform group-open:rotate-90" />
+                        {humanize(key)}
+                      </summary>
+                      <pre className="mt-2 overflow-x-auto rounded-lg border border-border bg-surface-tertiary p-3 font-mono text-[11px] leading-relaxed text-secondary">
+                        {JSON.stringify(value, null, 2)}
+                      </pre>
+                    </details>
+                  ))}
+                </dl>
               </div>
             );
           })()}

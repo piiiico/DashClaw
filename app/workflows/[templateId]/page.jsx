@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-  ArrowLeft, Rocket, Copy, FileText, Cpu,
+  ArrowLeft, Rocket, Copy, FileText, Cpu, CheckCircle2, ChevronRight,
 } from 'lucide-react';
 import PageLayout from '../../components/PageLayout';
 import { Card, CardContent, CardHeader } from '../../components/ui/Card';
@@ -393,9 +393,11 @@ export default function WorkflowTemplateDetailPage() {
                   <WorkflowStepLegacyNotice legacyFallback={stepData.legacyFallback} />
                 )
               ) : (
-                <pre className="text-xs text-secondary bg-black/40 rounded-lg p-3 overflow-auto max-h-[420px] font-mono">
-                  {JSON.stringify(stepData.mode === 'builder' ? draft.steps : template.steps, null, 2)}
-                </pre>
+                <RawJsonBlock
+                  label="Raw JSON (advanced)"
+                  value={stepData.mode === 'builder' ? draft.steps : template.steps}
+                  maxHeightClass="max-h-[420px]"
+                />
               )}
             </>
           )}
@@ -451,12 +453,108 @@ export default function WorkflowTemplateDetailPage() {
         <Card className="mt-4">
           <CardHeader title="Last launched strategy snapshot" icon={Cpu} />
           <CardContent className="p-5 pt-0">
-            <pre className="text-xs text-secondary bg-black/40 rounded-lg p-3 overflow-auto max-h-[320px]">
-              {JSON.stringify(template.model_strategy_snapshot, null, 2)}
-            </pre>
+            <ModelStrategySnapshot snapshot={template.model_strategy_snapshot} />
           </CardContent>
         </Card>
       )}
     </PageLayout>
+  );
+}
+
+// Collapsible raw-JSON block with a Copy button. Used for the deliberate
+// builder/raw "Source" toggle where the JSON is meant to be read/copied, not
+// parsed visually.
+function RawJsonBlock({ label, value, maxHeightClass = 'max-h-[320px]' }) {
+  const [copied, setCopied] = useState(false);
+  const json = JSON.stringify(value, null, 2);
+  const handleCopy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(json);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // clipboard unavailable: silent fail
+    }
+  }, [json]);
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary">{label}</span>
+        <button
+          type="button"
+          onClick={handleCopy}
+          className="flex items-center gap-1 rounded px-1.5 py-1 text-[11px] text-tertiary transition-colors hover:text-secondary"
+          aria-label={`Copy ${label}`}
+          title={copied ? 'Copied' : 'Copy'}
+        >
+          {copied ? <CheckCircle2 size={12} className="text-success" /> : <Copy size={12} />}
+          {copied ? 'Copied' : 'Copy'}
+        </button>
+      </div>
+      <pre className={`text-xs text-secondary bg-black/40 rounded-lg p-3 overflow-auto font-mono ${maxHeightClass}`}>
+        {json}
+      </pre>
+    </div>
+  );
+}
+
+// Renders the model-strategy snapshot as labeled governance fields (provider,
+// model, fallback chain, budget) and keeps a collapsed raw view for completeness.
+function ModelStrategySnapshot({ snapshot }) {
+  if (!snapshot || typeof snapshot !== 'object' || Array.isArray(snapshot)) {
+    return <RawJsonBlock label="Raw snapshot" value={snapshot} />;
+  }
+  const provider = snapshot.provider ?? snapshot.primary_provider;
+  const model = snapshot.model ?? snapshot.primary_model;
+  const budget = snapshot.budget ?? snapshot.budget_usd ?? snapshot.max_cost ?? snapshot.cost_cap;
+  // Fallback chain can arrive under a few shapes; normalize to a readable list.
+  const rawFallback = snapshot.fallback_chain ?? snapshot.fallbacks ?? snapshot.fallback;
+  const fallbackChain = Array.isArray(rawFallback)
+    ? rawFallback.map((f) => (typeof f === 'string' ? f : (f?.model ?? f?.name ?? JSON.stringify(f))))
+    : (typeof rawFallback === 'string' ? [rawFallback] : null);
+
+  const fields = [
+    ['Provider', provider],
+    ['Model', model],
+    ['Budget', budget != null ? (typeof budget === 'number' ? `$${budget}` : String(budget)) : undefined],
+  ].filter(([, v]) => v !== undefined && v !== null && v !== '');
+
+  const hasStructured = fields.length > 0 || (fallbackChain && fallbackChain.length > 0);
+
+  return (
+    <div className="space-y-4">
+      {hasStructured && (
+        <dl className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
+          {fields.map(([label, value]) => (
+            <div key={label} className="min-w-0">
+              <dt className="mb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary">{label}</dt>
+              <dd className="break-words font-mono text-xs text-secondary">{String(value)}</dd>
+            </div>
+          ))}
+          {fallbackChain && fallbackChain.length > 0 && (
+            <div className="min-w-0 sm:col-span-2">
+              <dt className="mb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary">Fallback chain</dt>
+              <dd className="flex flex-wrap items-center gap-1.5">
+                {fallbackChain.map((f, i) => (
+                  <span key={`${f}-${i}`} className="flex items-center gap-1.5">
+                    {i > 0 && <ChevronRight size={12} className="text-disabled" />}
+                    <Badge variant="default" size="xs">{f}</Badge>
+                  </span>
+                ))}
+              </dd>
+            </div>
+          )}
+        </dl>
+      )}
+      <details className="group">
+        <summary className="flex cursor-pointer select-none items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-tertiary [&::-webkit-details-marker]:hidden">
+          <ChevronRight size={12} className="transition-transform group-open:rotate-90" />
+          Raw snapshot
+        </summary>
+        <pre className="mt-2 text-xs text-secondary bg-black/40 rounded-lg p-3 overflow-auto max-h-[320px] font-mono">
+          {JSON.stringify(snapshot, null, 2)}
+        </pre>
+      </details>
+    </div>
   );
 }

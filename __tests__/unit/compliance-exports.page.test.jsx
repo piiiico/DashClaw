@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 vi.mock('next/link', () => ({ default: ({ href, children }) => <a href={href}>{children}</a> }));
+vi.mock('@/messages/_components/MarkdownBody', () => ({ default: ({ content }) => <div>{content}</div> }));
 vi.mock('@/components/PageLayout', () => ({ default: ({ children }) => <div>{children}</div> }));
 vi.mock('@/components/ui/Card', () => ({
   Card: ({ children }) => <div>{children}</div>,
