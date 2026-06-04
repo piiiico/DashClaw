@@ -5,7 +5,7 @@ description: DashClaw platform expert for integration, troubleshooting, and gove
 
 # DashClaw Platform Intelligence
 
-**Shape snapshot:** `sha1:6469797479b89a55091842d988ea1941755d2f99`
+**Shape snapshot:** `sha1:3e67bedbd2d127b9d6253ebd24a443bb5ba12240`
 **This file is auto-generated.** Do not edit by hand — regenerate with:
 
 ```bash
@@ -45,7 +45,7 @@ neither exists. When you cannot run the queries above, fall back **in this order
 
 ## At a Glance
 
-- **237** active API routes across **58** categories
+- **238** active API routes across **59** categories
 - **4** required + **137** optional environment variables
 - **89** database tables
 
@@ -461,6 +461,10 @@ neither exists. When you cannot run the queries above, fall back **in this order
 - `GET` `/api/workflows/templates/[templateId]/runs/[runActionId]`
 - `POST` `/api/workflows/templates/[templateId]/runs/[runActionId]/cancel`
 - `POST` `/api/workflows/templates/[templateId]/runs/[runActionId]/resume`
+
+### `x402`
+
+- `GET, POST` `/api/x402/providers`
 
 ## Required Environment Variables
 
