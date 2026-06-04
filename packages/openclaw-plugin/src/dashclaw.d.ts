@@ -58,6 +58,15 @@ declare module 'dashclaw' {
       opts?: { timeout?: number; interval?: number }
     ): Promise<WaitForApprovalResult>;
     recordAssumption(assumption: Record<string, unknown>): Promise<unknown>;
+    createSession(
+      agentId?: string,
+      workspace?: string,
+      branch?: string | null
+    ): Promise<{ session?: { id?: string }; [key: string]: unknown }>;
+    updateSession(
+      sessionId: string,
+      updates: Record<string, unknown>
+    ): Promise<unknown>;
   }
 
   export class ApprovalDeniedError extends Error {

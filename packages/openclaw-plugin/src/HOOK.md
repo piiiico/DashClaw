@@ -13,6 +13,8 @@ Intercepts every OpenClaw tool call through a four-step governance loop:
 3. **Wait** — For `pending_approval` actions, the hook calls `waitForApproval(action_id)` using the **action_records ID from step 2**, not the `guard_decisions` ID from step 1. Operators approve from the DashClaw dashboard, CLI, or mobile PWA.
 4. **Outcome** — `after_tool_call` records `completed` or `failed` with the error message, giving DashClaw a full intent → policy → outcome trail.
 
+On the first tool call of a run the plugin also opens a DashClaw **Agent Session** (`POST /api/sessions`), and closes it (`PATCH /api/sessions/:id` → `status: completed`) on `agent_end`, so each OpenClaw run appears under the Agent Sessions feature. Session calls are fully fail-safe — a session error never blocks a tool call or the run.
+
 The hook never modifies tool parameters or results. It only blocks, allows, waits, or records.
 
 ## Configuration

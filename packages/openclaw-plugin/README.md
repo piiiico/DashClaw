@@ -81,6 +81,8 @@ Every tool call your agent makes flows through DashClaw before it executes:
 5. If the action is `pending_approval`, the plugin pauses on `waitForApproval(action.action_id)`. You approve from the DashClaw dashboard, the CLI (`dashclaw approve <id>`), or the mobile PWA — the agent is unblocked the moment the operator approves (SSE first, polling fallback).
 6. On approval, the tool executes. The `after_tool_call` hook records the outcome (`completed` or `failed`, with the error message) so DashClaw has a full intent → policy → outcome trail.
 
+On the first tool call of each run the plugin opens a DashClaw **Agent Session** and closes it (`status: completed`) on `agent_end`, so every OpenClaw run shows up under the Agent Sessions feature (not just Code Sessions). Session lifecycle calls are fully fail-safe — a session error never blocks a tool call or the run.
+
 The plugin is read-mostly: it never modifies the tool's parameters or the tool's result. It only blocks, allows, or records.
 
 ### Unified policy surface

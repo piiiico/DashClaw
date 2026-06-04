@@ -131,6 +131,12 @@ interface TokenTurnState {
   // field. Used to suppress repeat warnings within the same run — ops see
   // one log line per run, not one per turn.
   warnedMissingModel?: boolean;
+  // DashClaw Agent Session opened on the first tool call of this run, so the
+  // run shows up under the Agent Sessions feature (not just Code Sessions).
+  // Closed (status='completed') and cleared on agent_end. `sessionStarted`
+  // guards the lazy create so we POST /api/sessions exactly once per run.
+  sessionId?: string;
+  sessionStarted?: boolean;
 }
 const tokenTurnByRun = new Map<string, TokenTurnState>();
 
@@ -443,6 +449,31 @@ export default definePluginEntry({
         return;
       }
 
+      // Lazily open an Agent Session on the FIRST tool call of this run so the
+      // run appears under DashClaw's Agent Sessions (not just Code Sessions).
+      // Fail-safe: a session error NEVER blocks the tool call or the run.
+      if (runId) {
+        const runState = getTokenTurn(runId);
+        if (!runState.sessionStarted) {
+          runState.sessionStarted = true; // guard before await — once per run
+          const ev = event as unknown as { workspace?: unknown; branch?: unknown };
+          const workspace =
+            typeof ev.workspace === 'string' ? ev.workspace : undefined;
+          const branch = typeof ev.branch === 'string' ? ev.branch : null;
+          try {
+            const res = await client.createSession(config.agentId, workspace, branch);
+            const sessionId =
+              (res as { session?: { id?: string }; id?: string }).session?.id ??
+              (res as { id?: string }).id;
+            if (sessionId) runState.sessionId = sessionId;
+          } catch (err) {
+            console.warn(
+              `[dashclaw-governance] createSession failed: ${errorMessage(err) || 'unknown'}`
+            );
+          }
+        }
+      }
+
       let decision: GuardDecision;
       try {
         decision = await client.guard({
@@ -620,18 +651,36 @@ export default definePluginEntry({
       const state = tokenTurnByRun.get(runId);
       if (!state) return;
 
-      if (state.pendingUsage && state.turnActionIds.length > 0) {
-        try {
-          const client = getClient(config);
-          await distributePendingTokens(client, state);
-        } catch (err) {
-          // No client → drop state but log the lost attribution so ops can
-          // see how many actions went unattributed.
+      let client: DashClaw | null = null;
+      try {
+        client = getClient(config);
+      } catch (err) {
+        // No client → can't flush tokens or close the session. Log both losses
+        // so ops can see what went unrecorded.
+        const lost = state.turnActionIds.length;
+        if ((state.pendingUsage && lost > 0) || state.sessionId) {
           console.warn(
-            `[dashclaw-governance] agent_end token flush dropped ${state.turnActionIds.length} action(s): ${errorMessage(err) || 'unknown'}`
+            `[dashclaw-governance] agent_end cleanup dropped (client unavailable): ${lost} token action(s), session ${state.sessionId ?? 'none'}: ${errorMessage(err) || 'unknown'}`
           );
         }
       }
+
+      if (client && state.pendingUsage && state.turnActionIds.length > 0) {
+        await distributePendingTokens(client, state);
+      }
+
+      // Close the Agent Session opened for this run. 'completed' is the
+      // terminal status the Sessions UI treats as finished. Fail-safe.
+      if (client && state.sessionId) {
+        try {
+          await client.updateSession(state.sessionId, { status: 'completed' });
+        } catch (err) {
+          console.warn(
+            `[dashclaw-governance] updateSession(end) failed for ${state.sessionId}: ${errorMessage(err) || 'unknown'}`
+          );
+        }
+      }
+
       tokenTurnByRun.delete(runId);
     });
 
