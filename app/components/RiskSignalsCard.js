@@ -34,7 +34,7 @@ export default function RiskSignalsCard() {
   useEffect(() => {
     async function fetchSignals() {
       try {
-        const res = await fetch(`/api/actions/signals${agentId ? `?agent_id=${agentId}` : ''}`);
+        const res = await fetch(`/api/signals${agentId ? `?agent_id=${agentId}` : ''}`);
         if (!res.ok) throw new Error('Failed to fetch');
         const data = await res.json();
         setSignals(data.signals || []);

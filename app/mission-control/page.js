@@ -142,7 +142,7 @@ export default function MissionControlPage() {
 
     try {
       const [signalsRes, loopsRes, healthRes, actionsRes, pendingRes, metricsRes, capabilityHealthRes] = await Promise.all([
-        fetch(withParams('/api/actions/signals')),
+        fetch(withParams('/api/signals')),
         fetch(withParams('/api/actions/loops', ['status=open', 'limit=20'])),
         fetch('/api/health'),
         fetch(withParams('/api/actions', ['limit=12'])),

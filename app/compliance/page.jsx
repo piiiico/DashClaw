@@ -97,7 +97,7 @@ export default function CompliancePage() {
         fetch(`/api/compliance/map?framework=${selectedFramework}`),
         fetch(`/api/compliance/gaps?framework=${selectedFramework}`),
         fetch('/api/compliance/evidence'),
-        fetch('/api/actions/signals'),
+        fetch('/api/signals'),
       ]);
 
       if (mapRes.ok) setControlMap(await mapRes.json());

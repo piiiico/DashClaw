@@ -23,7 +23,7 @@ export default function SystemStatusBar() {
 
   const fetchSignals = useCallback(async () => {
     try {
-      const res = await fetch(`/api/actions/signals${agentId ? `?agent_id=${agentId}` : ''}`);
+      const res = await fetch(`/api/signals${agentId ? `?agent_id=${agentId}` : ''}`);
       if (!res.ok) return;
       const data = await res.json();
       setSignals(data.signals || []);

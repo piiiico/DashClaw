@@ -98,7 +98,7 @@ export default function SecurityDashboard() {
       const params = agentId ? `?agent_id=${agentId}` : '';
 
       const [signalsRes, actionsRes, assumptionsRes, securityRes] = await Promise.all([
-        fetch(`/api/actions/signals${params}`),
+        fetch(`/api/signals${params}`),
         fetch(`/api/actions?limit=100${agentId ? `&agent_id=${agentId}` : ''}`),
         fetch(`/api/actions/assumptions?drift=true${agentId ? `&agent_id=${agentId}` : ''}`),
         fetch('/api/security/status'),

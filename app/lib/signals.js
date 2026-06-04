@@ -1,5 +1,5 @@
 /**
- * Shared signal computation. Extracted from /api/actions/signals/route.js
+ * Shared signal computation. Extracted from /api/signals/route.js
  * Used by both the API route and the cron job.
  */
 
