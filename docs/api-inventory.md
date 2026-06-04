@@ -13,8 +13,8 @@ doc-type: architecture
 
 ## Summary
 
-- Total routes: `271`
-- Stable routes: `46`
+- Total routes: `272`
+- Stable routes: `47`
 - Beta routes: `24`
 - Experimental routes: `201`
 
@@ -183,6 +183,7 @@ doc-type: architecture
 | `/api/integrations/health/refresh` | `POST` | `experimental` | `(default)` | `app/api/integrations/health/refresh/route.js` |
 | `/api/integrity/jwks` | `GET` | `experimental` | `(default)` | `app/api/integrity/jwks/route.js` |
 | `/api/integrity/verify` | `POST` | `experimental` | `(default)` | `app/api/integrity/verify/route.js` |
+| `/api/invite/{token}` | `GET, POST` | `stable` | `/api/invite` | `app/api/invite/[token]/route.js` |
 | `/api/keys` | `DELETE, GET, POST` | `stable` | `/api/keys` | `app/api/keys/route.js` |
 | `/api/keys/reveal` | `GET` | `stable` | `/api/keys` | `app/api/keys/reveal/route.js` |
 | `/api/knowledge/collections` | `GET, POST` | `experimental` | `(default)` | `app/api/knowledge/collections/route.js` |

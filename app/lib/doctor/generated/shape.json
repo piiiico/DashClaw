@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:4d9403adcde2aaab2e4b7b0b032a441d3acce3bb",
+  "timestamp": "sha1:66b349e99ef0aa9d0b4bec6faff53739a4a0d6db",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -1624,6 +1624,18 @@
       "dynamic_params": [],
       "archived": false,
       "file_path": "app/api/integrity/verify/route.js"
+    },
+    {
+      "path": "/api/invite/[token]",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "dynamic_params": [
+        "token"
+      ],
+      "archived": false,
+      "file_path": "app/api/invite/[token]/route.js"
     },
     {
       "path": "/api/keys",

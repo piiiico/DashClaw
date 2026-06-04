@@ -38,10 +38,10 @@ function findInsertCall() {
     const sqlText = strings.join(' ');
     if (sqlText.includes('INSERT INTO users')) {
       // Values start at index 1. Matching the template literal order from
-      // app/lib/auth.js INSERT: [userId, email, name, image, provider,
-      // providerAccountId, role, now, now]. So role is at values index 6,
-      // which is overall index 7 (0 = strings array).
-      return { strings, values: call.slice(1), role: call[7] };
+      // app/lib/auth.js INSERT: [userId, org_id, email, name, image, provider,
+      // providerAccountId, role, now, now]. So org_id is values index 1 (call[2])
+      // and role is values index 7, which is overall index 8 (0 = strings array).
+      return { strings, values: call.slice(1), role: call[8] };
     }
   }
   return null;
@@ -76,14 +76,19 @@ describe('BUG-03: bootstrap first-user-admin', () => {
     expect(insertCall.role).toBe('admin');
   });
 
-  it('does not promote subsequent users to admin', async () => {
+  it('isolates subsequent users in their own workspace, not shared org_default', async () => {
+    // SECURITY (team-invite lockdown): a non-first OAuth user must NOT be
+    // dropped into the shared org_default. They get their own isolated org and
+    // are admin of it; joining a real workspace requires an email-matched invite.
     // Scripted responses:
     //   1. SELECT existing user by provider → empty (new user)
     //   2. SELECT COUNT(*) FROM users → 5 (instance already has users)
-    //   3. INSERT INTO users → no-op
+    //   3. INSERT INTO organizations → no-op (their personal workspace)
+    //   4. INSERT INTO users → no-op
     mockSql
       .mockResolvedValueOnce([])
       .mockResolvedValueOnce([{ count: 5 }])
+      .mockResolvedValueOnce([])
       .mockResolvedValueOnce([]);
 
     const result = await signIn({
@@ -92,11 +97,19 @@ describe('BUG-03: bootstrap first-user-admin', () => {
     });
 
     expect(result).toBe(true);
-    expect(mockSql).toHaveBeenCalledTimes(3);
+    expect(mockSql).toHaveBeenCalledTimes(4);
 
+    // A personal organization was created for them.
+    const orgInsert = mockSql.mock.calls.find(
+      (c) => Array.isArray(c[0]) && c[0].join(' ').includes('INSERT INTO organizations'),
+    );
+    expect(orgInsert).toBeTruthy();
+
+    // The user row is admin of their OWN org — not a member of org_default.
     const insertCall = findInsertCall();
     expect(insertCall).not.toBeNull();
-    expect(insertCall.role).toBe('member');
+    expect(insertCall.role).toBe('admin');
+    expect(insertCall.values[1]).not.toBe('org_default'); // org_id is the 2nd template value
   });
 
   it('does not change role for existing users on re-login (UPDATE branch)', async () => {

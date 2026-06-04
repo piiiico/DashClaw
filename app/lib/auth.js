@@ -119,13 +119,36 @@ export const authOptions = {
             SELECT COUNT(*)::int AS count FROM users WHERE org_id = 'org_default'
           `;
           const isFirstUser = Number(countResult[0]?.count || 0) === 0;
-          const newUserRole = isFirstUser ? 'admin' : 'member';
-
-          // Create new user mapped to org_default
           const userId = `usr_${crypto.randomUUID()}`;
+
+          // Founder bootstrap (BUG-03): the first user of a fresh instance is
+          // admin of org_default so the operator can govern their own deploy.
+          // SECURITY: every OTHER new account gets its OWN isolated workspace
+          // instead of being dropped into the shared org_default. Previously all
+          // non-first OAuth users landed in org_default together, so a stray
+          // login effectively joined the instance and strangers shared a tenant.
+          // Membership in someone else's workspace now only ever comes from
+          // accepting an email-matched invite (see acceptInvite) — login alone
+          // can no longer add anyone to another team.
+          let targetOrgId = 'org_default';
+          if (!isFirstUser) {
+            const personalOrgId = `org_${crypto.randomUUID()}`;
+            const ownerLabel = user.name || (user.email ? user.email.split('@')[0] : 'My');
+            const personalOrgName = `${ownerLabel}'s workspace`;
+            const personalOrgSlug = `ws-${crypto.randomUUID().replace(/-/g, '').slice(0, 12)}`;
+            await sql`
+              INSERT INTO organizations (id, name, slug, plan)
+              VALUES (${personalOrgId}, ${personalOrgName}, ${personalOrgSlug}, 'free')
+            `;
+            targetOrgId = personalOrgId;
+          }
+
+          // New users are admin of their OWN workspace (org_default for the
+          // founder, their personal org otherwise).
+          const newUserRole = 'admin';
           await sql`
             INSERT INTO users (id, org_id, email, name, image, provider, provider_account_id, role, created_at, last_login_at)
-            VALUES (${userId}, 'org_default', ${user.email || ''}, ${user.name || null}, ${user.image || null}, ${account.provider}, ${account.providerAccountId}, ${newUserRole}, ${now}, ${now})
+            VALUES (${userId}, ${targetOrgId}, ${user.email || ''}, ${user.name || null}, ${user.image || null}, ${account.provider}, ${account.providerAccountId}, ${newUserRole}, ${now}, ${now})
           `;
         }
         return true;
