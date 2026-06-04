@@ -1,6 +1,16 @@
 import Link from 'next/link';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
+import {
+  AlertTriangle,
+  ChevronLeft,
+  Coins,
+  Database,
+  Cog,
+  Wrench,
+  Target,
+  ListTree,
+} from 'lucide-react';
 import { getSql } from '../../../lib/db.js';
 import {
   getSessionDetail,
@@ -9,6 +19,9 @@ import {
 import { estimateCost } from '../../../lib/billing.js';
 import { labelFor, severityRank } from '../../../lib/claude-code/signal-labels.js';
 import PageLayout from '../../../components/PageLayout';
+import { Card, CardHeader, CardContent } from '../../../components/ui/Card';
+import { Badge } from '../../../components/ui/Badge';
+import { StatCompact } from '../../../components/ui/Stat';
 import OptimalFilesPanel from './OptimalFilesPanel.jsx';
 import { buildAutopsyFromDetail } from '../../../lib/claude-code/goals.js';
 
@@ -17,26 +30,21 @@ export const revalidate = 0;
 
 const TIMELINE_DEFAULT_CAP = 50;
 
-// /goal autopsy outcome → verdict-chip tone. Status tokens only (never raw hex),
-// and the label always pairs with the color so the verdict survives a
-// color-blind / WCAG read. Unknown or future outcomes fall back to a neutral
-// chip rather than rendering blank.
+// /goal autopsy outcome → verdict-chip tone via the Badge variant. The label
+// always pairs with the color so the verdict survives a color-blind / WCAG read.
+// Unknown or future outcomes fall back to a neutral chip rather than blank.
 const OUTCOME_META = {
-  completed: { label: 'Completed', cls: 'text-status-success border-status-success/30 bg-status-success/10' },
-  thrashed: { label: 'Thrashed', cls: 'text-status-warning border-status-warning/30 bg-status-warning/10' },
-  fell_back_to_rules: { label: 'Fell back to rules', cls: 'text-status-warning border-status-warning/30 bg-status-warning/10' },
-  timed_out: { label: 'Timed out', cls: 'text-status-warning border-status-warning/30 bg-status-warning/10' },
-  aborted: { label: 'Aborted', cls: 'text-status-error border-status-error/30 bg-status-error/10' },
+  completed: { label: 'Completed', variant: 'success' },
+  thrashed: { label: 'Thrashed', variant: 'warning' },
+  fell_back_to_rules: { label: 'Fell back to rules', variant: 'warning' },
+  timed_out: { label: 'Timed out', variant: 'warning' },
+  aborted: { label: 'Aborted', variant: 'error' },
 };
 
 function OutcomeChip({ outcome }) {
   const meta = OUTCOME_META[outcome]
-    || { label: outcome || 'unknown', cls: 'text-tertiary border-border bg-surface-tertiary' };
-  return (
-    <span className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${meta.cls}`}>
-      {meta.label}
-    </span>
-  );
+    || { label: outcome || 'unknown', variant: 'default' };
+  return <Badge variant={meta.variant} size="sm">{meta.label}</Badge>;
 }
 
 function formatElapsed(ms) {
@@ -121,21 +129,28 @@ export default async function CodeSessionDetailPage({ params }) {
   const visibleMessages = filteredMessages.slice(0, TIMELINE_DEFAULT_CAP);
   const hiddenMessages = filteredMessages.slice(TIMELINE_DEFAULT_CAP);
 
+  const sessionDuration = (() => {
+    if (!session.started_at || !session.ended_at) return null;
+    const ms = new Date(session.ended_at).getTime() - new Date(session.started_at).getTime();
+    if (ms <= 0) return null;
+    return formatElapsed(ms);
+  })();
+
   function renderMessage(m) {
     const toolsForMessage = toolUses.filter(t => t.message_id === m.id);
     return (
-      <div key={m.id} className="border border-border rounded-md p-3">
-        <div className="flex items-center gap-2 text-xs text-tertiary">
-          <span className="rounded bg-surface-tertiary px-2 py-0.5">{m.role}</span>
-          {m.model && <span>{m.model}</span>}
-          {m.timestamp && <span>{new Date(m.timestamp).toLocaleString()}</span>}
+      <div key={m.id} className="rounded-lg border border-border bg-surface-tertiary/40 p-3">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-tertiary">
+          <Badge variant="default" size="xs">{m.role}</Badge>
+          {m.model && <span className="font-mono">{m.model}</span>}
+          {m.timestamp && <span className="tabular-nums">{new Date(m.timestamp).toLocaleString()}</span>}
           {m.cost_usd != null && (
-            <span className="tabular-nums">${Number(m.cost_usd).toFixed(4)}</span>
+            <span className="tabular-nums text-secondary">${Number(m.cost_usd).toFixed(4)}</span>
           )}
           {toolsForMessage.length > 0 && (
-            <span className="rounded bg-surface-tertiary px-1.5 py-0.5 text-[10px]">
+            <Badge variant="default" size="xs">
               {toolsForMessage.length} tool{toolsForMessage.length === 1 ? '' : 's'}
-            </span>
+            </Badge>
           )}
         </div>
         {m.text_preview && (
@@ -144,13 +159,15 @@ export default async function CodeSessionDetailPage({ params }) {
         {toolsForMessage.length > 0 && (
           <ul className="mt-2 space-y-1 text-xs">
             {toolsForMessage.map(t => (
-              <li key={t.id} className="flex gap-2">
-                <span className="font-mono">{t.name}</span>
-                {t.target && <span className="text-tertiary truncate">{t.target}</span>}
+              <li key={t.id} className="flex items-center gap-2">
+                <span className="font-mono text-secondary">{t.name}</span>
+                {t.target && <span className="truncate text-tertiary">{t.target}</span>}
                 {t.action_id && (
-                  <Link href={`/replay/${t.action_id}`}
-                     className="text-emerald-500 underline-offset-2 hover:underline">
-                    governed
+                  <Link
+                    href={`/replay/${t.action_id}`}
+                    className="ml-auto shrink-0"
+                  >
+                    <Badge variant="success" size="xs">governed</Badge>
                   </Link>
                 )}
               </li>
@@ -168,243 +185,279 @@ export default async function CodeSessionDetailPage({ params }) {
       breadcrumbs={['Code Sessions', session.project_slug || projectId, String(session.session_uuid || '').slice(0, 8)]}
       maturity="beta"
     >
-      {/* /goal autopsy — outcome verdict + where the cost went. Server-rendered
-          from the same getSessionDetail rows the API uses (shared
-          buildAutopsyFromDetail), so the UI verdict always matches the API. */}
-      <section className="mb-8">
-        <div className="rounded-lg border border-border p-4">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-            <h2 className="text-sm font-medium text-tertiary">Autopsy</h2>
-            <OutcomeChip outcome={autopsy.outcome} />
-            <span className="text-xs text-tertiary tabular-nums">
-              {autopsy.turns} turn{autopsy.turns === 1 ? '' : 's'}
-            </span>
-            <span className="text-xs text-tertiary tabular-nums">
-              ${Number(autopsy.cost_usd).toFixed(2)}
-            </span>
-            {autopsy.elapsed_ms != null && (
-              <span className="text-xs text-tertiary">{formatElapsed(autopsy.elapsed_ms)}</span>
-            )}
-          </div>
+      <div className="mx-auto max-w-5xl space-y-6">
+        {/* Back control — a real button-styled link, not a bare underline. */}
+        <Link
+          href={`/code-sessions/${projectId}`}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface-secondary px-3 py-1.5 text-sm font-medium text-secondary transition-colors hover:border-border-hover hover:text-primary"
+        >
+          <ChevronLeft size={15} aria-hidden="true" />
+          Back to project sessions
+        </Link>
 
-          {autopsy.goal_text && (
-            <p className="mt-3 text-sm text-secondary">
-              <span className="text-tertiary">Goal · </span>{autopsy.goal_text}
-            </p>
-          )}
-
-          {autopsy.where_money_went?.length > 0 && (
-            <div className="mt-4">
-              <h3 className="text-xs font-medium text-tertiary">Where the cost went</h3>
-              <ul className="mt-2 space-y-1.5">
-                {autopsy.where_money_went.map(b => {
-                  const pct = Math.round((b.share || 0) * 100);
-                  return (
-                    <li key={b.bucket} className="flex items-center gap-3 text-xs">
-                      <span className="w-32 shrink-0 truncate font-mono text-secondary">
-                        {String(b.bucket || '—').replace(':', ' · ')}
-                      </span>
-                      <span className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-surface-tertiary">
-                        <span
-                          className="absolute inset-y-0 left-0 rounded-full bg-white/20"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </span>
-                      <span className="w-9 shrink-0 text-right tabular-nums text-tertiary">{pct}%</span>
-                      <span className="w-16 shrink-0 text-right tabular-nums text-tertiary">
-                        ${Number(b.approxCost || 0).toFixed(2)}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          )}
-        </div>
-      </section>
-
-      <section className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
-        <div className="rounded-lg border border-border p-4">
-          <h2 className="text-sm font-medium text-tertiary">Summary</h2>
-          <dl className="mt-3 space-y-2 text-sm">
-            <div><dt className="inline text-tertiary">Model: </dt><dd className="inline">{session.model_primary || '—'}</dd></div>
-            <div><dt className="inline text-tertiary">Messages: </dt><dd className="inline tabular-nums">{session.message_count}</dd></div>
-            <div><dt className="inline text-tertiary">Source: </dt><dd className="inline">{session.source}</dd></div>
-            {session.started_at && (
-              <div>
-                <dt className="inline text-tertiary">Started: </dt>
-                <dd className="inline">{new Date(session.started_at).toLocaleString()}</dd>
-                {session.ended_at && (() => {
-                  const ms = new Date(session.ended_at).getTime() - new Date(session.started_at).getTime();
-                  if (ms <= 0) return null;
-                  const mins = Math.round(ms / 60000);
-                  const dur = mins < 60
-                    ? `${mins}m`
-                    : `${Math.floor(mins / 60)}h ${mins % 60}m`;
-                  return <span className="ml-2 text-tertiary">({dur})</span>;
-                })()}
-              </div>
-            )}
-            <div className="border-t border-border pt-2 mt-2">
-              <div className="font-medium">Cost reconciliation</div>
-              <div className="text-xs text-tertiary mt-1">
-                Code Sessions prices raw cache_read and cache_write separately;
-                Mission Control folds cache_read at 10% into tokens_in. The two
-                should agree within ~5% on normal sessions.
-              </div>
-              <div className="mt-2 tabular-nums text-xs">
-                <div>Code Sessions: <strong>${codeSessionsCost.toFixed(4)}</strong></div>
-                <div>Mission Control: <strong>${missionControlCost.toFixed(4)}</strong></div>
-              </div>
-              {costDiverges && (
-                <div className="mt-2 rounded border border-orange-400/40 bg-orange-400/10 p-2 text-xs text-orange-300">
-                  ⚠ {costRatio.toFixed(1)}× divergence — likely historical: this session was
-                  re-priced against the current pricing table at ingest time, but the
-                  stored <code>cost_usd</code> may reflect older rates. Run
-                  <code className="mx-1">scripts/backfill-code-session-cache-cost.mjs</code>
-                  to recompute historical cost_usd against the latest{' '}
-                  <code>billing.js</code> rates.
-                </div>
+        {/* /goal autopsy — outcome verdict + where the cost went. Server-rendered
+            from the same getSessionDetail rows the API uses (shared
+            buildAutopsyFromDetail), so the UI verdict always matches the API. */}
+        <Card hover={false}>
+          <CardHeader title="Autopsy" icon={Target} />
+          <CardContent>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+              <OutcomeChip outcome={autopsy.outcome} />
+              <span className="text-xs tabular-nums text-tertiary">
+                {autopsy.turns} turn{autopsy.turns === 1 ? '' : 's'}
+              </span>
+              <span className="text-xs tabular-nums text-tertiary">
+                ${Number(autopsy.cost_usd).toFixed(2)}
+              </span>
+              {autopsy.elapsed_ms != null && (
+                <span className="text-xs tabular-nums text-tertiary">{formatElapsed(autopsy.elapsed_ms)}</span>
               )}
             </div>
-            <div className={cacheLow ? 'text-orange-400' : ''}>
-              Cache hit rate: <strong className="tabular-nums">{(cacheHit * 100).toFixed(1)}%</strong>
-              {cacheLow && ' (below 30% floor)'}
-            </div>
-            <div className="border-t border-border pt-2 mt-2">
-              <div className="text-xs font-medium text-tertiary">Tokens</div>
-              <div className="mt-1 grid grid-cols-2 gap-x-3 gap-y-0.5 text-xs tabular-nums">
-                <div><span className="text-tertiary">input: </span>{(session.input_tokens || 0).toLocaleString()}</div>
-                <div><span className="text-tertiary">output: </span>{(session.output_tokens || 0).toLocaleString()}</div>
-                <div><span className="text-tertiary">cache write: </span>{(session.cache_creation_tokens || 0).toLocaleString()}</div>
-                <div><span className="text-tertiary">cache read: </span>{(session.cache_read_tokens || 0).toLocaleString()}</div>
+
+            {autopsy.goal_text && (
+              <p className="mt-3 text-sm text-secondary">
+                <span className="text-tertiary">Goal · </span>{autopsy.goal_text}
+              </p>
+            )}
+
+            {autopsy.where_money_went?.length > 0 && (
+              <div className="mt-5">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">
+                  Where the cost went
+                </div>
+                <ul className="mt-3 space-y-2.5">
+                  {autopsy.where_money_went.map(b => {
+                    const pct = Math.round((b.share || 0) * 100);
+                    return (
+                      <li key={b.bucket} className="flex items-center gap-3 text-xs">
+                        <span className="w-32 shrink-0 truncate font-mono text-secondary">
+                          {String(b.bucket || '—').replace(':', ' · ')}
+                        </span>
+                        <span className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-white/5">
+                          <span
+                            className="absolute inset-y-0 left-0 rounded-full bg-brand"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </span>
+                        <span className="w-9 shrink-0 text-right tabular-nums text-tertiary">{pct}%</span>
+                        <span className="w-16 shrink-0 text-right tabular-nums text-secondary">
+                          ${Number(b.approxCost || 0).toFixed(2)}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
               </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Session summary — model / message / source / timing as scannable stats
+            instead of a cramped definition list. */}
+        <Card hover={false}>
+          <CardHeader title="Summary" icon={Cog} />
+          <CardContent>
+            <div className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4">
+              <StatCompact label="Model" value={session.model_primary || '—'} />
+              <StatCompact label="Messages" value={(session.message_count || 0).toLocaleString()} />
+              <StatCompact label="Source" value={session.source || '—'} />
+              <StatCompact label="Duration" value={sessionDuration || '—'} />
             </div>
-            <div className="border-t border-border pt-2 mt-2">
-              <div className="text-xs font-medium text-tertiary">Without caching (naive)</div>
-              <div className="mt-1 tabular-nums text-xs">
-                <div>Naive cost: <strong>${Number(session.naive_cost_usd || 0).toFixed(4)}</strong></div>
-                <div className="text-emerald-400">
-                  Cache savings: <strong>${Number(session.cache_savings_usd || 0).toFixed(4)}</strong>
+            {session.started_at && (
+              <p className="mt-4 text-xs tabular-nums text-tertiary">
+                Started {new Date(session.started_at).toLocaleString()}
+                {session.ended_at && ` · ended ${new Date(session.ended_at).toLocaleString()}`}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Cost — session vs Mission Control reconciliation, with the divergence
+            flag promoted to a token-driven warning callout (no emoji). */}
+        <Card hover={false}>
+          <CardHeader title="Cost" icon={Coins} />
+          <CardContent>
+            <div className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-3">
+              <StatCompact label="Code Sessions" value={`$${codeSessionsCost.toFixed(4)}`} />
+              <StatCompact label="Mission Control" value={`$${missionControlCost.toFixed(4)}`} />
+              <StatCompact
+                label="Cache hit rate"
+                value={`${(cacheHit * 100).toFixed(1)}%`}
+                color={cacheLow ? 'text-warning' : 'text-success'}
+              />
+            </div>
+            {cacheLow && (
+              <p className="mt-3 text-xs text-warning">Cache hit rate is below the 30% floor.</p>
+            )}
+            <p className="mt-4 text-xs text-tertiary">
+              Code Sessions prices raw cache_read and cache_write separately; Mission Control
+              folds cache_read at 10% into tokens_in. The two should agree within ~5% on normal sessions.
+            </p>
+
+            {costDiverges && (
+              <div className="mt-4 rounded-xl border border-status-warning/30 bg-status-warning/10 p-3">
+                <div className="flex items-start gap-2.5">
+                  <AlertTriangle size={16} className="mt-0.5 shrink-0 text-warning" aria-hidden="true" />
+                  <div className="text-xs leading-relaxed text-secondary">
+                    <span className="font-medium text-warning tabular-nums">{costRatio.toFixed(1)}× divergence</span>
+                    {' '}— likely historical: this session was re-priced against the current pricing
+                    table at ingest time, but the stored <code>cost_usd</code> may reflect older rates.
+                    Run <code className="mx-1">scripts/backfill-code-session-cache-cost.mjs</code> to
+                    recompute historical cost_usd against the latest <code>billing.js</code> rates.
+                  </div>
                 </div>
               </div>
-              <div className="mt-1.5 grid grid-cols-2 gap-x-3 gap-y-0.5 text-xs tabular-nums">
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Tokens — actual vs naive (no-cache) usage and the resulting savings. */}
+        <Card hover={false}>
+          <CardHeader title="Tokens" icon={Database} />
+          <CardContent>
+            <div className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4">
+              <StatCompact label="Input" value={(session.input_tokens || 0).toLocaleString()} />
+              <StatCompact label="Output" value={(session.output_tokens || 0).toLocaleString()} />
+              <StatCompact label="Cache write" value={(session.cache_creation_tokens || 0).toLocaleString()} />
+              <StatCompact label="Cache read" value={(session.cache_read_tokens || 0).toLocaleString()} />
+            </div>
+
+            <div className="mt-6 border-t border-border pt-5">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">
+                Without caching (naive)
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-3">
+                <StatCompact label="Naive cost" value={`$${Number(session.naive_cost_usd || 0).toFixed(4)}`} />
+                <StatCompact
+                  label="Cache savings"
+                  value={`$${Number(session.cache_savings_usd || 0).toFixed(4)}`}
+                  color="text-success"
+                />
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-1 text-xs tabular-nums sm:grid-cols-4">
                 <div><span className="text-tertiary">input: </span>{Number(session.naive_input_tokens || 0).toLocaleString()}</div>
                 <div><span className="text-tertiary">output: </span>{Number(session.naive_output_tokens || 0).toLocaleString()}</div>
                 <div><span className="text-tertiary">cache write: </span>{Number(session.naive_cache_creation_tokens || 0).toLocaleString()}</div>
                 <div><span className="text-tertiary">cache read: </span>{Number(session.naive_cache_read_tokens || 0).toLocaleString()}</div>
               </div>
             </div>
-            <div className="border-t border-border pt-2 mt-2">
-              <div className="text-xs font-medium text-tertiary">Parser</div>
-              <div className="mt-1 grid grid-cols-2 gap-x-3 gap-y-0.5 text-xs tabular-nums">
+
+            <div className="mt-6 border-t border-border pt-5">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Parser</div>
+              <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-1 text-xs tabular-nums sm:grid-cols-3">
                 <div><span className="text-tertiary">version: </span>{session.parser_version}</div>
                 <div><span className="text-tertiary">model requests: </span>{Number(session.model_requests || 0).toLocaleString()}</div>
                 {Number(session.stuck_loops || 0) > 0 && (
-                  <div className="text-orange-400">
+                  <div className="text-warning">
                     <span className="text-tertiary">stuck loops: </span>{session.stuck_loops}
                   </div>
                 )}
               </div>
             </div>
-          </dl>
-        </div>
+          </CardContent>
+        </Card>
 
-        <div className="rounded-lg border border-border p-4 md:col-span-2">
-          <h2 className="text-sm font-medium text-tertiary">
-            Signals ({namedSignals.length}{repeatedSummary ? ` + ${repeatedSummary.total} repeats` : ''})
-          </h2>
-          {!signals.length ? (
-            <p className="mt-3 text-sm text-tertiary">No signals for this session.</p>
-          ) : (
-            <ul className="mt-3 space-y-3 text-sm">
-              {namedSignals.map(sig => {
-                const meta = labelFor(sig.kind);
-                const title = sig.payload?.title;
-                const description = sig.payload?.description;
-                return (
-                  <li key={sig.id} className="border-l-2 border-border pl-3">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{meta.label}</span>
-                      {sig.confidence && (
-                        <span className="rounded bg-surface-tertiary px-1.5 py-0.5 text-[10px] text-tertiary uppercase">
-                          {sig.confidence}
-                        </span>
-                      )}
-                      {sig.savings_usd != null && Number(sig.savings_usd) > 0 && (
-                        <span className="text-xs text-emerald-400 tabular-nums">
-                          ≈ ${Number(sig.savings_usd).toFixed(2)} savings
-                        </span>
-                      )}
-                    </div>
-                    {title && <div className="mt-1 text-xs text-secondary">{title}</div>}
-                    {description && (
-                      <div className="mt-1 text-xs text-tertiary">{description}</div>
-                    )}
-                    {meta.suggestion && (
-                      <div className="mt-1 text-xs text-tertiary italic">
-                        → {meta.suggestion}
+        {/* Signals — analyzer findings, severity-ordered, with repeated runs
+            collapsed into one cluster. */}
+        <Card hover={false}>
+          <CardHeader
+            title="Signals"
+            icon={Wrench}
+            count={namedSignals.length + (repeatedSummary ? repeatedSummary.total : 0)}
+          />
+          <CardContent>
+            {!signals.length ? (
+              <p className="text-sm text-tertiary">No signals for this session.</p>
+            ) : (
+              <ul className="space-y-3 text-sm">
+                {namedSignals.map(sig => {
+                  const meta = labelFor(sig.kind);
+                  const title = sig.payload?.title;
+                  const description = sig.payload?.description;
+                  return (
+                    <li key={sig.id} className="border-l-2 border-border pl-3">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-medium text-primary">{meta.label}</span>
+                        {sig.confidence && (
+                          <Badge variant="default" size="xs" className="uppercase">
+                            {sig.confidence}
+                          </Badge>
+                        )}
+                        {sig.savings_usd != null && Number(sig.savings_usd) > 0 && (
+                          <span className="text-xs tabular-nums text-success">
+                            ≈ ${Number(sig.savings_usd).toFixed(2)} savings
+                          </span>
+                        )}
                       </div>
-                    )}
+                      {title && <div className="mt-1 text-xs text-secondary">{title}</div>}
+                      {description && (
+                        <div className="mt-1 text-xs text-tertiary">{description}</div>
+                      )}
+                      {meta.suggestion && (
+                        <div className="mt-1 text-xs italic text-tertiary">
+                          → {meta.suggestion}
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
+                {repeatedSummary && (
+                  <li className="border-l-2 border-border pl-3">
+                    <details>
+                      <summary className="cursor-pointer text-secondary">
+                        <span className="font-medium text-primary">Repeated tool runs</span>
+                        <span className="ml-2 text-xs text-tertiary">
+                          {repeatedSummary.total} total — {repeatedSummary.byConfidence.high || 0} high,
+                          {' '}{repeatedSummary.byConfidence.medium || 0} medium,
+                          {' '}{repeatedSummary.byConfidence.low || 0} low
+                        </span>
+                      </summary>
+                      <div className="mt-2 text-xs text-tertiary">
+                        Top tools by call count:
+                        <ul className="ml-4 mt-1 list-disc">
+                          {repeatedSummary.topTargets.map(([name, count]) => (
+                            <li key={name}><span className="font-mono text-secondary">{name}</span> ×{count}</li>
+                          ))}
+                        </ul>
+                        <p className="mt-2 italic">→ {labelFor('repeated_run').suggestion}</p>
+                      </div>
+                    </details>
                   </li>
-                );
-              })}
-              {repeatedSummary && (
-                <li className="border-l-2 border-border pl-3">
-                  <details>
-                    <summary className="cursor-pointer">
-                      <span className="font-medium">Repeated tool runs</span>
-                      <span className="ml-2 text-xs text-tertiary">
-                        {repeatedSummary.total} total — {repeatedSummary.byConfidence.high || 0} high,
-                        {' '}{repeatedSummary.byConfidence.medium || 0} medium,
-                        {' '}{repeatedSummary.byConfidence.low || 0} low
-                      </span>
-                    </summary>
-                    <div className="mt-2 text-xs text-tertiary">
-                      Top tools by call count:
-                      <ul className="mt-1 ml-4 list-disc">
-                        {repeatedSummary.topTargets.map(([name, count]) => (
-                          <li key={name}><span className="font-mono">{name}</span> ×{count}</li>
-                        ))}
-                      </ul>
-                      <p className="mt-2 italic">→ {labelFor('repeated_run').suggestion}</p>
-                    </div>
-                  </details>
-                </li>
-              )}
-            </ul>
-          )}
-        </div>
-      </section>
+                )}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
 
-      <section className="mb-8">
         <OptimalFilesPanel sessionId={sessionId} />
-      </section>
 
-      <section>
-        <div className="mb-3 flex items-baseline justify-between">
-          <h2 className="text-lg font-medium">Timeline</h2>
-          <span className="text-xs text-tertiary">{totalMessages} message{totalMessages === 1 ? '' : 's'}</span>
-        </div>
-        <div className="space-y-3">
-          {visibleMessages.map(renderMessage)}
-          {overCap && (
-            <details className="rounded-md border border-dashed border-border p-3">
-              <summary className="cursor-pointer text-sm text-tertiary">
-                Show remaining {hiddenMessages.length} message{hiddenMessages.length === 1 ? '' : 's'}
-              </summary>
-              <div className="mt-3 space-y-3">
-                {hiddenMessages.map(renderMessage)}
-              </div>
-            </details>
-          )}
-        </div>
-      </section>
-
-      <div className="mt-6">
-        <Link href={`/code-sessions/${projectId}`} className="text-sm text-tertiary underline">
-          ← back to project sessions
-        </Link>
+        {/* Timeline — message-by-message stream, capped with expandable tail. */}
+        <Card hover={false}>
+          <CardHeader
+            title="Timeline"
+            icon={ListTree}
+            action={
+              <span className="text-xs tabular-nums text-tertiary">
+                {totalMessages} message{totalMessages === 1 ? '' : 's'}
+              </span>
+            }
+          />
+          <CardContent>
+            <div className="space-y-3">
+              {visibleMessages.map(renderMessage)}
+              {overCap && (
+                <details className="rounded-lg border border-dashed border-border p-3">
+                  <summary className="cursor-pointer text-sm text-tertiary">
+                    Show remaining {hiddenMessages.length} message{hiddenMessages.length === 1 ? '' : 's'}
+                  </summary>
+                  <div className="mt-3 space-y-3">
+                    {hiddenMessages.map(renderMessage)}
+                  </div>
+                </details>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </PageLayout>
   );

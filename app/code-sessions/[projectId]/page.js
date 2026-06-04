@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { headers } from 'next/headers';
+import { Bot, Layers } from 'lucide-react';
 import { getSql } from '../../lib/db.js';
 import {
   listSessions,
@@ -8,6 +9,8 @@ import {
 } from '../../lib/repositories/code-sessions.repository.js';
 import { computeRoiFromRows } from '../../lib/claude-code/subagent-roi.js';
 import PageLayout from '../../components/PageLayout';
+import { Card, CardContent } from '../../components/ui/Card';
+import { EmptyState } from '../../components/ui/EmptyState';
 import WeeklyMemoPanel from './WeeklyMemoPanel.jsx';
 
 export const dynamic = 'force-dynamic';
@@ -25,7 +28,7 @@ function RecChip({ recommendation }) {
   const meta = REC_META[recommendation]
     || { label: recommendation || '—', cls: 'text-tertiary border-border bg-surface-tertiary' };
   return (
-    <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ${meta.cls}`}>
+    <span className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ${meta.cls}`}>
       {meta.label}
     </span>
   );
@@ -37,6 +40,33 @@ function pct(rate) {
 
 function usd(n) {
   return n == null ? '—' : `$${Number(n).toFixed(2)}`;
+}
+
+// The route param is the internal `cp_<uuid>` id. No project name is available
+// from the session/roi/memo reads, so we render a short, stable id rather than
+// exposing the full internal uuid in the header and breadcrumb.
+function shortProjectId(id) {
+  const raw = String(id || '');
+  const body = raw.startsWith('cp_') ? raw.slice(3) : raw;
+  return body.length > 8 ? `${body.slice(0, 8)}…` : body || '—';
+}
+
+// Section wrapper that mirrors the fleet table pattern (Card + bordered header)
+// so each table reads as a peer of the WeeklyMemoPanel card, not a bare table
+// floating on the page background.
+function TableSection({ title, icon: Icon, description, children }) {
+  return (
+    <Card hover={false}>
+      <div className="flex items-center gap-2 border-b border-border px-5 py-3">
+        {Icon && <Icon size={15} className="shrink-0 text-tertiary" aria-hidden="true" />}
+        <div className="min-w-0">
+          <h2 className="text-sm font-semibold text-white">{title}</h2>
+          {description && <p className="mt-0.5 text-xs text-tertiary">{description}</p>}
+        </div>
+      </div>
+      <CardContent className="p-0">{children}</CardContent>
+    </Card>
+  );
 }
 
 export default async function ProjectSessionsPage({ params }) {
@@ -54,101 +84,111 @@ export default async function ProjectSessionsPage({ params }) {
   const roi = computeRoiFromRows(roiRows);
   // listMemos returns rows ordered iso_week_tag DESC, so [0] is the latest.
   const latestMemo = memos[0] || null;
+  const projectLabel = shortProjectId(projectId);
 
   return (
     <PageLayout
       title="Sessions"
-      subtitle={`Project ${projectId}`}
-      breadcrumbs={['Code Sessions', projectId]}
+      subtitle={`Project ${projectLabel}`}
+      breadcrumbs={['Code Sessions', projectLabel]}
       maturity="beta"
     >
-      {/* Weekly spend memo — server-seeded with the latest stored memo (Markdown
-          body), with a client Regenerate action. Project-level summary, leads. */}
-      <WeeklyMemoPanel projectId={projectId} initialMemo={latestMemo} />
+      <div className="max-w-5xl space-y-6">
+        {/* Weekly spend memo — server-seeded with the latest stored memo (Markdown
+            body), with a client Regenerate action. Project-level summary, leads. */}
+        <WeeklyMemoPanel projectId={projectId} initialMemo={latestMemo} />
 
-      {/* Subagent ROI — keep/trim/drop per subagent by success rate and
-          cost-per-success. Server-rendered via the same computeRoiFromRows the
-          /subagent-roi API uses, so the verdict matches the API. Only shown
-          when there's subagent activity to report. */}
-      {roi.length > 0 && (
-        <section className="mb-8">
-          <h2 className="mb-1 text-sm font-medium text-tertiary">Subagent ROI</h2>
-          <p className="mb-3 text-xs text-tertiary">
-            Keep / trim / drop by success rate and cost-per-success across this project&apos;s sessions.
-          </p>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
-              <thead>
-                <tr className="border-b border-border text-left text-tertiary">
-                  <th className="py-2 pr-3 font-medium">Subagent</th>
-                  <th className="py-2 pr-3 font-medium text-right">Runs</th>
-                  <th className="py-2 pr-3 font-medium text-right">Total</th>
-                  <th className="py-2 pr-3 font-medium text-right">Avg</th>
-                  <th className="py-2 pr-3 font-medium text-right">Success</th>
-                  <th className="py-2 pr-3 font-medium text-right">$/success</th>
-                  <th className="py-2 pr-3 font-medium">Verdict</th>
-                </tr>
-              </thead>
-              <tbody>
-                {roi.map(r => (
-                  <tr key={r.name} className="border-b border-border last:border-0 hover:bg-surface-secondary/50">
-                    <td className="py-3 pr-3 font-mono text-xs text-secondary">{r.name}</td>
-                    <td className="py-3 pr-3 text-right tabular-nums">{r.invocation_count}</td>
-                    <td className="py-3 pr-3 text-right tabular-nums">{usd(r.total_cost_usd)}</td>
-                    <td className="py-3 pr-3 text-right tabular-nums">{usd(r.avg_cost_usd)}</td>
-                    <td className="py-3 pr-3 text-right tabular-nums">{pct(r.success_rate)}</td>
-                    <td className="py-3 pr-3 text-right tabular-nums">{usd(r.cost_per_success_usd)}</td>
-                    <td className="py-3 pr-3"><RecChip recommendation={r.recommendation} /></td>
+        {/* Subagent ROI — keep/trim/drop per subagent by success rate and
+            cost-per-success. Server-rendered via the same computeRoiFromRows the
+            /subagent-roi API uses, so the verdict matches the API. Only shown
+            when there's subagent activity to report. */}
+        {roi.length > 0 && (
+          <TableSection
+            title="Subagent ROI"
+            icon={Bot}
+            description="Keep / trim / drop by success rate and cost-per-success across this project's sessions."
+          >
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-left text-sm">
+                <thead>
+                  <tr className="border-b border-border text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">
+                    <th className="px-5 py-3">Subagent</th>
+                    <th className="px-5 py-3 text-right">Runs</th>
+                    <th className="px-5 py-3 text-right">Total</th>
+                    <th className="px-5 py-3 text-right">Avg</th>
+                    <th className="px-5 py-3 text-right">Success</th>
+                    <th className="px-5 py-3 text-right">$/success</th>
+                    <th className="px-5 py-3">Verdict</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      )}
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {roi.map(r => (
+                    <tr key={r.name} className="transition-colors hover:bg-white/[0.02]">
+                      <td className="px-5 py-3 font-mono text-xs text-secondary">{r.name}</td>
+                      <td className="px-5 py-3 text-right tabular-nums text-secondary">{r.invocation_count}</td>
+                      <td className="px-5 py-3 text-right tabular-nums text-secondary">{usd(r.total_cost_usd)}</td>
+                      <td className="px-5 py-3 text-right tabular-nums text-secondary">{usd(r.avg_cost_usd)}</td>
+                      <td className="px-5 py-3 text-right tabular-nums text-secondary">{pct(r.success_rate)}</td>
+                      <td className="px-5 py-3 text-right tabular-nums text-secondary">{usd(r.cost_per_success_usd)}</td>
+                      <td className="px-5 py-3"><RecChip recommendation={r.recommendation} /></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </TableSection>
+        )}
 
-      <section>
-        <h2 className="mb-3 text-sm font-medium text-tertiary">Sessions</h2>
-      {!sessions.length ? (
-        <div className="rounded-md border border-dashed border-border p-8 text-center text-secondary">
-          No sessions yet for this project.
-        </div>
-      ) : (
-        <table className="w-full text-sm border-collapse">
-          <thead>
-            <tr className="border-b border-border text-left text-tertiary">
-              <th className="py-2 pr-3 font-medium">Session</th>
-              <th className="py-2 pr-3 font-medium">Source</th>
-              <th className="py-2 pr-3 font-medium">Model</th>
-              <th className="py-2 pr-3 font-medium">Messages</th>
-              <th className="py-2 pr-3 font-medium">Cost</th>
-              <th className="py-2 pr-3 font-medium">Started</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sessions.map(s => (
-              <tr key={s.id} className="border-b border-border last:border-0 hover:bg-surface-secondary/50">
-                <td className="py-3 pr-3 font-mono text-xs">
-                  <Link className="text-orange-500 underline-offset-2 hover:underline"
-                        href={`/code-sessions/${projectId}/${s.id}`}>
-                    {String(s.session_uuid || '').slice(0, 8)}
-                  </Link>
-                </td>
-                <td className="py-3 pr-3">
-                  <span className="rounded bg-surface-tertiary px-2 py-0.5 text-xs text-tertiary">{s.source}</span>
-                </td>
-                <td className="py-3 pr-3 text-xs">{s.model_primary || '—'}</td>
-                <td className="py-3 pr-3 tabular-nums">{s.message_count}</td>
-                <td className="py-3 pr-3 tabular-nums">${Number(s.cost_usd || 0).toFixed(2)}</td>
-                <td className="py-3 pr-3 text-tertiary">
-                  {s.started_at ? new Date(s.started_at).toLocaleString() : '—'}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-      </section>
+        <TableSection title="Sessions" icon={Layers}>
+          {!sessions.length ? (
+            <div className="p-8">
+              <EmptyState
+                icon={Layers}
+                title="No sessions yet"
+                description="No sessions have been recorded for this project yet."
+              />
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-left text-sm">
+                <thead>
+                  <tr className="border-b border-border text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">
+                    <th className="px-5 py-3">Session</th>
+                    <th className="px-5 py-3">Source</th>
+                    <th className="px-5 py-3">Model</th>
+                    <th className="px-5 py-3 text-right">Messages</th>
+                    <th className="px-5 py-3 text-right">Cost</th>
+                    <th className="px-5 py-3">Started</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {sessions.map(s => (
+                    <tr key={s.id} className="transition-colors hover:bg-white/[0.02]">
+                      <td className="px-5 py-3">
+                        <Link
+                          className="font-mono text-xs text-white transition-colors hover:text-brand"
+                          href={`/code-sessions/${projectId}/${s.id}`}
+                        >
+                          {String(s.session_uuid || '').slice(0, 8)}
+                        </Link>
+                      </td>
+                      <td className="px-5 py-3">
+                        <span className="rounded bg-surface-tertiary px-2 py-0.5 text-xs text-tertiary">{s.source}</span>
+                      </td>
+                      <td className="px-5 py-3 text-xs text-secondary">{s.model_primary || '—'}</td>
+                      <td className="px-5 py-3 text-right tabular-nums text-secondary">{s.message_count}</td>
+                      <td className="px-5 py-3 text-right tabular-nums text-secondary">${Number(s.cost_usd || 0).toFixed(2)}</td>
+                      <td className="px-5 py-3 text-tertiary tabular-nums">
+                        {s.started_at ? new Date(s.started_at).toLocaleString() : '—'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </TableSection>
+      </div>
     </PageLayout>
   );
 }
