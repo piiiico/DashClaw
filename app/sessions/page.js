@@ -46,6 +46,10 @@ const statusBadge = {
 
 // Statuses the "Finished" filter rolls up (any non-failed terminal state).
 const FINISHED_STATUSES = ['finished', 'completed', 'closed', 'cancelled'];
+// All terminal statuses — a session in any of these has ended, so its duration
+// is frozen at updated_at. Includes 'failed' so OpenClaw 'completed' / 'failed'
+// sessions stop showing an ever-growing live duration.
+const TERMINAL_STATUSES = ['finished', 'failed', 'closed', 'completed', 'cancelled'];
 const FILTERS = ['all', 'running', 'blocked', 'failed', 'finished'];
 
 export default function SessionsPage() {
@@ -178,11 +182,11 @@ export default function SessionsPage() {
                   <tr className="border-b border-white/5 text-[10px] uppercase tracking-widest text-tertiary font-semibold">
                     <th className="px-6 py-4">Status</th>
                     <th className="px-6 py-4">Agent</th>
-                    <th className="px-6 py-4">Branch</th>
-                    <th className="px-6 py-4">Green Level</th>
+                    <th className="px-6 py-4">Workspace</th>
+                    <th className="px-6 py-4">Actions</th>
                     <th className="px-6 py-4">Last Activity</th>
                     <th className="px-6 py-4">Duration</th>
-                    <th className="px-6 py-4 text-right">Actions</th>
+                    <th className="px-6 py-4 text-right">View</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
@@ -200,10 +204,10 @@ export default function SessionsPage() {
                         </Link>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-xs text-secondary">{session.branch || '-'}</span>
+                        <span className="text-xs text-secondary">{session.workspace || '-'}</span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-xs text-secondary">{session.green_level || '-'}</span>
+                        <span className="text-xs text-secondary tabular-nums">{session.action_count ?? 0}</span>
                       </td>
                       <td className="px-6 py-4">
                         <span className="text-xs text-secondary">
@@ -212,7 +216,7 @@ export default function SessionsPage() {
                       </td>
                       <td className="px-6 py-4">
                         <span className="text-xs text-secondary">
-                          {session.created_at ? duration(session.created_at, session.status === 'finished' || session.status === 'failed' ? session.updated_at : null) : '-'}
+                          {session.created_at ? duration(session.created_at, TERMINAL_STATUSES.includes(session.status) ? session.updated_at : null) : '-'}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">

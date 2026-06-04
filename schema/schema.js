@@ -157,6 +157,9 @@ export const actionRecords = pgTable('action_records', {
   outcomeError: text('outcome_error'),
   outcomeProgress: jsonb('outcome_progress'),
   idempotencyKey: text('idempotency_key'),
+  // Originating agent session (sess_ prefix), stamped by writers that know it.
+  // Lets /sessions aggregate per-session action telemetry. See drizzle/0020.
+  sessionId: text('session_id'),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 }, (table) => ({

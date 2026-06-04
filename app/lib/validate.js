@@ -60,6 +60,10 @@ const ACTION_RECORD_SCHEMA = {
   // (org_id, idempotency_key), the create call returns that row instead
   // of inserting a duplicate. See docs/architecture/durable-execution-finality.md.
   idempotency_key:      { type: 'string', maxLength: 256 },
+  // Originating agent session (sess_ prefix). Optional; when present it is
+  // persisted on the action_record so /sessions can aggregate per-session
+  // telemetry. See drizzle/0020_session_action_link.sql.
+  session_id:           { type: 'string', maxLength: 128 },
   // Non-fabrication integrity (optional). The outbound content to verify and the
   // source-of-truth it must trace to. Forwarded into the guard context for a
   // non_fabrication policy; never persisted as action_records columns.

@@ -32,7 +32,7 @@ export async function PATCH(request, { params }) {
     const orgId = getOrgId(request);
     const body = await request.json();
 
-    const { status, green_level, branch_freshness, commits_behind, blocked_reason } = body;
+    const { status, green_level, branch_freshness, commits_behind, blocked_reason, summary } = body;
 
     // At least one update field must be present
     if (!status && !green_level && !branch_freshness && commits_behind == null && !blocked_reason) {
@@ -45,6 +45,12 @@ export async function PATCH(request, { params }) {
       branch_freshness,
       commits_behind,
       blocked_reason,
+      // session_end (MCP dashclaw_session_end) sends { status, summary }; the
+      // summary used to be silently dropped. updateSession now records it as
+      // the terminal session_event's detail. Note: summary alone (no status)
+      // still fails the field check above by design — there is no terminal
+      // event to attach it to without a status transition.
+      summary,
     });
 
     if (!session) {

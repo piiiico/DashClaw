@@ -1,5 +1,87 @@
 import { randomUUID } from 'node:crypto';
 
+// Statuses that mean a session has ended. Used both to compute a session's
+// effective end time (for the action-window fallback) and shared with the
+// frontend duration logic. A session in any of these is "done"; everything
+// else is treated as live.
+export const TERMINAL_STATUSES = ['finished', 'failed', 'closed', 'completed', 'cancelled'];
+
+// Per-session aggregation over action_records. Two join paths are unioned:
+//   1. Direct: action_records.session_id = the session id (set by writers that
+//      know it — currently none in the platform, but the column is wired so
+//      SDK/MCP stamping can light this up without a query change).
+//   2. Fallback: same agent_id whose action_records.created_at falls inside the
+//      session's lifetime window [created_at, COALESCE(terminal updated_at, now())].
+//      This is what makes existing un-stamped sessions useful today.
+// cost_estimate is summed with COALESCE; the caller coerces the numeric result
+// with Number() (Neon returns numeric/real as strings).
+function sessionAggregateSql(sql) {
+  return sql`
+    LEFT JOIN LATERAL (
+      SELECT
+        COUNT(*)::int                         AS action_count,
+        MAX(ar.created_at)                    AS last_action_at,
+        COALESCE(SUM(ar.cost_estimate), 0)    AS total_cost,
+        COALESCE(MAX(ar.risk_score), 0)::int  AS max_risk
+      FROM action_records ar
+      WHERE ar.org_id = s.org_id
+        AND (
+          ar.session_id = s.id
+          OR (
+            ar.session_id IS NULL
+            AND ar.agent_id = s.agent_id
+            AND ar.created_at::timestamptz >= s.created_at
+            AND ar.created_at::timestamptz <= CASE
+              WHEN s.status = ANY(${TERMINAL_STATUSES}) THEN s.updated_at
+              ELSE NOW()
+            END
+          )
+        )
+    ) agg ON TRUE
+    LEFT JOIN LATERAL (
+      SELECT
+        ar.outcome_status AS last_outcome_status,
+        ar.status         AS last_status,
+        ar.declared_goal  AS last_declared_goal
+      FROM action_records ar
+      WHERE ar.org_id = s.org_id
+        AND (
+          ar.session_id = s.id
+          OR (
+            ar.session_id IS NULL
+            AND ar.agent_id = s.agent_id
+            AND ar.created_at::timestamptz >= s.created_at
+            AND ar.created_at::timestamptz <= CASE
+              WHEN s.status = ANY(${TERMINAL_STATUSES}) THEN s.updated_at
+              ELSE NOW()
+            END
+          )
+        )
+      ORDER BY ar.created_at DESC
+      LIMIT 1
+    ) last_action ON TRUE
+    LEFT JOIN LATERAL (
+      SELECT COUNT(*)::int AS event_count
+      FROM session_events se
+      WHERE se.session_id = s.id AND se.org_id = s.org_id
+    ) ev ON TRUE
+  `;
+}
+
+// Coerce the aggregate columns into JS numbers (Neon returns numeric/real and
+// COUNT/SUM results as strings) and shape last_action_at into last_activity.
+// Mutates and returns the row for terseness.
+function shapeAggregatedSession(row) {
+  if (!row) return row;
+  row.action_count = Number(row.action_count) || 0;
+  row.total_cost = Number(row.total_cost) || 0;
+  row.max_risk = Number(row.max_risk) || 0;
+  row.event_count = Number(row.event_count) || 0;
+  // Prefer the real last action timestamp; fall back to the stored last_activity.
+  row.last_activity = row.last_action_at || row.last_activity || null;
+  return row;
+}
+
 // Pin the table-check flag on globalThis so HMR / serverless cold-starts
 // don't re-fire the four CREATE TABLE / CREATE INDEX round-trips every
 // invocation. Mirrors the pattern in app/lib/db.js for the SQL handle.
@@ -86,12 +168,23 @@ export async function getSession(sql, sessionId, orgId) {
   await ensureTables(sql);
 
   const rows = await sql`
-    SELECT * FROM agent_sessions
-    WHERE id = ${sessionId} AND org_id = ${orgId}
+    SELECT
+      s.*,
+      agg.action_count,
+      agg.last_action_at,
+      agg.total_cost,
+      agg.max_risk,
+      last_action.last_outcome_status,
+      last_action.last_status,
+      last_action.last_declared_goal,
+      ev.event_count
+    FROM agent_sessions s
+    ${sessionAggregateSql(sql)}
+    WHERE s.id = ${sessionId} AND s.org_id = ${orgId}
     LIMIT 1
   `;
 
-  return rows[0] || null;
+  return shapeAggregatedSession(rows[0]) || null;
 }
 
 /**
@@ -107,10 +200,20 @@ export async function updateSession(sql, sessionId, orgId, updates) {
     branch_freshness = null,
     commits_behind = null,
     blocked_reason = null,
+    summary = null,
   } = updates;
 
   // blocked_reason only applies when status is 'blocked'
   const effectiveBlockedReason = status === 'blocked' ? blocked_reason : null;
+
+  // Event detail salvage: session_end sends a 'summary' that the PATCH route
+  // used to silently drop. Store it as the terminal session_event's detail so
+  // it survives and surfaces on the detail page. blocked_reason still wins for
+  // the 'blocked' transition; otherwise a terminal-status summary is recorded.
+  const isTerminal = status != null && TERMINAL_STATUSES.includes(status);
+  const eventDetail = status === 'blocked'
+    ? effectiveBlockedReason
+    : (isTerminal ? summary : null);
 
   // Terminal-state guard: once a session is closed, reject further updates
   // (no reviving via PATCH { status: 'active' }, no late mutations of
@@ -145,7 +248,7 @@ export async function updateSession(sql, sessionId, orgId, updates) {
   if (session && status) {
     await sql`
       INSERT INTO session_events (session_id, org_id, seq, kind, detail)
-      SELECT ${sessionId}, ${orgId}, COALESCE(MAX(seq), 0) + 1, ${status}, ${effectiveBlockedReason}
+      SELECT ${sessionId}, ${orgId}, COALESCE(MAX(seq), 0) + 1, ${status}, ${eventDetail}
       FROM session_events
       WHERE session_id = ${sessionId}
     `;
@@ -165,15 +268,26 @@ export async function listSessions(sql, orgId, filters = {}) {
   const limit = Math.min(parseInt(filters.limit, 10) || 50, 200);
 
   const rows = await sql`
-    SELECT * FROM agent_sessions
-    WHERE org_id = ${orgId}
-      AND (${agentId}::text IS NULL OR agent_id = ${agentId})
-      AND (${status}::text IS NULL OR status = ${status})
-    ORDER BY updated_at DESC
+    SELECT
+      s.*,
+      agg.action_count,
+      agg.last_action_at,
+      agg.total_cost,
+      agg.max_risk,
+      last_action.last_outcome_status,
+      last_action.last_status,
+      last_action.last_declared_goal,
+      ev.event_count
+    FROM agent_sessions s
+    ${sessionAggregateSql(sql)}
+    WHERE s.org_id = ${orgId}
+      AND (${agentId}::text IS NULL OR s.agent_id = ${agentId})
+      AND (${status}::text IS NULL OR s.status = ${status})
+    ORDER BY s.updated_at DESC
     LIMIT ${limit}
   `;
 
-  return rows;
+  return rows.map(shapeAggregatedSession);
 }
 
 /**

@@ -214,36 +214,58 @@ export default function SessionDetailPage() {
         </div>
       )}
 
-      {/* Info Grid */}
+      {/* Action telemetry — grounded in action_records for this session
+          (direct session_id link, falling back to agent + time window). The
+          legacy CI cards (green level / branch freshness / commits behind)
+          were never populated and have been retired. */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <Card hover={false}>
           <div className="p-4">
-            <div className="text-[10px] uppercase tracking-widest text-tertiary mb-1">Green Level</div>
-            <div className="text-sm font-medium text-white">{session.green_level || '-'}</div>
+            <div className="text-[10px] uppercase tracking-widest text-tertiary mb-1"># Actions</div>
+            <div className="text-sm font-medium text-white tabular-nums">{session.action_count ?? 0}</div>
           </div>
         </Card>
         <Card hover={false}>
           <div className="p-4">
-            <div className="text-[10px] uppercase tracking-widest text-tertiary mb-1">Branch Freshness</div>
-            <div className="text-sm font-medium text-white">{session.branch_freshness || '-'}</div>
+            <div className="text-[10px] uppercase tracking-widest text-tertiary mb-1">Total Cost</div>
+            <div className="text-sm font-medium text-white tabular-nums">${(Number(session.total_cost) || 0).toFixed(2)}</div>
           </div>
         </Card>
         <Card hover={false}>
           <div className="p-4">
-            <div className="text-[10px] uppercase tracking-widest text-tertiary mb-1">Commits Behind</div>
-            <div className="text-sm font-medium text-white">{session.commits_behind != null ? session.commits_behind : '-'}</div>
+            <div className="text-[10px] uppercase tracking-widest text-tertiary mb-1">Max Risk</div>
+            <div className="text-sm font-medium text-white tabular-nums">{session.max_risk != null ? session.max_risk : '-'}</div>
           </div>
         </Card>
         <Card hover={false}>
           <div className="p-4">
-            <div className="text-[10px] uppercase tracking-widest text-tertiary mb-1">Blocked Reason</div>
-            <div className="text-sm font-medium text-white">{session.blocked_reason || '-'}</div>
+            <div className="text-[10px] uppercase tracking-widest text-tertiary mb-1"># Events</div>
+            <div className="text-sm font-medium text-white tabular-nums">{session.event_count ?? events.length}</div>
           </div>
         </Card>
       </div>
 
+      {/* Session Summary — the terminal session_event's detail. session_end
+          sends a 'summary' that the PATCH route now records as the detail of
+          the terminal event (instead of dropping it). Surface it here so the
+          end-of-session narrative is first-class, not buried in the timeline. */}
+      {(() => {
+        const terminalEvent = [...events]
+          .reverse()
+          .find((e) => TERMINAL_STATUSES.includes(e.kind) && e.detail);
+        if (!terminalEvent) return null;
+        return (
+          <Card hover={false}>
+            <div className="p-5">
+              <div className="text-[10px] uppercase tracking-widest text-tertiary mb-2">Session Summary</div>
+              <div className="text-sm text-secondary whitespace-pre-wrap">{terminalEvent.detail}</div>
+            </div>
+          </Card>
+        );
+      })()}
+
       {/* Event Timeline */}
-      <Card hover={false}>
+      <Card hover={false} className="mt-6">
         <div className="px-5 pt-5 pb-3">
           <span className="text-sm font-medium text-secondary uppercase tracking-wider">Event Timeline</span>
         </div>

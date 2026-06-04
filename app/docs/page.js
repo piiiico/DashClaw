@@ -677,7 +677,7 @@ npm run livingcode:refresh`}</CodeBlock>
             <MethodEntry
               id="createAction"
               signature="claw.createAction(action) / claw.create_action(**kwargs)"
-              description="Create a governance action record. The server re-evaluates policy at this point, so this call is the authoritative source for HITL gating: if policy requires human review, the response is HTTP 202 with action.status='pending_approval'. Always check action.status before assuming the action is clear to execute. Non-fabrication (optional): pass content + sourceOfTruth (Node) / content + source_of_truth (Python) to have a non_fabrication policy verify the outbound content before the action proceeds — a violation blocks or routes to approval and is recorded with a signed receipt."
+              description="Create a governance action record. The server re-evaluates policy at this point, so this call is the authoritative source for HITL gating: if policy requires human review, the response is HTTP 202 with action.status='pending_approval'. Always check action.status before assuming the action is clear to execute. Non-fabrication (optional): pass content + sourceOfTruth (Node) / content + source_of_truth (Python) to have a non_fabrication policy verify the outbound content before the action proceeds — a violation blocks or routes to approval and is recorded with a signed receipt. Session linkage (optional): pass session_id (the sess_… id from a started agent session) to attribute this action to that session, so /sessions can aggregate per-session action count, cost, and risk."
               returns="Promise<{ action: { action_id, status, ... }, action_id, decision, security }>"
               example={
                 <DocsCodeTabs

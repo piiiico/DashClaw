@@ -51,4 +51,16 @@ describe('PATCH /api/sessions/[sessionId]', () => {
     expect(res.status).toBe(400);
     expect(h.updateSession).not.toHaveBeenCalled();
   });
+
+  it('forwards the session_end summary to updateSession (no longer dropped)', async () => {
+    h.updateSession.mockResolvedValue({ id: 'sess_1', status: 'completed' });
+    const res = await PATCH(req({ status: 'completed', summary: 'shipped the feature' }), ctx);
+    expect(res.status).toBe(200);
+    expect(h.updateSession).toHaveBeenCalledWith(
+      expect.anything(),
+      'sess_1',
+      'org_test',
+      expect.objectContaining({ status: 'completed', summary: 'shipped the feature' }),
+    );
+  });
 });

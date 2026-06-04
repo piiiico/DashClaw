@@ -253,7 +253,7 @@ export async function createActionRecord(sql, payload) {
       output_summary, side_effects, artifacts_created, error_message,
       timestamp_start, timestamp_end, duration_ms, cost_estimate,
       tokens_in, tokens_out, model,
-      signature, verified, idempotency_key
+      signature, verified, idempotency_key, session_id
     ) VALUES (
       ${orgId},
       ${action_id},
@@ -288,7 +288,8 @@ export async function createActionRecord(sql, payload) {
       ${data.model || null},
       ${signature},
       ${verified},
-      ${data.idempotency_key || null}
+      ${data.idempotency_key || null},
+      ${data.session_id || null}
     )
     RETURNING *
   `;
