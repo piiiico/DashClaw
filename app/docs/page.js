@@ -395,7 +395,7 @@ except Exception as e:
                   <tbody>
                     {[
                       { group: 'Core governance', tool: 'dashclaw_guard', desc: 'Evaluate policies before risky actions', inputs: 'action_type, declared_goal, risk_score' },
-                      { tool: 'dashclaw_record', desc: 'Log action to audit trail', inputs: 'action_type, declared_goal, status' },
+                      { tool: 'dashclaw_record', desc: 'Log action to audit trail', inputs: 'action_type, declared_goal, status, session_id' },
                       { tool: 'dashclaw_invoke', desc: 'Execute governed capability', inputs: 'capability_id, declared_goal, payload' },
                       { tool: 'dashclaw_capabilities_list', desc: 'Discover available APIs', inputs: 'category, risk_level, search' },
                       { tool: 'dashclaw_policies_list', desc: 'List active policies', inputs: 'agent_id' },

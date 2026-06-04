@@ -99,6 +99,8 @@ Grouped by domain. See [`lib/tools.js`](./lib/tools.js) for the canonical defini
 | `dashclaw_session_start` | Register agent session |
 | `dashclaw_session_end` | Close agent session |
 
+> **Session linkage:** after `dashclaw_session_start`, the server auto-stamps that session's id onto every `dashclaw_record` in the same connection (stdio). Pass `session_id` on `dashclaw_record` to override, or to attribute explicitly on the HTTP transport (`POST /api/mcp`), where each request is stateless.
+
 **Optimal files (2)** — Code Sessions optimizer output (root CLAUDE.md, path-scoped rules, hooks, skill packs).
 
 | Tool | Description |

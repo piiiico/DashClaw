@@ -107,7 +107,7 @@ signals = claw.get_signals()
 
 | Method | Description |
 |--------|-------------|
-| `create_action(action_type, declared_goal, **kwargs)` | Record a new action. Optional: risk_score, systems_touched, reversible |
+| `create_action(action_type, declared_goal, session_id=None, **kwargs)` | Record a new action. Optional: session_id (exact session linkage), risk_score, systems_touched, reversible |
 | `update_outcome(action_id, status=None, **kwargs)` | Update action outcome. Optional: duration_ms, error_message, tokens_in, tokens_out, model, cost_estimate. When tokens + model are provided without cost_estimate, the server derives cost from the pricing table. |
 | `get_actions(**filters)` | Query actions. Filters: status, agent_id, limit, offset |
 | `get_action(action_id)` | Get a single action by ID |

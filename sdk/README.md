@@ -56,6 +56,7 @@ const { action, action_id } = await claw.createAction({
   action_type: 'deploy',
   declared_goal: 'Ship v2.4.0 to production',
   risk_score: 90,
+  // session_id: 'sess_…'  // optional: link to a started session for exact attribution (else server correlates by agent + time window)
 });
 
 // 3. If the server flagged this for human review, wait for an operator.
