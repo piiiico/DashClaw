@@ -22,7 +22,7 @@ Python agents typically pair the SDK with one or more of these:
 
 ## Quick Start
 
-The Python SDK is the full platform SDK (204 methods). The constructor accepts both v2-compatible and v1-extended parameters.
+The Python SDK is the full platform SDK (203 methods). The constructor accepts both v2-compatible and v1-extended parameters.
 
 ### v2-compatible constructor (recommended for new agents)
 
@@ -963,24 +963,6 @@ logs = claw.get_activity_logs(agent_id="my-agent", type="action", limit=100)
 |--------|-------------|
 | `get_activity_logs(**filters)` | Get activity/audit logs. Filters: agent_id, type, limit, offset |
 
-## Bulk Sync
-
-Push a full agent state snapshot in a single call:
-
-```python
-claw.sync_state({
-    "actions": [...],
-    "decisions": [...],
-    "goals": [...],
-})
-```
-
-**Methods:**
-
-| Method | Description |
-|--------|-------------|
-| `sync_state(state)` | Push a full agent state snapshot |
-
 ## Integrations
 
 ### LangChain
@@ -1031,7 +1013,7 @@ integration.instrument_agent(assistant)
 
 ## API Parity
 
-This SDK provides the full DashClaw platform surface (204 methods), which is parity with the [Node.js v1 (legacy) SDK](https://github.com/ucsandman/DashClaw/tree/main/sdk/legacy).
+This SDK provides the full DashClaw platform surface (203 methods), which is parity with the [Node.js v1 (legacy) SDK](https://github.com/ucsandman/DashClaw/tree/main/sdk/legacy).
 
 The Node.js v2 SDK exposes a curated subset of **104 methods** focused on agent governance. The following Python methods are available in both the Node.js v2 SDK and this Python SDK:
 
@@ -1057,7 +1039,6 @@ The Node.js v2 SDK exposes a curated subset of **104 methods** focused on agent 
 | Handoffs | `createHandoff` | `create_handoff` | Yes |
 | Handoffs | `getLatestHandoff` | `get_latest_handoff` | Yes |
 | Security | `scanPromptInjection` | `scan_prompt_injection` | Yes |
-| Sync | `syncState` | `sync_state` | Yes |
 | Scoring | _(17 scoring/risk methods)_ | _(equivalent methods)_ | Yes |
 
 Methods like `createWebhook`, `getActivityLogs`, `mapCompliance`, and `getProofReport` are available in this Python SDK but are **v1 only** in the Node.js SDK.

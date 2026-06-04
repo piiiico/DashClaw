@@ -384,16 +384,6 @@ Supports frameworks: SOC 2 (`soc2`), NIST AI RMF (`nist-ai-rmf`), EU AI Act (`eu
 
 Export IDs use `ce_` prefix. Schedule IDs use `cs_` prefix.
 
-## Bulk Sync
-
-**Maturity:** Stable
-
-| Endpoint | Methods | Node SDK | Python SDK |
-|---|---|---|---|
-| `/api/sync` | POST | `syncState` | `sync_state` |
-
-Accepts a bulk payload with decisions, lessons, goals, context, relationships, memory, preferences. Used by bootstrap scripts and periodic agent syncs.
-
 ## Evaluation Framework
 
 **Maturity:** Stable

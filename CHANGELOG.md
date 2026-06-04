@@ -11,6 +11,41 @@ As of **4.0.0**, DashClaw uses **one version across the platform and both SDKs**
 
 Through 3.x the platform and the SDKs versioned independently, which is why older entries below carry separate platform `[2.x]` numbers and `### SDK [3.0.0]`-style numbers, listed newest-first by release date. The `dashclaw` plugin bundle and CLI keep their own manifest versions and are prefixed with the package name.
 
+## [4.0.1] — 2026-06-04
+
+> A correctness + hardening patch from a gated senior-quality pass. **The most important fix is for the Python SDK:** PyPI `dashclaw 4.0.0` shipped with an inverted `_request` argument order that left whole method families non-functional — upgrade to 4.0.1. Platform and both SDKs move together at 4.0.1.
+
+### SDK — Python (PyPI `dashclaw` 4.0.1)
+
+- **Fixed (critical) — `_request` argument inversion at 41 call sites.** Compliance exports/schedules/trends, drift, learning-analytics, and scoring methods passed the HTTP verb where the path belonged, so the entire surface 404'd/failed on 4.0.0. Every call site now uses `_request(path, method=...)`.
+- **Changed — SSE streaming sends `Authorization: Bearer`** when `auth_token` is set (parity with the REST path).
+- **Removed — `sync_state`.** It wrapped `/api/sync`, archived since v2.1.0 (always 404'd). Public-method count **204 → 203**. (Removed the private dead `_guard_check` helper too.)
+- **Deprecated — `record_assumption`** now emits a `DeprecationWarning`; use `register_assumption`.
+- **Fixed — LangChain `report_token_usage`** is now called with positional args.
+- Input guards on `score_with_profile` / `batch_score_with_profile`.
+
+### SDK — Node (npm `dashclaw` 4.0.1)
+
+- **Fixed — CJS bridge (`sdk/index.cjs`).** Rewritten with a recursive deferred proxy so nested namespaces (`execution.capabilities.*`) resolve and `instanceof ApprovalDeniedError` / `GuardBlockedError` works across the ESM/CJS boundary.
+- **Changed — SSE streaming sends `Authorization: Bearer`** when `authToken` is set.
+- **Added — `deleteCapability(capabilityId)`** (`DELETE /api/capabilities/:id`).
+- **Removed — `syncState`** (`/api/sync`, archived since v2.1.0). Net public-method count **unchanged at 104** (`syncState` −1, `deleteCapability` +1).
+- **Changed — `scoreWithProfile` / `batchScoreWithProfile`** now throw `TypeError` on wrong input shape instead of failing opaquely; `waitForApproval` re-raises `GuardBlockedError`; `limit: 0` is no longer dropped.
+- **Legacy** (`dashclaw/legacy`) keeps its frozen `syncState` / context shims unchanged.
+
+### Platform
+
+- **Fixed — bounded learning-analytics growth.** `computeVelocity()` / `computeLearningCurves()` plain-INSERTed on every run, so `learning_velocity` / `learning_curves` grew without bound. Migration `drizzle/0016` dedupes to one row per natural key and adds unique indexes; both compute paths now `ON CONFLICT DO UPDATE`. **Run `npm run db:migrate` after pulling.**
+- **Hardened — governance routes.** Centralized the `redactAny` DLP helper (was duplicated across 9 routes); core routes now return **400 on malformed JSON** instead of 500; the action-detail route uses the shared `apiErrorResponse`.
+- **Fixed — compliance evidence shape.** The evidence response is now correctly nested for its consumer.
+- **Fixed — Telegram setting keys** reconciled (`TELEGRAM_ADMIN_CHAT_ID`, `DASHCLAW_ALERTS_TELEGRAM`) so admin-chat values aren't mis-encrypted.
+
+### UI / reachability
+
+- **Removed — orphan pages `/notifications`, `/bug-hunter`, `/workspace`** (no inbound links; superseded by `/mission-control` + settings) and the unused memory-health widget.
+- **Added — nav links** for previously orphaned but live pages (`/team`, `/swarm`, `/my-agent`, `/dashboard`).
+- Numerous P2/P3 cleanups: type-safety guards, helper dedup, config fixes, and hardcoded-hex → CSS-token replacements.
+
 ## [4.0.0] — 2026-06-03
 
 > First release on the unified version line — the platform jumps from 2.19.0 to **4.0.0** to align with the SDK; from here the platform and both SDKs move together.

@@ -447,18 +447,6 @@ if (result.recommendation === 'block') {
 }
 ```
 
-### Bulk Sync
-- `syncState(state)` -- Push a full agent state snapshot in a single call.
-
-```javascript
-// Push a full state snapshot
-await claw.syncState({
-  actions: [{ action_type: 'deploy', status: 'completed' }],
-  decisions: [{ decision: 'Chose blue-green deploy' }],
-  goals: [{ title: 'Ship v2.4.0' }]
-});
-```
-
 ---
 
 ## Agent Identity
@@ -1012,6 +1000,7 @@ The existing flat registry methods remain available for compatibility:
 - `claw.createCapability(...)`
 - `claw.getCapability(...)`
 - `claw.updateCapability(...)`
+- `claw.deleteCapability(capabilityId)` -- DELETE /api/capabilities/:id; removes a capability from the registry.
 
 Use the canonical capability runtime paths:
 

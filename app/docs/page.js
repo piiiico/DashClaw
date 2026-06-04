@@ -4,7 +4,7 @@ import {
   ArrowRight, ExternalLink, BookOpen,
   Terminal, Zap, CircleDot, Eye, ShieldAlert, BarChart3,
   ChevronRight, Network, FileCheck, Scale, Radio, Users,
-  Newspaper, MessageSquare, Download, SlidersHorizontal, Shield, History, Activity
+  Newspaper, MessageSquare, SlidersHorizontal, Shield, History, Activity
 } from 'lucide-react';
 import DashClawLogo from '../components/DashClawLogo';
 import CopyDocsButton from '../components/CopyDocsButton';
@@ -148,8 +148,6 @@ const navItems = [
   { href: '#getLatestHandoff', label: 'getLatestHandoff', indent: true },
   { href: '#security-scanning', label: 'Security Scanning' },
   { href: '#scanPromptInjection', label: 'scanPromptInjection', indent: true },
-  { href: '#bulk-sync', label: 'Bulk Sync' },
-  { href: '#syncState', label: 'syncState', indent: true },
   { href: '#agent-identity', label: 'Agent Identity' },
   { href: '#createPairing', label: 'createPairing', indent: true },
   { href: '#listPairings', label: 'listPairings', indent: true },
@@ -1496,31 +1494,6 @@ if not result["clean"]:
             />
           </section>
 
-          {/* ── Bulk Sync ── */}
-          <section id="bulk-sync" className="scroll-mt-20 pt-12 border-t border-border">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-brand-subtle flex items-center justify-center">
-                <Download size={16} className="text-brand" />
-              </div>
-              <h2 className="text-2xl font-bold tracking-tight">Bulk Sync</h2>
-            </div>
-
-            <MethodEntry
-              id="syncState"
-              signature="claw.syncState(state) / claw.sync_state(**kwargs)"
-              description="Bulk-sync agent state including decisions, lessons, goals, context, relationships, memory, and preferences in a single call."
-              params={[
-                { name: 'state', type: 'object', required: true, desc: 'State object with keys: decisions, lessons, goals, context, relationships, memory, preferences' },
-              ]}
-              example={
-                <DocsCodeTabs
-                  nodeSnippet={`await claw.syncState({ decisions: [...], lessons: [...], goals: [...] });`}
-                  pythonSnippet={`claw.sync_state(decisions=[...], lessons=[...], goals=[...])`}
-                />
-              }
-            />
-          </section>
-
           {/* ── Agent Identity ── */}
           <section id="agent-identity" className="scroll-mt-20 pt-12 border-t border-border">
             <div className="flex items-center gap-3 mb-2">
@@ -2104,8 +2077,8 @@ results.forEach(r => console.log(\`\${(r.score * 100).toFixed(1)}%: \${r.content
 
               <MethodEntry
                 id="getCapability"
-                signature="GET | PATCH /api/capabilities/:capabilityId"
-                description="Fetch or update a capability. PATCH validates risk_level and source_type enums on change."
+                signature="GET | PATCH | DELETE /api/capabilities/:capabilityId"
+                description="Fetch, update, or delete a capability. PATCH validates risk_level and source_type enums on change. DELETE removes the capability (SDK: claw.deleteCapability(capabilityId))."
                 example={
                   <CodeBlock title="Mark degraded">
 {`await fetch(\`\${baseUrl}/api/capabilities/\${capabilityId}\`, {
