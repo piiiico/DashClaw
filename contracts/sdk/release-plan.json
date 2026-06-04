@@ -1,14 +1,14 @@
 {
   "node": {
-    "current_version": "4.1.0",
+    "current_version": "4.1.1",
     "next_bump": "none",
-    "reason": "4.1.0 — minor feature release. Adds Agent Reputation methods (getAgentReputation, listAgentReputationEvents, recomputeAgentReputation, getAgentReputationReceipt, verifyReputationReceipt) and Agent Registry methods (registerAgent, listRegisteredAgents, getRegisteredAgent, updateRegisteredAgent, addAgentCapability, listAgentCapabilities, invokeRegisteredAgent) plus the Group A policy/compliance improvements. Additive; no breaking changes to existing methods. Self-dep stays ^4.0.0.",
+    "reason": "4.1.1 — patch. Client-side session_id stamping: MCP dashclaw_record auto-stamps the active dashclaw_session_start session (explicit override) and createAction documents session_id as a first-class field for exact session→action linkage. Additive; no breaking changes. Self-dep stays ^4.0.0.",
     "domains": []
   },
   "python": {
-    "current_version": "4.1.0",
+    "current_version": "4.1.1",
     "next_bump": "none",
-    "reason": "4.1.0 — minor feature release. Adds the snake_case Agent Reputation methods (get_agent_reputation, list_agent_reputation_events, recompute_agent_reputation, get_agent_reputation_receipt, verify_reputation_receipt) and Agent Registry methods (register_agent, list_registered_agents, get_registered_agent, update_registered_agent, add_agent_capability, list_agent_capabilities, invoke_registered_agent). Additive; no breaking changes.",
+    "reason": "4.1.1 — patch. Client-side session_id stamping: create_action gains an explicit session_id param for exact session→action linkage (Direct path), backward compatible. Additive; no breaking changes.",
     "domains": []
   }
 }
