@@ -35,9 +35,17 @@ const statusBadge = {
   running: 'bg-success-subtle text-success',
   blocked: 'bg-warning-subtle text-warning',
   finished: 'bg-zinc-500/20 text-secondary',
+  // Terminal aliases emitted by session_end (completed/cancelled) and the
+  // hard-close path (closed) — styled like 'finished' so ended sessions don't
+  // render as an unstyled grey badge.
+  completed: 'bg-zinc-500/20 text-secondary',
+  cancelled: 'bg-zinc-500/20 text-secondary',
+  closed: 'bg-zinc-500/20 text-secondary',
   failed: 'bg-error-subtle text-error',
 };
 
+// Statuses the "Finished" filter rolls up (any non-failed terminal state).
+const FINISHED_STATUSES = ['finished', 'completed', 'closed', 'cancelled'];
 const FILTERS = ['all', 'running', 'blocked', 'failed', 'finished'];
 
 export default function SessionsPage() {
@@ -69,6 +77,7 @@ export default function SessionsPage() {
 
   const filtered = sessions.filter((s) => {
     if (filterStatus === 'all') return true;
+    if (filterStatus === 'finished') return FINISHED_STATUSES.includes(s.status);
     return s.status === filterStatus;
   });
 

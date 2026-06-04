@@ -25,6 +25,9 @@ const statusBadge = {
   running: 'bg-success-subtle text-success',
   blocked: 'bg-warning-subtle text-warning',
   finished: 'bg-zinc-500/20 text-secondary',
+  completed: 'bg-zinc-500/20 text-secondary',
+  cancelled: 'bg-zinc-500/20 text-secondary',
+  closed: 'bg-zinc-500/20 text-secondary',
   failed: 'bg-error-subtle text-error',
 };
 
@@ -34,10 +37,13 @@ const eventIcons = {
   running: Play,
   blocked: PauseCircle,
   finished: Flag,
+  completed: Flag,
+  cancelled: Flag,
+  closed: Flag,
   failed: XCircle,
 };
 
-const TERMINAL_STATUSES = ['finished', 'failed', 'closed'];
+const TERMINAL_STATUSES = ['finished', 'failed', 'closed', 'completed', 'cancelled'];
 
 export default function SessionDetailPage() {
   const { sessionId } = useParams();

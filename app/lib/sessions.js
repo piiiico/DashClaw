@@ -51,7 +51,13 @@ async function ensureTables(sql) {
 }
 
 /**
- * Create a new agent session with status 'spawning' and an initial event.
+ * Create a new agent session in the 'running' state with an initial event.
+ *
+ * Sessions used to start at 'spawning', but nothing in the normal lifecycle
+ * ever advanced them (only session_end writes a terminal status, and it skips
+ * 'running'). A session that was started and never explicitly ended therefore
+ * sat at 'spawning' forever — the "stuck spawning" symptom. Starting at
+ * 'running' reflects reality: once session_start succeeds the agent is live.
  */
 export async function createSession(sql, orgId, agentId, workspace, branch = null) {
   await ensureTables(sql);
@@ -61,13 +67,13 @@ export async function createSession(sql, orgId, agentId, workspace, branch = nul
 
   const rows = await sql`
     INSERT INTO agent_sessions (id, org_id, agent_id, workspace, branch, status)
-    VALUES (${id}, ${orgId}, ${agentId}, ${workspace}, ${branch}, 'spawning')
+    VALUES (${id}, ${orgId}, ${agentId}, ${workspace}, ${branch}, 'running')
     RETURNING *
   `;
 
   await sql`
     INSERT INTO session_events (session_id, org_id, seq, kind)
-    VALUES (${id}, ${orgId}, 1, 'spawning')
+    VALUES (${id}, ${orgId}, 1, 'running')
   `;
 
   return rows[0];
