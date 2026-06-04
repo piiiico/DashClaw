@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:22c84d9f7ccd4188bead232ffdde419e68578ba3",
+  "timestamp": "sha1:82a27b74ed9ed595e1321a9e99aa723d5144e875",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -3360,6 +3360,7 @@
         "__tests__/unit/learning.route.test.js",
         "__tests__/unit/policies-import.route.test.js",
         "__tests__/unit/policies-proof.route.test.js",
+        "__tests__/unit/policies-test-recipes.route.test.js",
         "__tests__/unit/policies-test.route.test.js",
         "__tests__/unit/policies.route.test.js",
         "__tests__/unit/prompt-injection-guard.test.js",

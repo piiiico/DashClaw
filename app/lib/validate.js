@@ -303,6 +303,36 @@ export function validatePolicy(body) {
     return result;
   }
 
+  // Optional inline test recipes: rules.tests is an array of
+  // { name, input (an example action context), expect: { decision } } that
+  // POST /api/policies/test runs through the real enforcement evaluator to
+  // prove the policy decides as intended. Validated here so malformed recipes
+  // cannot be stored; absent rules.tests leaves every existing policy valid.
+  if (rules.tests !== undefined) {
+    if (!Array.isArray(rules.tests)) {
+      result.valid = false;
+      result.errors.push('rules.tests must be an array when present');
+    } else {
+      for (const t of rules.tests) {
+        if (!t || typeof t !== 'object' || typeof t.name !== 'string' || t.name.length === 0) {
+          result.valid = false;
+          result.errors.push('each rules.tests entry requires a non-empty name string');
+          break;
+        }
+        if (!t.input || typeof t.input !== 'object' || Array.isArray(t.input)) {
+          result.valid = false;
+          result.errors.push('each rules.tests entry requires an input object');
+          break;
+        }
+        if (!t.expect || typeof t.expect !== 'object' || !GUARD_ACTIONS.includes(t.expect.decision)) {
+          result.valid = false;
+          result.errors.push(`each rules.tests entry requires expect.decision in: ${GUARD_ACTIONS.join(', ')}`);
+          break;
+        }
+      }
+    }
+  }
+
   switch (result.data.policy_type) {
     case 'behavioral_anomaly':
       if (typeof rules.similarity_threshold !== 'number' || rules.similarity_threshold < 0 || rules.similarity_threshold > 1) {

@@ -28,6 +28,8 @@ const DEFAULT_FORM_STATE = {
   // protected_path (Behavior Learning)
   protectedPaths: [],
   agentIds: [],
+  // optional inline test recipes (A1): [{ name, input, expect: { decision } }]
+  tests: [],
 };
 
 // Single source of truth for the policy-type picker (label + one-line
@@ -180,6 +182,12 @@ export function compilePolicyPayload(formState) {
       break;
   }
 
+  // Carry optional inline test recipes through unchanged so they persist into
+  // the stored rules JSON and feed POST /api/policies/test.
+  if (Array.isArray(form.tests) && form.tests.length > 0) {
+    rules.tests = form.tests;
+  }
+
   return {
     name: cleanString(form.name),
     policy_type: form.type,
@@ -218,6 +226,7 @@ export function decompilePolicyForm(policy) {
     freshness: Array.isArray(rules.freshness) ? rules.freshness : DEFAULT_FORM_STATE.freshness,
     maxCommitsBehind: rules.max_commits_behind ?? DEFAULT_FORM_STATE.maxCommitsBehind,
     protectedPaths: Array.isArray(rules.paths) ? rules.paths : DEFAULT_FORM_STATE.protectedPaths,
+    tests: Array.isArray(rules.tests) ? rules.tests : [],
     agentIds: parseAgentIds(policy),
   };
 }

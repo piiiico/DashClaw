@@ -49,7 +49,7 @@
   },
   "gates": {
     "lint": { "command": "npm run lint", "target": "clean exit 0", "current": "not-run" },
-    "test_full_suite": { "command": "npx vitest run", "target": "0 failures; regressions=0 vs baseline captured at Phase 2 start", "baseline_pass_count": null, "current": "not-run", "note": "full suite only; targeted runs miss regressions in unrelated files" },
+    "test_full_suite": { "command": "npx vitest run", "target": "0 failures; regressions=0 vs baseline", "baseline_pass_count": 2643, "baseline_skipped": 5, "baseline_files": 340, "baseline_captured": "2026-06-04 Phase 2 start", "current": "not-run", "note": "full suite only; targeted runs miss regressions in unrelated files" },
     "build": { "command": "npx next build", "target": "clean exit 0 (required for any app/** change)", "current": "not-run" },
     "openapi_check": { "command": "npm run openapi:generate && npm run openapi:check", "target": "no drift; reputation routes are experimental (inventory only), registry routes under /api/agents are experimental (inventory only), so the stable OpenAPI spec should be unchanged", "current": "not-run" },
     "api_inventory_check": { "command": "npm run api:inventory:generate && npm run api:inventory:check", "target": "no drift after regenerating json+md", "current": "not-run" },
