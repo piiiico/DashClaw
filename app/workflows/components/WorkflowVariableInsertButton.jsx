@@ -22,7 +22,7 @@ export default function WorkflowVariableInsertButton({ variableGroups = [], onIn
       </button>
 
       {open && (
-        <div className="absolute right-0 z-20 mt-2 w-72 rounded-xl border border-white/10 bg-[#111111] shadow-2xl p-3 space-y-3">
+        <div className="absolute right-0 z-20 mt-2 w-72 rounded-xl border border-white/10 bg-surface-secondary shadow-2xl p-3 space-y-3">
           {variableGroups.map((group) => (
             <div key={group.label} className="space-y-2">
               <div className="text-[10px] uppercase tracking-wider text-tertiary">{group.label}</div>

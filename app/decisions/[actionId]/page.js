@@ -546,7 +546,7 @@ export default function DecisionReplayPage() {
                               <div className="w-8 h-8 rounded-full bg-success-subtle flex items-center justify-center flex-shrink-0">
                                 <ShieldCheck size={14} className="text-success" />
                               </div>
-                              <div className="w-px flex-1 bg-[rgba(255,255,255,0.06)] mt-2" />
+                              <div className="w-px flex-1 bg-white/[0.06] mt-2" />
                             </div>
                             <div className="min-w-0 flex-1 pb-2">
                               <div className="flex items-center gap-2 text-xs mb-1">
@@ -568,7 +568,7 @@ export default function DecisionReplayPage() {
                               <div className="w-8 h-8 rounded-full bg-info-subtle flex items-center justify-center flex-shrink-0">
                                 <Rocket size={14} className="text-info" />
                               </div>
-                              <div className="w-px flex-1 bg-[rgba(255,255,255,0.06)] mt-2" />
+                              <div className="w-px flex-1 bg-white/[0.06] mt-2" />
                             </div>
                             <div className="min-w-0 flex-1 pb-2">
                               <div className="flex items-center gap-2 text-xs mb-1">
@@ -592,7 +592,7 @@ export default function DecisionReplayPage() {
                               <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0">
                                 <Target size={14} className="text-purple-400" />
                               </div>
-                              <div className="w-px flex-1 bg-[rgba(255,255,255,0.06)] mt-2" />
+                              <div className="w-px flex-1 bg-white/[0.06] mt-2" />
                             </div>
                             <div className="min-w-0 flex-1 pb-2">
                               <div className="flex items-center gap-2 text-xs mb-1">
@@ -613,7 +613,7 @@ export default function DecisionReplayPage() {
                               <div className={`w-8 h-8 rounded-full ${isSuccessOutcome ? 'bg-status-success/20' : 'bg-error-subtle'} flex items-center justify-center flex-shrink-0`}>
                                 {isSuccessOutcome ? <CheckCircle2 size={14} className="text-success" /> : <XCircle size={14} className="text-error" />}
                               </div>
-                              <div className="w-px flex-1 bg-[rgba(255,255,255,0.06)] mt-2" />
+                              <div className="w-px flex-1 bg-white/[0.06] mt-2" />
                             </div>
                             <div className="min-w-0 flex-1 pb-2">
                               <div className="flex items-center gap-2 text-xs mb-1">
@@ -639,7 +639,7 @@ export default function DecisionReplayPage() {
                               <div className="w-8 h-8 rounded-full bg-status-warning/20 flex items-center justify-center flex-shrink-0">
                                 <AlertTriangle size={14} className="text-warning" />
                               </div>
-                              <div className="w-px flex-1 bg-[rgba(255,255,255,0.06)] mt-2" />
+                              <div className="w-px flex-1 bg-white/[0.06] mt-2" />
                             </div>
                             <div className="min-w-0 flex-1 pb-2">
                               <div className="flex items-center gap-2 text-xs mb-1">

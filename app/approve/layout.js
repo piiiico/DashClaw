@@ -19,7 +19,7 @@ export const viewport = {
 
 export default function ApproveLayout({ children }) {
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
+    <div className="min-h-screen bg-surface-primary text-white">
       {children}
     </div>
   );

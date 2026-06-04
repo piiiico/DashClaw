@@ -94,8 +94,8 @@ export default function WorkflowStepCard({
   }
 
   return (
-    <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)]">
-      <div className="flex items-start justify-between gap-3 px-4 py-4 border-b border-[rgba(255,255,255,0.06)]">
+    <div className="rounded-xl border border-border bg-white/[0.02]">
+      <div className="flex items-start justify-between gap-3 px-4 py-4 border-b border-border">
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <Badge variant="info" size="xs">Step {index + 1}</Badge>
@@ -348,7 +348,7 @@ export default function WorkflowStepCard({
           )}
 
           {/* ── Condition & Failure Handling ── */}
-          <div className="border-t border-[rgba(255,255,255,0.06)] pt-4 mt-4 space-y-3">
+          <div className="border-t border-border pt-4 mt-4 space-y-3">
             {!showCondition ? (
               <button
                 type="button"
@@ -398,7 +398,7 @@ export default function WorkflowStepCard({
             </label>
           </div>
 
-          <div className="border-t border-[rgba(255,255,255,0.06)] pt-4 space-y-3">
+          <div className="border-t border-border pt-4 space-y-3">
             <p className={labelClass}>Retry policy</p>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>

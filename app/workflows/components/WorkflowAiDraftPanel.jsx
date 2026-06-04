@@ -23,7 +23,7 @@ export default function WorkflowAiDraftPanel({
   const modelOptions = PROVIDER_MODEL_OPTIONS[provider] || [];
 
   return (
-    <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] p-5 space-y-4">
+    <div className="rounded-xl border border-border bg-white/[0.02] p-5 space-y-4">
       <div>
         <div className="text-sm font-medium text-white uppercase tracking-wider">Generate with AI</div>
         <p className="mt-2 text-sm text-secondary">

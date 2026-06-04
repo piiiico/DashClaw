@@ -190,7 +190,7 @@ export default function KnowledgePage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => { setLoading(true); fetchCollections(); }}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm text-secondary hover:text-white bg-surface-tertiary border border-[rgba(255,255,255,0.06)] rounded-lg transition-colors"
+            className="flex items-center gap-2 px-3 py-1.5 text-sm text-secondary hover:text-white bg-surface-tertiary border border-border rounded-lg transition-colors"
           >
             <RotateCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh
           </button>

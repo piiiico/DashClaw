@@ -25,7 +25,7 @@ function PolicyAgentScope({ agentIds, setAgentIds, agents }) {
           className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
             isAllAgents
               ? 'bg-brand text-white'
-              : 'bg-[#1a1a1a] text-secondary border border-[rgba(255,255,255,0.06)] hover:text-white'
+              : 'bg-surface-tertiary text-secondary border border-border hover:text-white'
           }`}
         >
           All Agents
@@ -42,7 +42,7 @@ function PolicyAgentScope({ agentIds, setAgentIds, agents }) {
               className={`px-2.5 py-1 rounded-md text-xs transition-colors ${
                 agentIds.includes(agent.agent_id)
                   ? 'bg-brand text-white'
-                  : 'bg-[#1a1a1a] text-secondary border border-[rgba(255,255,255,0.06)] hover:text-white'
+                  : 'bg-surface-tertiary text-secondary border border-border hover:text-white'
               }`}
             >
               {agent.agent_name || agent.agent_id}

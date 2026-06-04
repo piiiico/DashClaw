@@ -17,7 +17,7 @@ export function VerificationSection({ section }) {
   return (
     <details
       open={!allPass}
-      className="group overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#111]"
+      className="group overflow-hidden rounded-2xl border border-border bg-surface-secondary"
     >
       <summary className="flex cursor-pointer items-center gap-3 px-5 py-4 select-none list-none [&::-webkit-details-marker]:hidden">
         <span className={`shrink-0 text-xs font-bold ${headerColor}`}>{icon}</span>
@@ -43,7 +43,7 @@ export function VerificationSection({ section }) {
       </summary>
 
       {section.description && (
-        <div className="border-t border-[rgba(255,255,255,0.06)] px-5 py-3">
+        <div className="border-t border-border px-5 py-3">
           <p className="text-xs text-tertiary">{section.description}</p>
           {section.summary && <p className="mt-1 text-sm text-secondary">{section.summary}</p>}
           {section.whatWasChecked && (
@@ -58,7 +58,7 @@ export function VerificationSection({ section }) {
         </div>
       )}
 
-      <div className="divide-y divide-[rgba(255,255,255,0.04)]">
+      <div className="divide-y divide-border">
         {section.checks.map((check) => (
           <CheckRow key={check.id} check={check} />
         ))}
@@ -106,7 +106,7 @@ function SdkValidationNote({ coreReady, liveProof }) {
   if (liveProof) {
     return (
       <div className="px-5 py-4">
-        <div className="rounded-xl border border-emerald-900/40 bg-[#0d0d0d] p-4">
+        <div className="rounded-xl border border-emerald-900/40 bg-surface-tertiary p-4">
           <p className="text-xs uppercase tracking-[0.24em] text-success">Live proof captured</p>
           <p className="mt-2 text-xs text-secondary">{liveProof.proofStatement}</p>
           <p className="mt-1 text-xs text-tertiary">

@@ -1,5 +1,5 @@
-const selectClass = 'w-full px-3 py-2 rounded-lg bg-[#111] border border-[rgba(255,255,255,0.1)] text-sm text-white focus:outline-none focus:border-brand';
-const inputClass = 'w-full px-3 py-2 rounded-lg bg-[#111] border border-[rgba(255,255,255,0.1)] text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-brand';
+const selectClass = 'w-full px-3 py-2 rounded-lg bg-surface-tertiary border border-border-hover text-sm text-white focus:outline-none focus:border-brand';
+const inputClass = 'w-full px-3 py-2 rounded-lg bg-surface-tertiary border border-border-hover text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-brand';
 
 export default function PolicyBasicsSection({
   form,
@@ -25,7 +25,7 @@ export default function PolicyBasicsSection({
         <label className="block text-xs text-secondary mb-1">Policy Type</label>
         {typeLocked ? (
           <div className="text-sm text-secondary py-2">
-            <span className="inline-flex rounded-md bg-[rgba(255,255,255,0.05)] px-2.5 py-1 text-xs text-secondary">
+            <span className="inline-flex rounded-md bg-white/[0.05] px-2.5 py-1 text-xs text-secondary">
               {(form.type || '').replace(/_/g, ' ')}
             </span>
             <span className="ml-2 text-xs text-tertiary">(type cannot be changed after creation)</span>

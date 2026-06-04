@@ -39,7 +39,7 @@ export default function RiskExplainer() {
         {open ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
       </button>
       {open && (
-        <div className="mt-3 rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#0d0d0d] p-4 space-y-4 text-xs">
+        <div className="mt-3 rounded-xl border border-border bg-surface-tertiary p-4 space-y-4 text-xs">
           <div>
             <div className="text-tertiary uppercase tracking-widest text-[10px] mb-2">Base score by action type</div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1">

@@ -39,7 +39,7 @@ export function TopSummary({ view, proofDownloadHref }) {
     : '';
 
   return (
-    <div className={`rounded-2xl border bg-[#111] p-6 ${config.border}`}>
+    <div className={`rounded-2xl border bg-surface-secondary p-6 ${config.border}`}>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="max-w-2xl">
           <div className="flex items-center gap-3">

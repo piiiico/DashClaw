@@ -95,7 +95,7 @@ export default function PublicReplayPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+      <div className="min-h-screen bg-surface-primary flex items-center justify-center">
         <div className="h-8 w-8 border-2 border-brand border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -103,7 +103,7 @@ export default function PublicReplayPage() {
 
   if (error || !action) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center p-6">
+      <div className="min-h-screen bg-surface-primary flex flex-col items-center justify-center p-6">
         <DashClawLogo size={48} className="mb-8 opacity-20" />
         <div className="text-tertiary font-medium text-center">{error || 'Replay unavailable'}</div>
         <Link href="/" className="mt-6 text-brand text-sm hover:underline">Back to DashClaw</Link>
@@ -138,7 +138,7 @@ export default function PublicReplayPage() {
 
   // ─── Render ───
   return (
-    <div className={`min-h-screen ${isEmbed ? 'bg-transparent' : 'bg-[#0a0a0a]'} flex flex-col items-center selection:bg-brand/30`}>
+    <div className={`min-h-screen ${isEmbed ? 'bg-transparent' : 'bg-surface-primary'} flex flex-col items-center selection:bg-brand/30`}>
       
       {!isEmbed && (
         <nav className="w-full border-b border-white/5 bg-black/20 backdrop-blur-md sticky top-0 z-50">
@@ -170,7 +170,7 @@ export default function PublicReplayPage() {
           {/* Subtle Glow */}
           <div className="absolute -inset-0.5 bg-gradient-to-b from-brand/20 to-transparent rounded-2xl blur opacity-20 group-hover/story:opacity-30 transition-opacity" />
           
-          <div className="relative bg-[#0d0d0d] border border-white/[0.08] rounded-2xl overflow-hidden shadow-2xl">
+          <div className="relative bg-surface-secondary border border-white/[0.08] rounded-2xl overflow-hidden shadow-2xl">
             
             {/* Header / ID */}
             <div className="px-6 py-4 border-b border-white/[0.04] flex items-center justify-between bg-white/[0.01]">

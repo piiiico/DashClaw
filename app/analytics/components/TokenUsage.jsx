@@ -4,7 +4,7 @@ export default function TokenUsage({ tokens }) {
   const noTokenData = !tokens || (tokens.total || 0) === 0;
 
   return (
-    <div className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#111] p-5">
+    <div className="rounded-2xl border border-border bg-surface-secondary p-5">
       <div className="text-[10px] font-medium uppercase tracking-widest text-tertiary mb-4">Token Usage</div>
 
       {noTokenData ? (

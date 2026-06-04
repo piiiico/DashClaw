@@ -165,13 +165,13 @@ export default function KnowledgeCollectionDetailPage() {
         <div className="flex items-center gap-2">
           <Link
             href="/knowledge"
-            className="flex items-center gap-2 px-3 py-1.5 text-sm text-secondary hover:text-white bg-surface-tertiary border border-[rgba(255,255,255,0.06)] rounded-lg transition-colors"
+            className="flex items-center gap-2 px-3 py-1.5 text-sm text-secondary hover:text-white bg-surface-tertiary border border-border rounded-lg transition-colors"
           >
             <ArrowLeft size={14} /> Back
           </Link>
           <button
             onClick={() => (editing ? setEditing(false) : startEdit())}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm text-secondary hover:text-white bg-surface-tertiary border border-[rgba(255,255,255,0.06)] rounded-lg transition-colors"
+            className="flex items-center gap-2 px-3 py-1.5 text-sm text-secondary hover:text-white bg-surface-tertiary border border-border rounded-lg transition-colors"
           >
             <Pencil size={14} /> {editing ? 'Cancel' : 'Edit'}
           </button>

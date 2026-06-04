@@ -13,7 +13,7 @@ const DraggableDashboard = dynamic(() => import('../components/DraggableDashboar
   loading: () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {Array.from({ length: 8 }).map((_, i) => (
-        <div key={i} className={`bg-surface-secondary border border-[rgba(255,255,255,0.06)] rounded-xl h-48 animate-pulse ${i < 2 ? 'md:col-span-2' : ''}`} />
+        <div key={i} className={`bg-surface-secondary border border-border rounded-xl h-48 animate-pulse ${i < 2 ? 'md:col-span-2' : ''}`} />
       ))}
     </div>
   ),
@@ -108,7 +108,7 @@ export default function Dashboard() {
               <ChevronDown size={12} />
             </button>
             {showLayoutMenu && (
-              <div className="absolute right-0 top-full mt-1 w-56 bg-surface-secondary border border-[rgba(255,255,255,0.1)] rounded-lg shadow-xl z-50 py-1">
+              <div className="absolute right-0 top-full mt-1 w-56 bg-surface-secondary border border-border-hover rounded-lg shadow-xl z-50 py-1">
                 <div className="px-3 py-1.5 text-[10px] font-medium text-tertiary uppercase tracking-wider">Presets</div>
                 {PRESET_NAMES.map(name => (
                   <button
@@ -121,7 +121,7 @@ export default function Dashboard() {
                 ))}
                 {Object.keys(namedLayouts).length > 0 && (
                   <>
-                    <div className="border-t border-[rgba(255,255,255,0.06)] my-1" />
+                    <div className="border-t border-border my-1" />
                     <div className="px-3 py-1.5 text-[10px] font-medium text-tertiary uppercase tracking-wider">Saved Layouts</div>
                     {Object.keys(namedLayouts).map(name => (
                       <div key={name} className="flex items-center group">
@@ -141,7 +141,7 @@ export default function Dashboard() {
                     ))}
                   </>
                 )}
-                <div className="border-t border-[rgba(255,255,255,0.06)] my-1" />
+                <div className="border-t border-border my-1" />
                 <button
                   onClick={handleResetLayout}
                   className="w-full text-left px-3 py-2 text-xs text-secondary hover:bg-white/5 transition-colors flex items-center gap-1.5"

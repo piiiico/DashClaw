@@ -220,7 +220,7 @@ export default function WorkflowTemplateDetailPage() {
         <div className="flex items-center gap-2">
           <Link
             href="/workflows"
-            className="flex items-center gap-2 px-3 py-1.5 text-sm text-secondary hover:text-white bg-surface-tertiary border border-[rgba(255,255,255,0.06)] rounded-lg transition-colors"
+            className="flex items-center gap-2 px-3 py-1.5 text-sm text-secondary hover:text-white bg-surface-tertiary border border-border rounded-lg transition-colors"
           >
             <ArrowLeft size={14} /> Back
           </Link>
@@ -360,7 +360,7 @@ export default function WorkflowTemplateDetailPage() {
                   <Link
                     key={run.run_action_id}
                     href={`/workflows/${templateId}/runs/${run.run_action_id}`}
-                    className="flex items-center gap-3 px-4 py-3 rounded-lg border border-[rgba(255,255,255,0.06)] hover:bg-white/[0.02] transition-colors"
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg border border-border hover:bg-white/[0.02] transition-colors"
                   >
                     <span className={`w-2 h-2 rounded-full flex-shrink-0 ${run.status === 'completed' ? 'bg-emerald-400' : run.status === 'failed' ? 'bg-red-400' : 'bg-blue-400'}`} />
                     <span className="text-sm text-secondary flex-1 truncate">{run.declared_goal || 'Workflow run'}</span>

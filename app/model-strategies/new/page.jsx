@@ -73,7 +73,7 @@ export default function NewModelStrategyPage() {
       actions={
         <Link
           href="/model-strategies"
-          className="flex items-center gap-2 rounded-lg border border-[rgba(255,255,255,0.06)] bg-surface-tertiary px-3 py-1.5 text-sm text-secondary transition-colors hover:text-white"
+          className="flex items-center gap-2 rounded-lg border border-border bg-surface-tertiary px-3 py-1.5 text-sm text-secondary transition-colors hover:text-white"
         >
           <ArrowLeft size={14} /> Back
         </Link>

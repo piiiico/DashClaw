@@ -277,12 +277,12 @@ export default function TeamPage() {
                   Share this link with the person you want to invite. It expires in 7 days.
                 </p>
                 <div className="flex items-center gap-2">
-                  <code className="flex-1 bg-surface-tertiary border border-[rgba(255,255,255,0.06)] rounded-lg px-3 py-2 text-sm font-mono text-success overflow-x-auto">
+                  <code className="flex-1 bg-surface-tertiary border border-border rounded-lg px-3 py-2 text-sm font-mono text-success overflow-x-auto">
                     {newInvite.invite_url}
                   </code>
                   <button
                     onClick={() => handleCopy(newInvite.invite_url)}
-                    className="flex items-center gap-1.5 px-3 py-2 bg-surface-tertiary border border-[rgba(255,255,255,0.06)] rounded-lg text-sm text-secondary hover:text-white hover:border-[rgba(255,255,255,0.12)] transition-colors flex-shrink-0"
+                    className="flex items-center gap-1.5 px-3 py-2 bg-surface-tertiary border border-border rounded-lg text-sm text-secondary hover:text-white hover:border-border-hover transition-colors flex-shrink-0"
                   >
                     {copied ? <Check size={14} className="text-success" /> : <Copy size={14} />}
                     {copied ? 'Copied' : 'Copy'}
@@ -327,12 +327,12 @@ export default function TeamPage() {
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
                 placeholder="Email (optional — leave blank for open invite)"
-                className="flex-1 bg-surface-tertiary border border-[rgba(255,255,255,0.06)] rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-brand transition-colors"
+                className="flex-1 bg-surface-tertiary border border-border rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-brand transition-colors"
               />
               <select
                 value={inviteRole}
                 onChange={(e) => setInviteRole(e.target.value)}
-                className="bg-surface-tertiary border border-[rgba(255,255,255,0.06)] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brand transition-colors"
+                className="bg-surface-tertiary border border-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brand transition-colors"
               >
                 <option value="member">Member</option>
                 <option value="admin">Admin</option>
@@ -358,10 +358,10 @@ export default function TeamPage() {
       {/* Pending invites (admin only) */}
       {invites.length > 0 && (
         <Card hover={false} className="mb-6">
-          <div className="px-5 py-3 border-b border-[rgba(255,255,255,0.04)]">
+          <div className="px-5 py-3 border-b border-border">
             <div className="text-sm font-medium text-secondary">Pending Invites</div>
           </div>
-          <div className="divide-y divide-[rgba(255,255,255,0.04)]">
+          <div className="divide-y divide-border">
             {invites.map((inv) => (
               <div key={inv.id} className="px-5 py-3 flex items-center gap-4">
                 <div className="w-8 h-8 rounded-lg bg-info-subtle flex items-center justify-center flex-shrink-0">
@@ -422,7 +422,7 @@ export default function TeamPage() {
 
       {/* Members list */}
       <Card hover={false}>
-        <div className="px-5 py-3 border-b border-[rgba(255,255,255,0.04)]">
+        <div className="px-5 py-3 border-b border-border">
           <div className="text-sm font-medium text-secondary">Members</div>
         </div>
         {(!data?.members || data.members.length === 0) ? (
@@ -434,7 +434,7 @@ export default function TeamPage() {
             />
           </CardContent>
         ) : (
-          <div className="divide-y divide-[rgba(255,255,255,0.04)]">
+          <div className="divide-y divide-border">
             {data.members.map((member) => (
               <div key={member.id} className="px-5 py-4 flex items-center gap-4">
                 {/* Avatar */}
@@ -537,7 +537,7 @@ export default function TeamPage() {
 
       {/* Leave workspace */}
       {!isLastAdmin && (
-        <div className="mt-8 pt-6 border-t border-[rgba(255,255,255,0.04)]">
+        <div className="mt-8 pt-6 border-t border-border">
           {showLeaveConfirm ? (
             <div className="flex items-center gap-3">
               <span className="text-sm text-secondary">Leave this workspace? You will be moved back to the default workspace.</span>

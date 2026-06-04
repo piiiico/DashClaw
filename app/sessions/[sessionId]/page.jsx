@@ -158,14 +158,14 @@ export default function SessionDetailPage() {
             <button
               onClick={() => handlePatch({ status: 'finished' })}
               disabled={patching}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm text-secondary hover:text-white bg-surface-tertiary border border-[rgba(255,255,255,0.06)] rounded-lg hover:border-[rgba(255,255,255,0.12)] disabled:opacity-50 transition-colors duration-150"
+              className="flex items-center gap-2 px-3 py-1.5 text-sm text-secondary hover:text-white bg-surface-tertiary border border-white/[0.06] rounded-lg hover:border-white/[0.12] disabled:opacity-50 transition-colors duration-150"
             >
               Mark finished
             </button>
           )}
           <button
             onClick={() => { setLoading(true); fetchData(); }}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm text-secondary hover:text-white bg-surface-tertiary border border-[rgba(255,255,255,0.06)] rounded-lg hover:border-[rgba(255,255,255,0.12)] transition-colors duration-150"
+            className="flex items-center gap-2 px-3 py-1.5 text-sm text-secondary hover:text-white bg-surface-tertiary border border-white/[0.06] rounded-lg hover:border-white/[0.12] transition-colors duration-150"
           >
             <RotateCw size={14} />
             Refresh

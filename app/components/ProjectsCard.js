@@ -178,7 +178,7 @@ export default function ProjectsCard() {
             </div>
           ))}
         </div>
-        <div className="mt-auto pt-3 border-t border-[rgba(255,255,255,0.06)] flex-shrink-0 relative z-10 bg-surface-secondary">
+        <div className="mt-auto pt-3 border-t border-border flex-shrink-0 relative z-10 bg-surface-secondary">
           <div className="grid grid-cols-3 gap-2">
             <StatCompact label="Active" value={activeCount} color="text-success" />
             <StatCompact label="Building" value={buildingCount} color="text-warning" />

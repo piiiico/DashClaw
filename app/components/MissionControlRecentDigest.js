@@ -5,7 +5,7 @@ import { Badge } from './ui/Badge';
 
 export default function MissionControlRecentDigest({ digest }) {
   return (
-    <div className="mb-6 rounded-xl border border-[rgba(255,255,255,0.07)] bg-[linear-gradient(180deg,rgba(255,255,255,0.022),rgba(255,255,255,0.008))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
+    <div className="mb-6 rounded-xl border border-border bg-[linear-gradient(180deg,rgba(255,255,255,0.022),rgba(255,255,255,0.008))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
       <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="mb-1 flex items-center gap-2">
@@ -24,7 +24,7 @@ export default function MissionControlRecentDigest({ digest }) {
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {digest.changes.map((change) => (
-            <div key={change.id} className="rounded-lg border border-[rgba(255,255,255,0.08)] bg-white/[0.02] px-3 py-3">
+            <div key={change.id} className="rounded-lg border border-border-hover bg-white/[0.02] px-3 py-3">
               <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-tertiary">{change.label}</div>
               <div className="mb-1 text-2xl font-semibold tabular-nums text-white">{change.count}</div>
               <div className="text-xs leading-5 text-tertiary">{change.detail}</div>
@@ -32,7 +32,7 @@ export default function MissionControlRecentDigest({ digest }) {
           ))}
         </div>
 
-        <div className="rounded-lg border border-[rgba(255,255,255,0.08)] bg-white/[0.02] px-3 py-3">
+        <div className="rounded-lg border border-border-hover bg-white/[0.02] px-3 py-3">
           <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-tertiary">Recent posture shifts</div>
           {digest.highlights.length === 0 ? (
             <div className="text-xs leading-5 text-tertiary">No high-signal changes landed in the last 15 minutes.</div>

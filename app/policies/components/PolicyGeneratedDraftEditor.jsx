@@ -16,7 +16,7 @@ export default function PolicyGeneratedDraftEditor({
   if (!draft || !form) return null;
 
   return (
-    <div className="space-y-4 rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] p-5">
+    <div className="space-y-4 rounded-2xl border border-border bg-white/[0.02] p-5">
       <div>
         <h2 className="text-lg font-semibold text-white">Generated Draft</h2>
         <p className="mt-1 text-sm text-secondary">

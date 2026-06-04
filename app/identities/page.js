@@ -245,7 +245,7 @@ export default function IdentitiesPage() {
           </Card>
         ) : (
           <Card hover={false}>
-            <div className="divide-y divide-[rgba(255,255,255,0.04)]">
+            <div className="divide-y divide-white/[0.04]">
               {pendingPairings.map((pairing) => {
                 const remaining = timeLeft(pairing.expires_at);
                 const isExpired = remaining === 'Expired';
@@ -286,7 +286,7 @@ export default function IdentitiesPage() {
                           onChange={(e) =>
                             setPermLevels((prev) => ({ ...prev, [pairing.id]: e.target.value }))
                           }
-                          className="bg-surface-tertiary border border-[rgba(255,255,255,0.06)] rounded-lg px-2 py-1.5 text-xs text-secondary focus:outline-none focus:border-brand transition-colors"
+                          className="bg-surface-tertiary border border-white/[0.06] rounded-lg px-2 py-1.5 text-xs text-secondary focus:outline-none focus:border-brand transition-colors"
                         >
                           {PERMISSION_LEVELS.map((level) => (
                             <option key={level} value={level}>
@@ -333,7 +333,7 @@ export default function IdentitiesPage() {
           </Card>
         ) : (
           <Card hover={false}>
-            <div className="divide-y divide-[rgba(255,255,255,0.04)]">
+            <div className="divide-y divide-white/[0.04]">
               {identities.map((identity) => {
                 const isConfirmingRevoke = revokingId === identity.agent_id;
                 const permLevel = identity.permission_level || 'readonly';

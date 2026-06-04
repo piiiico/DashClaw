@@ -43,7 +43,7 @@ function ArtifactRow({ artifact, onDelete, deleting }) {
   const pill = TYPE_PILL[artifact.artifact_type] || TYPE_PILL.file;
 
   return (
-    <div className="rounded-lg border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)]">
+    <div className="rounded-lg border border-border bg-white/[0.02]">
       <div className="flex items-center">
         <button
           onClick={() => setExpanded(!expanded)}
@@ -77,7 +77,7 @@ function ArtifactRow({ artifact, onDelete, deleting }) {
         const text = isString ? artifact.content : JSON.stringify(artifact.content, null, 2);
         const renderMarkdown = isString && isMarkdownArtifact(artifact.artifact_type);
         return (
-          <div className="px-4 pb-4 border-t border-[rgba(255,255,255,0.04)]">
+          <div className="px-4 pb-4 border-t border-border">
             <div className="mt-3 mb-2 flex justify-end">
               <CopyButton text={text} />
             </div>

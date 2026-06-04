@@ -362,7 +362,7 @@ function FileRow({ file, selected, onToggle, disabled, edited, onEdit }) {
                       onChange={e => onEdit(e.target.value)}
                       spellCheck={false}
                       rows={Math.min(28, Math.max(8, currentContent.split('\n').length + 1))}
-                      className="block w-full resize-y rounded-md border border-border bg-primary p-3 font-mono text-[11px] leading-relaxed text-primary focus:border-border-active focus:outline-none focus:ring-1 focus:ring-orange-500/30"
+                      className="block w-full resize-y rounded-md border border-border bg-primary p-3 font-mono text-[11px] leading-relaxed text-primary focus:border-border-active focus:outline-none focus:ring-1 focus:ring-brand/30"
                     />
                   ) : showFull ? (
                     <div className="space-y-2">
@@ -497,7 +497,7 @@ export default function OptimalFilesPanel({ sessionId }) {
           <button
             type="button"
             onClick={loadPreview}
-            className="inline-flex shrink-0 items-center gap-2 rounded-md bg-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-orange-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
+            className="inline-flex shrink-0 items-center gap-2 rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
           >
             Generate
             <ArrowRight className="h-4 w-4" aria-hidden />
@@ -640,7 +640,7 @@ export default function OptimalFilesPanel({ sessionId }) {
         <button
           disabled={phase === 'saving' || acceptedCount === 0}
           onClick={createManifest}
-          className="inline-flex items-center gap-2 rounded-md bg-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-orange-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-primary disabled:cursor-not-allowed disabled:bg-surface-tertiary disabled:text-tertiary disabled:shadow-none"
+          className="inline-flex items-center gap-2 rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 focus-visible:ring-offset-2 focus-visible:ring-offset-primary disabled:cursor-not-allowed disabled:bg-surface-tertiary disabled:text-tertiary disabled:shadow-none"
         >
           {phase === 'saving' ? 'Creating manifest…' : `Create manifest · ${acceptedCount}`}
           {phase !== 'saving' && acceptedCount > 0 && <ArrowRight className="h-4 w-4" aria-hidden />}

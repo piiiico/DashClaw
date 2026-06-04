@@ -102,7 +102,7 @@ export default function CapabilityHighlightsCard() {
               <Link
                 key={item.title}
                 href={item.href}
-                className="rounded-lg border border-[rgba(255,255,255,0.08)] bg-surface-tertiary p-3 hover:border-[rgba(255,255,255,0.16)] transition-colors"
+                className="rounded-lg border border-border-hover bg-surface-tertiary p-3 hover:border-white/[0.16] transition-colors"
               >
                 <div className="flex items-center gap-2 mb-2">
                   <Icon size={14} className="text-brand" />

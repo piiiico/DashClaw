@@ -21,16 +21,16 @@ export default function ThreadList({ threads, onSelect, selectedId }) {
 
   return (
     <Card hover={false}>
-      <CardContent className="pt-0 divide-y divide-[rgba(255,255,255,0.04)]">
+      <CardContent className="pt-0 divide-y divide-white/[0.04]">
         {threads.map(thread => (
           <div
             key={thread.id}
             onClick={() => onSelect(thread)}
             className={`flex items-start gap-3 py-3 px-1 cursor-pointer transition-colors rounded-sm ${
-              thread.id === selectedId ? 'bg-[rgba(255,255,255,0.04)]' : 'hover:bg-[rgba(255,255,255,0.02)]'
+              thread.id === selectedId ? 'bg-white/[0.04]' : 'hover:bg-white/[0.02]'
             }`}
           >
-            <div className="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5 bg-[rgba(255,255,255,0.06)]">
+            <div className="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5 bg-white/[0.06]">
               <Hash size={14} className="text-secondary" />
             </div>
             <div className="flex-1 min-w-0">

@@ -14,14 +14,14 @@ export default function CopyableCodeBlock({ title, children, copyText }) {
   }
 
   return (
-    <div className="relative group rounded-xl bg-[#0d0d0d] border border-[rgba(255,255,255,0.06)] overflow-x-auto">
+    <div className="relative group rounded-xl bg-surface-tertiary border border-border overflow-x-auto">
       {title && (
-        <div className="px-5 py-2.5 border-b border-[rgba(255,255,255,0.06)] text-xs text-tertiary font-mono">{title}</div>
+        <div className="px-5 py-2.5 border-b border-border text-xs text-tertiary font-mono">{title}</div>
       )}
       <pre className="p-5 font-mono text-sm leading-relaxed text-secondary whitespace-pre-wrap">{children}</pre>
       <button
         onClick={handleCopy}
-        className="absolute top-2 right-2 p-1.5 rounded bg-[#181818] hover:bg-[#222] opacity-0 group-hover:opacity-100 transition-opacity"
+        className="absolute top-2 right-2 p-1.5 rounded bg-surface-tertiary hover:bg-surface-elevated opacity-0 group-hover:opacity-100 transition-opacity"
         title="Copy"
       >
         {copied ? <Check size={14} className="text-success" /> : <Copy size={14} className="text-secondary" />}

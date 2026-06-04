@@ -274,7 +274,7 @@ export default function SwarmActivityLog({
                   <div className={`shrink-0 ${typeColor}`}>
                     <Icon size={10} />
                   </div>
-                  <span className={`max-w-[80px] shrink-0 truncate rounded border border-white/6 bg-[rgba(255,255,255,0.03)] px-1 text-[10px] ${agentColor}`}>
+                  <span className={`max-w-[80px] shrink-0 truncate rounded border border-white/6 bg-white/[0.03] px-1 text-[10px] ${agentColor}`}>
                     {log.agentId?.substring(0, 8) || 'system'}
                   </span>
                   <span className={`min-w-0 flex-1 truncate transition-colors ${log.lowSignal ? 'text-tertiary group-hover:text-secondary' : 'text-secondary group-hover:text-white'}`}>

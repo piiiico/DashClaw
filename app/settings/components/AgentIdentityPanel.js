@@ -252,7 +252,7 @@ export default function AgentIdentityPanel({ highlightPairingId }) {
       )}
 
       {/* ── Signature Enforcement ── */}
-      <div className="p-4 rounded-xl bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.06)]">
+      <div className="p-4 rounded-xl bg-white/[0.02] border border-border">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {enforcement ? <ShieldCheck size={20} className="text-success" /> : <ShieldOff size={20} className="text-tertiary" />}
@@ -272,7 +272,7 @@ export default function AgentIdentityPanel({ highlightPairingId }) {
       </div>
 
       {/* ── Pending Pairings ── */}
-      <div className="p-4 rounded-xl bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.06)]">
+      <div className="p-4 rounded-xl bg-white/[0.02] border border-border">
         <div className="flex items-center justify-between mb-3">
           <div className="text-sm font-medium text-white">Pending Pairings</div>
           {pairings.length > 0 && (
@@ -295,7 +295,7 @@ export default function AgentIdentityPanel({ highlightPairingId }) {
               <div
                 key={p.id}
                 id={`pairing-${p.id}`}
-                className="flex items-start justify-between gap-3 p-3 rounded-lg bg-surface-tertiary border border-[rgba(255,255,255,0.06)] transition-all"
+                className="flex items-start justify-between gap-3 p-3 rounded-lg bg-surface-tertiary border border-border transition-all"
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
@@ -310,7 +310,7 @@ export default function AgentIdentityPanel({ highlightPairingId }) {
                     <select
                       value={p.permission_level || 'danger'}
                       onChange={(e) => updatePermissionLevel(p.id, e.target.value)}
-                      className="text-xs bg-[rgba(0,0,0,0.3)] border border-[rgba(255,255,255,0.08)] rounded px-2 py-1 text-secondary focus:outline-none focus:border-brand/50"
+                      className="text-xs bg-surface-tertiary border border-border rounded px-2 py-1 text-secondary focus:outline-none focus:border-brand/50"
                     >
                       {PERMISSION_LEVELS.map((lvl) => (
                         <option key={lvl} value={lvl}>{PERMISSION_LABELS[lvl]}</option>
@@ -331,12 +331,12 @@ export default function AgentIdentityPanel({ highlightPairingId }) {
       </div>
 
       {/* ── Approved Identities ── */}
-      <div className="p-4 rounded-xl bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.06)]">
+      <div className="p-4 rounded-xl bg-white/[0.02] border border-border">
         <div className="flex items-center justify-between mb-3">
           <div className="text-sm font-medium text-white">Approved Identities</div>
           <button
             onClick={() => setShowRegisterForm(!showRegisterForm)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-secondary hover:text-white border border-[rgba(255,255,255,0.06)] hover:border-[rgba(255,255,255,0.12)] rounded-lg transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-secondary hover:text-white border border-border hover:border-border-hover rounded-lg transition-colors"
           >
             {showRegisterForm ? <X size={14} /> : <Plus size={14} />}
             {showRegisterForm ? 'Cancel' : 'Register Manually'}
@@ -344,7 +344,7 @@ export default function AgentIdentityPanel({ highlightPairingId }) {
         </div>
 
         {showRegisterForm && (
-          <div className="mb-4 p-3 rounded-lg bg-surface-tertiary border border-[rgba(255,255,255,0.06)] space-y-3">
+          <div className="mb-4 p-3 rounded-lg bg-surface-tertiary border border-border space-y-3">
             <div>
               <label className="block text-xs text-tertiary mb-1">Agent ID</label>
               <input
@@ -352,7 +352,7 @@ export default function AgentIdentityPanel({ highlightPairingId }) {
                 value={registerAgentId}
                 onChange={(e) => setRegisterAgentId(e.target.value)}
                 placeholder="my-agent"
-                className="w-full px-3 py-2 text-sm bg-[rgba(0,0,0,0.3)] border border-[rgba(255,255,255,0.06)] rounded-lg text-white placeholder-zinc-600 focus:outline-none focus:border-brand/50"
+                className="w-full px-3 py-2 text-sm bg-surface-tertiary border border-border rounded-lg text-white placeholder-zinc-600 focus:outline-none focus:border-brand/50"
               />
             </div>
             <div>
@@ -362,7 +362,7 @@ export default function AgentIdentityPanel({ highlightPairingId }) {
                 onChange={(e) => setRegisterPublicKey(e.target.value)}
                 placeholder={"-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----"}
                 rows={4}
-                className="w-full px-3 py-2 text-sm font-mono bg-[rgba(0,0,0,0.3)] border border-[rgba(255,255,255,0.06)] rounded-lg text-white placeholder-zinc-600 focus:outline-none focus:border-brand/50"
+                className="w-full px-3 py-2 text-sm font-mono bg-surface-tertiary border border-border rounded-lg text-white placeholder-zinc-600 focus:outline-none focus:border-brand/50"
               />
             </div>
             <button
@@ -389,7 +389,7 @@ export default function AgentIdentityPanel({ highlightPairingId }) {
               return (
                 <div
                   key={id.agent_id}
-                  className="flex items-start justify-between gap-3 p-3 rounded-lg bg-surface-tertiary border border-[rgba(255,255,255,0.06)]"
+                  className="flex items-start justify-between gap-3 p-3 rounded-lg bg-surface-tertiary border border-border"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -407,7 +407,7 @@ export default function AgentIdentityPanel({ highlightPairingId }) {
                         <select
                           value={pairing.permission_level || 'danger'}
                           onChange={(e) => updatePermissionLevel(pairing.id, e.target.value)}
-                          className="text-xs bg-[rgba(0,0,0,0.3)] border border-[rgba(255,255,255,0.08)] rounded px-2 py-1 text-secondary focus:outline-none focus:border-brand/50"
+                          className="text-xs bg-surface-tertiary border border-border rounded px-2 py-1 text-secondary focus:outline-none focus:border-brand/50"
                         >
                           {PERMISSION_LEVELS.map((lvl) => (
                             <option key={lvl} value={lvl}>{PERMISSION_LABELS[lvl]}</option>

@@ -27,7 +27,7 @@ function MessageCard({ message, compact }) {
   });
 
   return (
-    <div className="flex items-start gap-2 py-1.5 border-b border-[rgba(255,255,255,0.04)] last:border-0">
+    <div className="flex items-start gap-2 py-1.5 border-b border-border last:border-0">
       <MessageSquare size={14} className="text-info mt-0.5 flex-shrink-0" />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2 text-xs">
@@ -125,7 +125,7 @@ export function TimelineMessage({ message }) {
         <div className="w-8 h-8 rounded-full bg-info-subtle flex items-center justify-center flex-shrink-0">
           <MessageSquare size={14} className="text-info" />
         </div>
-        <div className="w-px flex-1 bg-[rgba(255,255,255,0.06)] mt-2" />
+        <div className="w-px flex-1 bg-white/[0.06] mt-2" />
       </div>
       <div className="min-w-0 flex-1 pb-2">
         <div className="flex items-center gap-2 text-xs mb-1">

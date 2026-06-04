@@ -177,7 +177,7 @@ export default function OpenLoopsCard() {
               return (
                 <div
                   key={loop.loop_id}
-                  className="px-3 py-2.5 rounded-lg bg-surface-tertiary border border-[rgba(255,255,255,0.06)] transition-colors duration-150 hover:border-[rgba(255,255,255,0.12)]"
+                  className="px-3 py-2.5 rounded-lg bg-surface-tertiary border border-border transition-colors duration-150 hover:border-border-hover"
                 >
                   <div className="flex items-start gap-3">
                     <TypeIcon size={14} className="text-secondary mt-0.5 flex-shrink-0" />
@@ -203,7 +203,7 @@ export default function OpenLoopsCard() {
                         placeholder="Resolution note (optional)"
                         value={resolutionText}
                         onChange={(e) => setResolutionText(e.target.value)}
-                        className="w-full bg-surface-primary border border-[rgba(255,255,255,0.1)] rounded px-2 py-1 text-xs text-secondary placeholder-zinc-600 focus:outline-none focus:border-brand/50"
+                        className="w-full bg-surface-primary border border-border-hover rounded px-2 py-1 text-xs text-secondary placeholder-zinc-600 focus:outline-none focus:border-brand/50"
                       />
                       <div className="flex gap-2">
                         <button

@@ -109,7 +109,7 @@ export default function CapabilityAccessTab({ capabilityId }) {
   return (
     <div className="space-y-4">
       {/* Dry-run effective-access check */}
-      <div className="rounded-lg border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] p-4">
+      <div className="rounded-lg border border-border bg-white/[0.02] p-4">
         <div className="mb-2 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-secondary">
           <ShieldCheck className="w-3.5 h-3.5 text-brand" /> Check effective access
         </div>
@@ -158,7 +158,7 @@ export default function CapabilityAccessTab({ capabilityId }) {
       </div>
 
       {showForm && (
-        <div className="rounded-lg border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] p-4 space-y-3">
+        <div className="rounded-lg border border-border bg-white/[0.02] p-4 space-y-3">
           <div>
             <label className="block text-xs font-medium text-secondary uppercase tracking-wider mb-1.5">Agent ID (leave blank for org-wide default)</label>
             <input
@@ -215,7 +215,7 @@ export default function CapabilityAccessTab({ capabilityId }) {
           {rules.map((rule) => {
             const pill = ACCESS_PILL[rule.access] || ACCESS_PILL.deny;
             return (
-              <div key={rule.rule_id} className="flex items-center gap-3 rounded-lg border border-[rgba(255,255,255,0.06)] px-4 py-3">
+              <div key={rule.rule_id} className="flex items-center gap-3 rounded-lg border border-border px-4 py-3">
                 <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium border ${pill.color}`}>
                   {pill.label}
                 </span>

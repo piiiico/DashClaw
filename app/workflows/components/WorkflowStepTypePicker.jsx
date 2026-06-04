@@ -10,7 +10,7 @@ export default function WorkflowStepTypePicker({ onSelect }) {
           key={type.value}
           type="button"
           onClick={() => onSelect(type.value)}
-          className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] p-4 text-left transition-colors hover:bg-[rgba(255,255,255,0.04)]"
+          className="rounded-xl border border-border bg-white/[0.02] p-4 text-left transition-colors hover:bg-white/[0.04]"
         >
           <div className="text-sm font-medium text-white">{type.label}</div>
           <p className="mt-2 text-xs text-secondary">{type.description}</p>

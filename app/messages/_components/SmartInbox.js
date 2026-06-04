@@ -20,7 +20,7 @@ function MessageRow({ msg, onSelect, selectedId, onReply, onMarkRead, onArchive 
       className={`group flex items-start gap-3 py-2.5 px-1 cursor-pointer transition-colors rounded-sm ${
         isUnread ? 'border-l-2 border-brand' : 'border-l-2 border-transparent'
       } ${
-        msg.id === selectedId ? 'bg-[rgba(255,255,255,0.04)]' : 'hover:bg-[rgba(255,255,255,0.02)]'
+        msg.id === selectedId ? 'bg-white/[0.04]' : 'hover:bg-white/[0.02]'
       }`}
     >
       <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5 border ${agentColor}`}>
@@ -77,7 +77,7 @@ function Section({ title, icon: Icon, count, color, defaultOpen, children }) {
         <span>{title}</span>
         <span className="ml-auto font-mono">{count}</span>
       </button>
-      {open && <div className="divide-y divide-[rgba(255,255,255,0.04)]">{children}</div>}
+      {open && <div className="divide-y divide-white/[0.04]">{children}</div>}
     </div>
   );
 }
@@ -139,7 +139,7 @@ export default function SmartInbox({ messages, onSelect, selectedId, onReply, on
           title="Everything Else"
           icon={Inbox}
           count={rest.length}
-          color="text-secondary hover:bg-[rgba(255,255,255,0.06)]"
+          color="text-secondary hover:bg-white/[0.06]"
           defaultOpen={!hasTriaged}
         >
           {rest.map(msg => (

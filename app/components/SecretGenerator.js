@@ -60,7 +60,7 @@ function SecretRow({ name, value, label }) {
   }
 
   return (
-    <div className="flex items-start gap-3 py-2.5 border-b border-[rgba(255,255,255,0.04)] last:border-b-0">
+    <div className="flex items-start gap-3 py-2.5 border-b border-border last:border-b-0">
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2 mb-0.5">
           <code className="text-xs font-mono text-secondary font-semibold">{name}</code>
@@ -70,7 +70,7 @@ function SecretRow({ name, value, label }) {
       </div>
       <button
         onClick={handleCopy}
-        className="shrink-0 p-1.5 rounded bg-[#181818] hover:bg-[#222] transition-colors"
+        className="shrink-0 p-1.5 rounded bg-surface-tertiary hover:bg-surface-elevated transition-colors"
         title={`Copy ${name}`}
       >
         {copied ? <Check size={14} className="text-success" /> : <Copy size={14} className="text-secondary" />}
@@ -121,8 +121,8 @@ export default function SecretGenerator() {
   return (
     <div className="space-y-4">
       {/* Generated secrets */}
-      <div className="rounded-xl bg-[#0d0d0d] border border-brand/20 overflow-hidden">
-        <div className="px-5 py-2.5 border-b border-[rgba(255,255,255,0.06)] flex items-center justify-between">
+      <div className="rounded-xl bg-surface-tertiary border border-brand/20 overflow-hidden">
+        <div className="px-5 py-2.5 border-b border-border flex items-center justify-between">
           <span className="text-xs text-tertiary font-mono">Generated secrets</span>
           <button
             onClick={handleGenerate}
@@ -140,8 +140,8 @@ export default function SecretGenerator() {
       </div>
 
       {/* Copy-pasteable env block */}
-      <div className="relative group rounded-xl bg-[#0d0d0d] border border-[rgba(255,255,255,0.06)] overflow-hidden">
-        <div className="px-5 py-2.5 border-b border-[rgba(255,255,255,0.06)] flex items-center justify-between">
+      <div className="relative group rounded-xl bg-surface-tertiary border border-border overflow-hidden">
+        <div className="px-5 py-2.5 border-b border-border flex items-center justify-between">
           <span className="text-xs text-tertiary font-mono">Ready-to-paste environment variables</span>
           <button
             onClick={handleCopyAll}

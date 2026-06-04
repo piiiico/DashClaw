@@ -4,7 +4,7 @@ export default function PolicyGeneratedAdvancedDetails({ advancedDetails, rawPol
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] p-4">
+    <div className="rounded-xl border border-border bg-white/[0.02] p-4">
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
@@ -17,7 +17,7 @@ export default function PolicyGeneratedAdvancedDetails({ advancedDetails, rawPol
           {advancedDetails && (
             <div>
               <div className="mb-2 text-xs uppercase tracking-wider text-tertiary">Normalized advanced details</div>
-              <pre className="overflow-x-auto rounded-lg bg-[#111] p-3 text-xs text-secondary">
+              <pre className="overflow-x-auto rounded-lg bg-surface-secondary p-3 text-xs text-secondary">
                 {JSON.stringify(advancedDetails, null, 2)}
               </pre>
             </div>
@@ -25,7 +25,7 @@ export default function PolicyGeneratedAdvancedDetails({ advancedDetails, rawPol
           {rawPolicy && (
             <div>
               <div className="mb-2 text-xs uppercase tracking-wider text-tertiary">Raw generated policy</div>
-              <pre className="overflow-x-auto rounded-lg bg-[#111] p-3 text-xs text-secondary">
+              <pre className="overflow-x-auto rounded-lg bg-surface-secondary p-3 text-xs text-secondary">
                 {JSON.stringify(rawPolicy, null, 2)}
               </pre>
             </div>

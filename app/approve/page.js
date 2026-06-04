@@ -348,7 +348,7 @@ export default function ApprovePage() {
         {/* Status / count bar */}
         <div className="mb-4">
           {isDemo && (
-            <div className="mb-3 flex items-start gap-2 rounded-lg border border-[rgba(255,255,255,0.08)] bg-white/[0.02] p-3 text-xs text-secondary">
+            <div className="mb-3 flex items-start gap-2 rounded-lg border border-border-hover bg-white/[0.02] p-3 text-xs text-secondary">
               <Info size={14} className="mt-0.5 shrink-0 text-tertiary" />
               <span>Demo mode — approvals are read-only. Self-host to decide for real agents.</span>
             </div>
@@ -419,7 +419,7 @@ export default function ApprovePage() {
                   </div>
 
                   <div className="mt-3 flex items-center gap-2">
-                    <span className="inline-flex items-center rounded-md border border-[rgba(255,255,255,0.08)] bg-white/[0.02] px-2 py-0.5 font-mono text-[11px] font-medium text-secondary">
+                    <span className="inline-flex items-center rounded-md border border-border-hover bg-white/[0.02] px-2 py-0.5 font-mono text-[11px] font-medium text-secondary">
                       {action.action_type || 'action'}
                     </span>
                     <span className="tabular-nums text-[11px] text-tertiary">
@@ -428,7 +428,7 @@ export default function ApprovePage() {
                   </div>
 
                   {(action._matchedPolicy || action._guardReason || action.reasoning) && (
-                    <div className="mt-3 rounded-lg border border-[rgba(255,255,255,0.06)] bg-white/[0.02] p-2.5">
+                    <div className="mt-3 rounded-lg border border-border bg-white/[0.02] p-2.5">
                       {action._matchedPolicy && (
                         <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-tertiary">
                           <ShieldAlert size={10} className="text-brand" />

@@ -52,7 +52,7 @@ export default function WeeklyMemoPanel({ projectId, initialMemo = null }) {
             type="button"
             onClick={regenerate}
             disabled={busy}
-            className="inline-flex shrink-0 items-center gap-2 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-secondary transition-colors hover:border-border-hover hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex shrink-0 items-center gap-2 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-secondary transition-colors hover:border-border-hover hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 disabled:cursor-not-allowed disabled:opacity-50"
             aria-label="Regenerate weekly memo"
           >
             <RotateCcw className={`h-3.5 w-3.5 ${busy ? 'animate-spin' : ''}`} aria-hidden />
@@ -84,7 +84,7 @@ export default function WeeklyMemoPanel({ projectId, initialMemo = null }) {
               type="button"
               onClick={regenerate}
               disabled={busy}
-              className="inline-flex items-center gap-2 rounded-md bg-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-orange-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-primary disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 focus-visible:ring-offset-2 focus-visible:ring-offset-primary disabled:cursor-not-allowed disabled:opacity-60"
             >
               {busy ? 'Generating…' : 'Generate memo'}
               {!busy && <ArrowRight className="h-4 w-4" aria-hidden />}

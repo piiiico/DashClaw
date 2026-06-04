@@ -10,7 +10,7 @@ export default function MissionControlOperatorLens({
   onToggleTelemetry,
 }) {
   return (
-    <div className="mb-6 rounded-xl border border-[rgba(255,255,255,0.07)] bg-surface-secondary px-4 py-3">
+    <div className="mb-6 rounded-xl border border-border bg-surface-secondary px-4 py-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Filter size={14} className="text-secondary" />

@@ -270,7 +270,7 @@ export default function PromptsPage() {
         )}
 
         {/* Tabs */}
-        <div className="flex gap-1 border-b border-[rgba(255,255,255,0.06)]">
+        <div className="flex gap-1 border-b border-white/[0.06]">
           {TABS.map(tab => (
             <button
               key={tab.id}
@@ -371,7 +371,7 @@ export default function PromptsPage() {
                           setEditingTemplate((v) => !v);
                           setEditForm({ name: selectedTemplate.name, description: selectedTemplate.description || '', category: selectedTemplate.category || 'general' });
                         }}
-                        className="px-3 py-1.5 rounded-lg border border-[rgba(255,255,255,0.12)] text-secondary text-xs font-medium hover:text-white transition-colors"
+                        className="px-3 py-1.5 rounded-lg border border-white/[0.12] text-secondary text-xs font-medium hover:text-white transition-colors"
                       >
                         Edit
                       </button>
@@ -400,10 +400,10 @@ export default function PromptsPage() {
                   {showNewVersion && (
                     <Card>
                       <CardContent className="space-y-3 pt-5">
-                        <textarea value={newVersion.content} onChange={e => setNewVersion(s => ({ ...s, content: e.target.value }))} placeholder="Prompt content... Use {{variable}} for template variables" rows={8} className="w-full px-3 py-2 rounded-lg bg-[#111] border border-[rgba(255,255,255,0.1)] text-sm text-white placeholder:text-disabled focus:outline-none focus:border-brand font-mono" />
+                        <textarea value={newVersion.content} onChange={e => setNewVersion(s => ({ ...s, content: e.target.value }))} placeholder="Prompt content... Use {{variable}} for template variables" rows={8} className="w-full px-3 py-2 rounded-lg bg-surface-tertiary border border-white/[0.1] text-sm text-white placeholder:text-disabled focus:outline-none focus:border-brand font-mono" />
                         <div className="grid grid-cols-2 gap-3">
-                          <input value={newVersion.model_hint} onChange={e => setNewVersion(s => ({ ...s, model_hint: e.target.value }))} placeholder="Model hint (e.g., gpt-4o-mini)" className="px-3 py-2 rounded-lg bg-[#111] border border-[rgba(255,255,255,0.1)] text-sm text-white placeholder:text-disabled focus:outline-none focus:border-brand" />
-                          <input value={newVersion.changelog} onChange={e => setNewVersion(s => ({ ...s, changelog: e.target.value }))} placeholder="Changelog note" className="px-3 py-2 rounded-lg bg-[#111] border border-[rgba(255,255,255,0.1)] text-sm text-white placeholder:text-disabled focus:outline-none focus:border-brand" />
+                          <input value={newVersion.model_hint} onChange={e => setNewVersion(s => ({ ...s, model_hint: e.target.value }))} placeholder="Model hint (e.g., gpt-4o-mini)" className="px-3 py-2 rounded-lg bg-surface-tertiary border border-white/[0.1] text-sm text-white placeholder:text-disabled focus:outline-none focus:border-brand" />
+                          <input value={newVersion.changelog} onChange={e => setNewVersion(s => ({ ...s, changelog: e.target.value }))} placeholder="Changelog note" className="px-3 py-2 rounded-lg bg-surface-tertiary border border-white/[0.1] text-sm text-white placeholder:text-disabled focus:outline-none focus:border-brand" />
                         </div>
                         <div className="flex justify-end gap-2">
                           <button onClick={() => setShowNewVersion(false)} className="px-3 py-1.5 rounded-lg text-xs text-secondary hover:text-white transition-colors">Cancel</button>
@@ -423,7 +423,7 @@ export default function PromptsPage() {
                       ) : (
                         <div className="space-y-3">
                           {versions.map(v => (
-                            <div key={v.id} className={`rounded-lg border ${v.is_active ? 'border-green-500/30 bg-status-success/5' : 'border-[rgba(255,255,255,0.04)] bg-[#111]'}`}>
+                            <div key={v.id} className={`rounded-lg border ${v.is_active ? 'border-green-500/30 bg-status-success/5' : 'border-white/[0.04] bg-surface-tertiary'}`}>
                               <div className="flex items-center justify-between px-3 py-2">
                                 <div className="flex items-center gap-2">
                                   <span className="text-sm font-medium text-white">v{v.version}</span>
@@ -461,12 +461,12 @@ export default function PromptsPage() {
                       <CardContent className="space-y-3">
                         <div className="flex items-center gap-2">
                           <span className="text-xs text-tertiary">Variables (JSON):</span>
-                          <input value={renderVars} onChange={e => setRenderVars(e.target.value)} className="flex-1 px-2 py-1 rounded bg-[#111] border border-[rgba(255,255,255,0.1)] text-xs text-white font-mono focus:outline-none focus:border-brand" />
+                          <input value={renderVars} onChange={e => setRenderVars(e.target.value)} className="flex-1 px-2 py-1 rounded bg-surface-tertiary border border-white/[0.1] text-xs text-white font-mono focus:outline-none focus:border-brand" />
                           <button onClick={() => handleRender(renderPreview.version_id)} className="px-2 py-1 rounded bg-brand/20 text-brand text-xs hover:bg-brand/30 transition-colors">
                             <Play size={12} />
                           </button>
                         </div>
-                        <pre className="text-xs text-secondary bg-[#111] p-3 rounded-lg border border-[rgba(255,255,255,0.06)] max-h-[300px] overflow-y-auto whitespace-pre-wrap font-mono">{renderPreview.rendered}</pre>
+                        <pre className="text-xs text-secondary bg-surface-tertiary p-3 rounded-lg border border-white/[0.06] max-h-[300px] overflow-y-auto whitespace-pre-wrap font-mono">{renderPreview.rendered}</pre>
                         {renderPreview.parameters && renderPreview.parameters.length > 0 && (
                           <div className="flex gap-1">
                             <span className="text-[10px] text-disabled">Params:</span>
@@ -492,7 +492,7 @@ export default function PromptsPage() {
                     value={runsTemplateFilter}
                     onChange={(e) => setRunsTemplateFilter(e.target.value)}
                     aria-label="Filter runs by template"
-                    className="rounded-lg bg-[#111] border border-[rgba(255,255,255,0.1)] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-brand"
+                    className="rounded-lg bg-surface-tertiary border border-white/[0.1] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-brand"
                   >
                     <option value="">All templates</option>
                     {templates.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
@@ -504,7 +504,7 @@ export default function PromptsPage() {
               ) : (
                 <div className="space-y-2">
                   {runs.map(run => (
-                    <div key={run.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-[#111] border border-[rgba(255,255,255,0.04)]">
+                    <div key={run.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-surface-tertiary border border-white/[0.04]">
                       <div className="flex items-center gap-3 min-w-0">
                         <span className="text-sm text-white font-medium truncate">{run.template_name}</span>
                         <Badge size="xs">v{run.version}</Badge>

@@ -13,7 +13,7 @@ export function ProofPanel({ view, proofDownloadHref }) {
   }
 
   return (
-    <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#0d0d0d] px-5 py-4">
+    <div className="rounded-xl border border-border bg-surface-tertiary px-5 py-4">
       <div className="flex items-center justify-between">
         <p className="text-xs text-tertiary">Verification proof</p>
         <a
@@ -53,7 +53,7 @@ export function ProofPanel({ view, proofDownloadHref }) {
             <details
               key={cat.id}
               open={!allPass}
-              className="overflow-hidden rounded-lg border border-[rgba(255,255,255,0.06)] bg-[#111]"
+              className="overflow-hidden rounded-lg border border-border bg-surface-secondary"
             >
               <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2 text-xs select-none [&::-webkit-details-marker]:hidden">
                 <span className={`shrink-0 font-bold ${STATUS_COLOR[cat.status] || 'text-tertiary'}`}>
@@ -62,7 +62,7 @@ export function ProofPanel({ view, proofDownloadHref }) {
                 <span className="min-w-0 flex-1 font-semibold text-secondary">{cat.title}</span>
                 {cat.summary && <span className="truncate text-[10px] text-tertiary">{cat.summary}</span>}
               </summary>
-              <div className="divide-y divide-[rgba(255,255,255,0.04)] border-t border-[rgba(255,255,255,0.06)]">
+              <div className="divide-y divide-border border-t border-border">
                 {(cat.checks || []).map((check) => (
                   <div key={check.id} className="flex items-start gap-2 px-3 py-2">
                     <span className={`mt-0.5 w-4 shrink-0 text-[10px] font-bold ${STATUS_COLOR[check.status] || 'text-tertiary'}`}>
@@ -87,7 +87,7 @@ export function ProofPanel({ view, proofDownloadHref }) {
         <summary className="cursor-pointer text-xs text-disabled select-none">
           Preview raw artifact
         </summary>
-        <pre className="mt-2 overflow-x-auto whitespace-pre-wrap rounded-lg border border-[rgba(255,255,255,0.04)] bg-[#050505] px-3 py-2 text-[10px] font-mono text-tertiary">
+        <pre className="mt-2 overflow-x-auto whitespace-pre-wrap rounded-lg border border-border bg-surface-tertiary px-3 py-2 text-[10px] font-mono text-tertiary">
           {JSON.stringify(artifact.verification, null, 2)}
         </pre>
       </details>

@@ -22,7 +22,7 @@ export default function MessageList({ messages, onSelect, selectedId, isSent, on
 
   return (
     <Card hover={false}>
-      <CardContent className="pt-0 divide-y divide-[rgba(255,255,255,0.04)]">
+      <CardContent className="pt-0 divide-y divide-white/[0.04]">
         {messages.map(msg => {
           const fromAgentId = msg.from_agent_id || msg.sender_id || 'unknown';
           const toAgentId = msg.to_agent_id ?? null;
@@ -35,7 +35,7 @@ export default function MessageList({ messages, onSelect, selectedId, isSent, on
               key={msg.id}
               onClick={() => onSelect(msg)}
               className={`group flex items-start gap-3 py-3 px-1 cursor-pointer transition-colors rounded-sm ${
-                msg.id === selectedId ? 'bg-[rgba(255,255,255,0.04)]' : 'hover:bg-[rgba(255,255,255,0.02)]'
+                msg.id === selectedId ? 'bg-white/[0.04]' : 'hover:bg-white/[0.02]'
               }`}
             >
               <div

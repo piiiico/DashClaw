@@ -53,7 +53,7 @@ export function ConnectNextStepPanel({ maskedApiKey, host, isAuthenticated, over
         className={`rounded-2xl border p-6 ${
           status === 'success'
             ? 'border-emerald-900/40 bg-emerald-950/20'
-            : 'border-[rgba(255,255,255,0.08)] bg-[#111]'
+            : 'border-border bg-surface-secondary'
         }`}
       >
         <p className="text-xs uppercase tracking-[0.3em] text-tertiary">Test your connection</p>
@@ -85,7 +85,7 @@ export function ConnectNextStepPanel({ maskedApiKey, host, isAuthenticated, over
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               placeholder="Paste your API key"
-              className="mt-1 w-full rounded-lg border border-[rgba(255,255,255,0.1)] bg-[#0a0a0a] px-3 py-2 text-sm font-mono text-secondary placeholder:text-disabled focus:border-brand/50 focus:outline-none focus:ring-1 focus:ring-brand/30"
+              className="mt-1 w-full rounded-lg border border-border bg-surface-tertiary px-3 py-2 text-sm font-mono text-secondary placeholder:text-disabled focus:border-brand/50 focus:outline-none focus:ring-1 focus:ring-brand/30"
             />
             {status === 'error' && result?.message && (
               <p className="mt-2 text-xs text-warning">{result.message}</p>
@@ -126,7 +126,7 @@ function SnippetCard({ label, code }) {
   }, [code]);
 
   return (
-    <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#0d0d0d] p-4">
+    <div className="rounded-xl border border-border bg-surface-tertiary p-4">
       <div className="flex items-center justify-between">
         <p className="text-xs uppercase tracking-[0.24em] text-tertiary">{label}</p>
         <button
@@ -142,7 +142,7 @@ function SnippetCard({ label, code }) {
           )}
         </button>
       </div>
-      <pre className="mt-3 overflow-x-auto whitespace-pre-wrap rounded-xl border border-[rgba(255,255,255,0.06)] bg-[#050505] px-4 py-3 text-xs font-mono text-secondary">
+      <pre className="mt-3 overflow-x-auto whitespace-pre-wrap rounded-xl border border-border bg-surface-tertiary px-4 py-3 text-xs font-mono text-secondary">
         {code}
       </pre>
     </div>

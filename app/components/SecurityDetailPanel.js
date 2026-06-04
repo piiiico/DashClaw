@@ -80,7 +80,7 @@ function SignalDetail({ signal, onClose, onDismiss }) {
       {onDismiss && (
         <button
           onClick={() => { onDismiss(signal); onClose(); }}
-          className="w-full mt-2 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-[rgba(255,255,255,0.06)] text-sm text-secondary hover:text-white hover:bg-white/5 transition-colors"
+          className="w-full mt-2 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-border text-sm text-secondary hover:text-white hover:bg-white/5 transition-colors"
         >
           <X size={14} />
           Dismiss Signal

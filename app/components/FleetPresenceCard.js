@@ -109,7 +109,7 @@ export default function FleetPresenceCard() {
                     <div className="relative">
                       <Cpu size={16} className={isOnline ? 'text-brand' : 'text-disabled'} />
                       {(isOnline || isStale) && (
-                        <span className={`absolute -top-1 -right-1 w-2 h-2 rounded-full ${dotColor} ring-2 ring-[#0a0a0a]`} />
+                        <span className={`absolute -top-1 -right-1 w-2 h-2 rounded-full ${dotColor} ring-2 ring-surface-primary`} />
                       )}
                     </div>
                     <div className="min-w-0">

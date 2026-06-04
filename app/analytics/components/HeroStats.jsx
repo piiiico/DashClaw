@@ -18,7 +18,7 @@ function TrendBadge({ current, previous, invert = false }) {
 
 function StatCard({ label, value, trend }) {
   return (
-    <div className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#111] p-4">
+    <div className="rounded-2xl border border-border bg-surface-secondary p-4">
       <div className="text-[10px] font-medium uppercase tracking-widest text-tertiary">{label}</div>
       <div className="mt-1 flex items-baseline gap-2">
         <span className="text-2xl font-semibold text-white">{value}</span>

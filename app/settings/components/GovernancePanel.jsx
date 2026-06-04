@@ -98,7 +98,7 @@ export default function GovernancePanel() {
 
   if (loading) {
     return (
-      <div className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#111] p-8">
+      <div className="rounded-2xl border border-border bg-surface-secondary p-8">
         <p className="text-sm text-tertiary">Loading governance configuration...</p>
       </div>
     );
@@ -107,7 +107,7 @@ export default function GovernancePanel() {
   return (
     <div className="space-y-6 max-w-3xl">
       {/* LLM provider badge — closes the /api/settings/llm-status orphan */}
-      <div className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#111] p-5">
+      <div className="rounded-2xl border border-border bg-surface-secondary p-5">
         <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">AI provider</div>
         {llm?.available ? (
           <div className="flex items-center gap-2">
@@ -128,7 +128,7 @@ export default function GovernancePanel() {
       </div>
 
       {/* Governance flags */}
-      <div className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#111] p-6 space-y-6">
+      <div className="rounded-2xl border border-border bg-surface-secondary p-6 space-y-6">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <h3 className="text-sm font-semibold text-white">Governance settings</h3>

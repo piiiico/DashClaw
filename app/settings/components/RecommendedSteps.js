@@ -19,8 +19,8 @@ function ActionBlock({ step }) {
   const borderColor = {
     error: 'border-red-900/50',
     warn: 'border-amber-900/50',
-    info: 'border-[rgba(255,255,255,0.08)]',
-  }[step.variant] || 'border-[rgba(255,255,255,0.08)]';
+    info: 'border-border-hover',
+  }[step.variant] || 'border-border-hover';
 
   const titleColor = {
     error: 'text-error',
@@ -29,7 +29,7 @@ function ActionBlock({ step }) {
   }[step.variant] || 'text-secondary';
 
   return (
-    <div className={`rounded-2xl border bg-[#111] p-5 ${borderColor}`}>
+    <div className={`rounded-2xl border bg-surface-secondary p-5 ${borderColor}`}>
       <p className={`mb-2 text-sm font-semibold ${titleColor}`}>{step.title}</p>
       <p className="text-sm text-secondary">{step.summary}</p>
       {step.details?.length ? (

@@ -164,7 +164,7 @@ export default function NewCapabilityPage() {
       breadcrumbs={['Studio', 'Capabilities', 'New']}
       maturity="stable"
       actions={(
-        <Link href="/capabilities" className="flex items-center gap-2 px-3 py-1.5 text-sm text-secondary hover:text-white bg-surface-tertiary border border-[rgba(255,255,255,0.06)] rounded-lg transition-colors">
+        <Link href="/capabilities" className="flex items-center gap-2 px-3 py-1.5 text-sm text-secondary hover:text-white bg-surface-tertiary border border-border rounded-lg transition-colors">
           <ArrowLeft size={14} /> Back
         </Link>
       )}

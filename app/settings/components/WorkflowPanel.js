@@ -5,7 +5,7 @@ export function WorkflowPanel({ workflow }) {
     <details
       id="workflow"
       open={!allPass}
-      className="group rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#111]"
+      className="group rounded-2xl border border-border bg-surface-secondary"
     >
       <summary className="flex cursor-pointer items-center gap-3 px-5 py-4 select-none list-none [&::-webkit-details-marker]:hidden">
         {allPass ? (
@@ -50,10 +50,10 @@ function WorkflowStep({ step, index }) {
     fail: 'border-red-900/40 text-error',
     blocked: 'border-red-900/40 text-error',
     pending: 'border-cyan-900/40 text-cyan-300',
-  }[step.status] || 'border-[rgba(255,255,255,0.08)] text-secondary';
+  }[step.status] || 'border-border-hover text-secondary';
 
   return (
-    <div className={`rounded-xl border bg-[#0d0d0d] p-4 ${styles}`}>
+    <div className={`rounded-xl border bg-surface-tertiary p-4 ${styles}`}>
       <div className="flex items-start gap-3">
         <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-current text-[11px] font-semibold">
           {index + 1}

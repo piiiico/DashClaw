@@ -136,7 +136,7 @@ export default function ComposeModal({ show, onClose, agents, threads, filterAge
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
-      <div className="bg-surface-secondary border border-[rgba(255,255,255,0.06)] rounded-lg w-full max-w-lg mx-4 p-5" onClick={e => e.stopPropagation()}>
+      <div className="bg-surface-secondary border border-white/[0.06] rounded-lg w-full max-w-lg mx-4 p-5" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-semibold text-white">Compose Message</h3>
           <button onClick={onClose} className="text-tertiary hover:text-secondary">
@@ -150,7 +150,7 @@ export default function ComposeModal({ show, onClose, agents, threads, filterAge
             <select
               value={to}
               onChange={e => setTo(e.target.value)}
-              className="w-full px-3 py-2 text-sm bg-surface-primary border border-[rgba(255,255,255,0.06)] rounded-md text-secondary"
+              className="w-full px-3 py-2 text-sm bg-surface-primary border border-white/[0.06] rounded-md text-secondary"
             >
               <option value="">All Agents (Broadcast)</option>
               {agents.map(a => (
@@ -164,7 +164,7 @@ export default function ComposeModal({ show, onClose, agents, threads, filterAge
               <select
                 value={type}
                 onChange={e => setType(e.target.value)}
-                className="w-full px-3 py-2 text-sm bg-surface-primary border border-[rgba(255,255,255,0.06)] rounded-md text-secondary"
+                className="w-full px-3 py-2 text-sm bg-surface-primary border border-white/[0.06] rounded-md text-secondary"
               >
                 <option value="info">Info</option>
                 <option value="action">Action</option>
@@ -193,7 +193,7 @@ export default function ComposeModal({ show, onClose, agents, threads, filterAge
               onChange={e => setSubject(e.target.value)}
               placeholder="Optional subject"
               maxLength={200}
-              className="w-full px-3 py-2 text-sm bg-surface-primary border border-[rgba(255,255,255,0.06)] rounded-md text-secondary placeholder:text-disabled"
+              className="w-full px-3 py-2 text-sm bg-surface-primary border border-white/[0.06] rounded-md text-secondary placeholder:text-disabled"
             />
           </div>
           <div
@@ -209,7 +209,7 @@ export default function ComposeModal({ show, onClose, agents, threads, filterAge
               maxLength={2000}
               rows={5}
               className={`w-full px-3 py-2 text-sm bg-surface-primary border rounded-md text-secondary placeholder:text-disabled resize-none transition-colors ${
-                dragging ? 'border-brand bg-brand/5' : 'border-[rgba(255,255,255,0.06)]'
+                dragging ? 'border-brand bg-brand/5' : 'border-white/[0.06]'
               }`}
             />
             <div className="flex items-center justify-between mt-1">
@@ -239,7 +239,7 @@ export default function ComposeModal({ show, onClose, agents, threads, filterAge
           {attachments.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {attachments.map((att, idx) => (
-                <span key={idx} className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.06)] text-xs text-secondary">
+                <span key={idx} className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/[0.04] border border-white/[0.06] text-xs text-secondary">
                   <Paperclip size={10} className="text-secondary" />
                   <span className="truncate max-w-[100px]">{att.filename}</span>
                   <span className="text-tertiary">{formatSize(att.size)}</span>
@@ -261,7 +261,7 @@ export default function ComposeModal({ show, onClose, agents, threads, filterAge
               <select
                 value={threadId}
                 onChange={e => setThreadId(e.target.value)}
-                className="w-full px-3 py-2 text-sm bg-surface-primary border border-[rgba(255,255,255,0.06)] rounded-md text-secondary"
+                className="w-full px-3 py-2 text-sm bg-surface-primary border border-white/[0.06] rounded-md text-secondary"
               >
                 <option value="">None</option>
                 {openThreads.map(t => (

@@ -23,7 +23,7 @@ export default function AttachmentChips({ attachments, compact }) {
           href={attachmentUrl(att)}
           target="_blank"
           rel="noopener noreferrer"
-          className="group flex items-center gap-1.5 px-2 py-1 rounded-md bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.06)] hover:bg-[rgba(255,255,255,0.08)] transition-colors text-xs text-secondary"
+          className="group flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.08] transition-colors text-xs text-secondary"
         >
           {isImageType(att.mime_type) ? (
             <ImageIcon size={compact ? 10 : 12} className="text-info flex-shrink-0" />

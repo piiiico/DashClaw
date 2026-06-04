@@ -188,7 +188,7 @@ export default function ThreadConversation({ thread, filterAgentId, onNewMessage
   return (
     <div className="flex flex-col h-full">
       {/* Thread header */}
-      <div className="border-b border-[rgba(255,255,255,0.06)] pb-3 mb-3">
+      <div className="border-b border-white/[0.06] pb-3 mb-3">
         <div className="flex items-center gap-2 mb-1">
           <Hash size={14} className="text-secondary" />
           <span className="text-sm font-semibold text-white">{thread.name}</span>
@@ -209,7 +209,7 @@ export default function ThreadConversation({ thread, filterAgentId, onNewMessage
         {participants.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-1">
             {participants.map(p => (
-              <span key={p} className="text-xs px-2 py-0.5 rounded-full bg-[rgba(255,255,255,0.06)] text-secondary">
+              <span key={p} className="text-xs px-2 py-0.5 rounded-full bg-white/[0.06] text-secondary">
                 {p}
               </span>
             ))}
@@ -222,7 +222,7 @@ export default function ThreadConversation({ thread, filterAgentId, onNewMessage
               onChange={e => setSummaryDraft(e.target.value)}
               placeholder="Thread summary"
               aria-label="Thread summary"
-              className="flex-1 px-2 py-1 text-xs bg-surface-primary border border-[rgba(255,255,255,0.06)] rounded text-secondary"
+              className="flex-1 px-2 py-1 text-xs bg-surface-primary border border-white/[0.06] rounded text-secondary"
             />
             <button
               onClick={() => { patchThread({ summary: summaryDraft }); setEditingSummary(false); }}
@@ -272,9 +272,9 @@ export default function ThreadConversation({ thread, filterAgentId, onNewMessage
               <div key={msg.id}>
                 {showDateSep && (
                   <div className="flex items-center gap-3 py-2">
-                    <div className="flex-1 h-px bg-[rgba(255,255,255,0.06)]" />
+                    <div className="flex-1 h-px bg-white/[0.06]" />
                     <span className="text-xs text-tertiary font-medium">{curDate}</span>
-                    <div className="flex-1 h-px bg-[rgba(255,255,255,0.06)]" />
+                    <div className="flex-1 h-px bg-white/[0.06]" />
                   </div>
                 )}
                 <div className={`group flex gap-2 ${isDashboard ? 'flex-row-reverse' : ''}`}>
@@ -295,7 +295,7 @@ export default function ThreadConversation({ thread, filterAgentId, onNewMessage
                     <div className={`relative rounded-lg p-2.5 ${
                       isDashboard
                         ? 'bg-brand/10 border border-brand/20'
-                        : 'bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)]'
+                        : 'bg-white/[0.03] border border-white/[0.06]'
                     } ${msg._optimistic ? 'opacity-60' : ''}`}>
                       <MarkdownBody content={body} />
                       <AttachmentChips attachments={msg.attachments} compact />
@@ -332,7 +332,7 @@ export default function ThreadConversation({ thread, filterAgentId, onNewMessage
       </div>
 
       {/* Reply bar */}
-      <div className="border-t border-[rgba(255,255,255,0.06)] pt-3 mt-3">
+      <div className="border-t border-white/[0.06] pt-3 mt-3">
         {isDemo ? (
           <div className="text-xs text-tertiary text-center py-2">Reply is disabled in demo mode</div>
         ) : (
@@ -350,13 +350,13 @@ export default function ThreadConversation({ thread, filterAgentId, onNewMessage
                 placeholder="Reply to thread..."
                 maxLength={2000}
                 rows={2}
-                className="flex-1 px-3 py-2 text-sm bg-surface-primary border border-[rgba(255,255,255,0.06)] rounded-md text-secondary placeholder:text-disabled resize-none"
+                className="flex-1 px-3 py-2 text-sm bg-surface-primary border border-white/[0.06] rounded-md text-secondary placeholder:text-disabled resize-none"
               />
               <div className="flex flex-col gap-1 self-end">
                 <button
                   onClick={() => replyFileRef.current?.click()}
                   disabled={replyAttachments.length >= 3}
-                  className="px-2 py-2 rounded-md bg-[rgba(255,255,255,0.06)] text-secondary hover:text-secondary disabled:opacity-40 transition-colors"
+                  className="px-2 py-2 rounded-md bg-white/[0.06] text-secondary hover:text-secondary disabled:opacity-40 transition-colors"
                   title="Attach file"
                 >
                   <Paperclip size={14} />
@@ -380,7 +380,7 @@ export default function ThreadConversation({ thread, filterAgentId, onNewMessage
             {replyAttachments.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mt-2">
                 {replyAttachments.map((att, idx) => (
-                  <span key={idx} className="flex items-center gap-1 px-2 py-0.5 rounded bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.06)] text-xs text-secondary">
+                  <span key={idx} className="flex items-center gap-1 px-2 py-0.5 rounded bg-white/[0.04] border border-white/[0.06] text-xs text-secondary">
                     <Paperclip size={9} className="text-secondary" />
                     <span className="truncate max-w-[80px]">{att.filename}</span>
                     <button onClick={() => setReplyAttachments(prev => prev.filter((_, i) => i !== idx))} className="text-tertiary hover:text-error">

@@ -38,7 +38,7 @@ export default function ConnectAgentButton({
   return (
     <button
       onClick={handleClick}
-      className={`flex items-center gap-1.5 px-3 py-2 bg-surface-tertiary border border-[rgba(255,255,255,0.06)] rounded-lg text-sm text-secondary hover:text-white hover:border-[rgba(255,255,255,0.12)] transition-colors ${className}`}
+      className={`flex items-center gap-1.5 px-3 py-2 bg-surface-tertiary border border-border rounded-lg text-sm text-secondary hover:text-white hover:border-border-hover transition-colors ${className}`}
     >
       {copied ? <Check size={14} className="text-success" /> : <Terminal size={14} />}
       {copied ? 'Copied!' : label}

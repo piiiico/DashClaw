@@ -58,7 +58,7 @@ export default function WorkflowStepBuilder({ steps, onChange, resourceOptions }
 
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] p-4">
+      <div className="rounded-xl border border-border bg-white/[0.02] p-4">
         <div className="text-sm font-medium text-white">Executable workflow steps</div>
         <p className="mt-2 text-sm text-secondary">
           Workflows currently run steps in order. Later steps can use outputs from earlier steps, but this version does not support branching or graph logic.
@@ -66,7 +66,7 @@ export default function WorkflowStepBuilder({ steps, onChange, resourceOptions }
       </div>
 
       {!hasSteps ? (
-        <div className="rounded-xl border border-dashed border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.02)] p-5 space-y-4">
+        <div className="rounded-xl border border-dashed border-border bg-white/[0.02] p-5 space-y-4">
           <div>
             <div className="text-sm font-medium text-white">No executable steps yet</div>
             <p className="mt-1 text-sm text-secondary">Start by adding the first real runtime step for this workflow.</p>
@@ -101,7 +101,7 @@ export default function WorkflowStepBuilder({ steps, onChange, resourceOptions }
             ))}
           </div>
 
-          <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] p-4">
+          <div className="rounded-xl border border-border bg-white/[0.02] p-4">
             <div className="text-xs font-medium text-secondary uppercase tracking-wider mb-3">Add another step</div>
             <WorkflowStepTypePicker onSelect={addStep} />
           </div>

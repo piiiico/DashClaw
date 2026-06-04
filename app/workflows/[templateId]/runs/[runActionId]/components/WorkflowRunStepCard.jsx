@@ -71,7 +71,7 @@ export default function WorkflowRunStepCard({ step, runStatus, onResumeFromStep 
     typeof onResumeFromStep === 'function';
 
   return (
-    <div className={`rounded-lg border border-[rgba(255,255,255,0.06)] ${config.bg}`}>
+    <div className={`rounded-lg border border-border ${config.bg}`}>
       <div className="flex items-center">
         <button
           onClick={() => setExpanded(!expanded)}
@@ -100,7 +100,7 @@ export default function WorkflowRunStepCard({ step, runStatus, onResumeFromStep 
       </div>
 
       {expanded && (
-        <div className="px-4 pb-4 space-y-3 border-t border-[rgba(255,255,255,0.04)]">
+        <div className="px-4 pb-4 space-y-3 border-t border-border">
           {step.error_message && (
             <div className="mt-3 p-2 rounded bg-red-400/10 text-error text-xs font-mono">{step.error_message}</div>
           )}

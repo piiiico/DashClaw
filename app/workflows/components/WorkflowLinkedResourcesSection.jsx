@@ -82,7 +82,7 @@ export default function WorkflowLinkedResourcesSection({
   }
 
   return (
-    <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] p-5 space-y-5">
+    <div className="rounded-xl border border-border bg-white/[0.02] p-5 space-y-5">
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="text-sm font-medium text-white uppercase tracking-wider">Linked resources</div>

@@ -249,7 +249,7 @@ export default function AssumptionGraph({ trace, currentActionId, onNodeClick })
       </div>
       <div
         ref={containerRef}
-        className="relative bg-surface-secondary rounded-lg border border-[rgba(255,255,255,0.06)]"
+        className="relative bg-surface-secondary rounded-lg border border-border"
         style={{ width: totalWidth, height: totalHeight, minWidth: '100%' }}
       >
         {/* SVG connector lines */}

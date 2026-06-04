@@ -45,7 +45,7 @@ export default function GuardSimulation() {
         {/* Subtle background glow */}
         <div className="absolute -top-24 -left-24 w-48 h-48 bg-brand/10 blur-[100px] rounded-full group-hover/sim:bg-brand/20 transition-all duration-1000"></div>
         
-        <div className="relative bg-[#080808] rounded-[23px] overflow-hidden border border-white/5">
+        <div className="relative bg-surface-primary rounded-[23px] overflow-hidden border border-white/5">
           {/* Header Bar */}
           <div className="px-5 py-4 border-b border-white/5 flex items-center justify-between bg-white/[0.01]">
             <div className="flex items-center gap-3">

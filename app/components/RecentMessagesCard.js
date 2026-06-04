@@ -109,7 +109,7 @@ export default function RecentMessagesCard() {
                 return (
                   <div
                     key={msg.id}
-                    className="flex items-start gap-3 px-3 py-2.5 rounded-lg bg-surface-tertiary border border-[rgba(255,255,255,0.06)] transition-colors duration-150 hover:border-zinc-700"
+                    className="flex items-start gap-3 px-3 py-2.5 rounded-lg bg-surface-tertiary border border-border transition-colors duration-150 hover:border-zinc-700"
                   >
                     <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5 border ${agentColor}`}>
                       <MessageSquare size={12} />

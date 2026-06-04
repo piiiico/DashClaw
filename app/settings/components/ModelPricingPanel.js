@@ -129,7 +129,7 @@ export default function ModelPricingPanel() {
 
   if (loading) {
     return (
-      <div className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#111] p-8">
+      <div className="rounded-2xl border border-border bg-surface-secondary p-8">
         <p className="text-sm text-tertiary">Loading pricing configuration...</p>
       </div>
     );
@@ -138,7 +138,7 @@ export default function ModelPricingPanel() {
   return (
     <div className="space-y-6 max-w-4xl">
       {/* Header */}
-      <div className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#111] p-6">
+      <div className="rounded-2xl border border-border bg-surface-secondary p-6">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <h3 className="text-sm font-semibold text-white">Model Pricing</h3>
@@ -176,7 +176,7 @@ export default function ModelPricingPanel() {
       </div>
 
       {/* Pricing table */}
-      <div className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#111] overflow-hidden">
+      <div className="rounded-2xl border border-border bg-surface-secondary overflow-hidden">
         <table className="w-full">
           <thead>
             <tr className="border-b border-white/5">
@@ -305,7 +305,7 @@ export default function ModelPricingPanel() {
       </div>
 
       {/* Info panel */}
-      <div className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#111] p-5">
+      <div className="rounded-2xl border border-border bg-surface-secondary p-5">
         <div className="text-[10px] font-bold text-disabled uppercase tracking-widest mb-3">How pricing works</div>
         <div className="space-y-2 text-xs text-tertiary">
           <p>

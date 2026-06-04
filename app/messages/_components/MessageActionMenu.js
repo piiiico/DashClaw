@@ -49,19 +49,19 @@ export default function MessageActionMenu({ message, onMarkRead, onArchive, onRe
     <div ref={menuRef} className="relative">
       <button
         onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
-        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded text-tertiary hover:text-secondary hover:bg-[rgba(255,255,255,0.06)]"
+        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded text-tertiary hover:text-secondary hover:bg-white/[0.06]"
       >
         <MoreHorizontal size={14} />
       </button>
       {open && (
-        <div className="absolute right-0 top-full mt-1 z-20 min-w-[160px] py-1 rounded-md bg-surface-secondary border border-[rgba(255,255,255,0.08)] shadow-lg">
+        <div className="absolute right-0 top-full mt-1 z-20 min-w-[160px] py-1 rounded-md bg-surface-secondary border border-white/[0.08] shadow-lg">
           {items.map((item, i) => {
             const Icon = item.icon;
             return (
               <button
                 key={i}
                 onClick={(e) => { e.stopPropagation(); item.onClick(); }}
-                className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-secondary hover:bg-[rgba(255,255,255,0.06)] transition-colors"
+                className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-secondary hover:bg-white/[0.06] transition-colors"
               >
                 <Icon size={12} className="text-secondary" /> {item.label}
               </button>

@@ -47,7 +47,7 @@ export default function AnalyticsPage() {
       breadcrumbs={['Measure', 'Analytics']}
       maturity="beta"
       actions={
-        <div className="flex items-center gap-1 rounded-lg border border-[rgba(255,255,255,0.06)] bg-surface-tertiary p-0.5">
+        <div className="flex items-center gap-1 rounded-lg border border-border bg-surface-tertiary p-0.5">
           {RANGES.map(r => (
             <button
               key={r.value}

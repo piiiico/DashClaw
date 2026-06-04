@@ -4,7 +4,7 @@ export default function BreakdownCard({ title, items, labelKey, countLabel }) {
   const maxPct = Math.max(...items.map(i => i.pct || 0), 1);
 
   return (
-    <div className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#111] p-5">
+    <div className="rounded-2xl border border-border bg-surface-secondary p-5">
       <div className="text-[10px] font-medium uppercase tracking-widest text-tertiary mb-4">{title}</div>
       {items.length === 0 ? (
         <div className="text-sm text-tertiary">No data in this period.</div>

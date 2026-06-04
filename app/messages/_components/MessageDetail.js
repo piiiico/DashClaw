@@ -44,20 +44,20 @@ export default function MessageDetail({ message, onMarkRead, onArchive, onReply,
       {message.subject && (
         <div className="text-sm font-medium text-secondary mb-2">{message.subject}</div>
       )}
-      <div className="mb-3 bg-[rgba(255,255,255,0.02)] rounded-md p-3">
+      <div className="mb-3 bg-white/[0.02] rounded-md p-3">
         <MarkdownBody content={body} />
       </div>
       <AttachmentChips attachments={message.attachments} />
       <div className="flex gap-1.5 mb-3 mt-2">
         <button
           onClick={() => handleCopy('markdown')}
-          className="flex items-center gap-1 px-2 py-1 text-xs rounded-md bg-[rgba(255,255,255,0.04)] text-secondary hover:text-secondary hover:bg-[rgba(255,255,255,0.08)] transition-colors"
+          className="flex items-center gap-1 px-2 py-1 text-xs rounded-md bg-white/[0.04] text-secondary hover:text-secondary hover:bg-white/[0.08] transition-colors"
         >
           <Copy size={10} /> {copyState === 'markdown' ? 'Copied!' : 'Copy Markdown'}
         </button>
         <button
           onClick={() => handleCopy('plain')}
-          className="flex items-center gap-1 px-2 py-1 text-xs rounded-md bg-[rgba(255,255,255,0.04)] text-secondary hover:text-secondary hover:bg-[rgba(255,255,255,0.08)] transition-colors"
+          className="flex items-center gap-1 px-2 py-1 text-xs rounded-md bg-white/[0.04] text-secondary hover:text-secondary hover:bg-white/[0.08] transition-colors"
         >
           <FileType size={10} /> {copyState === 'plain' ? 'Copied!' : 'Copy Plain Text'}
         </button>
@@ -77,14 +77,14 @@ export default function MessageDetail({ message, onMarkRead, onArchive, onReply,
             <button
               onClick={() => onMarkRead(message.id)}
               disabled={isDemo}
-              className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-md bg-[rgba(255,255,255,0.06)] text-secondary hover:bg-[rgba(255,255,255,0.1)] transition-colors disabled:opacity-50"
+              className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-md bg-white/[0.06] text-secondary hover:bg-white/[0.1] transition-colors disabled:opacity-50"
             >
               <Eye size={12} /> Mark Read
             </button>
             <button
               onClick={() => onArchive(message.id)}
               disabled={isDemo}
-              className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-md bg-[rgba(255,255,255,0.06)] text-secondary hover:bg-[rgba(255,255,255,0.1)] transition-colors disabled:opacity-50"
+              className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-md bg-white/[0.06] text-secondary hover:bg-white/[0.1] transition-colors disabled:opacity-50"
             >
               <Archive size={12} /> Archive
             </button>
@@ -102,7 +102,7 @@ export default function MessageDetail({ message, onMarkRead, onArchive, onReply,
         {message.thread_id && onViewThread && (
           <button
             onClick={() => onViewThread(message.thread_id)}
-            className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-md bg-[rgba(255,255,255,0.06)] text-secondary hover:bg-[rgba(255,255,255,0.1)] transition-colors"
+            className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-md bg-white/[0.06] text-secondary hover:bg-white/[0.1] transition-colors"
           >
             <Hash size={12} /> View Thread
           </button>

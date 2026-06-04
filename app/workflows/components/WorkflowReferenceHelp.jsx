@@ -2,7 +2,7 @@
 
 export default function WorkflowReferenceHelp() {
   return (
-    <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] p-4 space-y-3">
+    <div className="rounded-xl border border-border bg-white/[0.02] p-4 space-y-3">
       <div className="text-xs font-medium text-secondary uppercase tracking-wider">Reference help</div>
       <p className="text-sm text-secondary">
         Use the variable inserters to pull workflow inputs and outputs from earlier steps into later search queries, capability payloads, and prompts.

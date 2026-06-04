@@ -101,7 +101,7 @@ export default function SessionsPage() {
       actions={
         <button
           onClick={() => { setLoading(true); fetchSessions(); }}
-          className="flex items-center gap-2 px-3 py-1.5 text-sm text-secondary hover:text-white bg-surface-tertiary border border-[rgba(255,255,255,0.06)] rounded-lg hover:border-[rgba(255,255,255,0.12)] transition-colors duration-150"
+          className="flex items-center gap-2 px-3 py-1.5 text-sm text-secondary hover:text-white bg-surface-tertiary border border-white/[0.06] rounded-lg hover:border-white/[0.12] transition-colors duration-150"
         >
           <RotateCw size={14} className={loading ? 'animate-spin' : ''} />
           Refresh

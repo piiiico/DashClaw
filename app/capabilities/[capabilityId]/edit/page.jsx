@@ -244,7 +244,7 @@ export default function EditCapabilityPage() {
       actions={(
         <Link
           href={detailHref}
-          className="flex items-center gap-2 px-3 py-1.5 text-sm text-secondary hover:text-white bg-surface-tertiary border border-[rgba(255,255,255,0.06)] rounded-lg transition-colors"
+          className="flex items-center gap-2 px-3 py-1.5 text-sm text-secondary hover:text-white bg-surface-tertiary border border-border rounded-lg transition-colors"
         >
           <ArrowLeft size={14} /> Back
         </Link>

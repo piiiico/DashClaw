@@ -10,7 +10,7 @@ import CopyableCodeBlock from '../components/CopyableCodeBlock';
 
 function StepCard({ n, title, desc, icon: Icon, children }) {
   return (
-    <div className="rounded-xl bg-[#111] border border-[rgba(255,255,255,0.06)] p-5">
+    <div className="rounded-xl bg-surface-secondary border border-border p-5">
       <div className="flex items-start gap-3">
         <div className="w-9 h-9 rounded-lg bg-[rgba(249,115,22,0.1)] flex items-center justify-center shrink-0">
           <Icon size={18} className="text-brand" />
@@ -42,12 +42,12 @@ export default function SetupTabs() {
       </div>
 
       {/* Tabs Toggle */}
-      <div className="flex p-1 bg-[#111] border border-[rgba(255,255,255,0.06)] rounded-lg w-fit">
+      <div className="flex p-1 bg-surface-secondary border border-border rounded-lg w-fit">
         <button
           onClick={() => setActiveTab('quick')}
           className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
             activeTab === 'quick'
-              ? 'bg-[#1a1a1a] text-brand border border-[rgba(255,255,255,0.08)] shadow-sm'
+              ? 'bg-surface-tertiary text-brand border border-border-hover shadow-sm'
               : 'text-secondary hover:text-secondary'
           }`}
         >
@@ -57,7 +57,7 @@ export default function SetupTabs() {
           onClick={() => setActiveTab('team')}
           className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
             activeTab === 'team'
-              ? 'bg-[#1a1a1a] text-brand border border-[rgba(255,255,255,0.08)] shadow-sm'
+              ? 'bg-surface-tertiary text-brand border border-border-hover shadow-sm'
               : 'text-secondary hover:text-secondary'
           }`}
         >
@@ -113,7 +113,7 @@ export default function SetupTabs() {
             <p className="text-sm text-secondary mb-3">
               In your Vercel project → Settings → Environment Variables, add:
             </p>
-            <div className="bg-[#0a0a0a] rounded-lg px-4 py-3 border border-[rgba(255,255,255,0.06)] font-mono text-sm mb-3">
+            <div className="bg-surface-primary rounded-lg px-4 py-3 border border-border font-mono text-sm mb-3">
               <span className="text-brand">DASHCLAW_LOCAL_ADMIN_PASSWORD</span> = your-strong-password-here
             </div>
             <p className="text-sm text-secondary mb-4">

@@ -108,7 +108,7 @@ export default function InviteAcceptPage() {
           <p className="text-sm text-secondary mb-6">{error}</p>
           <a
             href="/dashboard"
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-surface-secondary border border-[rgba(255,255,255,0.06)] text-white text-sm font-medium rounded-lg hover:bg-surface-tertiary transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-surface-secondary border border-border text-white text-sm font-medium rounded-lg hover:bg-surface-tertiary transition-colors"
           >
             Go to Dashboard
           </a>
@@ -174,7 +174,7 @@ export default function InviteAcceptPage() {
           {!accepted && (
             <a
               href="/dashboard"
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-surface-secondary border border-[rgba(255,255,255,0.06)] text-white text-sm font-medium rounded-lg hover:bg-surface-tertiary transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-surface-secondary border border-border text-white text-sm font-medium rounded-lg hover:bg-surface-tertiary transition-colors"
             >
               Go to Dashboard
             </a>
@@ -204,7 +204,7 @@ export default function InviteAcceptPage() {
         </div>
 
         {/* Invite details */}
-        <div className="bg-surface-secondary border border-[rgba(255,255,255,0.06)] rounded-xl p-4 mb-6 space-y-3">
+        <div className="bg-surface-secondary border border-border rounded-xl p-4 mb-6 space-y-3">
           <div className="flex items-center justify-between text-sm">
             <span className="text-tertiary">Workspace</span>
             <span className="text-secondary font-medium">{invite.org_name}</span>

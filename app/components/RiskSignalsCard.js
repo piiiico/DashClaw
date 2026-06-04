@@ -110,7 +110,7 @@ export default function RiskSignalsCard() {
               return (
                 <div
                   key={key}
-                  className="flex items-start gap-3 px-3 py-2.5 rounded-lg bg-surface-tertiary border border-[rgba(255,255,255,0.06)] transition-colors duration-150"
+                  className="flex items-start gap-3 px-3 py-2.5 rounded-lg bg-surface-tertiary border border-border transition-colors duration-150"
                 >
                   <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${dotColor}`} />
                   <div className="flex-1 min-w-0">

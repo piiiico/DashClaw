@@ -9,13 +9,13 @@ const MD_COMPONENTS = {
     const isBlock = className?.includes('language-');
     if (isBlock) return <code className={className}>{children}</code>;
     return (
-      <code className="text-xs text-brand bg-[rgba(255,255,255,0.06)] px-1 py-0.5 rounded">
+      <code className="text-xs text-brand bg-white/[0.06] px-1 py-0.5 rounded">
         {children}
       </code>
     );
   },
   pre: ({ children }) => (
-    <pre className="text-xs bg-[rgba(255,255,255,0.04)] border border-border rounded-lg p-3 overflow-x-auto mb-2">
+    <pre className="text-xs bg-white/[0.04] border border-border rounded-lg p-3 overflow-x-auto mb-2">
       {children}
     </pre>
   ),

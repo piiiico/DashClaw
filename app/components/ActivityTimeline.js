@@ -351,7 +351,7 @@ export default function ActivityTimeline({
                       {dayLabel}
                     </div>
                     <div className="relative">
-                      <div className="absolute left-[7px] top-4 bottom-4 w-px bg-[rgba(255,255,255,0.06)]" />
+                      <div className="absolute left-[7px] top-4 bottom-4 w-px bg-white/[0.06]" />
 
                       <div className="space-y-2">
                         {dayEvents.map((event) => {
@@ -365,7 +365,7 @@ export default function ActivityTimeline({
                           const isExpanded = !!expandedChains[event.id];
 
                           const content = (
-                            <div className={`rounded-lg border px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)] ${getCategoryBorder(event)} ${event.lowSignal ? 'border-[rgba(255,255,255,0.05)] bg-white/[0.015]' : 'border-[rgba(255,255,255,0.08)] bg-[linear-gradient(180deg,rgba(255,255,255,0.025),rgba(255,255,255,0.012))]'} transition-colors ${href ? 'group-hover:border-white/20 hover:bg-white/5 cursor-pointer' : ''}`}>
+                            <div className={`rounded-lg border px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)] ${getCategoryBorder(event)} ${event.lowSignal ? 'border-border bg-white/[0.015]' : 'border-border-hover bg-[linear-gradient(180deg,rgba(255,255,255,0.025),rgba(255,255,255,0.012))]'} transition-colors ${href ? 'group-hover:border-white/20 hover:bg-white/5 cursor-pointer' : ''}`}>
                               <div className="flex items-start gap-3">
                                 <div className="relative z-[1] mt-1 flex-shrink-0">
                                   {getEventIcon(event)}

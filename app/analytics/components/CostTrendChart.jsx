@@ -6,7 +6,7 @@ function CustomTooltip({ active, payload }) {
   if (!active || !payload?.length) return null;
   const d = payload[0]?.payload;
   return (
-    <div className="rounded-lg border border-[rgba(255,255,255,0.1)] bg-[#1a1a1a] px-3 py-2 text-xs shadow-xl">
+    <div className="rounded-lg border border-border-hover bg-surface-tertiary px-3 py-2 text-xs shadow-xl">
       <div className="text-secondary">{d.date}</div>
       <div className="text-white font-medium">${d.cost?.toFixed(2)}</div>
       <div className="text-tertiary">{d.actions} actions</div>
@@ -20,7 +20,7 @@ export default function CostTrendChart({ daily }) {
   const noCostData = daily.length === 0 || totalCost === 0;
 
   return (
-    <div className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#111] p-5">
+    <div className="rounded-2xl border border-border bg-surface-secondary p-5">
       <div className="text-[10px] font-medium uppercase tracking-widest text-tertiary mb-4">Cost Trend</div>
       {noCostData ? (
         <div className="flex flex-col items-center justify-center h-48 text-center px-6">

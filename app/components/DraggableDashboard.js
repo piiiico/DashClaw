@@ -275,7 +275,7 @@ export default function DraggableDashboard({ activePreset, onPresetApplied }) {
           onClick={() => setIsCustomizeOpen(false)}
         >
           <div 
-            className="bg-[#0a0a0a] border border-white/10 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl"
+            className="bg-surface-primary border border-white/10 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl"
             onClick={e => e.stopPropagation()}
           >
             <div className="p-6 border-b border-white/5 flex items-center justify-between">
@@ -304,7 +304,7 @@ export default function DraggableDashboard({ activePreset, onPresetApplied }) {
                       className={`group p-3 rounded-xl border cursor-pointer transition-all ${
                         isVisible 
                           ? 'bg-brand/5 border-brand/20 hover:border-brand/40' 
-                          : 'bg-[#111] border-white/5 opacity-50 hover:opacity-80 hover:border-white/15'
+                          : 'bg-surface-secondary border-white/5 opacity-50 hover:opacity-80 hover:border-white/15'
                       }`}
                     >
                       <div className="flex items-center justify-between">
