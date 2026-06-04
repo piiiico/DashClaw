@@ -112,6 +112,24 @@ describe('evaluateGuard', () => {
     expect(result.decision).toBe('allow');
   });
 
+  it('fires identically for a custom action_type whether authored via the form or imported via YAML', async () => {
+    // Regression guard for the "New policy form can only target preset tags" trap:
+    // the form now lets operators TYPE arbitrary action types (e.g. marketplace_publish).
+    // The form compiles rules to { action_types, action } while Import/YAML compiles to
+    // { action_types, require, tests }. The require_approval guard reads ONLY
+    // rules.action_types (guard.js: actionTypes.includes(context.action_type)), so both
+    // shapes must produce the SAME decision for the same custom action type.
+    const formShape = makePolicy('require_approval', { action_types: ['marketplace_publish'], action: 'require_approval' });
+    const importShape = makePolicy('require_approval', { action_types: ['marketplace_publish'], require: 'approval', tests: [] });
+
+    const fromForm = await evaluateGuard('org_1', { action_type: 'marketplace_publish' }, makeSql([formShape]));
+    const fromImport = await evaluateGuard('org_1', { action_type: 'marketplace_publish' }, makeSql([importShape]));
+
+    expect(fromForm.decision).toBe('require_approval');
+    expect(fromImport.decision).toBe('require_approval');
+    expect(fromForm.decision).toBe(fromImport.decision);
+  });
+
   // --- block_action_type ---
 
   it('blocks matching action_type', async () => {

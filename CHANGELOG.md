@@ -13,6 +13,10 @@ Through 3.x the platform and the SDKs versioned independently, which is why olde
 
 ## [Unreleased]
 
+### Fixed
+
+- **Custom action types couldn't be authored from the policy form — only imported.** The "New policy" form (Policies → Custom) limited action types to ~20 preset tags, so policies targeting the custom strings real orgs actually use (`marketplace_publish`, `ps-finance:charge_customer`, `stripe.charge`, `outreach_send`) could only be created by hand-writing YAML and using Import. The Action Types picker now has a free-text input alongside the preset quick-picks: type any action type and press Enter/comma to add it as a removable chip (deduped, non-empty validated; Backspace removes the last). The same picker is now used by `require_approval`, `block_action_type`, `green_contract`, `branch_freshness`, and `non_fabrication`. Selected types still compile into `rules.action_types` — the only field the guard matches on for these types — so a form-authored policy (e.g. `marketplace_publish` → require approval) fires identically to the equivalent imported one. UI-only: the create endpoint, validator, and guard already accepted arbitrary action types.
+
 ## [4.0.2] — 2026-06-04
 
 > Platform fixes + features after 4.0.1 (out-of-box governance hooks, team-invite security, secret/prompt-injection auto-scan, Policy Coach recorder toggle, live Decisions ledger, dashboard/sessions/drift/quality fixes). The core `dashclaw` SDK code is unchanged, but both SDK packages republish at 4.0.2 per the unified-version model. The `dashclaw` plugin bundle (2.14.1) and `@dashclaw/openclaw-plugin` (1.2.6) version independently.

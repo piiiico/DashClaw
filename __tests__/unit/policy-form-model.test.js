@@ -5,6 +5,7 @@ import {
   createDefaultPolicyFormState,
   decompilePolicyForm,
 } from '../../app/policies/lib/policyFormModel.js';
+import { inferPolicyType } from '../../app/lib/policyPackPreviews.js';
 
 describe('policyFormModel', () => {
   it('creates valid default manual authoring state', () => {
@@ -186,5 +187,52 @@ describe('policyFormModel', () => {
         agentIds: [],
       })
     ).toContain('Do not allow deletion of system files');
+  });
+});
+
+describe('custom action types — form output matches Import on the guard-matched fields', () => {
+  it('compiles a typed custom action type into the same policy_type + rules.action_types as importing the YAML', () => {
+    // Form: name "Marketplace Publish Requires Approval", type require_approval,
+    // action type `marketplace_publish` (typed in the free-text input, not a preset).
+    const formPayload = compilePolicyPayload({
+      name: 'Marketplace Publish Requires Approval',
+      type: 'require_approval',
+      actionTypes: ['marketplace_publish'],
+      agentIds: [],
+    });
+
+    // The equivalent imported policy, as app/api/policies/import/route.js compiles
+    // it from the YAML:
+    //   applies_to: { tools: [marketplace_publish] }
+    //   rule: { require: approval }
+    const importedPolicy = {
+      id: 'ps_marketplace_publish_requires_approval',
+      applies_to: { tools: ['marketplace_publish'] },
+      rule: { require: 'approval' },
+    };
+    const importedPolicyType = inferPolicyType(importedPolicy);
+    const importedRules = {
+      action_types: importedPolicy.applies_to?.tools || [],
+      ...(importedPolicy.rule || {}),
+      tests: importedPolicy.tests || [],
+    };
+
+    // policy_type is identical — both resolve to require_approval.
+    expect(formPayload.policy_type).toBe('require_approval');
+    expect(importedPolicyType).toBe('require_approval');
+    expect(formPayload.policy_type).toBe(importedPolicyType);
+
+    // rules.action_types is the ONLY field the require_approval guard matches on
+    // (app/lib/guard.js: `actionTypes.includes(context.action_type)`), so this is
+    // the byte-for-byte-relevant field — identical for form and import.
+    const formRules = JSON.parse(formPayload.rules);
+    expect(formRules.action_types).toEqual(['marketplace_publish']);
+    expect(formRules.action_types).toEqual(importedRules.action_types);
+  });
+
+  it('summarizes a typed custom action type the same way as a preset', () => {
+    expect(
+      buildPolicySummary({ type: 'require_approval', actionTypes: ['marketplace_publish'], agentIds: [] })
+    ).toContain('Require approval for marketplace_publish actions');
   });
 });

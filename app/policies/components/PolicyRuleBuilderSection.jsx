@@ -1,3 +1,8 @@
+'use client';
+
+import { useState } from 'react';
+import { X } from 'lucide-react';
+
 const inputClass = 'w-full px-3 py-2 rounded-lg bg-[#111] border border-[rgba(255,255,255,0.1)] text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-brand';
 const selectClass = 'w-full px-3 py-2 rounded-lg bg-[#111] border border-[rgba(255,255,255,0.1)] text-sm text-white focus:outline-none focus:border-brand';
 
@@ -18,21 +23,114 @@ const GREEN_LEVELS = [
 // Branch states the branch_freshness guard can trigger on.
 const FRESHNESS_OPTIONS = ['stale', 'diverged'];
 
+// Action-type picker: preset quick-picks (one-click toggles) PLUS a free-text
+// input so operators can target ANY action type — e.g. marketplace_publish,
+// ps-finance:charge_customer, stripe.charge — the same custom strings Import/YAML
+// already accepts. Selected types land in form.actionTypes → rules.action_types,
+// the only field the guard matches on for these policy types (app/lib/guard.js).
+function ActionTypePicker({ selected, options, onChange, label, hint }) {
+  const [draft, setDraft] = useState('');
+  const list = Array.isArray(selected) ? selected : [];
+
+  const toggle = (type) =>
+    onChange(list.includes(type) ? list.filter((t) => t !== type) : [...list, type]);
+
+  const remove = (type) => onChange(list.filter((t) => t !== type));
+
+  const addCustom = () => {
+    const value = draft.trim();
+    if (!value) return; // non-empty
+    if (!list.includes(value)) onChange([...list, value]); // dedupe
+    setDraft('');
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter' || event.key === ',') {
+      event.preventDefault();
+      addCustom();
+    } else if (event.key === 'Backspace' && draft === '' && list.length > 0) {
+      remove(list[list.length - 1]);
+    }
+  };
+
+  // Selected presets show their state via the highlighted quick-pick button;
+  // custom (non-preset) types render as removable chips so they're visible and
+  // deletable even though they have no preset button.
+  const customSelected = list.filter((type) => !options.includes(type));
+
+  return (
+    <div>
+      <label className="block text-xs text-secondary mb-2">
+        {label}
+        {hint ? <span className="text-tertiary"> {hint}</span> : null}
+      </label>
+      <div className="flex flex-wrap gap-2">
+        {options.map((type) => (
+          <button
+            key={type}
+            type="button"
+            aria-pressed={list.includes(type)}
+            onClick={() => toggle(type)}
+            className={`px-2.5 py-1 rounded-md text-xs transition-colors ${
+              list.includes(type)
+                ? 'bg-brand text-white'
+                : 'bg-[#1a1a1a] text-secondary border border-[rgba(255,255,255,0.06)] hover:text-white'
+            }`}
+          >
+            {type}
+          </button>
+        ))}
+      </div>
+
+      {customSelected.length > 0 && (
+        <div className="flex flex-wrap gap-2 mt-2">
+          {customSelected.map((type) => (
+            <span
+              key={type}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs bg-brand/15 border border-brand/30 text-brand"
+            >
+              {type}
+              <button
+                type="button"
+                onClick={() => remove(type)}
+                aria-label={`Remove ${type}`}
+                className="text-brand/70 hover:text-brand"
+              >
+                <X size={11} aria-hidden="true" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+
+      <div className="flex items-center gap-2 mt-2">
+        <input
+          type="text"
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Add a custom action type (e.g. marketplace_publish) — press Enter"
+          aria-label="Custom action type"
+          className={inputClass}
+        />
+        <button
+          type="button"
+          onClick={addCustom}
+          disabled={!draft.trim()}
+          className="shrink-0 px-3 py-2 rounded-lg text-xs font-medium text-brand border border-brand/20 bg-brand/10 transition-colors hover:border-brand/40 hover:bg-brand/15 disabled:opacity-50"
+        >
+          Add
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function PolicyRuleBuilderSection({
   form,
   actionOptions,
   onChange,
 }) {
-  const toggleActionType = (type) => {
-    const current = Array.isArray(form.actionTypes) ? form.actionTypes : [];
-    onChange(
-      'actionTypes',
-      current.includes(type)
-        ? current.filter((value) => value !== type)
-        : [...current, type]
-    );
-  };
-
   const toggleFreshness = (state) => {
     const current = Array.isArray(form.freshness) ? form.freshness : [];
     onChange(
@@ -81,26 +179,12 @@ export default function PolicyRuleBuilderSection({
       )}
 
       {(form.type === 'require_approval' || form.type === 'block_action_type') && (
-        <div>
-          <label className="block text-xs text-secondary mb-2">Action Types</label>
-          <div className="flex flex-wrap gap-2">
-            {actionOptions.map((type) => (
-              <button
-                key={type}
-                type="button"
-                aria-pressed={form.actionTypes.includes(type)}
-                onClick={() => toggleActionType(type)}
-                className={`px-2.5 py-1 rounded-md text-xs transition-colors ${
-                  form.actionTypes.includes(type)
-                    ? 'bg-brand text-white'
-                    : 'bg-[#1a1a1a] text-secondary border border-[rgba(255,255,255,0.06)] hover:text-white'
-                }`}
-              >
-                {type}
-              </button>
-            ))}
-          </div>
-        </div>
+        <ActionTypePicker
+          label="Action Types"
+          options={actionOptions}
+          selected={form.actionTypes}
+          onChange={(next) => onChange('actionTypes', next)}
+        />
       )}
 
       {form.type === 'rate_limit' && (
@@ -227,28 +311,13 @@ export default function PolicyRuleBuilderSection({
             <code className="text-secondary">content</code> + <code className="text-secondary">sourceOfTruth</code>).
             Fail-closed: a missing or malformed source-of-truth blocks.
           </p>
-          <div>
-            <label className="block text-xs text-secondary mb-2">
-              Action Types <span className="text-tertiary">(optional — leave empty to apply to all)</span>
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {actionOptions.map((type) => (
-                <button
-                  key={type}
-                  type="button"
-                  aria-pressed={form.actionTypes.includes(type)}
-                  onClick={() => toggleActionType(type)}
-                  className={`px-2.5 py-1 rounded-md text-xs transition-colors ${
-                    form.actionTypes.includes(type)
-                      ? 'bg-brand text-white'
-                      : 'bg-[#1a1a1a] text-secondary border border-[rgba(255,255,255,0.06)] hover:text-white'
-                  }`}
-                >
-                  {type}
-                </button>
-              ))}
-            </div>
-          </div>
+          <ActionTypePicker
+            label="Action Types"
+            hint="(optional — leave empty to apply to all)"
+            options={actionOptions}
+            selected={form.actionTypes}
+            onChange={(next) => onChange('actionTypes', next)}
+          />
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs text-secondary mb-1">On Violation</label>
@@ -382,26 +451,12 @@ export default function PolicyRuleBuilderSection({
             Gates the selected actions until the agent reports a test status at or above the required
             level. A missing test status fails the contract.
           </p>
-          <div>
-            <label className="block text-xs text-secondary mb-2">Action Types</label>
-            <div className="flex flex-wrap gap-2">
-              {actionOptions.map((type) => (
-                <button
-                  key={type}
-                  type="button"
-                  aria-pressed={form.actionTypes.includes(type)}
-                  onClick={() => toggleActionType(type)}
-                  className={`px-2.5 py-1 rounded-md text-xs transition-colors ${
-                    form.actionTypes.includes(type)
-                      ? 'bg-brand text-white'
-                      : 'bg-[#1a1a1a] text-secondary border border-[rgba(255,255,255,0.06)] hover:text-white'
-                  }`}
-                >
-                  {type}
-                </button>
-              ))}
-            </div>
-          </div>
+          <ActionTypePicker
+            label="Action Types"
+            options={actionOptions}
+            selected={form.actionTypes}
+            onChange={(next) => onChange('actionTypes', next)}
+          />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs text-secondary mb-1">Required green level</label>
@@ -439,26 +494,12 @@ export default function PolicyRuleBuilderSection({
             Blocks the selected actions when the agent&apos;s working branch is in one of the chosen
             states and is too many commits behind its base.
           </p>
-          <div>
-            <label className="block text-xs text-secondary mb-2">Action Types</label>
-            <div className="flex flex-wrap gap-2">
-              {actionOptions.map((type) => (
-                <button
-                  key={type}
-                  type="button"
-                  aria-pressed={form.actionTypes.includes(type)}
-                  onClick={() => toggleActionType(type)}
-                  className={`px-2.5 py-1 rounded-md text-xs transition-colors ${
-                    form.actionTypes.includes(type)
-                      ? 'bg-brand text-white'
-                      : 'bg-[#1a1a1a] text-secondary border border-[rgba(255,255,255,0.06)] hover:text-white'
-                  }`}
-                >
-                  {type}
-                </button>
-              ))}
-            </div>
-          </div>
+          <ActionTypePicker
+            label="Action Types"
+            options={actionOptions}
+            selected={form.actionTypes}
+            onChange={(next) => onChange('actionTypes', next)}
+          />
           <div>
             <label className="block text-xs text-secondary mb-2">Trigger when branch is</label>
             <div className="flex flex-wrap gap-2">
