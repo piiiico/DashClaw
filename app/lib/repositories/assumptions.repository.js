@@ -44,7 +44,12 @@ export async function listAssumptions(sql, orgId, filters = {}) {
   `;
   params.push(parsedLimit, parsedOffset);
 
-  const countQuery = `SELECT COUNT(*) as total FROM assumptions a ${where}`;
+  // The WHERE clause may reference ar.agent_id (the action_records join), so the
+  // count query needs the same LEFT JOIN as the main query — otherwise an
+  // agent_id filter raises "missing FROM-clause entry for table ar".
+  const countQuery = `SELECT COUNT(*) as total FROM assumptions a
+    LEFT JOIN action_records ar ON a.action_id = ar.action_id AND ar.org_id = a.org_id
+    ${where}`;
   const countParams = params.slice(0, -2);
 
   const [assumptions, countResult] = await Promise.all([
