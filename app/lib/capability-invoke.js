@@ -143,10 +143,17 @@ async function singleAttempt({
       };
     }
 
+    // undici raises a bare "fetch failed" TypeError for any connection-layer
+    // failure and puts the actionable detail on err.cause (ENOTFOUND /
+    // ECONNREFUSED / ETIMEDOUT / UND_ERR_* / TLS cert errors). Surface it so
+    // the operator sees WHY (DNS, egress, TLS) instead of an opaque message.
+    const cause = err.cause;
+    const detail = cause?.code || cause?.message;
+    const message = detail ? `${err.message} (${detail})` : err.message;
     return {
       success: false,
       error: 'capability_network_error',
-      message: err.message,
+      message,
       elapsed_ms: elapsedMs,
     };
   }

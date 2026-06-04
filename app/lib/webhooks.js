@@ -24,6 +24,15 @@ export function buildPinnedDispatcher(validatedIps) {
   return new UndiciAgent({
     connect: {
       lookup(_hostname, options, callback) {
+        // Every entry in validatedIps was already proven public by
+        // safeUrlWithIps, so connecting to ANY of them is safe. Honor the
+        // dns.lookup `all` contract and return every validated address so
+        // undici can fail over (multi-IP CDN hosts otherwise dead-end on a
+        // single unreachable address).
+        if (options?.all) {
+          callback(null, validatedIps.map((ip) => ({ address: ip, family: net.isIP(ip) || 4 })));
+          return;
+        }
         const family = net.isIP(validatedIps[0]);
         callback(null, validatedIps[0], family || (options?.family ?? 4));
       },
