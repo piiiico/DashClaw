@@ -1,9 +1,29 @@
 'use client';
 
-import { useState } from 'react';
-import { FileSearch, ShieldCheck, ShieldAlert, Plus, X } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { FileSearch, ShieldCheck, ShieldAlert, Plus, X, Upload, FolderUp } from 'lucide-react';
+import { unzipSync, strFromU8 } from 'fflate';
 import { Card, CardHeader, CardContent } from './ui/Card';
 import { Badge } from './ui/Badge';
+
+// Upload limits — skill files are small text files; anything bigger is almost
+// certainly not part of a skill and would bloat the scan payload.
+const MAX_FILE_BYTES = 256 * 1024;
+const MAX_TOTAL_BYTES = 1_500_000; // keep the assembled scan payload under the 2 MB API body cap
+const MAX_FILES = 60;
+const BINARY_EXT = /\.(png|jpe?g|gif|webp|bmp|ico|pdf|zip|gz|tgz|bz2|7z|rar|woff2?|ttf|otf|eot|mp3|mp4|mov|avi|wav|flac|exe|dll|so|dylib|bin|class|jar|pyc|wasm|db|sqlite)$/i;
+
+function isProbablyText(name, content) {
+  if (BINARY_EXT.test(name)) return false;
+  // Reject control bytes (NUL etc.) outside the normal text whitespace set
+  // (tab=9, LF=10, CR=13) — their presence means the entry is binary.
+  const sample = content.slice(0, 4096);
+  for (let i = 0; i < sample.length; i++) {
+    const c = sample.charCodeAt(i);
+    if (c === 0 || (c < 9) || (c > 13 && c < 32)) return false;
+  }
+  return true;
+}
 
 // Operator surface for the static skill safety scanner:
 //   POST /api/skills/scan  — { skill_name, files: { name: content } }
@@ -20,12 +40,74 @@ export default function SkillScanner() {
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const [notice, setNotice] = useState(null);
+  const fileInputRef = useRef(null);
+  const folderInputRef = useRef(null);
 
   const updateFile = (i, key, value) => {
     setFiles((prev) => prev.map((f, idx) => (idx === i ? { ...f, [key]: value } : f)));
   };
   const addFile = () => setFiles((prev) => [...prev, { filename: '', content: '' }]);
   const removeFile = (i) => setFiles((prev) => (prev.length === 1 ? prev : prev.filter((_, idx) => idx !== i)));
+
+  // Build the {filename, content} list from picked files. A .zip is expanded
+  // in-browser (fflate) so the raw archive never leaves the machine — only the
+  // existing JSON {skill_name, files} contract is sent to /api/skills/scan, and
+  // that endpoint stores just a hash + findings. Folders (webkitdirectory) and
+  // multi-file selections are read directly. Binary/oversized entries are skipped.
+  const ingestFiles = async (fileList) => {
+    const picked = Array.from(fileList || []);
+    if (picked.length === 0) return;
+    setError(null);
+    setNotice(null);
+    setResult(null);
+
+    const collected = [];
+    let skipped = 0;
+    let total = 0;
+    let inferredName = '';
+    // Keep the assembled JSON comfortably under the API body cap (2 MB).
+    const add = (filename, content) => {
+      if (collected.length >= MAX_FILES || total + content.length > MAX_TOTAL_BYTES) { skipped += 1; return; }
+      collected.push({ filename, content });
+      total += content.length;
+    };
+
+    for (const file of picked) {
+      const rel = file.webkitRelativePath || file.name;
+      try {
+        if (/\.zip$/i.test(file.name)) {
+          if (!inferredName) inferredName = file.name.replace(/\.zip$/i, '');
+          const entries = unzipSync(new Uint8Array(await file.arrayBuffer()));
+          for (const [path, bytes] of Object.entries(entries)) {
+            if (path.endsWith('/') || bytes.length === 0) continue; // directory entry
+            if (bytes.length > MAX_FILE_BYTES) { skipped += 1; continue; }
+            const text = strFromU8(bytes);
+            if (!isProbablyText(path, text)) { skipped += 1; continue; }
+            add(path, text);
+          }
+        } else {
+          if (file.size > MAX_FILE_BYTES) { skipped += 1; continue; }
+          const text = await file.text();
+          if (!isProbablyText(rel, text)) { skipped += 1; continue; }
+          add(rel, text);
+          if (!inferredName && file.webkitRelativePath) inferredName = file.webkitRelativePath.split('/')[0];
+        }
+      } catch {
+        skipped += 1;
+      }
+    }
+
+    if (collected.length === 0) {
+      setError('No readable text files were found in that selection.');
+      return;
+    }
+    setFiles(collected);
+    if (!skillName.trim() && inferredName) setSkillName(inferredName);
+    setNotice(`Loaded ${collected.length} file${collected.length === 1 ? '' : 's'}${skipped ? `, skipped ${skipped} binary/oversized/over-limit` : ''}. Review, then Scan skill.`);
+  };
+
+  const onPick = (e) => { ingestFiles(e.target.files); e.target.value = ''; };
 
   const handleScan = async (event) => {
     event.preventDefault();
@@ -79,6 +161,47 @@ export default function SkillScanner() {
               className="w-full rounded-lg border border-border bg-surface-tertiary px-3 py-2 text-sm text-white placeholder:text-disabled focus:border-brand/50 focus:outline-none focus:ring-2 focus:ring-brand/20"
             />
           </label>
+
+          {/* Upload — a .zip, a whole folder, or several files at once, so the
+              operator doesn't have to paste each file by hand. */}
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept=".zip,.md,.markdown,.txt,.py,.js,.ts,.tsx,.jsx,.json,.yaml,.yml,.toml,.sh,.cfg,.ini,.env,.html,.css"
+              onChange={onPick}
+              className="hidden"
+            />
+            <input
+              ref={folderInputRef}
+              type="file"
+              webkitdirectory=""
+              directory=""
+              multiple
+              onChange={onPick}
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-1.5 rounded-lg border border-border bg-surface-tertiary px-3 py-1.5 text-xs font-medium text-secondary transition-colors hover:border-border-hover hover:text-white"
+            >
+              <Upload size={14} aria-hidden="true" /> Upload .zip or files
+            </button>
+            <button
+              type="button"
+              onClick={() => folderInputRef.current?.click()}
+              className="flex items-center gap-1.5 rounded-lg border border-border bg-surface-tertiary px-3 py-1.5 text-xs font-medium text-secondary transition-colors hover:border-border-hover hover:text-white"
+            >
+              <FolderUp size={14} aria-hidden="true" /> Upload folder
+            </button>
+            <span className="text-[11px] text-tertiary">unzipped in your browser — only a hash + findings are stored</span>
+          </div>
+
+          {notice && (
+            <div role="status" className="rounded-lg border border-border bg-surface-tertiary px-3 py-2 text-xs text-secondary">{notice}</div>
+          )}
 
           <div className="space-y-3">
             {files.map((f, i) => (
