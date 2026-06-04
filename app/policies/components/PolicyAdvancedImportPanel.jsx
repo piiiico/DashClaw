@@ -19,6 +19,9 @@ export default function PolicyAdvancedImportPanel({
   setImportYaml,
   importing,
   importResult,
+  importPreview = null,
+  previewing = false,
+  handlePreview = () => {},
   handleImport,
   packPreviews,
   templates,
@@ -205,13 +208,26 @@ export default function PolicyAdvancedImportPanel({
               </div>
             )}
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <button
-                onClick={handleImport}
-                disabled={importing || (importMode === 'yaml' && !importYaml.trim())}
+                type="button"
+                onClick={handlePreview}
+                disabled={previewing || (importMode === 'yaml' && !importYaml.trim())}
                 className="px-4 py-2 rounded-lg bg-brand text-white text-sm font-medium hover:bg-brand-hover transition-colors disabled:opacity-50"
               >
-                {importing ? 'Importing...' : 'Import'}
+                {previewing ? 'Previewing...' : 'Preview'}
+              </button>
+              <button
+                onClick={handleImport}
+                disabled={importing || !importPreview || Boolean(importPreview?.error)}
+                title={!importPreview ? 'Preview first to see what will be created' : undefined}
+                className="px-4 py-2 rounded-lg border border-brand/30 bg-brand/10 text-brand text-sm font-medium hover:border-brand/50 hover:bg-brand/15 transition-colors disabled:opacity-50"
+              >
+                {importing
+                  ? 'Importing...'
+                  : importPreview && !importPreview.error
+                    ? `Confirm import (${importPreview.would_create ?? 0})`
+                    : 'Confirm import'}
               </button>
               <button
                 type="button"
@@ -221,6 +237,40 @@ export default function PolicyAdvancedImportPanel({
                 Back to policies
               </button>
             </div>
+
+            {importPreview && (
+              importPreview.error ? (
+                <div className="p-3 rounded-lg bg-error-subtle border border-error/20 text-sm text-error">
+                  {importPreview.error}
+                </div>
+              ) : (
+                <div className="p-3 rounded-lg bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.06)] text-sm space-y-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant="success">{`${importPreview.would_create ?? 0} would be created`}</Badge>
+                    {(importPreview.would_skip ?? 0) > 0 && (
+                      <Badge variant="warning">{`${importPreview.would_skip} would be skipped`}</Badge>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-tertiary">
+                    Review the policies below, then confirm to import. Existing names are skipped, not overwritten.
+                  </p>
+                  {Array.isArray(importPreview.policies) && importPreview.policies.length > 0 && (
+                    <ul className="space-y-1 border-t border-[rgba(255,255,255,0.06)] pt-2">
+                      {importPreview.policies.map((p, i) => (
+                        <li key={i} className="flex items-center justify-between gap-2 text-[11px]">
+                          <span className="truncate text-secondary">
+                            <span className="text-white">{p.name}</span> — {p.policy_type}
+                          </span>
+                          {p.conflict
+                            ? <Badge variant="warning" size="xs">conflict</Badge>
+                            : <Badge variant="success" size="xs">new</Badge>}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )
+            )}
 
             {importResult && (
               importResult.error ? (

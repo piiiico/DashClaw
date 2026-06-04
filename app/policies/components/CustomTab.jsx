@@ -76,6 +76,14 @@ export default function CustomTab() {
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState(null);
   const [templates, setTemplates] = useState([]);
+  const [importPreview, setImportPreview] = useState(null);
+  const [previewing, setPreviewing] = useState(false);
+
+  // Simulation panel state (A3: replaces the old alert()-based result)
+  const [showSimulate, setShowSimulate] = useState(false);
+  const [simulating, setSimulating] = useState(false);
+  const [simulateResult, setSimulateResult] = useState(null);
+  const [simulatePolicyName, setSimulatePolicyName] = useState('');
 
   // Proof report + test runner state
   const [showProof, setShowProof] = useState(false);
@@ -191,6 +199,7 @@ export default function CustomTab() {
   // Import actions
   const openImport = () => {
     setImportResult(null);
+    setImportPreview(null);
     setShowImport(true);
     setShowAuthoring(false);
   };
@@ -198,21 +207,52 @@ export default function CustomTab() {
   const closeImport = () => {
     setShowImport(false);
     setImportResult(null);
+    setImportPreview(null);
+  };
+
+  // Changing the pack, mode, or YAML invalidates any preview so the operator
+  // always confirms against the exact policies they are about to import.
+  const selectImportPack = (pack) => { setImportPack(pack); setImportPreview(null); setImportResult(null); };
+  const selectImportMode = (mode) => { setImportMode(mode); setImportPreview(null); setImportResult(null); };
+  const selectImportYaml = (yaml) => { setImportYaml(yaml); setImportPreview(null); };
+
+  const importBody = () => (importMode === 'pack' ? { pack: importPack } : { yaml: importYaml });
+
+  // A2: preview-before-import. Calls the existing conflict-aware dry run
+  // (POST /api/policies/import?preview=true) and shows what would be created
+  // and which names conflict before anything is written.
+  const handlePreview = async () => {
+    setPreviewing(true);
+    setImportPreview(null);
+    setImportResult(null);
+    try {
+      const res = await fetch('/api/policies/import?preview=true', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(importBody()),
+      });
+      const json = await res.json();
+      setImportPreview(res.ok ? json : { error: json.error || 'Preview failed' });
+    } catch {
+      setImportPreview({ error: 'Preview failed' });
+    } finally {
+      setPreviewing(false);
+    }
   };
 
   const handleImport = async () => {
     setImporting(true);
     setImportResult(null);
     try {
-      const body = importMode === 'pack' ? { pack: importPack } : { yaml: importYaml };
       const res = await fetch('/api/policies/import', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: JSON.stringify(importBody()),
       });
       const json = await res.json();
       if (res.ok) {
         setImportResult(json);
+        setImportPreview(null);
         await fetchPolicies();
       } else {
         setImportResult({ error: json.error || 'Import failed' });
@@ -259,15 +299,23 @@ export default function CustomTab() {
   const handleSimulate = async (policy) => {
     let rules;
     try { rules = JSON.parse(policy.rules); } catch { return; }
-    const res = await fetch('/api/policies/simulate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ policy_type: policy.policy_type, rules, days: 7 }),
-    });
-    if (res.ok) {
+    setShowSimulate(true);
+    setShowTests(false);
+    setSimulating(true);
+    setSimulateResult(null);
+    setSimulatePolicyName(policy.name);
+    try {
+      const res = await fetch('/api/policies/simulate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ policy_type: policy.policy_type, rules, days: 7 }),
+      });
       const data = await res.json();
-      const s = data.summary || {};
-      alert(`Simulation (7d): ${s.matches || 0} matches \u2014 ${s.block || 0} blocks, ${s.warn || 0} warns, ${s.require_approval || 0} approvals`);
+      setSimulateResult(res.ok ? data : { error: data.error || 'Simulation failed' });
+    } catch {
+      setSimulateResult({ error: 'Simulation failed' });
+    } finally {
+      setSimulating(false);
     }
   };
 
@@ -465,6 +513,61 @@ export default function CustomTab() {
         </div>
       )}
 
+      {/* Simulation impact panel (A3: in-page result, replaces alert) */}
+      {showSimulate && (
+        <div className="space-y-3 rounded-xl border border-border bg-surface-secondary p-5" data-testid="simulate-panel">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Play size={14} className="text-brand" aria-hidden="true" />
+              <span className="text-sm font-semibold text-white">
+                Simulation impact (7 days){simulatePolicyName ? ` — ${simulatePolicyName}` : ''}
+              </span>
+            </div>
+            <button
+              onClick={() => setShowSimulate(false)}
+              className="text-tertiary transition-colors hover:text-white"
+              aria-label="Close simulation results"
+            >
+              <X size={16} />
+            </button>
+          </div>
+          {simulating && <p className="text-xs text-secondary">Replaying recent actions…</p>}
+          {simulateResult?.error && (
+            <div className="rounded-lg border border-error/30 bg-error-subtle px-3 py-2 text-xs text-error">{simulateResult.error}</div>
+          )}
+          {simulateResult && !simulateResult.error && (
+            <>
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge size="xs">{`${simulateResult.summary?.total ?? 0} actions`}</Badge>
+                <Badge variant={(simulateResult.summary?.matches ?? 0) > 0 ? 'warning' : 'success'} size="xs">
+                  {`${simulateResult.summary?.matches ?? 0} would match`}
+                </Badge>
+                <span className="text-xs text-tertiary">
+                  {simulateResult.summary?.block ?? 0} block · {simulateResult.summary?.warn ?? 0} warn · {simulateResult.summary?.require_approval ?? 0} approval
+                </span>
+              </div>
+              {(simulateResult.matches?.length ?? 0) === 0 ? (
+                <p className="text-xs text-tertiary">{simulateResult.message || 'No recent actions would be affected by this policy.'}</p>
+              ) : (
+                <div className="space-y-2">
+                  {simulateResult.matches.slice(0, 5).map((m) => (
+                    <div key={m.action_id} className="rounded-lg border border-border bg-surface-tertiary p-3">
+                      <div className="flex items-center gap-2 text-[11px]">
+                        <Badge variant={m.simulated_action === 'block' ? 'error' : m.simulated_action === 'warn' ? 'warning' : 'info'} size="xs">
+                          {m.simulated_action}
+                        </Badge>
+                        <span className="truncate text-secondary">{m.goal || m.action_id}</span>
+                      </div>
+                      {m.simulated_reason && <div className="mt-1 text-[11px] text-tertiary">{m.simulated_reason}</div>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
       {/* AI Generator panel */}
       {showGenerator && (
         <div className="space-y-3 rounded-xl border border-border bg-surface-secondary p-5">
@@ -610,13 +713,16 @@ export default function CustomTab() {
         open={showImport}
         onClose={closeImport}
         importMode={importMode}
-        setImportMode={setImportMode}
+        setImportMode={selectImportMode}
         importPack={importPack}
-        setImportPack={setImportPack}
+        setImportPack={selectImportPack}
         importYaml={importYaml}
-        setImportYaml={setImportYaml}
+        setImportYaml={selectImportYaml}
         importing={importing}
         importResult={importResult}
+        importPreview={importPreview}
+        previewing={previewing}
+        handlePreview={handlePreview}
         handleImport={handleImport}
         packPreviews={PACK_PREVIEWS}
         templates={templates}
