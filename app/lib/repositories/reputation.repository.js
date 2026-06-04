@@ -135,12 +135,16 @@ export async function gatherEvidenceEvents(sql, orgId, agentId, { sinceDays = DE
     events.push({ id: `are_g_${g.id}`, event_type: 'policy_violation', value: g.decision === 'block' ? 1 : 0, occurred_at: g.created_at });
   }
 
+  // eval_scores.created_at is TEXT (declared text since the 0000 migration; the
+  // app writes ISO strings), unlike the other evidence tables' timestamptz
+  // created_at — cast before comparing to the interval or Postgres raises
+  // "operator does not exist: text > timestamp with time zone".
   const evals = await sql`
     SELECT es.id, es.score, es.created_at
     FROM eval_scores es
     JOIN action_records ar ON ar.action_id = es.action_id AND ar.org_id = es.org_id
     WHERE es.org_id = ${orgId} AND ar.agent_id = ${agentId}
-      AND es.created_at > NOW() - (${String(sinceDays)} || ' days')::interval`;
+      AND es.created_at::timestamptz > NOW() - (${String(sinceDays)} || ' days')::interval`;
   for (const e of evals) {
     const v = Number(e.score);
     if (Number.isFinite(v)) events.push({ id: `are_q_${e.id}`, event_type: 'quality', value: Math.max(0, Math.min(1, v)), occurred_at: e.created_at });
@@ -158,12 +162,36 @@ export async function gatherEvidenceEvents(sql, orgId, agentId, { sinceDays = DE
   return events;
 }
 
+// Persist a bounded, most-recent slice of derived events for the timeline
+// drill-down. The vector itself is computed from the FULL event set in memory
+// (computeVector), so accuracy is unaffected — this only bounds what gets stored
+// for the paginated /events view. Critically, this uses ONE multi-row INSERT per
+// chunk instead of one HTTP round-trip per event: a high-volume agent can derive
+// 150k+ evidence events, and per-row inserts over the Neon HTTP driver would hang
+// recompute for the entire request.
+const PERSIST_MAX = 2000;
+const PERSIST_CHUNK = 500;
 async function persistEvents(sql, orgId, agentId, events) {
-  for (const ev of events) {
-    await sql`
-      INSERT INTO agent_reputation_events (id, org_id, agent_id, event_type, value, action_id, occurred_at)
-      VALUES (${ev.id}, ${orgId}, ${agentId}, ${ev.event_type}, ${ev.value}, ${ev.action_id || null}, ${ev.occurred_at})
-      ON CONFLICT (id) DO NOTHING`;
+  if (!events.length) return;
+  const recent = events
+    .slice()
+    .sort((a, b) => new Date(b.occurred_at).getTime() - new Date(a.occurred_at).getTime())
+    .slice(0, PERSIST_MAX);
+  for (let i = 0; i < recent.length; i += PERSIST_CHUNK) {
+    const batch = recent.slice(i, i + PERSIST_CHUNK);
+    const placeholders = [];
+    const params = [];
+    batch.forEach((ev, j) => {
+      const b = j * 7;
+      placeholders.push(`($${b + 1}, $${b + 2}, $${b + 3}, $${b + 4}, $${b + 5}, $${b + 6}, $${b + 7})`);
+      params.push(ev.id, orgId, agentId, ev.event_type, ev.value, ev.action_id || null, ev.occurred_at);
+    });
+    await sql.query(
+      `INSERT INTO agent_reputation_events (id, org_id, agent_id, event_type, value, action_id, occurred_at)
+       VALUES ${placeholders.join(', ')}
+       ON CONFLICT (id) DO NOTHING`,
+      params
+    );
   }
 }
 
