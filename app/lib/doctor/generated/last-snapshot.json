@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:9bb5ba476bdd63a4e0d38c90edbb6f127b419ee5",
+  "timestamp": "sha1:d567efaf54c6da12bfd2a3b4e5c8aa24dae28e51",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -3025,7 +3025,6 @@
         "public/downloads/dashclaw-platform-intelligence/scripts/diagnose.mjs",
         "public/downloads/dashclaw-platform-intelligence/scripts/validate-integration.mjs",
         "scripts/auto-migrate.mjs",
-        "scripts/bootstrap-agent.mjs",
         "scripts/branch-finish.mjs",
         "scripts/collect-platform-convergence-evidence.mjs",
         "scripts/demo-agent.mjs",
@@ -3093,6 +3092,8 @@
         "scripts/branch-finish.mjs",
         "scripts/demo-agent.mjs",
         "scripts/fuzz-api.mjs",
+        "scripts/report-action.mjs",
+        "scripts/report-tokens.mjs",
         "scripts/seed-branch-finish-loop.mjs"
       ],
       "in_env_example": false
@@ -3292,6 +3293,8 @@
         "packages/openclaw-plugin/src/index.ts",
         "scripts/branch-finish.mjs",
         "scripts/patch-demo-capability-endpoints.mjs",
+        "scripts/report-action.mjs",
+        "scripts/report-tokens.mjs",
         "scripts/seed-branch-finish-loop.mjs",
         "scripts/seed-demo-capabilities.mjs",
         "scripts/test-presence.mjs",

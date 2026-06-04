@@ -12,7 +12,6 @@ import ProjectsCard from './ProjectsCard';
 import GoalsChart from './GoalsChart';
 import LearningStatsCard from './LearningStatsCard';
 import IntegrationsCard from './IntegrationsCard';
-import MemoryHealthCard from './MemoryHealthCard';
 import InspirationCard from './InspirationCard';
 import ContextCard from './ContextCard';
 import ActivityTimeline from './ActivityTimeline';
@@ -36,7 +35,6 @@ const CARD_COMPONENTS = {
   'learning': LearningStatsCard,
   'scoring': ScoringProfileCard,
   'context': ContextCard,
-  'memory-health': MemoryHealthCard,
   'integrations': IntegrationsCard,
   'activity-timeline': ActivityTimeline,
   'eval-scores': EvalScoreCard,
@@ -57,7 +55,6 @@ const CARD_LABELS = {
   'learning': 'Learning Stats',
   'projects': 'Systems Touched',
   'context': 'Context',
-  'memory-health': 'Memory Health',
   'integrations': 'Integrations'
 };
 

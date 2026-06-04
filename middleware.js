@@ -1527,8 +1527,6 @@ export const config = {
     '/webhooks/:path*',
     '/messages',
     '/messages/:path*',
-    '/workspace',
-    '/workspace/:path*',
     '/policies',
     '/policies/:path*',
     '/routing',
