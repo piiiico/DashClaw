@@ -36,6 +36,13 @@ describe('Tool Definitions', () => {
       expect(def.inputSchema.type).toBe('object');
     }
   });
+
+  it('dashclaw_record schema includes optional session_id', () => {
+    const rec = TOOL_DEFINITIONS.find((d) => d.name === 'dashclaw_record');
+    expect(rec.inputSchema.properties.session_id).toBeDefined();
+    expect(rec.inputSchema.properties.session_id.type).toBe('string');
+    expect(rec.inputSchema.required || []).not.toContain('session_id');
+  });
 });
 
 describe('Tool Handlers', () => {
@@ -129,6 +136,52 @@ describe('Tool Handlers', () => {
         agent_id: 'default-agent',
       }), { timeout: 10000 });
       expect(result).toContain('act_abc');
+    });
+  });
+
+  describe('dashclaw_record session_id stamping', () => {
+    it('stamps the active session from dashclaw_session_start onto a later record', async () => {
+      mockPost.mockResolvedValueOnce({ session: { id: 'sess_42' } }); // session_start
+      mockPost.mockResolvedValueOnce({ action_id: 'act_1' });          // record
+      await handlers.dashclaw_session_start({ agent_id: 'a', workspace: 'w' });
+      await handlers.dashclaw_record({ action_type: 'research', declared_goal: 'g', status: 'completed' });
+      const [path, body] = mockPost.mock.calls[1];
+      expect(path).toBe('/api/actions');
+      expect(body.session_id).toBe('sess_42');
+    });
+
+    it('lets an explicit session_id override the active session', async () => {
+      mockPost.mockResolvedValueOnce({ session: { id: 'sess_42' } });
+      mockPost.mockResolvedValueOnce({ action_id: 'act_1' });
+      await handlers.dashclaw_session_start({ agent_id: 'a' });
+      await handlers.dashclaw_record({ action_type: 'x', declared_goal: 'g', status: 'completed', session_id: 'sess_explicit' });
+      expect(mockPost.mock.calls[1][1].session_id).toBe('sess_explicit');
+    });
+
+    it('omits session_id when no session is active', async () => {
+      mockPost.mockResolvedValueOnce({ action_id: 'act_1' });
+      await handlers.dashclaw_record({ action_type: 'x', declared_goal: 'g', status: 'completed' });
+      expect(mockPost.mock.calls[0][1].session_id).toBeUndefined();
+    });
+
+    it('clears the active session on a matching session_end', async () => {
+      mockPost.mockResolvedValueOnce({ session: { id: 'sess_42' } });                 // start
+      mockPatch.mockResolvedValueOnce({ session: { id: 'sess_42', status: 'completed' } }); // end
+      mockPost.mockResolvedValueOnce({ action_id: 'act_1' });                          // record after end
+      await handlers.dashclaw_session_start({ agent_id: 'a' });
+      await handlers.dashclaw_session_end({ session_id: 'sess_42', status: 'completed' });
+      await handlers.dashclaw_record({ action_type: 'x', declared_goal: 'g', status: 'completed' });
+      expect(mockPost.mock.calls[1][1].session_id).toBeUndefined();
+    });
+
+    it('keeps the active session when session_end targets a different session', async () => {
+      mockPost.mockResolvedValueOnce({ session: { id: 'sess_42' } });                    // start
+      mockPatch.mockResolvedValueOnce({ session: { id: 'sess_other', status: 'completed' } }); // end other
+      mockPost.mockResolvedValueOnce({ action_id: 'act_1' });                             // record
+      await handlers.dashclaw_session_start({ agent_id: 'a' });
+      await handlers.dashclaw_session_end({ session_id: 'sess_other', status: 'completed' });
+      await handlers.dashclaw_record({ action_type: 'x', declared_goal: 'g', status: 'completed' });
+      expect(mockPost.mock.calls[1][1].session_id).toBe('sess_42');
     });
   });
 

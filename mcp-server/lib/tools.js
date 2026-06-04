@@ -60,6 +60,7 @@ export const TOOL_DEFINITIONS = [
         tokens_out: { type: 'integer', description: 'Output tokens produced' },
         model: { type: 'string', description: 'Model used' },
         cost_estimate: { type: 'number', description: 'Estimated cost in USD' },
+        session_id: { type: 'string', description: 'Session to attribute this action to. Defaults to the session started via dashclaw_session_start in this connection.' },
       },
       required: ['action_type', 'declared_goal', 'status'],
     },
@@ -456,6 +457,13 @@ export function createToolHandlers(client) {
   // configurations that intentionally run without a server-level default.
   const agentId = (input) => client.agentId || input.agent_id;
 
+  // Ambient session: dashclaw_session_start stashes the created session id here
+  // so dashclaw_record auto-stamps it without the LLM re-threading it. Lives in
+  // this per-client closure — per-process for stdio, per-request for HTTP — so
+  // it is never module-global and the stateless HTTP transport can't leak one
+  // org's session onto another's record.
+  let activeSessionId = null;
+
   return {
     async dashclaw_optimal_files_preview(input) {
       const result = await client.post(`/api/code-sessions/sessions/${encodeURIComponent(input.session_id)}/optimal-files/preview`, {}, { timeout: 20000 });
@@ -481,6 +489,7 @@ export function createToolHandlers(client) {
     },
 
     async dashclaw_record(input) {
+      const sessionId = input.session_id ?? activeSessionId;
       const body = {
         action_type: input.action_type,
         declared_goal: input.declared_goal,
@@ -496,6 +505,7 @@ export function createToolHandlers(client) {
         tokens_out: input.tokens_out,
         model: input.model,
         cost_estimate: input.cost_estimate,
+        ...(sessionId ? { session_id: sessionId } : {}),
       };
       const result = await client.post('/api/actions', body, { timeout: 10000 });
       return JSON.stringify(result);
@@ -571,6 +581,8 @@ export function createToolHandlers(client) {
         workspace: input.workspace,
         branch: input.branch,
       }, { timeout: 10000 });
+      // Adopt the new session as the ambient default for subsequent records.
+      activeSessionId = result?.session?.id ?? activeSessionId;
       return JSON.stringify(result);
     },
 
@@ -579,6 +591,9 @@ export function createToolHandlers(client) {
         status: input.status,
         summary: input.summary,
       }, { timeout: 10000 });
+      // Only clear when ending the session we're actively stamping, so ending an
+      // unrelated session doesn't silently unset the active one.
+      if (activeSessionId === input.session_id) activeSessionId = null;
       return JSON.stringify(result);
     },
 
