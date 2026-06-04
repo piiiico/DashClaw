@@ -4,13 +4,14 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import {
   ShieldAlert, Lock, RotateCw, AlertTriangle, Cpu, CheckCircle2,
-  PlayCircle, Pencil, ThumbsDown, Activity, Sparkles, Database,
+  PlayCircle, Pencil, ThumbsDown, Activity, Sparkles, Database, Power,
 } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { EmptyState } from '../components/ui/EmptyState';
 import { useAgentFilter } from '../lib/AgentFilterContext';
+import { useEffectiveRole } from '../hooks/useEffectiveRole';
 
 const TYPE_META = {
   destructive_command_approval: { label: 'Destructive commands → approval', icon: ShieldAlert },
@@ -40,12 +41,16 @@ const secondaryBtn = 'px-3 py-1.5 text-xs font-medium text-secondary hover:text-
 
 export default function PolicyCoachPage() {
   const { agentId } = useAgentFilter();
+  const { isAdmin } = useEffectiveRole();
   const [status, setStatus] = useState(null);
   const [agents, setAgents] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
   const [sampleCount, setSampleCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [recorderCfg, setRecorderCfg] = useState(null); // { enabled, until, effective }
+  const [recorderDuration, setRecorderDuration] = useState('7'); // days; '' = until turned off
+  const [recorderBusy, setRecorderBusy] = useState(false);
 
   const [sims, setSims] = useState({}); // suggestion id -> simulation result
   const [busy, setBusy] = useState('');
@@ -62,12 +67,15 @@ export default function PolicyCoachPage() {
     try {
       const params = new URLSearchParams();
       if (agentId) params.set('agent_id', agentId);
-      const [statusRes, sugRes] = await Promise.all([
+      const [statusRes, sugRes, recRes] = await Promise.all([
         fetch('/api/behavior/samples'),
         fetch(`/api/behavior/suggestions?${params.toString()}`),
+        fetch('/api/behavior/recorder'),
       ]);
       const statusData = await statusRes.json();
       const sugData = await sugRes.json();
+      const recData = await recRes.json().catch(() => null);
+      if (recData && !recData.error) setRecorderCfg(recData);
       if (statusData && !statusData.error) setStatus(statusData);
       if (sugData && !sugData.error) {
         setAgents(Array.isArray(sugData.agents) ? sugData.agents : []);
@@ -178,7 +186,34 @@ export default function PolicyCoachPage() {
     return { ...s.rule, action: editForm.action, risk_threshold: Number(editForm.risk_threshold) };
   };
 
+  const saveRecorder = useCallback(async (enabled) => {
+    setRecorderBusy(true);
+    setError('');
+    setNotice('');
+    try {
+      const duration_days = enabled && recorderDuration ? Number(recorderDuration) : null;
+      const res = await fetch('/api/behavior/recorder', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled, duration_days }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error || (res.status === 403 ? 'Admin access required to change the recorder.' : 'Failed to update recorder.'));
+        return;
+      }
+      setRecorderCfg(data);
+      setNotice(enabled
+        ? `Recorder enabled${data.until ? ` until ${fmtTs(data.until)}` : ' until you turn it off'}. Cooperating agent hooks pick this up on their next run.`
+        : 'Recorder disabled. Agents stop capturing new samples on their next run.');
+    } catch {
+      setError('Failed to update recorder.');
+    } finally {
+      setRecorderBusy(false);
+    }
+  }, [recorderDuration]);
+
   const ready = status?.ready;
+  const recorderOn = recorderCfg?.effective;
 
   return (
     <PageLayout
@@ -192,8 +227,58 @@ export default function PolicyCoachPage() {
         <StatTile label="Samples captured" value={status?.sample_count ?? sampleCount ?? 0} icon={Database} />
         <StatTile label="Observed agents" value={status?.agent_count ?? agents.length} icon={Activity} />
         <StatTile label="Suggestions" value={suggestions.length} icon={Sparkles} />
-        <StatTile label="Recorder" value={status?.recorder_enabled ? 'On' : 'Off'} tone={status?.recorder_enabled ? 'text-success' : 'text-tertiary'} icon={CheckCircle2} />
+        <StatTile label="Recorder" value={recorderOn ? 'On' : 'Off'} tone={recorderOn ? 'text-success' : 'text-tertiary'} icon={Power} />
       </div>
+
+      {/* Recorder control — turn capture on/off and set an auto-stop window. The
+          local agent hook honors this on its next run (an explicit
+          DASHCLAW_BEHAVIOR_SAMPLES_ENABLED env var still overrides it). */}
+      <Card hover={false} className="mb-5">
+        <CardContent className="py-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 text-sm font-medium text-white">
+                <Power size={15} className={recorderOn ? 'text-success' : 'text-tertiary'} />
+                Behavior recorder is {recorderOn ? 'on' : 'off'}
+              </div>
+              <p className="mt-1 text-xs text-tertiary">
+                {recorderOn && recorderCfg?.until
+                  ? `Capturing redacted, local-only samples — auto-stops ${fmtTs(recorderCfg.until)}.`
+                  : recorderOn
+                    ? 'Capturing redacted, local-only samples until you turn it off.'
+                    : 'Turn this on to let your agents capture redacted, local-only behavior samples for evidence-backed suggestions.'}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              {!recorderOn && (
+                <select
+                  value={recorderDuration}
+                  onChange={(e) => setRecorderDuration(e.target.value)}
+                  disabled={!isAdmin || recorderBusy}
+                  aria-label="Auto-stop window"
+                  className="rounded-lg border border-border bg-surface-tertiary px-2.5 py-1.5 text-xs text-white focus:border-brand focus:outline-none disabled:opacity-40"
+                >
+                  <option value="1">for 1 day</option>
+                  <option value="7">for 7 days</option>
+                  <option value="30">for 30 days</option>
+                  <option value="">until I turn it off</option>
+                </select>
+              )}
+              <button
+                className={recorderOn ? secondaryBtn : primaryBtn}
+                disabled={!isAdmin || recorderBusy}
+                title={!isAdmin ? 'Admin access required' : undefined}
+                onClick={() => saveRecorder(!recorderOn)}
+              >
+                <Power size={13} /> {recorderBusy ? 'Saving…' : recorderOn ? 'Turn off' : 'Turn on'}
+              </button>
+            </div>
+          </div>
+          {!isAdmin && (
+            <p className="mt-2 text-[11px] text-tertiary">Only workspace admins can change the recorder.</p>
+          )}
+        </CardContent>
+      </Card>
 
       {notice && (
         <div className="mb-4 rounded-lg border border-success/20 bg-success-subtle px-4 py-2.5 text-xs text-success">{notice}</div>
@@ -210,7 +295,7 @@ export default function PolicyCoachPage() {
             <EmptyState
               icon={Database}
               title="No behavior samples yet"
-              description="Enable the passive recorder to capture redacted, local-only samples of your Claude Code / agent usage. Set DASHCLAW_BEHAVIOR_SAMPLES_ENABLED=1 in your hook environment, then run agents normally. Samples are written to .dashclaw/behavior-samples/ and never leave your machine."
+              description="Turn on the behavior recorder above, then run your agents normally — they capture redacted, local-only samples that DashClaw analyzes for evidence-backed suggestions. (Cooperating hooks honor the toggle on their next run; an explicit DASHCLAW_BEHAVIOR_SAMPLES_ENABLED env var also works.) Samples are written to .dashclaw/behavior-samples/ and never leave your machine."
             />
           </CardContent>
         </Card>

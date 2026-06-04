@@ -48,9 +48,9 @@ p.kicker{background:var(--accent-bg);border:1px solid var(--accent-border);borde
 p.kicker b{color:var(--accent-deep)}
 </style></head><body>
 <h1>DashClaw Livingcode Dashboard</h1>
-<div class="sig" id="sig">Shape signature: sha1:66b349e99ef0aa9d0b4bec6faff53739a4a0d6db · signature-stable</div>
+<div class="sig" id="sig">Shape signature: sha1:bfc857c8f04957d1758df8f03546cc86498d683a · signature-stable</div>
 <div class="grid">
-      <div class="cell"><div class="n">225</div><div class="k">Active routes</div></div>
+      <div class="cell"><div class="n">226</div><div class="k">Active routes</div></div>
       <div class="cell"><div class="n">48</div><div class="k">Archived routes</div></div>
       <div class="cell"><div class="n">4</div><div class="k">Required env vars</div></div>
       <div class="cell"><div class="n">137</div><div class="k">Optional env vars</div></div>
@@ -58,7 +58,7 @@ p.kicker b{color:var(--accent-deep)}
       <div class="cell"><div class="n">15</div><div class="k">Events</div></div>
       <div class="cell"><div class="n">10</div><div class="k">Signals</div></div>
       <div class="cell"><div class="n">5</div><div class="k">Adapters</div></div>
-      <div class="cell"><div class="n">78</div><div class="k">Setting keys</div></div>
+      <div class="cell"><div class="n">80</div><div class="k">Setting keys</div></div>
 </div>
 
 <section><h2>Shape</h2><details><summary>Tables (89)</summary><table><thead><tr><th>Name</th><th>Domain</th></tr></thead><tbody>    <tr><td><code>action_embeddings</code></td><td class="sig">—</td></tr>
@@ -180,9 +180,11 @@ p.kicker b{color:var(--accent-deep)}
     <li><code>mcp_degraded</code></li>
     <li><code>stale_action</code></li>
     <li><code>test</code></li></ul></details>
-<details><summary>Setting keys (78)</summary><table><thead><tr><th>Key</th><th>Section</th></tr></thead><tbody>    <tr><td><code>AIRTABLE_API_KEY</code></td><td class="sig">Productivity</td></tr>
+<details><summary>Setting keys (80)</summary><table><thead><tr><th>Key</th><th>Section</th></tr></thead><tbody>    <tr><td><code>AIRTABLE_API_KEY</code></td><td class="sig">Productivity</td></tr>
     <tr><td><code>AIRTABLE_BASE_ID</code></td><td class="sig">Productivity</td></tr>
     <tr><td><code>ANTHROPIC_API_KEY</code></td><td class="sig">AI Providers</td></tr>
+    <tr><td><code>BEHAVIOR_RECORDER_ENABLED</code></td><td class="sig">DASHCLAW_BEHAVIOR_SAMPLES_ENABLED env var still overrides them.</td></tr>
+    <tr><td><code>BEHAVIOR_RECORDER_UNTIL</code></td><td class="sig">DASHCLAW_BEHAVIOR_SAMPLES_ENABLED env var still overrides them.</td></tr>
     <tr><td><code>BRAVE_API_KEY</code></td><td class="sig">Social</td></tr>
     <tr><td><code>CALENDLY_API_KEY</code></td><td class="sig">Productivity</td></tr>
     <tr><td><code>CLOUDFLARE_ACCOUNT_ID</code></td><td class="sig">Development</td></tr>
@@ -276,7 +278,8 @@ p.kicker b{color:var(--accent-deep)}
       <div class="cell"><div class="n">1</div><div class="k">TODOs</div></div>
       <div class="cell"><div class="n">128</div><div class="k">Files &gt;300 lines</div></div></div></section>
 
-<section><h2>Changed since last snapshot</h2><p class="kicker"><b>8</b> env_vars added, <b>13</b> routes added, <b>1</b> routes changed, <b>4</b> tables added since last snapshot.</p><ul class="diff">    <li><code>added</code> <b>routes</b>: /api/admin/trigger-outcome-sweep <span class="sig">New route: POST</span></li>
+<section><h2>Changed since last snapshot</h2><p class="kicker"><b>8</b> env_vars added, <b>14</b> routes added, <b>1</b> routes changed, <b>4</b> tables added since last snapshot.</p><ul class="diff">    <li><code>added</code> <b>routes</b>: /api/admin/trigger-outcome-sweep <span class="sig">New route: POST</span></li>
+    <li><code>added</code> <b>routes</b>: /api/behavior/recorder <span class="sig">New route: GET, POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/behavior/samples <span class="sig">New route: GET</span></li>
     <li><code>added</code> <b>routes</b>: /api/behavior/simulate <span class="sig">New route: POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/behavior/suggestions <span class="sig">New route: GET, POST</span></li>
@@ -331,7 +334,8 @@ p.kicker b{color:var(--accent-deep)}
 <details><summary>/auth/* (3)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/auth/[...nextauth]"><td><code>/api/auth/[...nextauth]</code></td><td></td><td class="sig">app/api/auth/[...nextauth]/route.js</td></tr>
     <tr data-path="/api/auth/config"><td><code>/api/auth/config</code></td><td>GET</td><td class="sig">app/api/auth/config/route.js</td></tr>
     <tr data-path="/api/auth/local"><td><code>/api/auth/local</code></td><td>DELETE, POST</td><td class="sig">app/api/auth/local/route.js</td></tr></tbody></table></details>
-<details><summary>/behavior/* (3)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/behavior/samples"><td><code>/api/behavior/samples</code></td><td>GET</td><td class="sig">app/api/behavior/samples/route.js</td></tr>
+<details><summary>/behavior/* (4)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/behavior/recorder"><td><code>/api/behavior/recorder</code></td><td>GET, POST</td><td class="sig">app/api/behavior/recorder/route.js</td></tr>
+    <tr data-path="/api/behavior/samples"><td><code>/api/behavior/samples</code></td><td>GET</td><td class="sig">app/api/behavior/samples/route.js</td></tr>
     <tr data-path="/api/behavior/simulate"><td><code>/api/behavior/simulate</code></td><td>POST</td><td class="sig">app/api/behavior/simulate/route.js</td></tr>
     <tr data-path="/api/behavior/suggestions"><td><code>/api/behavior/suggestions</code></td><td>GET, POST</td><td class="sig">app/api/behavior/suggestions/route.js</td></tr></tbody></table></details>
 <details><summary>/billing/* (2)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/billing/checkout"><td><code>/api/billing/checkout</code></td><td>POST</td><td class="sig">app/api/billing/checkout/route.js</td></tr>

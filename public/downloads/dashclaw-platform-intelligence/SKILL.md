@@ -5,7 +5,7 @@ description: DashClaw platform expert for integration, troubleshooting, and gove
 
 # DashClaw Platform Intelligence
 
-**Shape snapshot:** `sha1:66b349e99ef0aa9d0b4bec6faff53739a4a0d6db`
+**Shape snapshot:** `sha1:bfc857c8f04957d1758df8f03546cc86498d683a`
 **This file is auto-generated.** Do not edit by hand — regenerate with:
 
 ```bash
@@ -45,7 +45,7 @@ neither exists. When you cannot run the queries above, fall back **in this order
 
 ## At a Glance
 
-- **225** active API routes across **57** categories
+- **226** active API routes across **57** categories
 - **4** required + **137** optional environment variables
 - **89** database tables
 
@@ -108,6 +108,7 @@ neither exists. When you cannot run the queries above, fall back **in this order
 
 ### `behavior`
 
+- `GET, POST` `/api/behavior/recorder`
 - `GET` `/api/behavior/samples`
 - `POST` `/api/behavior/simulate`
 - `GET, POST` `/api/behavior/suggestions`
@@ -809,6 +810,11 @@ Per-org settings stored in the `settings` table. Set via `PUT /api/settings/:key
 ### docs/architecture/durable-execution-finality.md.
 
 - `DASHCLAW_OUTCOME_TIMEOUT_MINUTES`
+
+### DASHCLAW_BEHAVIOR_SAMPLES_ENABLED env var still overrides them.
+
+- `BEHAVIOR_RECORDER_ENABLED`
+- `BEHAVIOR_RECORDER_UNTIL`
 
 ## Realtime & Webhook Events
 

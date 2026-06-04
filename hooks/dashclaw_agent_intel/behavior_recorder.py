@@ -50,10 +50,69 @@ _SECRET_PATTERNS = [
 ]
 
 
+# Cached per-process so the server config is fetched at most once per agent run
+# (None = not yet fetched; {} = fetched/failed with no usable config).
+_server_config_cache = None
+
+
+def _server_recorder_config():
+    """Fetch the org's recorder config from the DashClaw server, once per
+    process. Fail-safe: any error (no creds, unreachable, bad JSON, timeout)
+    returns {} so the recorder simply stays off. Stdlib only."""
+    global _server_config_cache
+    if _server_config_cache is not None:
+        return _server_config_cache
+    _server_config_cache = {}
+    base = (os.environ.get("DASHCLAW_BASE_URL") or "").rstrip("/")
+    key = os.environ.get("DASHCLAW_API_KEY") or ""
+    if not base or not key:
+        return _server_config_cache
+    try:
+        import urllib.request
+
+        req = urllib.request.Request(
+            base + "/api/behavior/recorder",
+            headers={"x-api-key": key, "accept": "application/json"},
+        )
+        with urllib.request.urlopen(req, timeout=1.5) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+        if isinstance(data, dict):
+            _server_config_cache = {
+                "enabled": bool(data.get("enabled")),
+                "until": data.get("until"),
+            }
+    except Exception:
+        _server_config_cache = {}
+    return _server_config_cache
+
+
 def is_enabled():
-    """True when the recorder is switched on via env."""
+    """True when the recorder is switched on.
+
+    Precedence:
+      1. ``DASHCLAW_BEHAVIOR_SAMPLES_ENABLED`` env var, when explicitly set
+         (1/true/yes ⇒ on, 0/false/no ⇒ off) — always wins.
+      2. Otherwise the org's UI toggle (GET /api/behavior/recorder), honoring an
+         optional auto-stop window. Fetched once per process, fail-safe to off.
+    """
     val = (os.environ.get("DASHCLAW_BEHAVIOR_SAMPLES_ENABLED") or "").strip().lower()
-    return val in ("1", "true", "yes")
+    if val in ("1", "true", "yes"):
+        return True
+    if val in ("0", "false", "no"):
+        return False
+
+    cfg = _server_recorder_config()
+    if not cfg.get("enabled"):
+        return False
+    until = cfg.get("until")
+    if until:
+        try:
+            exp = datetime.fromisoformat(str(until).replace("Z", "+00:00"))
+            if datetime.now(timezone.utc) >= exp:
+                return False  # auto-stop window elapsed
+        except Exception:
+            pass
+    return True
 
 
 def samples_dir(workspace=None):

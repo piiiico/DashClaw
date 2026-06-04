@@ -50,6 +50,12 @@ export const VALID_SETTING_KEYS = [
   // sweep marks it lost_confirmation. Default 15. See
   // docs/architecture/durable-execution-finality.md.
   'DASHCLAW_OUTCOME_TIMEOUT_MINUTES',
+  // Policy Coach behavior recorder — UI-controlled enablement + optional
+  // auto-stop window. The local agent hook reads these (GET /api/behavior/
+  // recorder) to decide whether to capture samples; an explicit
+  // DASHCLAW_BEHAVIOR_SAMPLES_ENABLED env var still overrides them.
+  'BEHAVIOR_RECORDER_ENABLED',
+  'BEHAVIOR_RECORDER_UNTIL',
 ];
 
 export const VALID_CATEGORIES = ['integration', 'general', 'system'];
