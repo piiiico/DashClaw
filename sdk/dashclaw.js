@@ -1371,6 +1371,50 @@ class DashClaw {
   async verifyReputationReceipt(receipt) {
     return this._request('/api/reputation/verify', 'POST', { receipt });
   }
+
+  // ---------------------------------------------------------------------------
+  // Agent Registry — register external delegatable providers; invocations are
+  // governed by the existing capability runtime + guard + action ledger.
+  // ---------------------------------------------------------------------------
+
+  /** POST /api/agents/registry — register an external provider. */
+  async registerAgent(data = {}) {
+    return this._request('/api/agents/registry', 'POST', data);
+  }
+
+  /** GET /api/agents/registry — list registered agents. */
+  async listRegisteredAgents(filters = {}) {
+    return this._request('/api/agents/registry', 'GET', null, filters);
+  }
+
+  /** GET /api/agents/registry/:id — registered agent detail. */
+  async getRegisteredAgent(id) {
+    return this._request(`/api/agents/registry/${id}`, 'GET');
+  }
+
+  /** PATCH /api/agents/registry/:id — update a registered agent. */
+  async updateRegisteredAgent(id, patch = {}) {
+    return this._request(`/api/agents/registry/${id}`, 'PATCH', patch);
+  }
+
+  /** POST /api/agents/registry/:id/capabilities — group a capability under the agent. */
+  async addAgentCapability(id, capabilityId) {
+    return this._request(`/api/agents/registry/${id}/capabilities`, 'POST', { capability_id: capabilityId });
+  }
+
+  /** GET /api/agents/registry/:id/capabilities — capabilities grouped under the agent. */
+  async listAgentCapabilities(id) {
+    return this._request(`/api/agents/registry/${id}/capabilities`, 'GET');
+  }
+
+  /**
+   * POST /api/agents/invoke — invoke a capability through a registered agent,
+   * governed end to end by the existing capability runtime + guard + action.
+   * @param {Object} args - { registered_agent_id, capability_id, agent_id?, payload?, declared_goal? }
+   */
+  async invokeRegisteredAgent({ registered_agent_id, capability_id, agent_id, payload, declared_goal } = {}) {
+    return this._request('/api/agents/invoke', 'POST', { registered_agent_id, capability_id, agent_id, payload, declared_goal });
+  }
 }
 
 export { DashClaw, ApprovalDeniedError, GuardBlockedError };

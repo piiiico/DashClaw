@@ -22,7 +22,7 @@ Python agents typically pair the SDK with one or more of these:
 
 ## Quick Start
 
-The Python SDK is the full platform SDK (208 methods). The constructor accepts both v2-compatible and v1-extended parameters.
+The Python SDK is the full platform SDK (215 methods). The constructor accepts both v2-compatible and v1-extended parameters.
 
 ### v2-compatible constructor (recommended for new agents)
 
@@ -1013,9 +1013,9 @@ integration.instrument_agent(assistant)
 
 ## API Parity
 
-This SDK provides the full DashClaw platform surface (208 methods), which is parity with the [Node.js v1 (legacy) SDK](https://github.com/ucsandman/DashClaw/tree/main/sdk/legacy).
+This SDK provides the full DashClaw platform surface (215 methods), which is parity with the [Node.js v1 (legacy) SDK](https://github.com/ucsandman/DashClaw/tree/main/sdk/legacy).
 
-The Node.js v2 SDK exposes a curated subset of **109 methods** focused on agent governance. The following Python methods are available in both the Node.js v2 SDK and this Python SDK:
+The Node.js v2 SDK exposes a curated subset of **116 methods** focused on agent governance. The following Python methods are available in both the Node.js v2 SDK and this Python SDK:
 
 | Category | Node v2 method | Python equivalent | In v2? |
 |----------|---------------|-------------------|:------:|
@@ -1287,6 +1287,26 @@ verdict = claw.verify_reputation_receipt(receipt)  # { ok, kid?, reason? }
 | `recompute_agent_reputation(agent_id)` | Recompute from evidence, persist snapshot + signed receipt |
 | `get_agent_reputation_receipt(agent_id)` | Get the signed receipt for the current vector |
 | `verify_reputation_receipt(receipt)` | Verify a receipt against the published signing keys |
+
+## Agent Registry
+
+Register external, org-owned providers that group existing capabilities and are invoked through governance. Invocations route through the existing capability runtime + guard + action ledger; the registry never reimplements HTTP. Risk derives from `risk_class` + budget + capability metadata via the existing risk map and predictive risk.
+
+```python
+agent = claw.register_agent("Pricing API", endpoint="https://pricing.example.com", auth_type="bearer", risk_class="high", default_budget_usd=5)["registered_agent"]
+claw.add_agent_capability(agent["entry_id"], "cap_123")
+result = claw.invoke_registered_agent(agent["entry_id"], "cap_123", agent_id="agent-1", payload={"q": "sku-9"})
+```
+
+| Method | Description |
+| --- | --- |
+| `register_agent(name, **kwargs)` | Register an external provider |
+| `list_registered_agents(status=None)` | List registered agents |
+| `get_registered_agent(registered_agent_id)` | Registered agent detail (capabilities + invocations) |
+| `update_registered_agent(registered_agent_id, **patch)` | Update a registered agent |
+| `add_agent_capability(registered_agent_id, capability_id)` | Group a capability under the agent |
+| `list_agent_capabilities(registered_agent_id)` | List grouped capabilities |
+| `invoke_registered_agent(registered_agent_id, capability_id, agent_id=None, payload=None, declared_goal=None)` | Governed invocation through the capability runtime |
 
 ## Hosted provisioning (operator surface — not an SDK method)
 

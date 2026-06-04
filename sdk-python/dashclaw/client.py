@@ -2024,6 +2024,46 @@ class DashClaw:
         """Verify a reputation receipt against the instance's published signing keys."""
         return self._request("/api/reputation/verify", "POST", json={"receipt": receipt})
 
+    # Agent Registry -------------------------------------------------------
+
+    def register_agent(self, name, **kwargs):
+        """Register an external delegatable provider."""
+        return self._request("/api/agents/registry", "POST", json={"name": name, **kwargs})
+
+    def list_registered_agents(self, status=None):
+        """List registered agents (org-scoped)."""
+        params = {}
+        if status is not None:
+            params["status"] = status
+        return self._request("/api/agents/registry", "GET", params=params)
+
+    def get_registered_agent(self, registered_agent_id):
+        """Get a registered agent's detail."""
+        return self._request(f"/api/agents/registry/{registered_agent_id}", "GET")
+
+    def update_registered_agent(self, registered_agent_id, **patch):
+        """Update a registered agent."""
+        return self._request(f"/api/agents/registry/{registered_agent_id}", "PATCH", json=patch)
+
+    def add_agent_capability(self, registered_agent_id, capability_id):
+        """Group an existing capability under a registered agent."""
+        return self._request(f"/api/agents/registry/{registered_agent_id}/capabilities", "POST", json={"capability_id": capability_id})
+
+    def list_agent_capabilities(self, registered_agent_id):
+        """List capabilities grouped under a registered agent."""
+        return self._request(f"/api/agents/registry/{registered_agent_id}/capabilities", "GET")
+
+    def invoke_registered_agent(self, registered_agent_id, capability_id, agent_id=None, payload=None, declared_goal=None):
+        """Invoke a capability through a registered agent, governed by the capability runtime + guard."""
+        body = {"registered_agent_id": registered_agent_id, "capability_id": capability_id}
+        if agent_id is not None:
+            body["agent_id"] = agent_id
+        if payload is not None:
+            body["payload"] = payload
+        if declared_goal is not None:
+            body["declared_goal"] = declared_goal
+        return self._request("/api/agents/invoke", "POST", json=body)
+
 
 # Backward compatibility alias (Legacy)
 OpenClawAgent = DashClaw

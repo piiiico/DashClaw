@@ -13,10 +13,10 @@ doc-type: architecture
 
 ## Summary
 
-- Total routes: `280`
+- Total routes: `284`
 - Stable routes: `47`
 - Beta routes: `24`
-- Experimental routes: `209`
+- Experimental routes: `213`
 
 ## Routes
 
@@ -86,6 +86,10 @@ doc-type: architecture
 | `/api/agents` | `GET` | `experimental` | `/api/agents` | `app/api/agents/route.js` |
 | `/api/agents/connections` | `GET, POST` | `experimental` | `/api/agents` | `app/api/agents/connections/route.js` |
 | `/api/agents/heartbeat` | `POST` | `experimental` | `/api/agents` | `app/api/agents/heartbeat/route.js` |
+| `/api/agents/invoke` | `POST` | `experimental` | `/api/agents` | `app/api/agents/invoke/route.js` |
+| `/api/agents/registry` | `GET, POST` | `experimental` | `/api/agents` | `app/api/agents/registry/route.js` |
+| `/api/agents/registry/{id}` | `GET, PATCH` | `experimental` | `/api/agents` | `app/api/agents/registry/[id]/route.js` |
+| `/api/agents/registry/{id}/capabilities` | `GET, POST` | `experimental` | `/api/agents` | `app/api/agents/registry/[id]/capabilities/route.js` |
 | `/api/agents/{agentId}` | `GET` | `experimental` | `/api/agents` | `app/api/agents/[agentId]/route.js` |
 | `/api/agents/{agentId}/profile` | `GET` | `experimental` | `/api/agents` | `app/api/agents/[agentId]/profile/route.js` |
 | `/api/analytics` | `GET` | `experimental` | `(default)` | `app/api/analytics/route.js` |

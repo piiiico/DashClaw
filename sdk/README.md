@@ -1051,6 +1051,29 @@ const { ok } = await claw.verifyReputationReceipt(receipt);
 
 ---
 
+## Agent Registry
+
+Register external, org-owned providers that group existing capabilities and are invoked through governance. An invocation routes through the existing capability runtime (auth, timeout, retry, request/response mapping, SSRF defense), the guard, and the action ledger; the registry never reimplements HTTP. Risk derives from the provider's `risk_class` + budget + the capability's metadata via the existing risk map and predictive risk.
+
+```js
+const { registered_agent } = await claw.registerAgent({ name: 'Pricing API', endpoint: 'https://pricing.example.com', auth_type: 'bearer', risk_class: 'high', default_budget_usd: 5 });
+await claw.addAgentCapability(registered_agent.entry_id, 'cap_123');
+await claw.listAgentCapabilities(registered_agent.entry_id);
+const result = await claw.invokeRegisteredAgent({ registered_agent_id: registered_agent.entry_id, capability_id: 'cap_123', agent_id: 'agent-1', payload: { q: 'sku-9' } });
+```
+
+- `claw.registerAgent(data)` -- POST /api/agents/registry
+- `claw.listRegisteredAgents(filters)` -- GET /api/agents/registry
+- `claw.getRegisteredAgent(id)` -- GET /api/agents/registry/:id
+- `claw.updateRegisteredAgent(id, patch)` -- PATCH /api/agents/registry/:id
+- `claw.addAgentCapability(id, capabilityId)` -- POST /api/agents/registry/:id/capabilities
+- `claw.listAgentCapabilities(id)` -- GET /api/agents/registry/:id/capabilities
+- `claw.invokeRegisteredAgent({ registered_agent_id, capability_id, agent_id?, payload?, declared_goal? })` -- POST /api/agents/invoke
+
+x402 and auth metadata are recorded on the provider (`auth_metadata`); no payment settlement is performed.
+
+---
+
 ## Hosted provisioning (operator surface — not an SDK method)
 
 When `DASHCLAW_HOSTED=true` the deployment exposes `/api/hosted/*` routes for one-click trial provisioning. These are operator-facing routes, not SDK methods — they produce the API key the SDK consumes.

@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:32adfa33556cc769b34a288265d765ceb1035754",
+  "timestamp": "sha1:6469797479b89a55091842d988ea1941755d2f99",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -675,6 +675,49 @@
       "dynamic_params": [],
       "archived": false,
       "file_path": "app/api/agents/heartbeat/route.js"
+    },
+    {
+      "path": "/api/agents/invoke",
+      "methods": [
+        "POST"
+      ],
+      "dynamic_params": [],
+      "archived": false,
+      "file_path": "app/api/agents/invoke/route.js"
+    },
+    {
+      "path": "/api/agents/registry",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "dynamic_params": [],
+      "archived": false,
+      "file_path": "app/api/agents/registry/route.js"
+    },
+    {
+      "path": "/api/agents/registry/[id]",
+      "methods": [
+        "GET",
+        "PATCH"
+      ],
+      "dynamic_params": [
+        "id"
+      ],
+      "archived": false,
+      "file_path": "app/api/agents/registry/[id]/route.js"
+    },
+    {
+      "path": "/api/agents/registry/[id]/capabilities",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "dynamic_params": [
+        "id"
+      ],
+      "archived": false,
+      "file_path": "app/api/agents/registry/[id]/capabilities/route.js"
     },
     {
       "path": "/api/analytics",

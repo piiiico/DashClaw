@@ -47,10 +47,10 @@
     ]
   },
   "summary": {
-    "total_routes": 280,
+    "total_routes": 284,
     "stable_routes": 47,
     "beta_routes": 24,
-    "experimental_routes": 209
+    "experimental_routes": 213
   },
   "routes": [
     {
@@ -669,6 +669,45 @@
       "maturity": "experimental",
       "matched_prefix": "/api/agents",
       "file": "app/api/agents/heartbeat/route.js"
+    },
+    {
+      "path": "/api/agents/invoke",
+      "methods": [
+        "POST"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "/api/agents",
+      "file": "app/api/agents/invoke/route.js"
+    },
+    {
+      "path": "/api/agents/registry",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "/api/agents",
+      "file": "app/api/agents/registry/route.js"
+    },
+    {
+      "path": "/api/agents/registry/{id}",
+      "methods": [
+        "GET",
+        "PATCH"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "/api/agents",
+      "file": "app/api/agents/registry/[id]/route.js"
+    },
+    {
+      "path": "/api/agents/registry/{id}/capabilities",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "/api/agents",
+      "file": "app/api/agents/registry/[id]/capabilities/route.js"
     },
     {
       "path": "/api/agents/{agentId}",
