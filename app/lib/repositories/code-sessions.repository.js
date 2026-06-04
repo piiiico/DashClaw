@@ -511,7 +511,7 @@ export async function insertAlerts(sql, orgId, alerts, defaults = {}) {
       INSERT INTO code_session_alerts (org_id, project_id, session_id, kind, severity, scope, title, body)
       VALUES (${orgId}, ${project_id}, ${session_id}, ${a.kind}, ${a.severity || 'info'},
               ${a.scope || 'session'}, ${a.title}, ${a.body || null})
-      ON CONFLICT ON CONSTRAINT code_session_alerts_dedup DO NOTHING
+      ON CONFLICT (org_id, kind, (COALESCE(project_id, '')), (COALESCE(session_id, ''))) DO NOTHING
       RETURNING id
     `;
     if (rows.length) inserted += 1;
