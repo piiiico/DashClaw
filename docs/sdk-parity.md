@@ -118,6 +118,7 @@ That is acceptable temporarily, but it should not define future product directio
 | Scoring profiles / dimensions | Yes | No | Yes | Canonical in main SDK (`createScoringProfile`, `scoreWithProfile`, `batchScoreWithProfile`, calibration) |
 | Risk templates | Yes | No | Yes | Canonical in main SDK |
 | Evaluations (scorers / scores / runs) | Yes | Limited overlap | Yes | Canonical in main SDK |
+| Agent reputation (`/api/reputation/*`) | Yes | No | Yes | Canonical in both SDKs at route-contract parity: `getAgentReputation`/`listAgentReputationEvents`/`recomputeAgentReputation`/`getAgentReputationReceipt`/`verifyReputationReceipt` (Node) and the `get_agent_reputation`/`list_agent_reputation_events`/`recompute_agent_reputation`/`get_agent_reputation_receipt`/`verify_reputation_receipt` (Python). Time-decayed Bayesian vector; `risk_score` wraps the existing 0-100 risk; Ed25519-signed receipts re-verify against the instance JWKS |
 | Prompt management (templates / versions / render) | Yes | Limited overlap | Yes | Canonical in main SDK — full Prompt Library surface (template CRUD, version CRUD + `activatePromptVersion`, `renderPrompt`, `getPromptStats`, `listPromptRuns`) |
 | Learning analytics (velocity / curves / lessons / maturity) | Yes | Limited overlap | Yes | Canonical in main SDK |
 | Security scanning (prompt injection / content) | Yes | Yes | Yes | Canonical in main SDK |

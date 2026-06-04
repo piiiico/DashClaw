@@ -32,7 +32,7 @@
         { "id": "B3-opt", "scope": "in", "status": "done", "summary": "GET /api/reputation/leaderboard + GET .../summary (with is_active)", "test": "leaderboard covered in reputation-routes.test.js; summary route implemented read-only" },
         { "id": "B3-recompute-all", "scope": "out", "status": "documented", "summary": "recompute-all endpoint", "reason": "iterating all agents is an unbounded batch; document as a future scheduled job" },
         { "id": "B4", "scope": "in", "status": "done", "summary": "gatherEvidenceEvents sources from action_records (outcome both axes, risk, approval), guard_decisions (policy violations), eval_scores (join) + feedback (quality); architected so drift/learning/scoring plug in later", "test": "reputation.repository.test.js evidence-sourcing + org-scoping cases" },
-        { "id": "B5", "scope": "in", "status": "pending", "summary": "Node + Python SDK methods (get/list-events/recompute/get-receipt/verify); docs section across the SDK checklist surfaces; one contract-style test (seed agent+action+outcome -> recompute -> fetch vector+receipt -> verify)", "test": "sdk unit tests + contract test; sdk:count reconciled" }
+        { "id": "B5", "scope": "in", "status": "done", "summary": "Node + Python SDK methods (5 each); README + sdk-parity docs; counts reconciled to Node 109 / Python 208; contract-style recompute->verify test in reputation.repository.test.js", "test": "sdk-reputation.test.js (5 node wrappers); sdk:count 109/208; repository contract test" }
       ]
     },
     "C": {

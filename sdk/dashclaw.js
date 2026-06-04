@@ -1326,6 +1326,51 @@ class DashClaw {
   async previewScorer({ scorer_type, config, sample } = {}) {
     return this._request('/api/evaluations/scorers/preview', 'POST', { scorer_type, config, sample });
   }
+
+  // ---------------------------------------------------------------------------
+  // Agent Reputation — per-agent trust vector, events, and signed receipts.
+  // ---------------------------------------------------------------------------
+
+  /**
+   * GET /api/reputation/agents/:agentId — current reputation vector.
+   * @returns {Promise<{ agent_id, vector, source }>}
+   */
+  async getAgentReputation(agentId) {
+    return this._request(`/api/reputation/agents/${agentId}`, 'GET');
+  }
+
+  /**
+   * GET /api/reputation/agents/:agentId/events — paginated reputation events.
+   * @param {string} agentId
+   * @param {Object} [filters] - { limit?, offset? }
+   */
+  async listAgentReputationEvents(agentId, filters = {}) {
+    return this._request(`/api/reputation/agents/${agentId}/events`, 'GET', null, filters);
+  }
+
+  /**
+   * POST /api/reputation/agents/:agentId/recompute — recompute the vector from
+   * evidence, persist the snapshot, and store a signed receipt.
+   */
+  async recomputeAgentReputation(agentId) {
+    return this._request(`/api/reputation/agents/${agentId}/recompute`, 'POST');
+  }
+
+  /**
+   * GET /api/reputation/agents/:agentId/receipt — signed receipt for the vector.
+   */
+  async getAgentReputationReceipt(agentId) {
+    return this._request(`/api/reputation/agents/${agentId}/receipt`, 'GET');
+  }
+
+  /**
+   * POST /api/reputation/verify — verify a reputation receipt against the
+   * instance's published signing keys. Returns { ok, kid?, reason? }.
+   * @param {Object} receipt - a signed reputation receipt
+   */
+  async verifyReputationReceipt(receipt) {
+    return this._request('/api/reputation/verify', 'POST', { receipt });
+  }
 }
 
 export { DashClaw, ApprovalDeniedError, GuardBlockedError };
