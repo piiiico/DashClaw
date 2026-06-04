@@ -63,7 +63,7 @@ def _server_recorder_config():
     if _server_config_cache is not None:
         return _server_config_cache
     _server_config_cache = {}
-    base = (os.environ.get("DASHCLAW_BASE_URL") or "").rstrip("/")
+    base = (os.environ.get("DASHCLAW_BASE_URL") or os.environ.get("DASHCLAW_URL") or "").rstrip("/")
     key = os.environ.get("DASHCLAW_API_KEY") or ""
     if not base or not key:
         return _server_config_cache

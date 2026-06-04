@@ -82,7 +82,7 @@ _load_dotenv()
 # Configuration
 # ---------------------------------------------------------------------------
 
-BASE_URL = (os.environ.get("DASHCLAW_BASE_URL") or "").rstrip("/")
+BASE_URL = (os.environ.get("DASHCLAW_BASE_URL") or os.environ.get("DASHCLAW_URL") or "").rstrip("/")
 API_KEY = os.environ.get("DASHCLAW_API_KEY") or ""
 AGENT_ID = os.environ.get("DASHCLAW_AGENT_ID") or "claude-code"
 # Opt-in: on text-only turns (tokens present but no tool calls → no action_ids)

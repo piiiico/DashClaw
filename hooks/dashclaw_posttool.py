@@ -74,7 +74,7 @@ _load_dotenv()
 # Configuration
 # ---------------------------------------------------------------------------
 
-BASE_URL = (os.environ.get("DASHCLAW_BASE_URL") or "").rstrip("/")
+BASE_URL = (os.environ.get("DASHCLAW_BASE_URL") or os.environ.get("DASHCLAW_URL") or "").rstrip("/")
 API_KEY = os.environ.get("DASHCLAW_API_KEY") or ""
 # Set DASHCLAW_HOOK_DEBUG=1 in .env to capture PostToolUse invocation breadcrumbs
 # in <tempdir>/dashclaw_hook_errors.log. Useful for diagnosing why PostToolUse

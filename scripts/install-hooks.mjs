@@ -41,12 +41,13 @@ const REPO_ROOT = resolve(__dirname, '..');
 const HOOKS_SRC = join(REPO_ROOT, 'hooks');
 
 function parseArgs(argv) {
-  const args = { target: process.cwd(), global: false, dryRun: false, uninstall: false };
+  const args = { target: process.cwd(), global: false, governance: false, dryRun: false, uninstall: false };
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i];
     if (a.startsWith('--target=')) args.target = resolve(a.slice('--target='.length));
     else if (a === '--target' && i + 1 < argv.length) args.target = resolve(argv[++i]);
     else if (a === '--global' || a === '-g') args.global = true;
+    else if (a === '--governance') args.governance = true;
     else if (a === '--dry-run') args.dryRun = true;
     else if (a === '--uninstall') args.uninstall = true;
     else if (a === '--help' || a === '-h') {
@@ -59,7 +60,14 @@ function parseArgs(argv) {
       console.log("                           Points at this repo's hooks/dashclaw_stop.py by absolute path;");
       console.log("                           credentials resolve from this repo's .env.local, so NO secret");
       console.log('                           is written into global config.');
-      console.log('  --uninstall              With --global, remove the global capture hook.');
+      console.log('  --global --governance    Install the FULL governance set (PreToolUse + PostToolUse +');
+      console.log('                           Stop) into ~/.claude/settings.json. Fires in EVERY project and');
+      console.log('                           in fresh/Docker/headless environments — user settings are not');
+      console.log("                           gated by Claude Code's folder-trust prompt the way a project");
+      console.log('                           .claude/settings.json is. Absolute paths into this repo; NO');
+      console.log('                           secret written (hooks read DASHCLAW_BASE_URL/DASHCLAW_URL +');
+      console.log('                           DASHCLAW_API_KEY from the env or this repo\'s .env.local).');
+      console.log('  --uninstall              With --global[ --governance], remove the global hook(s).');
       console.log('  --dry-run                With --global, print the change without writing.');
       process.exit(0);
     }
@@ -227,11 +235,47 @@ export function mergeGlobalStopHook(settings, repoRoot, { remove = false, python
   return next;
 }
 
+// Full governance hook set for a USER-level (~/.claude) install. Unlike the
+// per-project install (which copies scripts into <project>/.claude/hooks and
+// uses $CLAUDE_PROJECT_DIR), these reference THIS repo's hooks/ by absolute
+// path — so a `git pull` upgrades them and no copy goes stale. Crucially,
+// user-level hooks are NOT gated by Claude Code's folder-trust prompt, so they
+// fire in fresh / Docker / headless environments where a project
+// .claude/settings.json would silently never load. No secret is written; the
+// hooks read creds from the env or this repo's .env.local at runtime.
+export function globalGovernanceBlocks(repoRoot, python = 'python') {
+  const cmd = (name) => `${python} "${toPosixPath(join(repoRoot, 'hooks', name))}"`;
+  const matcher = 'Agent|Task|Bash|Edit|Write|MultiEdit|mcp__.*';
+  return {
+    PreToolUse: [{ matcher, hooks: [{ type: 'command', command: cmd('dashclaw_pretool.py'), timeout: 3600000 }] }],
+    PostToolUse: [{ matcher, hooks: [{ type: 'command', command: cmd('dashclaw_posttool.py') }] }],
+    Stop: [{ hooks: [{ type: 'command', command: cmd('dashclaw_stop.py') }] }],
+  };
+}
+
+// Pure merge (no FS). For each governed event, drop prior managed entries first
+// (so re-running upgrades cleanly) then append — or, with { remove: true }, strip
+// them for uninstall. User-authored hooks on the same events are left untouched.
+export function mergeGlobalGovernanceHooks(settings, repoRoot, { remove = false, python = 'python' } = {}) {
+  const next = { ...(settings || {}), hooks: { ...((settings && settings.hooks) || {}) } };
+  const blocks = globalGovernanceBlocks(repoRoot, python);
+  for (const event of Object.keys(blocks)) {
+    const existing = Array.isArray(next.hooks[event]) ? next.hooks[event] : [];
+    const kept = existing.filter((entry) => {
+      const cmds = (entry.hooks || []).map((h) => h.command || '');
+      return !cmds.some(isManagedHookCommand);
+    });
+    next.hooks[event] = remove ? kept : [...kept, ...blocks[event]];
+    if (next.hooks[event].length === 0) delete next.hooks[event];
+  }
+  return next;
+}
+
 function globalSettingsPath() {
   return join(homedir(), '.claude', 'settings.json');
 }
 
-function runGlobal({ dryRun, uninstall }) {
+function runGlobal({ dryRun, uninstall, governance }) {
   const settingsPath = globalSettingsPath();
   const python = detectPythonCommand();
   let settings = {};
@@ -244,6 +288,49 @@ function runGlobal({ dryRun, uninstall }) {
       process.exit(1);
     }
   }
+
+  // Full governance set — user-level, fires everywhere incl. fresh/Docker.
+  if (governance) {
+    const mergedGov = mergeGlobalGovernanceHooks(settings, REPO_ROOT, { remove: uninstall, python });
+    const renderedGov = JSON.stringify(mergedGov, null, 2) + '\n';
+    console.log(`Global settings: ${settingsPath}`);
+    console.log(`Repo root:       ${REPO_ROOT}`);
+    console.log('');
+    if (uninstall) {
+      if (dryRun) {
+        console.log('[dry-run] Would remove the DashClaw global governance hooks. No file written.');
+        return;
+      }
+      ensureDir(dirname(settingsPath));
+      writeFileSync(settingsPath, renderedGov);
+      console.log('✓ Removed the DashClaw global governance hooks.');
+      return;
+    }
+    console.log('Full governance: installs PreToolUse + PostToolUse + Stop into your USER');
+    console.log('settings, so every Claude Code session in ANY project is governed — and it');
+    console.log("fires in fresh/Docker/headless environments (user settings skip Claude Code's");
+    console.log('folder-trust gate that a project .claude/settings.json must pass first).');
+    console.log('');
+    console.log('No secret is written here — the hooks read creds from the environment or this');
+    console.log("repo's .env.local: DASHCLAW_BASE_URL (or DASHCLAW_URL) + DASHCLAW_API_KEY.");
+    console.log('');
+    if (dryRun) {
+      console.log('[dry-run] Would set these hook events:');
+      console.log(JSON.stringify(mergedGov.hooks, null, 2));
+      console.log('');
+      console.log('[dry-run] No file written. Re-run without --dry-run to apply.');
+      return;
+    }
+    ensureDir(dirname(settingsPath));
+    writeFileSync(settingsPath, renderedGov);
+    console.log(`✓ Global governance hooks merged into ${settingsPath}`);
+    console.log('');
+    console.log('Set DASHCLAW_BASE_URL + DASHCLAW_API_KEY in the session env, open a new Claude');
+    console.log('Code session in ANY project, and tool calls are governed. Remove anytime with:');
+    console.log('  node scripts/install-hooks.mjs --global --governance --uninstall');
+    return;
+  }
+
   const merged = mergeGlobalStopHook(settings, REPO_ROOT, { remove: uninstall, python });
   const rendered = JSON.stringify(merged, null, 2) + '\n';
 

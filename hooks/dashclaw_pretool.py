@@ -78,7 +78,7 @@ from dashclaw_agent_intel import behavior_recorder
 # Configuration
 # ---------------------------------------------------------------------------
 
-BASE_URL = (os.environ.get("DASHCLAW_BASE_URL") or "").rstrip("/")
+BASE_URL = (os.environ.get("DASHCLAW_BASE_URL") or os.environ.get("DASHCLAW_URL") or "").rstrip("/")
 API_KEY = os.environ.get("DASHCLAW_API_KEY") or ""
 AGENT_ID = os.environ.get("DASHCLAW_AGENT_ID") or "claude-code"
 HOOK_MODE = os.environ.get("DASHCLAW_HOOK_MODE") or "enforce"
@@ -722,8 +722,14 @@ def _maybe_warn_demo_mode():
 # ---------------------------------------------------------------------------
 
 def main():
-    # Exit silently if DashClaw is not configured
+    # Exit silently when DashClaw isn't configured at all — someone who never set
+    # it up must never see hook noise. But if EXACTLY ONE of the two is present,
+    # the setup is half-done: surface a one-line reason so "nothing happened"
+    # is diagnosable instead of an invisible exit (the #1 setup trap).
     if not BASE_URL or not API_KEY:
+        if BASE_URL or API_KEY:
+            missing = "DASHCLAW_API_KEY" if not API_KEY else "DASHCLAW_BASE_URL (or DASHCLAW_URL)"
+            log("[DashClaw] ⚠ Governance hook is half-configured — %s is not set, so this action was NOT governed." % missing)
         sys.exit(0)
 
     # Surface a warning if the configured instance is in demo mode (todo-001).
