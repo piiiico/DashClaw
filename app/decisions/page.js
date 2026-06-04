@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import PageLayout from '../components/PageLayout';
 import { Card, CardContent } from '../components/ui/Card';
@@ -16,6 +16,7 @@ import {
 import { formatCost, formatTokens } from '../lib/formatCost';
 import { useAgentFilter } from '../lib/AgentFilterContext';
 import { useEffectiveRole } from '../hooks/useEffectiveRole';
+import { useRealtime } from '../hooks/useRealtime';
 import MessageTrail from '../components/MessageTrail';
 import { OutcomeBadge } from '../components/OutcomeBadge';
 import { parseJsonArray } from '../lib/parseJson';
@@ -143,6 +144,26 @@ export default function DecisionsLedger() {
     setSelectedActions(new Set());
     fetchActions();
   }, [fetchActions]);
+
+  // Live updates — the SSE stream (/api/stream) already emits action.created /
+  // action.updated for every governed decision (same source the Activity stream
+  // uses). Debounced-refetch when one arrives so the ledger stays live without a
+  // manual Refresh. We only refetch on page 0 (so paging through history isn't
+  // disrupted) and honor the current agent filter. useRealtime no-ops in demo.
+  const liveTimer = useRef(null);
+  useRealtime(useCallback((event, payload) => {
+    if (event !== 'action.created' && event !== 'action.updated') return;
+    const a = payload?.action || payload;
+    if (filterAgent && a?.agent_id && a.agent_id !== filterAgent) return;
+    if (page !== 0) return;
+    if (liveTimer.current) return; // coalesce bursts into one refetch
+    liveTimer.current = setTimeout(() => {
+      liveTimer.current = null;
+      fetchActions();
+    }, 800);
+  }, [filterAgent, page, fetchActions]));
+
+  useEffect(() => () => { if (liveTimer.current) clearTimeout(liveTimer.current); }, []);
 
   const handleClearActions = async () => {
     const agentLabel = filterAgent || 'all agents';
