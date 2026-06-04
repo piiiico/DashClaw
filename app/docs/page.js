@@ -168,6 +168,8 @@ const navItems = [
   { href: '#analytics', label: 'Analytics' },
   { href: '#guard-decisions', label: 'Guard Decisions', indent: true },
   { href: '#agent-profile', label: 'Agent Profile', indent: true },
+  { href: '#agent-reputation', label: 'Agent Reputation' },
+  { href: '#agent-registry', label: 'Agent Registry' },
   { href: '#code-sessions', label: 'Code Sessions' },
   { href: '#code-sessions-ingest', label: 'Ingest transcripts', indent: true },
   { href: '#code-sessions-optimal-files', label: 'Optimal Files', indent: true },
@@ -2241,6 +2243,83 @@ const { agent, trust, signals, assumptions_summary } = await res.json();
           </section>
 
           {/* ── Code Sessions ── */}
+          <section id="agent-reputation" className="scroll-mt-20 pt-12 border-t border-border">
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold text-text-primary mb-2 font-mono">Agent Reputation</h3>
+              <p className="text-xs text-text-tertiary mb-4">Per-agent trust vectors computed from your own governed decisions (actions, guard outcomes, evaluations, feedback). Time-decayed (90-day half-life) and Bayesian-smoothed; risk_score wraps the existing 0-100 risk numbers. Each vector can be returned with an Ed25519-signed receipt that re-verifies against the instance JWKS. All reads are org-scoped.</p>
+              <MethodEntry
+                id="getAgentReputation"
+                signature="GET /api/reputation/agents/:agentId"
+                description="Current reputation vector (stored snapshot, or computed read-only when none exists yet). Returns 404 for an unknown agent."
+                example={
+                  <CodeBlock title="Fetch the vector">
+{`const { vector } = await claw.getAgentReputation('agent_42');
+// vector: { reliability_score, completion_rate, policy_violation_rate, approval_adherence,
+//           quality_score, risk_score, volume_weight, confidence, total_events, last_event_at, computed_at }`}
+                  </CodeBlock>
+                }
+              />
+              <MethodEntry
+                id="recomputeAgentReputation"
+                signature="POST /api/reputation/agents/:agentId/recompute"
+                description="Recompute the vector from evidence, persist the snapshot, and store a signed receipt."
+                example={<CodeBlock title="Recompute">{`await claw.recomputeAgentReputation('agent_42');`}</CodeBlock>}
+              />
+              <MethodEntry
+                id="listAgentReputationEvents"
+                signature="GET /api/reputation/agents/:agentId/events"
+                description="Paginated reputation events for an agent (org-scoped)."
+                example={<CodeBlock title="List events">{`await claw.listAgentReputationEvents('agent_42', { limit: 50, offset: 0 });`}</CodeBlock>}
+              />
+              <MethodEntry
+                id="getAgentReputationReceipt"
+                signature="GET /api/reputation/agents/:agentId/receipt"
+                description="Signed receipt for the current vector (stored, or built read-only)."
+                example={<CodeBlock title="Receipt">{`const { receipt } = await claw.getAgentReputationReceipt('agent_42');`}</CodeBlock>}
+              />
+              <MethodEntry
+                id="verifyReputationReceipt"
+                signature="POST /api/reputation/verify"
+                description="Verify a reputation receipt against the instance's published signing keys. The vector hash is checked constant-time and the Ed25519 signature is verified. Returns { ok, kid?, reason? }."
+                example={<CodeBlock title="Verify">{`const { ok } = await claw.verifyReputationReceipt(receipt);`}</CodeBlock>}
+              />
+            </div>
+          </section>
+
+          <section id="agent-registry" className="scroll-mt-20 pt-12 border-t border-border">
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold text-text-primary mb-2 font-mono">Agent Registry</h3>
+              <p className="text-xs text-text-tertiary mb-4">Register external, org-owned providers that group existing capabilities and are invoked through governance. An invocation routes through the existing capability runtime (auth, timeout, retry, request/response mapping, SSRF defense), the guard, and the action ledger; the registry never reimplements HTTP. Risk derives from risk_class + budget + capability metadata via the existing risk map and predictive risk. x402 and auth metadata are recorded; no payment settlement is performed.</p>
+              <MethodEntry
+                id="registerAgent"
+                signature="POST /api/agents/registry"
+                description="Register an external provider. GET /api/agents/registry lists them; GET/PATCH /api/agents/registry/:id read and update one."
+                example={
+                  <CodeBlock title="Register + group a capability">
+{`const { registered_agent } = await claw.registerAgent({ name: 'Pricing API', endpoint: 'https://pricing.example.com', auth_type: 'bearer', risk_class: 'high', default_budget_usd: 5 });
+await claw.addAgentCapability(registered_agent.entry_id, 'cap_123');`}
+                  </CodeBlock>
+                }
+              />
+              <MethodEntry
+                id="invokeRegisteredAgent"
+                signature="POST /api/agents/invoke"
+                description="Invoke a capability through a registered agent, governed end to end by the existing capability runtime + guard + action ledger. Returns 403 when guard blocks, 202 when approval is required, and records a thin invocation referencing the resulting action_id."
+                example={
+                  <CodeBlock title="Governed invocation">
+{`const out = await claw.invokeRegisteredAgent({
+  registered_agent_id: registered_agent.entry_id,
+  capability_id: 'cap_123',
+  agent_id: 'agent-1',
+  payload: { q: 'sku-9' }
+});
+// out.success, out.action_id, out.risk_score, out.result`}
+                  </CodeBlock>
+                }
+              />
+            </div>
+          </section>
+
           <section id="code-sessions" className="scroll-mt-20 pt-12 border-t border-border">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-8 h-8 rounded-lg bg-brand-subtle flex items-center justify-center">

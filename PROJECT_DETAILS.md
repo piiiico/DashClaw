@@ -25,7 +25,7 @@ Generated inventories remain authoritative for generated facts:
 | SDK parity by domain | `docs/sdk-parity.md` |
 | Durable execution finality spec | `docs/architecture/durable-execution-finality.md` |
 
-As of this verification, generated API inventory reports **271 routes**: **46 stable**, **24 beta**, **201 experimental**.
+As of this verification, generated API inventory reports **284 routes**: **47 stable**, **24 beta**, **213 experimental**.
 
 ## Product boundary
 
@@ -106,6 +106,8 @@ These modules consume core runtime data and add operator value without changing 
 |:---|:---|:---|
 | Workflows | `/api/workflows/templates/*` | Governed reusable workflow templates, launch, execute, runs, resume, and cancel. |
 | Capabilities | `/api/capabilities/*` | Governed HTTP capability registry, access rules, health, test, and invoke. |
+| Agent Reputation | `/api/reputation/*` | Per-agent trust vectors (time-decayed Bayesian) computed from governed decisions, with events, Ed25519-signed receipts, verify, and a leaderboard. |
+| Agent Registry | `/api/agents/registry/*`, `/api/agents/invoke` | External, org-owned delegatable providers that group capabilities; invocations route through the existing capability runtime + guard + action ledger. |
 | Knowledge | `/api/knowledge/collections/*` | Collection metadata, item ingestion, embedding, sync, and semantic search. |
 | Model strategies | `/api/model-strategies/*` | Provider/model routing, fallback chains, BYOK credentials, budgets, and completions. |
 | Artifacts | `/api/artifacts/*` | Durable artifacts linked to actions and workflow steps, plus evidence bundles. |
