@@ -575,7 +575,7 @@ export default function LearningDashboard() {
                       <span>Cost {metric.deltas.cost_delta_estimate > 0 ? '+' : ''}${Number(metric.deltas.cost_delta_estimate).toFixed(2)}</span>
                     )}
                     {metric.outcomes && (
-                      <span>Applied {metric.outcomes.applied ?? 0} vs baseline {metric.outcomes.baseline ?? 0}</span>
+                      <span>Applied {metric.outcomes.applied?.total ?? 0} vs baseline {metric.outcomes.baseline?.total ?? 0}</span>
                     )}
                   </div>
                 </div>
