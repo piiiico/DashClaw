@@ -2070,6 +2070,66 @@ class DashClaw:
             body["declared_goal"] = declared_goal
         return self._request("/api/agents/invoke", "POST", json=body)
 
+    # x402 spend governance -------------------------------------------------
+
+    def list_providers(self, status=None):
+        """List registered x402 providers (org-scoped)."""
+        params = {}
+        if status is not None:
+            params["status"] = status
+        return self._request("/api/x402/providers", "GET", params=params)
+
+    def create_provider(self, name, **kwargs):
+        """Register a paid x402 provider."""
+        return self._request("/api/x402/providers", "POST", json={"name": name, **kwargs})
+
+    def get_provider(self, provider_id):
+        """Get a provider's detail + endpoints."""
+        return self._request(f"/api/x402/providers/{provider_id}", "GET")
+
+    def update_provider(self, provider_id, **patch):
+        """Update a provider."""
+        return self._request(f"/api/x402/providers/{provider_id}", "PATCH", json=patch)
+
+    def list_provider_endpoints(self, provider_id):
+        """List a provider's endpoints."""
+        return self._request(f"/api/x402/providers/{provider_id}/endpoints", "GET")
+
+    def create_provider_endpoint(self, provider_id, name, **kwargs):
+        """Add an endpoint to a provider."""
+        return self._request(
+            f"/api/x402/providers/{provider_id}/endpoints", "POST", json={"name": name, **kwargs}
+        )
+
+    def record_purchase(
+        self,
+        agent_id,
+        provider,
+        declared_goal,
+        purchase_reason,
+        context_gap,
+        expected_value,
+        **kwargs,
+    ):
+        """Govern + record a paid acquisition. Branch on action['status']."""
+        body = {
+            "agent_id": agent_id,
+            "provider": provider,
+            "declared_goal": declared_goal,
+            "purchase_reason": purchase_reason,
+            "context_gap": context_gap,
+            "expected_value": expected_value,
+            **kwargs,
+        }
+        return self._request("/api/x402/purchases", "POST", json=body)
+
+    def list_purchases(self, provider_id=None):
+        """List governed purchases (org-scoped)."""
+        params = {}
+        if provider_id is not None:
+            params["provider_id"] = provider_id
+        return self._request("/api/x402/purchases", "GET", params=params)
+
 
 # Backward compatibility alias (Legacy)
 OpenClawAgent = DashClaw
