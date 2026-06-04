@@ -29,6 +29,13 @@ import { agentExistsInOrg } from '../../lib/repositories/agents.repository.js';
 import { randomUUID } from 'node:crypto';
 
 const VALID_TYPES = ['action', 'info', 'lesson', 'question', 'status'];
+// Reserved sender ids for the human operator / workspace itself. These are not
+// agents, so they never appear in agent_presence/identities/etc., but they are
+// legitimate same-org senders — the request is already scoped to the caller's
+// own org via x-org-id (getOrgId), so allowing them is not a cross-tenant
+// spoofing vector. The GET/PATCH paths already treat 'dashboard' as a
+// first-class reader identity; this keeps the write path consistent.
+const HUMAN_SENDER_IDS = new Set(['dashboard']);
 const ALLOWED_MIME_TYPES = [
   'image/png', 'image/jpeg', 'image/gif', 'image/webp',
   'application/pdf', 'text/plain', 'text/markdown', 'text/csv', 'application/json',
@@ -169,7 +176,7 @@ export async function POST(request) {
     // org before accepting the message. Without this gate a caller with a
     // valid API key could spoof a message as originating from an agent in
     // a different org, corrupting the ledger's attribution trail.
-    const fromOk = await agentExistsInOrg(sql, orgId, from_agent_id);
+    const fromOk = HUMAN_SENDER_IDS.has(from_agent_id) || await agentExistsInOrg(sql, orgId, from_agent_id);
     if (!fromOk) {
       return NextResponse.json({ error: 'from_agent_id not found in this org' }, { status: 403 });
     }
