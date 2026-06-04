@@ -13,7 +13,9 @@ Through 3.x the platform and the SDKs versioned independently, which is why olde
 
 ## [Unreleased]
 
-> Platform-only bug fixes deployed continuously to Vercel after the 4.0.1 release — **no SDK code changed**, so the published `dashclaw` packages remain correct at 4.0.1. Cut these as **4.0.2** when ready (`npm run version:set 4.0.2` && `npm install` && `npm run release:sdks`), per the unified-version model.
+## [4.0.2] — 2026-06-04
+
+> Platform fixes + features after 4.0.1 (out-of-box governance hooks, team-invite security, secret/prompt-injection auto-scan, Policy Coach recorder toggle, live Decisions ledger, dashboard/sessions/drift/quality fixes). The core `dashclaw` SDK code is unchanged, but both SDK packages republish at 4.0.2 per the unified-version model. The `dashclaw` plugin bundle (2.14.1) and `@dashclaw/openclaw-plugin` (1.2.6) version independently.
 
 ### Fixed
 
