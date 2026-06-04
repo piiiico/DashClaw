@@ -120,6 +120,16 @@ This adds a single `Stop` entry to `~/.claude/settings.json` pointing at this re
 
 Requires `DASHCLAW_CODE_SESSIONS_ENABLED=1` in this repo's `.env.local`.
 
+### Global governance across every project (out-of-the-box, incl. Docker)
+
+Project-level `.claude/settings.json` hooks only load **after** you accept Claude Code's "Do you trust the files in this folder?" prompt — so in a fresh clone, a Docker container, or a headless run they silently never fire (a user-level Stop hook *will* still fire, which is the classic "Stop ran but Pre/PostToolUse didn't" symptom). To govern **every** project with no per-folder trust step, install the full set at the user level:
+
+```bash
+node scripts/install-hooks.mjs --global --governance   # add --dry-run to preview, --uninstall to remove
+```
+
+This merges `PreToolUse` + `PostToolUse` + `Stop` into `~/.claude/settings.json`, pointing at this repo's `hooks/*.py` by absolute path. User-level hooks are **not** gated by folder trust, so they fire out of the box — including in Docker/headless. **No secret is written**: the hooks read `DASHCLAW_BASE_URL` (or `DASHCLAW_URL`) + `DASHCLAW_API_KEY` from the environment (or this repo's `.env.local`) at runtime, and `git pull` upgrades them automatically.
+
 ### Manual install
 
 ```bash
@@ -174,7 +184,9 @@ The Stop hook also auto-closes any action still in `status='running'` at turn en
 
 ## Common setup failures
 
-- **Hook does nothing / no `[DashClaw]` output.** The hooks read `DASHCLAW_BASE_URL`, not `DASHCLAW_URL` (the MCP server uses `DASHCLAW_URL`). If you only set `DASHCLAW_URL`, the hook exits silently and governs nothing. Set both if you run both.
+- **Plugin installed but nothing is governed.** `claude plugin install dashclaw` ships MCP tools + skills **only** — not these hooks (they're Python files needing Python on PATH, so they're intentionally not bundled). Install the governance hooks separately: `node scripts/install-hooks.mjs` (per-project) or `--global --governance` (user-level, fires everywhere). "Install the plugin" ≠ "install governance."
+- **Hooks don't fire in a fresh clone / Docker / headless run.** Claude Code's **Folder Trust** gate prevents a project `.claude/settings.json` (and its hooks) from loading until you accept the workspace-trust prompt for that folder. A user-level `~/.claude` hook (e.g. the global Stop hook) still fires — hence "Stop ran but Pre/PostToolUse didn't." Fix: accept the trust prompt and restart the session, **or** install at the user level with `node scripts/install-hooks.mjs --global --governance` (no trust gate).
+- **Hook does nothing / no `[DashClaw]` output.** The hooks read `DASHCLAW_BASE_URL` (they now also accept `DASHCLAW_URL` as a fallback) plus `DASHCLAW_API_KEY`. If **exactly one** is set, PreToolUse prints a one-line `half-configured` warning naming the missing var; if **both** are unset it stays silent by design (non-DashClaw users see nothing).
 - **Every request 401s with "Invalid or missing API key".** The instance DB is on an old schema. Run `npm run db:migrate` on the instance to apply the pending schema.
 - **Hook warns `[Demo mode]`.** `DASHCLAW_BASE_URL` points at the demo deployment. Repoint it at your own instance.
 

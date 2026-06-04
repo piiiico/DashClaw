@@ -10,6 +10,7 @@
 - [Error: redirect_uri Not Associated](#error-redirect_uri-not-associated)
 - [First User Not Admin](#first-user-not-admin)
 - [Actions Not Appearing in Dashboard](#actions-not-appearing-in-dashboard)
+- [Hooks Don't Fire (Fresh / Docker / Out-of-Box)](#hooks-dont-fire-fresh--docker--out-of-box)
 - [Blocked Actions Not Audited](#blocked-actions-not-audited)
 - [Agent Pairing Fails](#agent-pairing-fails)
 - [Guard Blocks Unexpectedly](#guard-blocks-unexpectedly)
@@ -163,6 +164,7 @@ For production, replace `http://localhost:3000` with your deployed URL.
 
 ## Actions Not Appearing in Dashboard
 
+0. **Hooks never fired** (the most common cause for a Claude Code agent that recorded *nothing*): the governance hooks weren't installed (the plugin doesn't install them) or didn't load (project-settings folder-trust gate in a fresh/Docker session). See [Hooks Don't Fire](#hooks-dont-fire-fresh--docker--out-of-box).
 1. **Org mismatch**: The agent's API key must resolve to the same org as the dashboard user. Check which org the key maps to.
 2. **Route handler check**: Verify `const orgId = request.headers.get('x-org-id')` is being used to scope queries.
 3. **Demo mode confusion**: If `DASHCLAW_MODE=demo`, the dashboard shows fixture data, not real data.
@@ -171,6 +173,41 @@ For production, replace `http://localhost:3000` with your deployed URL.
    node .claude/skills/dashclaw-platform-intelligence/scripts/diagnose.mjs \
      --base-url http://localhost:3000 --api-key $DASHCLAW_API_KEY
    ```
+
+## Hooks Don't Fire (Fresh / Docker / Out-of-Box)
+
+**Symptom:** You set up DashClaw, ran an agent, and NOTHING was recorded — no PreToolUse/PostToolUse governance, no actions in the ledger — even though the hook scripts work when invoked manually. Often a global Stop hook DID fire while the project Pre/PostToolUse hooks didn't.
+
+**Two root causes — usually both at once:**
+
+1. **`claude plugin install` does NOT install governance hooks.** The marketplace plugin ships **MCP tools + skills only** — hooks are intentionally not bundled (they're Python files needing Python on PATH). The PreToolUse/PostToolUse governance hooks come from a **separate** step: `node scripts/install-hooks.mjs`. "Install the plugin" ≠ "install governance."
+
+2. **Claude Code Folder Trust gates PROJECT hooks.** A project's `.claude/settings.json` (and the hooks in it) only load **after** you accept the "Do you trust the files in this folder?" workspace-trust dialog. A fresh / Docker / headless environment never satisfies that, so project governance hooks silently never load — while **user-level** `~/.claude/settings.json` hooks (exempt from the trust gate) **do** fire. That's exactly why a global Stop hook runs but project Pre/PostToolUse don't.
+
+**Also note:** the `npx dashclaw-demo` Docker image is the web app in demo mode + a *scripted* SDK agent (`scripts/demo-agent.mjs`, agent_id `pipeline-agent`) — NOT a Claude Code harness, so it never exercises hooks regardless of settings.
+
+**Fix — install at the USER level (no trust gate; fires in every project incl. Docker):**
+
+```bash
+# The repo must be present in the environment (hooks are Python; needs python3 + node).
+export DASHCLAW_BASE_URL="https://your-instance"   # the hooks read this (DASHCLAW_URL also works)
+export DASHCLAW_API_KEY="oc_live_..."
+node scripts/install-hooks.mjs --global --governance   # full Pre/Post/Stop → ~/.claude/settings.json, NO secret written
+# undo with: node scripts/install-hooks.mjs --global --governance --uninstall
+```
+
+Then start a **fresh** Claude Code session (so it reads `~/.claude/settings.json`) and run a tool. Verify at `<instance>/decisions`.
+
+**10-second proof the hook + creds resolve (records one action under your agent_id):**
+
+```bash
+echo '{"tool_name":"Bash","tool_input":{"command":"echo hi"}}' | python3 hooks/dashclaw_pretool.py; echo "exit=$?"
+```
+
+**Silent-config traps:**
+- The hooks read `DASHCLAW_BASE_URL`; the MCP server reads `DASHCLAW_URL`. They now accept **either** name, but if your build predates that, setting only `DASHCLAW_URL` left the hooks silently dead.
+- If **exactly one** of base-url / api-key is set, PreToolUse prints `[DashClaw] ⚠ Governance hook is half-configured — <VAR> is not set…` instead of exiting invisibly. If **both** are unset the hook stays silent by design (non-DashClaw users see nothing).
+- Alternative to user-level install: accept the folder-trust prompt for the project (`claude` → "trust this folder" → restart) so the project `.claude/settings.json` hooks from `node scripts/install-hooks.mjs` load.
 
 ## Blocked Actions Not Audited
 
@@ -346,6 +383,8 @@ That re-emits `shape.json`, `last-snapshot.json`, doctor check modules, the MCP 
 9. **Agent signatures need canonical JSON.** Key ordering matters when signing payloads.
 
 10. **Rate limiting is per-IP.** Multiple agents on the same machine share a rate limit bucket.
+
+11. **Plugin ≠ hooks, and project hooks need folder-trust.** `claude plugin install dashclaw` ships MCP + skills only; governance hooks are a separate `node scripts/install-hooks.mjs` step. Project `.claude/settings.json` hooks won't load in a fresh/Docker session until you accept Claude Code's folder-trust prompt — use `--global --governance` to install at the user level and skip the gate. See [Hooks Don't Fire](#hooks-dont-fire-fresh--docker--out-of-box).
 
 ## General Diagnostic Approach
 

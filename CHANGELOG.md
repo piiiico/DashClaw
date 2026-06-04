@@ -17,6 +17,14 @@ Through 3.x the platform and the SDKs versioned independently, which is why olde
 
 ### Fixed
 
+- **Claude Code governance hooks didn't fire out-of-the-box (fresh / Docker / headless).** Two compounding causes: (1) `claude plugin install dashclaw` ships MCP + skills only — the Pre/PostToolUse governance hooks are a separate `install-hooks.mjs` step (plugin ≠ hooks); (2) a project `.claude/settings.json` is gated by Claude Code's folder-trust prompt, so in a fresh/Docker session its hooks silently never load while a user-level `~/.claude` Stop hook still fires ("Stop ran but Pre/PostToolUse didn't"). Fix: new `install-hooks.mjs --global --governance` installs the full set at the user level (no trust gate; no secret written). Hooks now also accept `DASHCLAW_URL` as a fallback for `DASHCLAW_BASE_URL`, and PreToolUse logs a one-line breadcrumb when half-configured instead of exiting invisibly. Documented in `hooks/README.md`, the `/guides/claude-code` page, the platform-intelligence skill troubleshooting reference, and the plugin README.
+- **🔒 Team-invite security hole.** An invite link could be consumed by a different-email account, and any OAuth login dropped a new user straight into the shared `org_default` workspace. Restored an email-matched `/api/invite/[token]` accept route (rejects link-only/no-email invites; atomic consume), required an email on invite creation, and isolated new non-first logins into their own workspace — joining a real workspace now only happens via an email-matched invite.
+- **Dashboard default layout clipped widgets.** The grid renders all 13 cards but the default only positioned 10 (projects/learning/integrations were auto-placed tiny); all 13 are now sized to their content, card bodies scroll instead of silently clipping, and the layout version bump pushes the new default to existing users.
+- **Capabilities "Run test" showed an opaque "fetch failed".** Now surfaces the real cause (e.g. `(ENOTFOUND)`) and the SSRF-pinned dispatcher fails over across all validated IPs.
+- **Messages: human operator couldn't reply** ("from_agent_id not found in this org") — the reserved `dashboard` sender is now allowed past the anti-spoof gate.
+- **Agent Sessions stuck "Spawning".** Sessions start in `running`; terminal statuses (completed/cancelled/closed) now render and roll up under the Finished filter.
+- **Drift "Run detection" was a silent no-op.** It now reports results (or explains an empty result) and the empty state is honest about needing baseline data.
+- **Quality sidebar item didn't highlight on `/scoring`** and the page title mismatched — sidebar now points at `/scoring` and the page is titled "Quality".
 - **`/learning` page crash (React #31).** The recommendation-metrics row rendered `metric.outcomes.applied` / `.baseline` (summary objects) directly in JSX — "objects are not valid as a React child" — crashing the page for any org with recommendation-outcome data. Renders the scalar `.total` now.
 - **`/api/learning/suggestions` 500.** `generatePolicySuggestions` joined a table named `actions`; the table is `action_records` (`relation "actions" does not exist`). The suggestions feature never worked.
 - **Scoring auto-calibrate 500.** `scoringProfiles.autoCalibrate` selected nonexistent `prompt_tokens` / `completion_tokens` from `action_records` (real columns: `tokens_in` / `tokens_out`).
@@ -25,7 +33,16 @@ Through 3.x the platform and the SDKs versioned independently, which is why olde
 
 ### Added
 
+- **Live Decisions ledger.** The ledger now subscribes to the same SSE stream Activity uses and refreshes in real time (no manual Refresh).
+- **Policy Coach recorder toggle.** A UI control on `/policy-coach` turns the behavior recorder on/off with an optional auto-stop window (persisted as org settings; the local hook honors it, env var still overrides). The "Recorder" tile now reflects configured state, not the server process env.
+- **Auto-scan secrets at guard time.** `/api/guard` scans outbound `content` for secrets — advisory `secret_scan` in the response by default (never the raw secret), hard-block when the org sets `DASHCLAW_AUTOSCAN_BLOCK`; the PreToolUse hook forwards Write/Edit content and surfaces the warning.
+- **Skill scanner upload.** Scan a skill by uploading a `.zip`, a folder, or multiple files (unzipped in-browser via `fflate`) instead of pasting each file.
+- **`install-hooks.mjs --global --governance`** — user-level full-governance install (see Fixed above).
 - **App-level error boundaries** (`app/error.js`, `app/global-error.js`). The app had none, so any render error became an opaque browser "This page couldn't load" with no diagnostics. Now an on-brand surface with the server `digest` (and the stack logged to the console). This is what made the `/learning` client error debuggable.
+
+### Changed
+
+- **"My Agent" → "Agent Summary"** (sidebar + page) — it was never scoped to your own agent; reframed as the plain-English daily recap with a cross-link to the Activity stream. Sidebar "Sessions" relabeled **"Agent Sessions"** to match its page title and be findable. Secret Rotation page clarified as a rotation reminder (it never stores key values).
 
 ### Removed
 

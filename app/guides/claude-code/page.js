@@ -117,6 +117,11 @@ DISCORD_APPROVER_ORG_ID=<your-org-id>
       codeBody: `# From the DashClaw repo root:
 npm run hooks:install
 
+# Govern EVERY project, fires out-of-the-box (incl. fresh clones / Docker /
+# headless): installs into ~/.claude/settings.json, which Claude Code does NOT
+# gate behind the "trust this folder?" prompt the way a project file is.
+node scripts/install-hooks.mjs --global --governance
+
 # Or from any other project, pointing at a checked-out DashClaw clone:
 node /path/to/DashClaw/scripts/install-hooks.mjs --target=.
 
@@ -130,7 +135,7 @@ cp -r hooks/dashclaw_agent_intel .claude/hooks/`,
     {
       number: 4,
       title: 'Set environment variables',
-      summary: 'Claude Code reads these from the shell or a .env file in the project root. DASHCLAW_GUARD_UNAVAILABLE_POLICY defaults to block, which fails closed if the guard is unreachable after three retry attempts. Set it to warn for development if you would rather proceed with a stderr warning when the guard is down.',
+      summary: 'Claude Code reads these from the shell or a .env file in the project root. The hooks accept DASHCLAW_URL as a fallback for DASHCLAW_BASE_URL (the MCP server uses DASHCLAW_URL) — set either. If only one of the URL/key is present, PreToolUse prints a one-line "half-configured" warning instead of failing silently. DASHCLAW_GUARD_UNAVAILABLE_POLICY defaults to block, which fails closed if the guard is unreachable after three retry attempts. Set it to warn for development if you would rather proceed with a stderr warning when the guard is down.',
       codeTitle: '.env',
       codeBody: `DASHCLAW_BASE_URL=${baseUrl}
 DASHCLAW_API_KEY=oc_live_...
@@ -145,6 +150,8 @@ DASHCLAW_GUARD_TIMEOUT=5`,
         'Merge this into your project\'s .claude/settings.json (or ~/.claude/settings.json for global).',
       codeTitle: '.claude/settings.json',
       codeBody: hookSettingsJson,
+      note:
+        'Heads-up: a PROJECT .claude/settings.json only loads after you accept Claude Code\'s "trust this folder?" prompt. In a fresh clone, a Docker container, or a headless run, project hooks silently won\'t fire (a global ~/.claude Stop hook still will — the classic "Stop ran but Pre/PostToolUse didn\'t"). Put the hooks in ~/.claude/settings.json (or run `install-hooks.mjs --global --governance`) to fire out of the box with no trust step.',
     },
     {
       number: 6,

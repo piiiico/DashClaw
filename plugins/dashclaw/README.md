@@ -70,20 +70,26 @@ A fast health check is the `dashclaw_capabilities_list` tool, the lightest way t
 
 To enforce guard checks on Bash, Edit, Write, MultiEdit, sub-agent spawns, and MCP tool calls (mcp__*) at the tool layer:
 
-The hook installer ships in the DashClaw repo, **not** the marketplace package — clone the repo first, then point the installer at your project:
+Installing the plugin gives you MCP tools + skills only — **not** the tool-layer hooks (they're Python files needing Python on PATH, so they're intentionally not bundled). The hook installer ships in the DashClaw repo — clone it first, then install:
 
 ```bash
 git clone https://github.com/ucsandman/DashClaw.git
+
+# Per project (writes to that project's .claude/settings.json):
 node /path/to/DashClaw/scripts/install-hooks.mjs --target=/path/to/your/project
+
+# OR govern EVERY project and fire out-of-the-box (incl. fresh clones / Docker /
+# headless) — installs into ~/.claude/settings.json with no secret written:
+node /path/to/DashClaw/scripts/install-hooks.mjs --global --governance
 ```
 
-These write to `.claude/settings.json` and require Python on PATH, plus `DASHCLAW_BASE_URL` + `DASHCLAW_API_KEY` in the shell (note: `DASHCLAW_BASE_URL`, **not** `DASHCLAW_URL`).
+These require Python on PATH plus `DASHCLAW_BASE_URL` (or `DASHCLAW_URL`) + `DASHCLAW_API_KEY` in the shell. **Folder-trust note:** a project `.claude/settings.json` only loads after you accept Claude Code's "trust this folder?" prompt, so in a fresh/Docker/headless session the per-project hooks silently won't fire — use `--global --governance` (user-level, no trust gate) to avoid that.
 
 ## Troubleshooting
 
 - **MCP tools listed but every call returns 401.** Your instance is on a stale schema. Run `npm run db:migrate` against it, then retry.
 - **Tools don't appear after install.** Run `/reload-plugins`, then `/mcp`, and confirm `DASHCLAW_URL` + `DASHCLAW_API_KEY` are set in the environment the MCP server launches from.
-- **MCP works but the hooks govern nothing.** The hooks read `DASHCLAW_BASE_URL`, not `DASHCLAW_URL` — set both (same value).
+- **MCP works but the hooks govern nothing.** Two usual causes: (1) the hooks were never installed — the plugin ships MCP + skills only, run `install-hooks.mjs` separately; (2) in a fresh/Docker session a project `.claude/settings.json` hasn't passed Claude Code's folder-trust gate, so its hooks don't load — install with `--global --governance` (user-level). The hooks read `DASHCLAW_BASE_URL` (or `DASHCLAW_URL` as a fallback) + `DASHCLAW_API_KEY`.
 - **Guard always allows, or you see a demo-mode warning.** `DASHCLAW_BASE_URL` points at the demo instance. Set it to your real instance.
 - **Fastest connectivity check.** Call the `dashclaw_capabilities_list` tool — the lightest way to confirm the connection is up.
 
