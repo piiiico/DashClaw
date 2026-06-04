@@ -147,7 +147,17 @@ export default function MyAgentPage() {
     counts.denied > 0 ? 'text-status-warning' : 'text-primary';
 
   return (
-    <PageLayout title="My Agent" breadcrumbs={['Command', 'My Agent']}>
+    <PageLayout
+      title="Agent Summary"
+      subtitle="A plain-English recap of what your agent did. For the raw, real-time event feed, open Activity."
+      breadcrumbs={['Command', 'Agent Summary']}
+      actions={
+        <Link href="/activity" className="flex items-center gap-1.5 text-sm text-secondary transition-colors hover:text-white">
+          <Activity size={14} aria-hidden="true" />
+          Live feed
+        </Link>
+      }
+    >
       <div className="mx-auto max-w-4xl space-y-6">
         {/* Narrative hero */}
         <Card hover={false}>
@@ -298,7 +308,7 @@ export default function MyAgentPage() {
 
 function InstallPromptHero() {
   return (
-    <PageLayout title="My Agent" breadcrumbs={['Command', 'My Agent']}>
+    <PageLayout title="Agent Summary" breadcrumbs={['Command', 'Agent Summary']}>
       <div className="mx-auto max-w-2xl">
         <Card hover={false}>
           <CardContent className="py-10 text-center">

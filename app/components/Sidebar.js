@@ -32,7 +32,7 @@ const navGroups = [
     label: 'Observe',
     items: [
       { href: '/security', icon: ShieldAlert, label: 'Security' },
-      { href: '/my-agent', icon: Bot, label: 'My Agent' },
+      { href: '/my-agent', icon: Bot, label: 'Agent Summary' },
       { href: '/code-sessions', icon: Terminal, label: 'Code Sessions' },
       { href: '/analytics', icon: TrendingUp, label: 'Analytics' },
       { href: '/activity', icon: Activity, label: 'Activity' },
