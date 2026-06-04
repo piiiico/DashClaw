@@ -58,7 +58,7 @@ const navGroups = [
     headerIcon: FlaskConical,
     items: [
       { href: '/assumptions', icon: Microscope, label: 'Assumptions' },
-      { href: '/sessions', icon: Activity, label: 'Sessions' },
+      { href: '/sessions', icon: Activity, label: 'Agent Sessions' },
       { href: '/drift', icon: TrendingUp, label: 'Drift' },
       { href: '/learning', icon: GraduationCap, label: 'Learning' },
       { href: '/scoring', icon: BarChart3, label: 'Quality' },

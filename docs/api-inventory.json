@@ -47,10 +47,10 @@
     ]
   },
   "summary": {
-    "total_routes": 272,
+    "total_routes": 273,
     "stable_routes": 47,
     "beta_routes": 24,
-    "experimental_routes": 201
+    "experimental_routes": 202
   },
   "routes": [
     {
@@ -773,6 +773,16 @@
       "maturity": "beta",
       "matched_prefix": "/api/auth",
       "file": "app/api/auth/local/route.js"
+    },
+    {
+      "path": "/api/behavior/recorder",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "/api/behavior",
+      "file": "app/api/behavior/recorder/route.js"
     },
     {
       "path": "/api/behavior/samples",
