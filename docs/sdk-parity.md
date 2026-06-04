@@ -61,7 +61,8 @@ The canonical Node SDK already includes the core runtime and a meaningful portio
 - canonical `execution.capabilities.test(...)`,
 - canonical `execution.capabilities.getHealth(...)`,
 - canonical `execution.capabilities.listHealth(...)`,
-- canonical `execution.capabilities.getHistory(...)`.
+- canonical `execution.capabilities.getHistory(...)`,
+- x402 spend governance: `listProviders`, `createProvider`, `getProvider`, `updateProvider`, `listProviderEndpoints`, `createProviderEndpoint`, `recordPurchase`, `listPurchases`, `recordPurchaseResult` (Node-only; Python uses the artifacts endpoint directly).
 
 This is the surface new SDK-facing product work should target first.
 
@@ -119,6 +120,7 @@ That is acceptable temporarily, but it should not define future product directio
 | Risk templates | Yes | No | Yes | Canonical in main SDK |
 | Evaluations (scorers / scores / runs) | Yes | Limited overlap | Yes | Canonical in main SDK |
 | Agent registry (`/api/agents/registry`, `/api/agents/invoke`) | Yes | No | Yes | Canonical in both SDKs: `registerAgent`/`listRegisteredAgents`/`getRegisteredAgent`/`updateRegisteredAgent`/`addAgentCapability`/`listAgentCapabilities`/`invokeRegisteredAgent` (+ snake_case Python). Registered agents are external, org-owned, delegatable providers that group capabilities; `invokeRegisteredAgent` routes through the existing capability runtime + guard + action ledger (no reimplemented HTTP). x402/auth metadata only, no settlement |
+| x402 spend governance (`/api/x402/providers`, `/api/x402/purchases`) | Yes (9 methods) | No | Yes (8 methods) | Canonical in both SDKs. 8 methods at route-contract parity: `listProviders`/`createProvider`/`getProvider`/`updateProvider`/`listProviderEndpoints`/`createProviderEndpoint`/`recordPurchase`/`listPurchases` (+ snake_case Python). **Node-only asymmetry:** `recordPurchaseResult` (9th Node method) is a convenience wrapper over `POST /api/artifacts` — Python callers post to that endpoint directly with `artifact_type='x402_purchase_result'`. DashClaw never holds a wallet; agents execute x402 calls themselves. |
 | Agent reputation (`/api/reputation/*`) | Yes | No | Yes | Canonical in both SDKs at route-contract parity: `getAgentReputation`/`listAgentReputationEvents`/`recomputeAgentReputation`/`getAgentReputationReceipt`/`verifyReputationReceipt` (Node) and the `get_agent_reputation`/`list_agent_reputation_events`/`recompute_agent_reputation`/`get_agent_reputation_receipt`/`verify_reputation_receipt` (Python). Time-decayed Bayesian vector; `risk_score` wraps the existing 0-100 risk; Ed25519-signed receipts re-verify against the instance JWKS |
 | Prompt management (templates / versions / render) | Yes | Limited overlap | Yes | Canonical in main SDK — full Prompt Library surface (template CRUD, version CRUD + `activatePromptVersion`, `renderPrompt`, `getPromptStats`, `listPromptRuns`) |
 | Learning analytics (velocity / curves / lessons / maturity) | Yes | Limited overlap | Yes | Canonical in main SDK |

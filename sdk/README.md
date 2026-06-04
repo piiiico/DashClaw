@@ -1075,6 +1075,59 @@ x402 and auth metadata are recorded on the provider (`auth_metadata`); no paymen
 
 ---
 
+## x402 Spend Governance
+
+Register x402 providers, govern individual purchases through the guard loop, and record spend for audit. The agent executes the actual x402 call itself — DashClaw records the provider, governs the purchase intent, and keeps a tamper-evident ledger of agent spend. DashClaw never holds a wallet.
+
+```js
+// Register a paid provider
+const { provider } = await claw.createProvider({
+  name: 'Exa Search',
+  category: 'research',
+  base_url: 'https://api.exa.ai',
+});
+
+// Add an endpoint to the provider
+await claw.createProviderEndpoint(provider.provider_id, {
+  name: 'Search',
+  endpoint_url: 'https://api.exa.ai/search',
+  default_price: 0.01,
+  sensitivity_level: 'low',
+});
+
+// Govern + record a purchase (call guard, then agent executes x402)
+const { action, purchase, decision } = await claw.recordPurchase({
+  agent_id: 'research-agent',
+  provider: provider.provider_id,
+  declared_goal: 'Find recent papers on quantum computing',
+  purchase_reason: 'Context gap: no local data for period 2025-01-01..2026-01-01',
+  context_gap: 'No papers in knowledge base for the requested window',
+  expected_value: 'Retrieve 10+ relevant citations',
+});
+
+if (action.status === 'pending_approval') {
+  await claw.waitForApproval(action.id);
+}
+
+// Agent executes the x402 call, then records the result
+const x402Result = { summary: 'Found 14 papers', data: { count: 14 }, url: 'https://...' };
+await claw.recordPurchaseResult(action.id, x402Result);
+```
+
+- `claw.listProviders(filters?)` -- GET /api/x402/providers
+- `claw.createProvider(data)` -- POST /api/x402/providers
+- `claw.getProvider(id)` -- GET /api/x402/providers/:id
+- `claw.updateProvider(id, patch)` -- PATCH /api/x402/providers/:id
+- `claw.listProviderEndpoints(id)` -- GET /api/x402/providers/:id/endpoints
+- `claw.createProviderEndpoint(id, data)` -- POST /api/x402/providers/:id/endpoints
+- `claw.recordPurchase(data)` -- POST /api/x402/purchases (guard-gated; returns `{ action, purchase, decision }`)
+- `claw.listPurchases(filters?)` -- GET /api/x402/purchases
+- `claw.recordPurchaseResult(actionId, result)` -- POST /api/artifacts (attaches the x402 result snapshot to the purchase action via `source_action_id`)
+
+> **Note:** `recordPurchaseResult` is Node-only. It is a convenience wrapper over `POST /api/artifacts` — Python callers post directly to that endpoint with `artifact_type: 'x402_purchase_result'` and `source_action_id` set to the `act_` id from `record_purchase`.
+
+---
+
 ## Hosted provisioning (operator surface — not an SDK method)
 
 When `DASHCLAW_HOSTED=true` the deployment exposes `/api/hosted/*` routes for one-click trial provisioning. These are operator-facing routes, not SDK methods — they produce the API key the SDK consumes.

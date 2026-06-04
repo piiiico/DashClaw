@@ -108,6 +108,7 @@ These modules consume core runtime data and add operator value without changing 
 | Capabilities | `/api/capabilities/*` | Governed HTTP capability registry, access rules, health, test, and invoke. |
 | Agent Reputation | `/api/reputation/*` | Per-agent trust vectors (time-decayed Bayesian) computed from governed decisions, with events, Ed25519-signed receipts, verify, and a leaderboard. |
 | Agent Registry | `/api/agents/registry/*`, `/api/agents/invoke` | External, org-owned delegatable providers that group capabilities; invocations route through the existing capability runtime + guard + action ledger. |
+| x402 Spend Governance | `GET/POST /api/x402/providers`, `GET/PATCH /api/x402/providers/[id]`, `GET/POST /api/x402/providers/[id]/endpoints`, `GET/POST /api/x402/purchases` | Agent-side x402 spend governance. Agents execute x402 calls themselves; DashClaw registers providers, governs purchases through the guard loop, and records spend. DashClaw never holds a wallet. |
 | Knowledge | `/api/knowledge/collections/*` | Collection metadata, item ingestion, embedding, sync, and semantic search. |
 | Model strategies | `/api/model-strategies/*` | Provider/model routing, fallback chains, BYOK credentials, budgets, and completions. |
 | Artifacts | `/api/artifacts/*` | Durable artifacts linked to actions and workflow steps, plus evidence bundles. |
@@ -211,7 +212,7 @@ DashClaw ships two Node SDK entry points and a Python SDK.
 | Legacy Node SDK | `import { DashClaw } from 'dashclaw/legacy'` from `sdk/legacy/dashclaw-v1.js` | Compatibility layer for older integrations. |
 | Python SDK | `sdk-python/dashclaw/client.py` | Broad Python surface with route-contract parity for critical domains. |
 
-The canonical Node SDK currently exposes **116 public methods** in `sdk/dashclaw.js` and the Python SDK **215** in `sdk-python/dashclaw/client.py` (both reproducible via `npm run sdk:count` — excludes the constructor and `_`-private methods). The Node surface includes:
+The canonical Node SDK currently exposes **125 public methods** in `sdk/dashclaw.js` and the Python SDK **223** in `sdk-python/dashclaw/client.py` (both reproducible via `npm run sdk:count` — excludes the constructor and `_`-private methods). The Node surface includes:
 
 - core governance: `guard`, `createAction`, `updateOutcome`, `getAction`, `approveAction`, `waitForApproval`, `recordAssumption`
 - durable finality: `reportActionOutcome`, `getActionOutcome`, `reportActionSuccess`, `reportActionFailure`, `reportActionPartial`, `deriveIdempotencyKey`
@@ -220,6 +221,7 @@ The canonical Node SDK currently exposes **116 public methods** in `sdk/dashclaw
 - learning ledger: `recordDecision` (auto-injects `agent_id`) and `getLearningRecommendations`
 - side-effect-free dry-runs: `simulatePolicy` (replays a proposed policy against recent historical actions) and `previewScorer` (validates a scorer config without writing an `eval_scores` row)
 - workflow templates, model strategies, knowledge collections, and capability registry/runtime methods
+- x402 spend governance: `listProviders`, `createProvider`, `getProvider`, `updateProvider`, `listProviderEndpoints`, `createProviderEndpoint`, `recordPurchase`, `listPurchases`, `recordPurchaseResult`
 
 Use `docs/sdk-parity.md` for domain-level parity and consolidation status.
 

@@ -170,6 +170,7 @@ const navItems = [
   { href: '#agent-profile', label: 'Agent Profile', indent: true },
   { href: '#agent-reputation', label: 'Agent Reputation' },
   { href: '#agent-registry', label: 'Agent Registry' },
+  { href: '#x402-spend-governance', label: 'x402 Spend Governance' },
   { href: '#code-sessions', label: 'Code Sessions' },
   { href: '#code-sessions-ingest', label: 'Ingest transcripts', indent: true },
   { href: '#code-sessions-optimal-files', label: 'Optimal Files', indent: true },
@@ -2304,6 +2305,121 @@ await claw.addAgentCapability(registered_agent.entry_id, 'cap_123');`}
   payload: { q: 'sku-9' }
 });
 // out.success, out.action_id, out.risk_score, out.result`}
+                  </CodeBlock>
+                }
+              />
+            </div>
+          </section>
+
+          <section id="x402-spend-governance" className="scroll-mt-20 pt-12 border-t border-border">
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold text-text-primary mb-2 font-mono">x402 Spend Governance</h3>
+              <p className="text-xs text-text-tertiary mb-4">Register x402 providers, govern individual purchases through the guard loop, and record spend for audit. The agent executes the actual x402 call itself — DashClaw registers providers, governs purchase intent, and keeps a tamper-evident ledger. DashClaw never holds a wallet.</p>
+              <MethodEntry
+                id="listProviders"
+                signature="GET /api/x402/providers"
+                description="List registered x402 providers (org-scoped). Filter by status."
+                example={<CodeBlock title="List providers">{`const { providers } = await claw.listProviders({ status: 'active' });`}</CodeBlock>}
+              />
+              <MethodEntry
+                id="createProvider"
+                signature="POST /api/x402/providers"
+                description="Register a paid x402 provider. Supply name, category, and optional base_url, description, pricing_model, or metadata."
+                example={
+                  <CodeBlock title="Register a provider">
+{`const { provider } = await claw.createProvider({
+  name: 'Exa Search',
+  category: 'research',
+  base_url: 'https://api.exa.ai',
+});`}
+                  </CodeBlock>
+                }
+              />
+              <MethodEntry
+                id="getProvider"
+                signature="GET /api/x402/providers/:id"
+                description="Provider detail including registered endpoints."
+                example={<CodeBlock title="Fetch provider">{`const { provider } = await claw.getProvider(provider.provider_id);`}</CodeBlock>}
+              />
+              <MethodEntry
+                id="updateProvider"
+                signature="PATCH /api/x402/providers/:id"
+                description="Update a provider (name, status, pricing_model, metadata, etc.)."
+                example={<CodeBlock title="Update status">{`await claw.updateProvider(provider.provider_id, { status: 'disabled' });`}</CodeBlock>}
+              />
+              <MethodEntry
+                id="listProviderEndpoints"
+                signature="GET /api/x402/providers/:id/endpoints"
+                description="List the endpoints registered under a provider."
+                example={<CodeBlock title="List endpoints">{`const { endpoints } = await claw.listProviderEndpoints(provider.provider_id);`}</CodeBlock>}
+              />
+              <MethodEntry
+                id="createProviderEndpoint"
+                signature="POST /api/x402/providers/:id/endpoints"
+                description="Add an endpoint to a provider. Supply name, endpoint_url, and optional default_price, sensitivity_level, or metadata."
+                example={
+                  <CodeBlock title="Add an endpoint">
+{`await claw.createProviderEndpoint(provider.provider_id, {
+  name: 'Search',
+  endpoint_url: 'https://api.exa.ai/search',
+  default_price: 0.01,
+  sensitivity_level: 'low',
+});`}
+                  </CodeBlock>
+                }
+              />
+              <MethodEntry
+                id="recordPurchase"
+                signature="POST /api/x402/purchases"
+                description="Govern + record a paid acquisition. Routes through the guard loop. Required: agent_id, provider, declared_goal, purchase_reason, context_gap, expected_value. Returns { action, purchase, decision }; branch on action.status (running | pending_approval)."
+                params={[
+                  { name: 'agent_id', type: 'string', required: true, desc: 'Identifier of the agent making the purchase' },
+                  { name: 'provider', type: 'string', required: true, desc: 'Provider id from createProvider' },
+                  { name: 'declared_goal', type: 'string', required: true, desc: 'The agent\'s goal that requires this purchase' },
+                  { name: 'purchase_reason', type: 'string', required: true, desc: 'Why this purchase is necessary' },
+                  { name: 'context_gap', type: 'string', required: true, desc: 'What information the agent lacks locally' },
+                  { name: 'expected_value', type: 'string', required: true, desc: 'What value the agent expects to get' },
+                ]}
+                returns="{ action: { id, status }, purchase: { id }, decision: { decision, risk_score } }"
+                example={
+                  <CodeBlock title="Govern a purchase">
+{`const { action, purchase, decision } = await claw.recordPurchase({
+  agent_id: 'research-agent',
+  provider: provider.provider_id,
+  declared_goal: 'Find recent papers on quantum computing',
+  purchase_reason: 'Context gap: no local data for period 2025-01-01..2026-01-01',
+  context_gap: 'No papers in knowledge base for the requested window',
+  expected_value: 'Retrieve 10+ relevant citations',
+});
+
+if (action.status === 'pending_approval') {
+  await claw.waitForApproval(action.id);
+}
+// Agent now executes the x402 call, then records the result`}
+                  </CodeBlock>
+                }
+              />
+              <MethodEntry
+                id="listPurchases"
+                signature="GET /api/x402/purchases"
+                description="List governed purchases (org-scoped). Filter by provider_id."
+                example={<CodeBlock title="List purchases">{`const { purchases } = await claw.listPurchases({ provider_id: provider.provider_id });`}</CodeBlock>}
+              />
+              <MethodEntry
+                id="recordPurchaseResult"
+                signature="POST /api/artifacts (Node-only convenience wrapper)"
+                description="Attach the x402 result snapshot to its purchase action. Reuses the existing artifacts endpoint; links by source_action_id so the snapshot appears in that action's evidence bundle. Python callers post directly to POST /api/artifacts with artifact_type='x402_purchase_result'."
+                params={[
+                  { name: 'actionId', type: 'string', required: true, desc: 'The act_ id returned by recordPurchase' },
+                  { name: 'result', type: 'object', required: true, desc: '{ summary?, data?, url? } — snapshot of what the x402 call returned' },
+                ]}
+                example={
+                  <CodeBlock title="Record the result">
+{`await claw.recordPurchaseResult(action.id, {
+  summary: 'Found 14 papers on quantum computing',
+  data: { count: 14, citations: ['...'] },
+  url: 'https://api.research.example.com/results/...',
+});`}
                   </CodeBlock>
                 }
               />

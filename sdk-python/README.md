@@ -22,7 +22,7 @@ Python agents typically pair the SDK with one or more of these:
 
 ## Quick Start
 
-The Python SDK is the full platform SDK (215 methods). The constructor accepts both v2-compatible and v1-extended parameters.
+The Python SDK is the full platform SDK (223 methods). The constructor accepts both v2-compatible and v1-extended parameters.
 
 ### v2-compatible constructor (recommended for new agents)
 
@@ -1013,9 +1013,9 @@ integration.instrument_agent(assistant)
 
 ## API Parity
 
-This SDK provides the full DashClaw platform surface (215 methods), which is parity with the [Node.js v1 (legacy) SDK](https://github.com/ucsandman/DashClaw/tree/main/sdk/legacy).
+This SDK provides the full DashClaw platform surface (223 methods), which is parity with the [Node.js v1 (legacy) SDK](https://github.com/ucsandman/DashClaw/tree/main/sdk/legacy).
 
-The Node.js v2 SDK exposes a curated subset of **116 methods** focused on agent governance. The following Python methods are available in both the Node.js v2 SDK and this Python SDK:
+The Node.js v2 SDK exposes a curated subset of **125 methods** focused on agent governance. The following Python methods are available in both the Node.js v2 SDK and this Python SDK:
 
 | Category | Node v2 method | Python equivalent | In v2? |
 |----------|---------------|-------------------|:------:|
@@ -1307,6 +1307,57 @@ result = claw.invoke_registered_agent(agent["entry_id"], "cap_123", agent_id="ag
 | `add_agent_capability(registered_agent_id, capability_id)` | Group a capability under the agent |
 | `list_agent_capabilities(registered_agent_id)` | List grouped capabilities |
 | `invoke_registered_agent(registered_agent_id, capability_id, agent_id=None, payload=None, declared_goal=None)` | Governed invocation through the capability runtime |
+
+## x402 Spend Governance
+
+Register x402 providers, govern individual purchases through the guard loop, and record spend for audit. The agent executes the actual x402 call itself — DashClaw records the provider, governs the purchase intent, and keeps a tamper-evident ledger of agent spend. DashClaw never holds a wallet.
+
+```python
+# Register a paid provider
+provider = claw.create_provider(
+    "Exa Search",
+    category="research",
+    base_url="https://api.exa.ai",
+)["provider"]
+
+# Add an endpoint
+claw.create_provider_endpoint(
+    provider["provider_id"],
+    "Search",
+    endpoint_url="https://api.exa.ai/search",
+    default_price=0.01,
+    sensitivity_level="low",
+)
+
+# Govern + record a purchase
+result = claw.record_purchase(
+    agent_id="research-agent",
+    provider=provider["provider_id"],
+    declared_goal="Find recent papers on quantum computing",
+    purchase_reason="Context gap: no local data for 2025-01-01..2026-01-01",
+    context_gap="No papers in knowledge base for the requested window",
+    expected_value="Retrieve 10+ relevant citations",
+)
+action = result["action"]
+if action["status"] == "pending_approval":
+    claw.wait_for_approval(action["id"])
+
+# Agent executes the x402 call, then posts the result directly to /api/artifacts
+# (Python has no record_purchase_result wrapper — post directly to the artifacts endpoint)
+```
+
+| Method | Description |
+| --- | --- |
+| `list_providers(status=None)` | List registered x402 providers (org-scoped) |
+| `create_provider(name, **kwargs)` | Register a paid x402 provider |
+| `get_provider(provider_id)` | Provider detail |
+| `update_provider(provider_id, **patch)` | Update a provider |
+| `list_provider_endpoints(provider_id)` | List a provider's endpoints |
+| `create_provider_endpoint(provider_id, name, **kwargs)` | Add an endpoint to a provider |
+| `record_purchase(agent_id, provider, declared_goal, purchase_reason, context_gap, expected_value, **kwargs)` | Govern + record a paid acquisition; branch on `action['status']` |
+| `list_purchases(provider_id=None)` | List governed purchases (org-scoped) |
+
+> **Note:** There is no `record_purchase_result` in the Python SDK. To attach an x402 result snapshot to a purchase action, post directly to `POST /api/artifacts` with `artifact_type='x402_purchase_result'` and `source_action_id` set to the `act_` id from `record_purchase`. The Node SDK ships a convenience wrapper for this; Python callers use the artifacts endpoint directly.
 
 ## Hosted provisioning (operator surface — not an SDK method)
 
