@@ -26,7 +26,9 @@
           "test_capability",
           "get_capability_health",
           "list_capability_health",
-          "get_capability_history"
+          "get_capability_history",
+          "add_agent_capability",
+          "list_agent_capabilities"
         ]
       },
       "workflows": {
