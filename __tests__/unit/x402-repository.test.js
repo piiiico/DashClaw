@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   createProvider, listProviders, getProvider, updateProvider,
+  createEndpoint, listEndpoints, getEndpoint,
 } from '@/lib/repositories/x402.repository.js';
 
 // __tests__/helpers.js `createSqlMock` uses a pre-seeded taggedResponses/queryCalls
@@ -66,5 +67,32 @@ describe('x402 provider repository', () => {
     sql.mockResolvedValueOnce([]); // getProvider miss
     expect(await updateProvider(sql, 'org_1', 'prov_missing', { status: 'disabled' })).toBeNull();
     expect(sql.mock.calls).toHaveLength(1); // no second (UPDATE) query was issued
+  });
+});
+
+describe('x402 endpoint repository', () => {
+  it('createEndpoint mints a pep_ id under a provider and binds org + provider + slug', async () => {
+    sql.mockResolvedValueOnce([{ endpoint_id: 'pep_1', provider_id: 'prov_x', slug: 'search' }]);
+    const row = await createEndpoint(sql, 'org_1', 'prov_x', { name: 'Search' });
+    expect(row.endpoint_id).toBe('pep_1');
+    const call = sql.mock.calls[0];
+    expect(sqlText(call)).toContain('INSERT INTO x402_endpoints');
+    expect(call[1]).toMatch(/^pep_/);  // generated endpoint_id
+    expect(call[2]).toBe('org_1');      // org bound as a value
+    expect(call[3]).toBe('prov_x');     // provider bound as a value
+    expect(call[5]).toBe('search');     // slug derived from name
+  });
+
+  it('listEndpoints scopes by org + provider', async () => {
+    sql.mockResolvedValueOnce([{ endpoint_id: 'pep_1' }]);
+    const rows = await listEndpoints(sql, 'org_1', 'prov_x');
+    expect(rows).toHaveLength(1);
+    expect(sqlValues(sql.mock.calls[0])).toEqual(['org_1', 'prov_x']);
+  });
+
+  it('getEndpoint binds org + id and returns null when missing', async () => {
+    sql.mockResolvedValueOnce([]);
+    expect(await getEndpoint(sql, 'org_1', 'pep_missing')).toBeNull();
+    expect(sqlValues(sql.mock.calls[0])).toEqual(['org_1', 'pep_missing']);
   });
 });

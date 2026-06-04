@@ -68,3 +68,28 @@ export async function updateProvider(sql, orgId, providerId, patch = {}) {
     RETURNING *`;
   return rows[0] || null;
 }
+
+// --- Endpoints -------------------------------------------------------------
+
+export async function createEndpoint(sql, orgId, providerId, data = {}) {
+  const endpointId = genId('pep');
+  const slug = data.slug ? slugify(data.slug) : slugify(data.name || endpointId);
+  const rows = await sql`
+    INSERT INTO x402_endpoints
+      (endpoint_id, org_id, provider_id, name, slug, description, endpoint_url, category, sensitivity_level, default_price, price_unit, enabled, metadata)
+    VALUES
+      (${endpointId}, ${orgId}, ${providerId}, ${data.name || slug}, ${slug}, ${data.description || null}, ${data.endpoint_url || null},
+       ${data.category || 'research'}, ${data.sensitivity_level || 'low'}, ${data.default_price ?? null}, ${data.price_unit || 'per_call'},
+       ${data.enabled === false ? 0 : 1}, ${JSON.stringify(data.metadata || {})}::jsonb)
+    RETURNING *`;
+  return rows[0] || null;
+}
+
+export async function listEndpoints(sql, orgId, providerId) {
+  return sql`SELECT * FROM x402_endpoints WHERE org_id = ${orgId} AND provider_id = ${providerId} ORDER BY created_at DESC`;
+}
+
+export async function getEndpoint(sql, orgId, endpointId) {
+  const rows = await sql`SELECT * FROM x402_endpoints WHERE org_id = ${orgId} AND endpoint_id = ${endpointId} LIMIT 1`;
+  return rows[0] || null;
+}
