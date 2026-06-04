@@ -112,7 +112,7 @@ DISCORD_APPROVER_ORG_ID=<your-org-id>
     {
       number: 3,
       title: 'Install the hook scripts',
-      summary: 'One command copies all three governance hooks (PreToolUse, PostToolUse, Stop), the vendored intel module that powers semantic tool classification, and merges the matching settings.json blocks. Re-run after each git pull to upgrade.',
+      summary: 'Already running the DashClaw plugin (claude plugin install dashclaw@dashclaw)? The Pre/Post/Stop hooks are bundled — they fire as soon as the plugin is enabled (no trust gate), so you can skip straight to Step 4 (env vars). Otherwise, one command copies all three governance hooks plus the vendored intel module and merges the matching settings.json blocks. Re-run after each git pull to upgrade.',
       codeTitle: 'Terminal',
       codeBody: `# From the DashClaw repo root:
 npm run hooks:install

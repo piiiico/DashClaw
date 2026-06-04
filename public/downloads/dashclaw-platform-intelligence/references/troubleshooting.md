@@ -178,15 +178,19 @@ For production, replace `http://localhost:3000` with your deployed URL.
 
 **Symptom:** You set up DashClaw, ran an agent, and NOTHING was recorded — no PreToolUse/PostToolUse governance, no actions in the ledger — even though the hook scripts work when invoked manually. Often a global Stop hook DID fire while the project Pre/PostToolUse hooks didn't.
 
-**Two root causes — usually both at once:**
+**Most common causes:**
 
-1. **`claude plugin install` does NOT install governance hooks.** The marketplace plugin ships **MCP tools + skills only** — hooks are intentionally not bundled (they're Python files needing Python on PATH). The PreToolUse/PostToolUse governance hooks come from a **separate** step: `node scripts/install-hooks.mjs`. "Install the plugin" ≠ "install governance."
+1. **Hooks were never installed, or you're on an old setup.** As of plugin bundle **2.14.1** the marketplace plugin **bundles** the Pre/Post/Stop hooks — they fire as soon as the plugin is enabled (no separate step, no folder-trust gate). Older plugin versions shipped MCP + skills only, so if you installed before that — or wired the MCP server manually — run the standalone installer: `node scripts/install-hooks.mjs` (per project) or `--global --governance` (user-level).
 
-2. **Claude Code Folder Trust gates PROJECT hooks.** A project's `.claude/settings.json` (and the hooks in it) only load **after** you accept the "Do you trust the files in this folder?" workspace-trust dialog. A fresh / Docker / headless environment never satisfies that, so project governance hooks silently never load — while **user-level** `~/.claude/settings.json` hooks (exempt from the trust gate) **do** fire. That's exactly why a global Stop hook runs but project Pre/PostToolUse don't.
+2. **Bundled hooks need Python + creds.** Plugin-bundled hooks run `python "${CLAUDE_PLUGIN_ROOT}/hooks/dashclaw_pretool.py"` — they exit silently if Python isn't on PATH, or if `DASHCLAW_BASE_URL` (or `DASHCLAW_URL`) + `DASHCLAW_API_KEY` aren't in the environment Claude Code launched from.
+
+3. **Folder Trust gates the STANDALONE per-project installer (not the plugin).** If you used `install-hooks.mjs` to write a project `.claude/settings.json`, those hooks only load **after** you accept Claude Code's "trust this folder?" prompt — so in a fresh / Docker / headless session they silently never load, while a **user-level** `~/.claude/settings.json` hook still fires (the classic "Stop ran but Pre/PostToolUse didn't"). **Plugin-bundled hooks and `--global --governance` (user-level) are NOT gated by folder trust.**
 
 **Also note:** the `npx dashclaw-demo` Docker image is the web app in demo mode + a *scripted* SDK agent (`scripts/demo-agent.mjs`, agent_id `pipeline-agent`) — NOT a Claude Code harness, so it never exercises hooks regardless of settings.
 
-**Fix — install at the USER level (no trust gate; fires in every project incl. Docker):**
+**Simplest fix — install/enable the DashClaw plugin** (`claude plugin install dashclaw@dashclaw`): the hooks are bundled and fire on enable with no trust gate. Then just set Python + `DASHCLAW_BASE_URL`/`DASHCLAW_API_KEY` in the env.
+
+**Fix without the plugin — install at the USER level (no trust gate; fires in every project incl. Docker):**
 
 ```bash
 # The repo must be present in the environment (hooks are Python; needs python3 + node).
