@@ -10,13 +10,13 @@ This is a dual target plugin: the same source installs into both Claude Code and
 - **dashclaw-platform-intelligence** skill: a DashClaw platform expert for integration and troubleshooting, covering the API surface, route inventory, and playbooks.
 - **MCP server** (`@dashclaw/mcp-server`): the tool surface for guard checks, governed capability invocation, action recording, approval waits, policy discovery, and session start / end.
 
-Hooks (PreToolUse / PostToolUse / Stop guards over Bash, Edit, Write, MultiEdit, sub-agent spawns (Agent/Task), and MCP tool calls (mcp__*) — so Gmail/Stripe/Calendar MCP sends are governed too) are intentionally not bundled, since they are filesystem artifacts that need Python on PATH. Install them separately (see below).
+- **Governance hooks** (PreToolUse / PostToolUse / Stop guards over Bash, Edit, Write, MultiEdit, sub-agent spawns (Agent/Task), and MCP tool calls (mcp__*) — so Gmail/Stripe/Calendar MCP sends are governed too). The plugin now ships these and they fire automatically once the plugin is enabled. They require Python on PATH (see Prerequisites). A standalone installer remains available as an alternative (see below).
 
 ## Prerequisites
 
 - Node.js 18+ on PATH (the MCP server runs via `npx -y @dashclaw/mcp-server`).
 - A DashClaw instance and an API key, either self hosted or a hosted workspace.
-- Python 3 on PATH only if you also install the optional hooks.
+- **Python on PATH** for the bundled governance hooks. The hook commands invoke `python`; on systems where the binary is `python3`, alias it or ensure `python` resolves. Without Python the hooks exit silently and govern nothing (MCP tools + skills still work).
 
 ## Install (Claude Code)
 
@@ -53,7 +53,7 @@ The MCP server reads its connection from environment variables:
 
 Set these in your shell before launching, or add an `env` block to the plugin MCP config to pin them per install.
 
-> **Heads-up on env-var names:** the MCP server reads `DASHCLAW_URL`, but the optional hooks (installed separately) read `DASHCLAW_BASE_URL` — different name, same value. Set BOTH if you install both, or the hooks exit silently and govern nothing.
+> **Heads-up on env-var names:** the MCP server reads `DASHCLAW_URL`, but the bundled hooks read `DASHCLAW_BASE_URL` (falling back to `DASHCLAW_URL`) — different name, same value, plus the same `DASHCLAW_API_KEY`. Set `DASHCLAW_BASE_URL` (or `DASHCLAW_URL`) + `DASHCLAW_API_KEY` in the environment Claude Code launches from, or the hooks exit silently and govern nothing.
 
 ## Use it
 
@@ -66,11 +66,18 @@ Both skills are model invoked, so the agent pulls them in automatically when a t
 
 A fast health check is the `dashclaw_capabilities_list` tool, the lightest way to confirm the connection is up.
 
-## Optional: install the governance hooks
+## Governance hooks (bundled — fire automatically)
 
-To enforce guard checks on Bash, Edit, Write, MultiEdit, sub-agent spawns, and MCP tool calls (mcp__*) at the tool layer:
+The plugin ships the tool-layer governance hooks: PreToolUse / PostToolUse / Stop guards over Bash, Edit, Write, MultiEdit, sub-agent spawns (Agent/Task), and MCP tool calls (mcp__*). They are declared in `hooks/hooks.json` and reference the plugin root via `${CLAUDE_PLUGIN_ROOT}`, so they activate as soon as the plugin is enabled — **no separate install step, and no per-folder trust gate.** (A plugin's hooks are not gated by Claude Code's "trust this folder?" prompt the way a project `.claude/settings.json` is, so they fire out-of-the-box in fresh / Docker / headless sessions once the plugin is enabled.)
 
-Installing the plugin gives you MCP tools + skills only — **not** the tool-layer hooks (they're Python files needing Python on PATH, so they're intentionally not bundled). The hook installer ships in the DashClaw repo — clone it first, then install:
+Requirements for the hooks to fire:
+
+- **Python on PATH.** The hook commands run `python "${CLAUDE_PLUGIN_ROOT}/hooks/dashclaw_pretool.py"` (and posttool / stop). On systems where the interpreter is `python3`, make `python` resolve to it.
+- `DASHCLAW_BASE_URL` (or `DASHCLAW_URL` as a fallback) + `DASHCLAW_API_KEY` set in the environment Claude Code launches from. Without these the hooks exit silently.
+
+### Alternative: the standalone installer
+
+You can still install the hooks into `.claude/settings.json` (per project) or `~/.claude/settings.json` (global) with the repo's installer — useful if you want the hooks without enabling the full plugin, or want global governance over every project:
 
 ```bash
 git clone https://github.com/ucsandman/DashClaw.git
@@ -78,18 +85,18 @@ git clone https://github.com/ucsandman/DashClaw.git
 # Per project (writes to that project's .claude/settings.json):
 node /path/to/DashClaw/scripts/install-hooks.mjs --target=/path/to/your/project
 
-# OR govern EVERY project and fire out-of-the-box (incl. fresh clones / Docker /
+# OR govern EVERY project at the user level (incl. fresh clones / Docker /
 # headless) — installs into ~/.claude/settings.json with no secret written:
 node /path/to/DashClaw/scripts/install-hooks.mjs --global --governance
 ```
 
-These require Python on PATH plus `DASHCLAW_BASE_URL` (or `DASHCLAW_URL`) + `DASHCLAW_API_KEY` in the shell. **Folder-trust note:** a project `.claude/settings.json` only loads after you accept Claude Code's "trust this folder?" prompt, so in a fresh/Docker/headless session the per-project hooks silently won't fire — use `--global --governance` (user-level, no trust gate) to avoid that.
+The installer paths also require Python on PATH plus the same env vars. **Folder-trust note (installer only):** a project `.claude/settings.json` loads only after you accept Claude Code's "trust this folder?" prompt, so in a fresh/Docker/headless session per-project installer hooks won't fire — use `--global --governance`, or just rely on the bundled plugin hooks above (which have no trust gate).
 
 ## Troubleshooting
 
 - **MCP tools listed but every call returns 401.** Your instance is on a stale schema. Run `npm run db:migrate` against it, then retry.
 - **Tools don't appear after install.** Run `/reload-plugins`, then `/mcp`, and confirm `DASHCLAW_URL` + `DASHCLAW_API_KEY` are set in the environment the MCP server launches from.
-- **MCP works but the hooks govern nothing.** Two usual causes: (1) the hooks were never installed — the plugin ships MCP + skills only, run `install-hooks.mjs` separately; (2) in a fresh/Docker session a project `.claude/settings.json` hasn't passed Claude Code's folder-trust gate, so its hooks don't load — install with `--global --governance` (user-level). The hooks read `DASHCLAW_BASE_URL` (or `DASHCLAW_URL` as a fallback) + `DASHCLAW_API_KEY`.
+- **MCP works but the hooks govern nothing.** The bundled hooks need Python on PATH and `DASHCLAW_BASE_URL` (or `DASHCLAW_URL`) + `DASHCLAW_API_KEY` in the environment Claude Code launched from — without either they exit silently. Confirm `python --version` resolves (alias `python3` if needed) and that the plugin is enabled (`/reload-plugins`). If you used the standalone installer instead, a per-project `.claude/settings.json` also has to pass Claude Code's folder-trust gate — the bundled plugin hooks do not.
 - **Guard always allows, or you see a demo-mode warning.** `DASHCLAW_BASE_URL` points at the demo instance. Set it to your real instance.
 - **Fastest connectivity check.** Call the `dashclaw_capabilities_list` tool — the lightest way to confirm the connection is up.
 

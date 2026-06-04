@@ -106,6 +106,19 @@ const PLUGIN_SKILL_DIR = resolve(REPO_ROOT, 'plugins', 'dashclaw', 'skills', 'da
 // copy is kept in lockstep so the committed plugin distribution always
 // carries the latest governance protocol text.
 const PLUGIN_GOVERNANCE_SKILL_DIR = resolve(REPO_ROOT, 'plugins', 'dashclaw', 'skills', 'dashclaw-governance');
+// Plugin hooks mirror — the canonical Claude Code hook scripts live in
+// hooks/ (HOOKS_BUNDLE_DIR). The plugin now ships firing governance hooks
+// (PreToolUse / PostToolUse / Stop) via plugins/dashclaw/hooks/, so the four
+// .py scripts plus the dashclaw_agent_intel/ module are mirrored from the
+// canonical source here on every refresh. The authored hooks.json (which
+// references ${CLAUDE_PLUGIN_ROOT}) is NOT generated — it's left untouched.
+const PLUGIN_HOOKS_DIR = resolve(REPO_ROOT, 'plugins', 'dashclaw', 'hooks');
+const PLUGIN_HOOK_SCRIPTS = [
+  'dashclaw_pretool.py',
+  'dashclaw_posttool.py',
+  'dashclaw_stop.py',
+  'dashclaw_code_session_reporter.py',
+];
 const MCP_INVENTORY_PATH = resolve(REPO_ROOT, 'mcp-server', 'lib', 'routes-inventory.generated.json');
 const DASHBOARD_PATH = resolve(REPO_ROOT, 'public', 'livingcode', 'index.html');
 
@@ -245,7 +258,7 @@ function writeIfChanged(path, content, label) {
  * that no longer exist in the source. Skips quietly if the global dir is not
  * writable (CI / non-dev machines).
  */
-function mirrorSubdir(srcRoot, dstRoot, subdir, label) {
+function mirrorSubdir(srcRoot, dstRoot, subdir, label, excludeRe = null) {
   const src = join(srcRoot, subdir);
   const dst = join(dstRoot, subdir);
   if (!existsSync(src)) return;
@@ -263,6 +276,7 @@ function mirrorSubdir(srcRoot, dstRoot, subdir, label) {
     const entries = readdirSync(current, { withFileTypes: true });
     for (const entry of entries) {
       const rel = relative_ ? join(relative_, entry.name) : entry.name;
+      if (excludeRe && excludeRe.test(rel)) continue;
       const srcPath = join(src, rel);
       const dstPath = join(dst, rel);
       if (entry.isDirectory()) {
@@ -548,6 +562,23 @@ async function main() {
       'references',
       'governance-references (plugin)',
     );
+  }
+
+  // Mirror the canonical Claude Code hook scripts into the plugin so the
+  // committed plugin distribution ships firing governance hooks. The four
+  // top-level .py scripts and the dashclaw_agent_intel/ module are copied
+  // from hooks/ (the source of truth); the authored hooks.json is left
+  // untouched. Failures ARE surfaced because the plugin copy is committed —
+  // drift here would land in users' installs.
+  if (existsSync(HOOKS_BUNDLE_DIR)) {
+    ensureDir(PLUGIN_HOOKS_DIR);
+    for (const script of PLUGIN_HOOK_SCRIPTS) {
+      const src = join(HOOKS_BUNDLE_DIR, script);
+      if (existsSync(src)) {
+        writeIfChanged(join(PLUGIN_HOOKS_DIR, script), readFileSync(src, 'utf8'), `hook (plugin)/${script}`);
+      }
+    }
+    mirrorSubdir(HOOKS_BUNDLE_DIR, PLUGIN_HOOKS_DIR, 'dashclaw_agent_intel', 'hook-agent-intel (plugin)', BUNDLE_EXCLUDE_RE);
   }
 
   refreshBundleZip(WEBSITE_SKILL_DIR, WEBSITE_SKILL_ZIP, WEBSITE_SKILL_MANIFEST);

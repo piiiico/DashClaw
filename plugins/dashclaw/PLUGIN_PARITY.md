@@ -22,14 +22,22 @@ The MCP configs differ only by the `--agent-id` passed to the bundled
 gives DashClaw's analytics (`/agents`, Mission Control posture, decision
 ledger) clean separation between Codex sessions and Claude Code sessions.
 
-## What the plugin does NOT install
+## Hooks
 
-Hooks (PreToolUse / PostToolUse / Stop guards over Bash, Edit, Write,
-MultiEdit, sub-agent spawns (Agent/Task), and MCP tool calls (mcp__*)) are
-**not** bundled in either manifest. They are agent-specific
-filesystem artifacts that live in `~/.codex/config.toml` (Codex) or
-`.claude/settings.json` (Claude Code) respectively, and require Python on
-PATH. Use the dedicated installer commands instead:
+The **Claude Code** manifest bundles the governance hooks (PreToolUse /
+PostToolUse / Stop guards over Bash, Edit, Write, MultiEdit, sub-agent spawns
+(Agent/Task), and MCP tool calls (mcp__*)). They ship under
+`plugins/dashclaw/hooks/` — `hooks.json` (declared via the manifest's `hooks`
+field) plus the four Python scripts and the `dashclaw_agent_intel/` module,
+referenced through `${CLAUDE_PLUGIN_ROOT}`. They fire automatically once the
+plugin is enabled (no separate install, no per-folder trust gate) and require
+Python on PATH. The `.py` scripts + module are a generated mirror of the
+canonical `hooks/` tree, kept in sync by `npm run livingcode:refresh`; the
+authored `hooks.json` is not generated.
 
-- Codex: `dashclaw install codex`
-- Claude Code: `node scripts/install-hooks.mjs`
+The **Codex** manifest does not bundle hooks — Codex hooks are filesystem
+artifacts in `~/.codex/config.toml`. Use `dashclaw install codex`.
+
+A standalone Claude Code installer (`node scripts/install-hooks.mjs`) remains
+available as an alternative for installing the hooks into `.claude/settings.json`
+without enabling the full plugin.
