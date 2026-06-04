@@ -93,3 +93,50 @@ export async function getEndpoint(sql, orgId, endpointId) {
   const rows = await sql`SELECT * FROM x402_endpoints WHERE org_id = ${orgId} AND endpoint_id = ${endpointId} LIMIT 1`;
   return rows[0] || null;
 }
+
+// --- Purchases (1:1 with action_records.action_id) -------------------------
+
+export async function createPurchase(sql, orgId, actionId, data = {}) {
+  const rows = await sql`
+    INSERT INTO x402_purchases
+      (action_id, org_id, provider_id, endpoint_id, agent_id, spend_amount, currency, payment_method,
+       wallet_reference, payment_reference, purchase_reason, context_gap, alternatives_considered, expected_value,
+       execution_status, confidence_score)
+    VALUES
+      (${actionId}, ${orgId}, ${data.provider_id || null}, ${data.endpoint_id || null}, ${data.agent_id || null},
+       ${data.spend_amount ?? 0}, ${data.currency || 'USDC'}, ${data.payment_method || null},
+       ${data.wallet_reference || null}, ${data.payment_reference || null}, ${data.purchase_reason || null},
+       ${data.context_gap || null}, ${data.alternatives_considered || null}, ${data.expected_value || null},
+       ${data.execution_status || 'pending'}, ${data.confidence_score ?? null})
+    ON CONFLICT (action_id) DO UPDATE SET
+       provider_id = EXCLUDED.provider_id, endpoint_id = EXCLUDED.endpoint_id, spend_amount = EXCLUDED.spend_amount
+    RETURNING *`;
+  return rows[0] || null;
+}
+
+export async function getPurchase(sql, orgId, actionId) {
+  const rows = await sql`SELECT * FROM x402_purchases WHERE org_id = ${orgId} AND action_id = ${actionId} LIMIT 1`;
+  return rows[0] || null;
+}
+
+export async function listPurchases(sql, orgId, { providerId } = {}) {
+  if (providerId) {
+    return sql`SELECT * FROM x402_purchases WHERE org_id = ${orgId} AND provider_id = ${providerId} ORDER BY created_at DESC`;
+  }
+  return sql`SELECT * FROM x402_purchases WHERE org_id = ${orgId} ORDER BY created_at DESC`;
+}
+
+export async function setPurchaseOutcome(sql, orgId, actionId, data = {}) {
+  const rows = await sql`
+    UPDATE x402_purchases SET
+      execution_status = ${data.execution_status || 'succeeded'},
+      result_summary = ${data.result_summary || null},
+      result_reference = ${data.result_reference || null},
+      value_score = ${data.value_score ?? null},
+      operator_feedback = ${data.operator_feedback || null},
+      failure_reason = ${data.failure_reason || null},
+      completed_at = NOW()
+    WHERE org_id = ${orgId} AND action_id = ${actionId}
+    RETURNING *`;
+  return rows[0] || null;
+}

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   createProvider, listProviders, getProvider, updateProvider,
   createEndpoint, listEndpoints, getEndpoint,
+  createPurchase, getPurchase, listPurchases, setPurchaseOutcome,
 } from '@/lib/repositories/x402.repository.js';
 
 // __tests__/helpers.js `createSqlMock` uses a pre-seeded taggedResponses/queryCalls
@@ -94,5 +95,49 @@ describe('x402 endpoint repository', () => {
     sql.mockResolvedValueOnce([]);
     expect(await getEndpoint(sql, 'org_1', 'pep_missing')).toBeNull();
     expect(sqlValues(sql.mock.calls[0])).toEqual(['org_1', 'pep_missing']);
+  });
+});
+
+describe('x402 purchase repository', () => {
+  it('createPurchase upserts a detail row keyed by action_id, binding org + provider + spend', async () => {
+    sql.mockResolvedValueOnce([{ action_id: 'act_1', spend_amount: 0.05, provider_id: 'prov_x' }]);
+    const row = await createPurchase(sql, 'org_1', 'act_1', { provider_id: 'prov_x', spend_amount: 0.05, purchase_reason: 'gap' });
+    expect(row.action_id).toBe('act_1');
+    const call = sql.mock.calls[0];
+    expect(sqlText(call)).toContain('INSERT INTO x402_purchases');
+    expect(sqlText(call)).toContain('ON CONFLICT (action_id) DO UPDATE');
+    expect(call[1]).toBe('act_1');   // PK = action_id (the act_ id)
+    expect(call[2]).toBe('org_1');   // org bound
+    expect(call[3]).toBe('prov_x');  // provider bound
+    expect(call[6]).toBe(0.05);      // spend_amount bound
+  });
+
+  it('getPurchase binds org + action_id and returns null when missing', async () => {
+    sql.mockResolvedValueOnce([]);
+    expect(await getPurchase(sql, 'org_1', 'act_missing')).toBeNull();
+    expect(sqlValues(sql.mock.calls[0])).toEqual(['org_1', 'act_missing']);
+  });
+
+  it('listPurchases is org-scoped with no provider filter', async () => {
+    sql.mockResolvedValueOnce([{ action_id: 'act_1' }]);
+    expect(await listPurchases(sql, 'org_1', {})).toHaveLength(1);
+    expect(sqlValues(sql.mock.calls[0])).toEqual(['org_1']);
+  });
+
+  it('listPurchases filters by provider when given', async () => {
+    sql.mockResolvedValueOnce([{ action_id: 'act_1' }]);
+    await listPurchases(sql, 'org_1', { providerId: 'prov_x' });
+    expect(sqlValues(sql.mock.calls[0])).toEqual(['org_1', 'prov_x']);
+  });
+
+  it('setPurchaseOutcome records execution result + value score, org-scoped', async () => {
+    sql.mockResolvedValueOnce([{ action_id: 'act_1', execution_status: 'succeeded', value_score: 0.8 }]);
+    const row = await setPurchaseOutcome(sql, 'org_1', 'act_1', { execution_status: 'succeeded', value_score: 0.8, result_summary: 'ok' });
+    expect(row.execution_status).toBe('succeeded');
+    const vals = sqlValues(sql.mock.calls[0]);
+    expect(vals).toContain('succeeded');
+    expect(vals).toContain(0.8);
+    expect(vals).toContain('org_1');
+    expect(vals).toContain('act_1');
   });
 });
