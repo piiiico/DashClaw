@@ -1,14 +1,14 @@
 {
   "node": {
-    "current_version": "4.0.1",
+    "current_version": "4.0.2",
     "next_bump": "none",
-    "reason": "4.0.1 staged (sdk/package.json + sdk-python/pyproject.toml + platform unified at 4.0.1; publish via `npm run release:sdks`). Node fixes: _connectSSE now sends Authorization: Bearer when authToken set; CJS bridge (sdk/index.cjs) rewritten with a recursive deferred proxy so nested namespaces (execution.capabilities.*) resolve and ApprovalDeniedError/GuardBlockedError instanceof works across the ESM/CJS boundary; added deleteCapability; removed syncState (archived /api/sync); waitForApproval re-raises GuardBlockedError; limit:0 no longer dropped; scoreWithProfile/batchScoreWithProfile input guards. Public-method count net unchanged at 104 (syncState -1, deleteCapability +1). Self-dep stays ^4.0.0 (patch; 4.0.0 satisfies it until 4.0.1 publishes).",
+    "reason": "4.0.2 — platform-only release republished at the unified version (out-of-box governance hooks, team-invite security fix, secret/prompt-injection auto-scan, Policy Coach recorder toggle, live Decisions ledger, dashboard/sessions/drift/quality fixes). No Node SDK code changed since 4.0.1; the package republishes at 4.0.2 per the unified-version model. Self-dep stays ^4.0.0.",
     "domains": []
   },
   "python": {
-    "current_version": "4.0.1",
+    "current_version": "4.0.2",
     "next_bump": "none",
-    "reason": "4.0.1 staged (sdk-python/pyproject.toml bumped; publish via `npm run release:sdks`). CRITICAL fix: _request arg-order inversion corrected at 41 call sites (compliance exports/schedules/trends, drift, learning-analytics, scoring) — these passed the HTTP verb as the path on PyPI 4.0.0, so the entire surface was non-functional. Also: SSE Authorization: Bearer; removed sync_state (archived /api/sync); removed dead _guard_check; record_assumption now emits DeprecationWarning -> register_assumption; score_with_profile/batch_score_with_profile input guards; langchain report_token_usage call fixed to positional args. Public-method count 204 -> 203 (sync_state removed; run `npm run sdk:count` to confirm before updating docs).",
+    "reason": "4.0.2 — platform-only release republished at the unified version. No Python SDK code changed since 4.0.1; the package republishes at 4.0.2 per the unified-version model.",
     "domains": []
   }
 }
