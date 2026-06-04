@@ -228,6 +228,13 @@ export default function SecretsPage() {
         </div>
       </div>
 
+      {/* Purpose note — this is a rotation reminder, not a secret vault */}
+      <div role="note" className="mb-6 rounded-lg border border-border bg-surface-secondary p-3 text-sm text-secondary">
+        This is a <span className="text-white">rotation reminder</span>, not a key store. DashClaw tracks <span className="text-white">when</span> each
+        credential is due to be rotated and pings you before it goes stale — the actual key value stays in your agent&apos;s own secret manager
+        and is never entered, stored, or shown here.
+      </div>
+
       {/* Rotation-due banner (org-wide) */}
       {due.length > 0 && (
         <div role="status" className="mb-6 rounded-lg border border-warning/30 bg-warning-subtle p-4">
