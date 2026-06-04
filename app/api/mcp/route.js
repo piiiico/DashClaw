@@ -117,10 +117,18 @@ export async function POST(request) {
         if (!handler) {
           return jsonrpcError(id, -32602, `Unknown tool: ${name}`);
         }
-        const text = await handler(args || {});
-        return jsonrpc(id, {
-          content: [{ type: 'text', text }],
-        });
+        try {
+          const text = await handler(args || {});
+          return jsonrpc(id, {
+            content: [{ type: 'text', text }],
+          });
+        } catch (toolErr) {
+          console.error('MCP tools/call error:', toolErr);
+          return jsonrpc(id, {
+            content: [{ type: 'text', text: toolErr?.message || 'Tool execution failed' }],
+            isError: true,
+          });
+        }
       }
 
       case 'resources/list':
@@ -151,6 +159,12 @@ export async function POST(request) {
         const historyMatch = uri.match(/^dashclaw:\/\/agent\/([^/]+)\/history$/);
         if (historyMatch) {
           const text = await resourceHandlers['dashclaw://agent/{agent_id}/history']({ agent_id: historyMatch[1] });
+          return jsonrpc(id, { contents: [{ uri, text }] });
+        }
+        // Match template: dashclaw://code-sessions/sessions/{session_id}
+        const sessionMatch = uri.match(/^dashclaw:\/\/code-sessions\/sessions\/([^/]+)$/);
+        if (sessionMatch) {
+          const text = await resourceHandlers['dashclaw://code-sessions/sessions/{session_id}']({ session_id: sessionMatch[1] });
           return jsonrpc(id, { contents: [{ uri, text }] });
         }
         return jsonrpcError(id, -32602, `Unknown resource: ${uri}`);

@@ -75,6 +75,8 @@ async function release() {
     }
   } catch (err) {
     log(`❌ Failed to publish Node.js SDK: ${err.message}`, RED);
+    process.exitCode = 1;
+    return;
   }
 
   // --- 2. Python SDK (PyPI) ---
@@ -104,6 +106,8 @@ async function release() {
     }
   } catch (err) {
     log(`❌ Failed to publish Python SDK: ${err.message}`, RED);
+    process.exitCode = 1;
+    return;
   }
 
   process.chdir(rootDir);

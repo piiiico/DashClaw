@@ -132,7 +132,7 @@ describe('readiness projections', () => {
     expect(step.primaryCta.label).toBe('Open dashboard');
     expect(step.primaryCta.href).toBe('/mission-control');
     expect(step.secondaryCtas.map((cta) => cta.href)).toEqual(
-      expect.arrayContaining(['/pairings', '/policies'])
+      expect.arrayContaining(['/identities', '/policies'])
     );
   });
 

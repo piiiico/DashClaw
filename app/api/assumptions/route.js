@@ -5,25 +5,11 @@ import { NextResponse } from 'next/server';
 import { getSql } from '../../lib/db.js';
 import { validateAssumption } from '../../lib/validate.js';
 import { getOrgId } from '../../lib/org.js';
-import { scanSensitiveData } from '../../lib/security.js';
+import { redactAny } from '../../lib/security.js';
 import { listAssumptions, createAssumption } from '../../lib/repositories/assumptions.repository.js';
 import { hasAction } from '../../lib/repositories/actions.repository.js';
 import crypto from 'crypto';
 
-function redactAny(value, findings) {
-  if (typeof value === 'string') {
-    const scan = scanSensitiveData(value);
-    if (!scan.clean) findings.push(...scan.findings);
-    return scan.redacted;
-  }
-  if (Array.isArray(value)) return value.map((v) => redactAny(v, findings));
-  if (value && typeof value === 'object') {
-    const out = {};
-    for (const [k, v] of Object.entries(value)) out[k] = redactAny(v, findings);
-    return out;
-  }
-  return value;
-}
 
 export async function GET(request) {
   try {
@@ -96,7 +82,8 @@ export async function POST(request) {
   try {
     const sql = getSql();
     const orgId = getOrgId(request);
-    const body = await request.json();
+    let body;
+    try { body = await request.json(); } catch { return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 }); }
 
     const { valid, data, errors } = validateAssumption(body);
     if (!valid) {

@@ -15,6 +15,20 @@ vi.mock('../../app/lib/db.js', () => ({ getSql: () => mockSqlInstance }));
 vi.mock('../../app/lib/org.js', () => ({ getOrgId: (...a) => mockGetOrgId(...a) }));
 vi.mock('../../app/lib/security.js', () => ({
   scanSensitiveData: (...a) => mockScanSensitiveData(...a),
+  redactAny: function redactAny(value, findings) {
+    if (typeof value === 'string') {
+      const scan = mockScanSensitiveData(value);
+      if (!scan.clean) findings.push(...scan.findings);
+      return scan.redacted;
+    }
+    if (Array.isArray(value)) return value.map((v) => redactAny(v, findings));
+    if (value && typeof value === 'object') {
+      const out = {};
+      for (const [k, v] of Object.entries(value)) out[k] = redactAny(v, findings);
+      return out;
+    }
+    return value;
+  },
 }));
 vi.mock('../../app/lib/validate.js', () => ({
   validateAssumption: (...a) => mockValidateAssumption(...a),

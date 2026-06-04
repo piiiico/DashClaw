@@ -170,19 +170,26 @@ export async function createEvalScorer(sql, orgId, data) {
 export async function updateEvalScorer(sql, orgId, scorerId, updates) {
   if (Object.keys(updates).length === 0) return;
 
-  if (Object.prototype.hasOwnProperty.call(updates, 'name')) {
-    await sql`UPDATE eval_scorers SET name = ${updates.name}, updated_at = ${new Date().toISOString()} WHERE org_id = ${orgId} AND id = ${scorerId}`;
-  }
-  if (Object.prototype.hasOwnProperty.call(updates, 'scorer_type')) {
-    await sql`UPDATE eval_scorers SET scorer_type = ${updates.scorer_type}, updated_at = ${new Date().toISOString()} WHERE org_id = ${orgId} AND id = ${scorerId}`;
-  }
-  if (Object.prototype.hasOwnProperty.call(updates, 'config')) {
-    const configValue = typeof updates.config === 'string' ? updates.config : JSON.stringify(updates.config);
-    await sql`UPDATE eval_scorers SET config = ${configValue}, updated_at = ${new Date().toISOString()} WHERE org_id = ${orgId} AND id = ${scorerId}`;
-  }
-  if (Object.prototype.hasOwnProperty.call(updates, 'description')) {
-    await sql`UPDATE eval_scorers SET description = ${updates.description}, updated_at = ${new Date().toISOString()} WHERE org_id = ${orgId} AND id = ${scorerId}`;
-  }
+  const configValue =
+    'config' in updates && updates.config !== undefined
+      ? typeof updates.config === 'string'
+        ? updates.config
+        : JSON.stringify(updates.config)
+      : null;
+
+  const [updated] = await sql`
+    UPDATE eval_scorers
+    SET
+      name        = COALESCE(${updates.name ?? null}, name),
+      scorer_type = COALESCE(${updates.scorer_type ?? null}, scorer_type),
+      config      = COALESCE(${configValue}, config),
+      description = COALESCE(${updates.description ?? null}, description),
+      updated_at  = ${new Date().toISOString()}
+    WHERE org_id = ${orgId} AND id = ${scorerId}
+    RETURNING *
+  `;
+
+  return updated;
 }
 
 export async function deleteEvalScorer(sql, orgId, scorerId) {

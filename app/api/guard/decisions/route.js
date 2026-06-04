@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 import { getSql } from '../../../lib/db.js';
 import { getOrgId } from '../../../lib/org.js';
 import { apiErrorResponse } from '../../../lib/apiErrors.js';
-import { listGuardDecisions, getGuardDecisionStats } from '../../../lib/repositories/guardrails.repository.js';
+import { listGuardrailDecisions, getGuardDecisionStats } from '../../../lib/repositories/guardrails.repository.js';
 
 export async function GET(request) {
   try {
@@ -18,7 +18,7 @@ export async function GET(request) {
     const offset = parseInt(searchParams.get('offset') || '0', 10);
 
     const [result, stats] = await Promise.all([
-      listGuardDecisions(sql, orgId, { decision, agentId, limit, offset }),
+      listGuardrailDecisions(sql, orgId, { decision, agentId, limit, offset }),
       getGuardDecisionStats(sql, orgId),
     ]);
 

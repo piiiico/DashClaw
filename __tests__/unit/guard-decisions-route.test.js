@@ -9,7 +9,7 @@ const mockGetGuardDecisionStats = vi.fn();
 vi.mock('../../app/lib/db.js', () => ({ getSql: () => mockSqlInstance }));
 vi.mock('../../app/lib/org.js', () => ({ getOrgId: (...a) => mockGetOrgId(...a) }));
 vi.mock('../../app/lib/repositories/guardrails.repository.js', () => ({
-  listGuardDecisions: (...a) => mockListGuardDecisions(...a),
+  listGuardrailDecisions: (...a) => mockListGuardDecisions(...a),
   getGuardDecisionStats: (...a) => mockGetGuardDecisionStats(...a),
 }));
 

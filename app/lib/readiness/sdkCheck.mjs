@@ -136,7 +136,7 @@ export function projectConnectNextStep({
           : 'DashClaw has already recorded a real agent action. From here, tighten controls and review live activity.',
       primaryCta: { label: 'Open dashboard', href: '/mission-control' },
       secondaryCtas: [
-        { label: 'Enable pairings', href: '/pairings' },
+        { label: 'Enable pairings', href: '/identities' },
         { label: 'Review policies', href: '/policies' },
       ],
       statusItems,

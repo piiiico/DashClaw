@@ -1,21 +1,9 @@
+import { isLegacyActionRecordsError } from './capability-compat.js';
+
 function toInt(value, fallback = null) {
   if (value == null) return fallback;
   const parsed = parseInt(value, 10);
   return Number.isNaN(parsed) ? fallback : parsed;
-}
-
-function isLegacyActionRecordsError(error) {
-  const code = String(error?.code || '');
-  const message = `${error?.message || ''} ${error?.detail || ''}`.toLowerCase();
-  return ['42703', '42883', '42804'].includes(code)
-    || /column .* does not exist/.test(message)
-    || /operator does not exist/.test(message)
-    || /timestamp_start/.test(message)
-    || /timestamp_end/.test(message)
-    || /output_summary/.test(message)
-    || /error_message/.test(message)
-    || /duration_ms/.test(message)
-    || /trigger/.test(message);
 }
 
 export async function getCapabilityHistory(sql, orgId, capability, filters = {}) {

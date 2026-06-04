@@ -394,8 +394,8 @@ async function main() {
     path: '/api/messages?agent_id=convergence-bench-agent&direction=inbox&limit=25',
   }));
   ws1Benchmarks.push(await benchmarkEndpoint({
-    name: 'context.threads',
-    path: '/api/context/threads?agent_id=convergence-bench-agent&limit=25',
+    name: 'handoffs.list',
+    path: '/api/handoffs?agent_id=convergence-bench-agent&limit=25',
   }));
 
   const realtime = await runRealtimeEvidence();

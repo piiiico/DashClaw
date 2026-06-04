@@ -100,7 +100,7 @@ export default function CompliancePage() {
 
       if (mapRes.ok) setControlMap(await mapRes.json());
       if (gapRes.ok) setGapAnalysis(await gapRes.json());
-      if (evidenceRes.ok) setEvidence(await evidenceRes.json());
+      if (evidenceRes.ok) { const evData = await evidenceRes.json(); setEvidence(evData.evidence); }
       if (signalsRes.ok) {
         const signalsData = await signalsRes.json();
         setSignals(signalsData.signals || []);

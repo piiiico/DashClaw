@@ -12,7 +12,7 @@ import {
   createActionRecord,
   createBlockedActionRecord,
 } from '../../../../lib/repositories/actions.repository.js';
-import { scanSensitiveData } from '../../../../lib/security.js';
+import { redactAny } from '../../../../lib/security.js';
 import { RISK_SCORE_MAP } from '../../../../lib/capability-invoke.js';
 import {
   executeCapabilityInvocation,
@@ -23,20 +23,6 @@ import { checkCircuitBreaker } from '../../../../lib/capability-health.js';
 import { updateCapability } from '../../../../lib/repositories/capabilities.repository.js';
 import { evaluateAccess } from '../../../../lib/repositories/capability-access.repository.js';
 
-function redactAny(value, findings) {
-  if (typeof value === 'string') {
-    const scan = scanSensitiveData(value);
-    if (!scan.clean) findings.push(...scan.findings);
-    return scan.redacted;
-  }
-  if (Array.isArray(value)) return value.map((v) => redactAny(v, findings));
-  if (value && typeof value === 'object') {
-    const out = {};
-    for (const [k, v] of Object.entries(value)) out[k] = redactAny(v, findings);
-    return out;
-  }
-  return value;
-}
 
 export async function POST(request, { params }) {
   try {

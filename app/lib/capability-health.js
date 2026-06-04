@@ -1,19 +1,8 @@
 import { listCapabilities } from './repositories/capabilities.repository.js';
+import { isLegacyActionRecordsError } from './capability-compat.js';
 
 function toInt(value) {
   return parseInt(value || '0', 10);
-}
-
-function isLegacyActionRecordsError(error) {
-  const code = String(error?.code || '');
-  const message = `${error?.message || ''} ${error?.detail || ''}`.toLowerCase();
-  return ['42703', '42883', '42804'].includes(code)
-    || /column .* does not exist/.test(message)
-    || /operator does not exist/.test(message)
-    || /timestamp_start/.test(message)
-    || /duration_ms/.test(message)
-    || /output_summary/.test(message)
-    || /error_message/.test(message);
 }
 
 function deriveStatus(capabilityHealthStatus, stats) {

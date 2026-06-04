@@ -17,7 +17,7 @@ import { fireTelegramApproval } from '../../lib/telegramApprovals.js';
 import { fireDiscordApproval } from '../../lib/discordApprovals.js';
 import { fireNewConnectAlert } from '../../lib/notification-adapters/discord.js';
 import { fireWebhooksForApproval } from '../../lib/webhooks.js';
-import { scanSensitiveData } from '../../lib/security.js';
+import { redactAny } from '../../lib/security.js';
 import { upsertAgentPresence } from '../../lib/repositories/agents.repository.js';
 import { incrementTrialActionCount } from '../../lib/repositories/hosted-workspace.repository.js';
 import {
@@ -33,22 +33,6 @@ import {
 import { getModelPricing, getSettings } from '../../lib/repositories/settings.repository.js';
 import crypto from 'crypto';
 
-function redactAny(value, findings) {
-  if (typeof value === 'string') {
-    const scan = scanSensitiveData(value);
-    if (!scan.clean) findings.push(...scan.findings);
-    return scan.redacted;
-  }
-  if (Array.isArray(value)) {
-    return value.map((v) => redactAny(v, findings));
-  }
-  if (value && typeof value === 'object') {
-    const out = {};
-    for (const [k, v] of Object.entries(value)) out[k] = redactAny(v, findings);
-    return out;
-  }
-  return value;
-}
 
 export async function GET(request) {
   try {
@@ -93,7 +77,8 @@ export async function POST(request) {
   try {
     const sql = getSql();
     const orgId = getOrgId(request);
-    const body = await request.json();
+    let body;
+    try { body = await request.json(); } catch { return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 }); }
 
     const { valid, data, errors } = validateActionRecord(body);
     if (!valid) {

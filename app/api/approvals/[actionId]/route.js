@@ -6,24 +6,10 @@ import { getSql } from '../../../lib/db.js';
 import { getOrgId, getOrgRole, getUserId } from '../../../lib/org.js';
 import { logActivity } from '../../../lib/audit.js';
 import { EVENTS, publishOrgEvent } from '../../../lib/events.js';
-import { scanSensitiveData } from '../../../lib/security.js';
+import { redactAny } from '../../../lib/security.js';
 import { recordApproval, getActionStatus, getActionSummary } from '../../../lib/repositories/actions.repository.js';
 import { fireWebhooksForApproval } from '../../../lib/webhooks.js';
 
-function redactAny(value, findings) {
-  if (typeof value === 'string') {
-    const scan = scanSensitiveData(value);
-    if (!scan.clean) findings.push(...scan.findings);
-    return scan.redacted;
-  }
-  if (Array.isArray(value)) return value.map((v) => redactAny(v, findings));
-  if (value && typeof value === 'object') {
-    const out = {};
-    for (const [k, v] of Object.entries(value)) out[k] = redactAny(v, findings);
-    return out;
-  }
-  return value;
-}
 
 /**
  * POST /api/actions/[actionId]/approve

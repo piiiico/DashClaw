@@ -285,7 +285,7 @@ async function main() {
 
   const baseUrl = args.local
     ? 'http://localhost:3000'
-    : 'http://localhost:3000';
+    : (process.env.DASHCLAW_BASE_URL || process.env.DASHCLAW_URL || (() => { console.warn('DASHCLAW_BASE_URL not set, falling back to localhost'); return 'http://localhost:3000'; })());
   const apiKey = process.env.DASHCLAW_API_KEY;
 
   if (!apiKey && !args.local) {

@@ -42,7 +42,7 @@ export async function deletePoliciesByIds(sql, orgId, idList) {
   `;
 }
 
-export async function listGuardDecisions(sql, orgId, filters = {}) {
+export async function listGuardrailDecisions(sql, orgId, filters = {}) {
   const { decision, agentId, limit = 50, offset = 0 } = filters;
 
   let paramIdx = 1;

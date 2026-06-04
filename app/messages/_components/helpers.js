@@ -1,10 +1,9 @@
-import { Inbox, Send, Hash, FileText, Copy, FileType } from 'lucide-react';
+import { Inbox, Send, Hash, Copy, FileType } from 'lucide-react';
 
 export const TABS = [
   { key: 'inbox', label: 'Inbox', icon: Inbox },
   { key: 'sent', label: 'Sent', icon: Send },
   { key: 'threads', label: 'Threads', icon: Hash },
-  { key: 'docs', label: 'Docs', icon: FileText },
 ];
 
 export const TYPE_VARIANTS = {

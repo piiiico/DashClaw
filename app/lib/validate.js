@@ -396,6 +396,47 @@ export function validatePolicy(body) {
         result.errors.push('non_fabrication policy rules.source_path must be a string');
       }
       break;
+    case 'green_contract': {
+      // rules.required_level is mandatory — without it the guard comparison
+      // resolves to GREEN_RANK[undefined] ?? 0 = 0, so every observed level
+      // passes (0 >= 0), and the policy silently no-ops at enforcement.
+      const GREEN_LEVELS = ['targeted', 'package', 'workspace', 'merge_ready'];
+      if (!GREEN_LEVELS.includes(rules.required_level)) {
+        result.valid = false;
+        result.errors.push(`green_contract policy requires rules.required_level to be one of: ${GREEN_LEVELS.join(', ')}`);
+      }
+      if (rules.action_types !== undefined && !Array.isArray(rules.action_types)) {
+        result.valid = false;
+        result.errors.push('green_contract policy rules.action_types must be an array when present');
+      }
+      break;
+    }
+    case 'branch_freshness':
+      // Sensible defaults at enforcement: freshness=['stale','diverged'], max_commits_behind=0.
+      // Validate optional overrides when present.
+      if (rules.freshness !== undefined && !Array.isArray(rules.freshness)) {
+        result.valid = false;
+        result.errors.push('branch_freshness policy rules.freshness must be an array when present');
+      }
+      if (rules.max_commits_behind !== undefined && (typeof rules.max_commits_behind !== 'number' || rules.max_commits_behind < 0)) {
+        result.valid = false;
+        result.errors.push('branch_freshness policy rules.max_commits_behind must be a non-negative number');
+      }
+      if (rules.action_types !== undefined && !Array.isArray(rules.action_types)) {
+        result.valid = false;
+        result.errors.push('branch_freshness policy rules.action_types must be an array when present');
+      }
+      break;
+    case 'permission_escalation':
+      // rules.enforce controls whether the policy fires; without it the guard
+      // returns null immediately (informational by default). Validate the
+      // override for rules.action when present (covered by the generic
+      // GUARD_ACTIONS check above), no required fields.
+      if (rules.enforce !== undefined && typeof rules.enforce !== 'boolean') {
+        result.valid = false;
+        result.errors.push('permission_escalation policy rules.enforce must be a boolean when present');
+      }
+      break;
   }
 
   return result;

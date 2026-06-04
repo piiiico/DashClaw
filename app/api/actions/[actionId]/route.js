@@ -3,10 +3,11 @@ export const revalidate = 0;
 
 import { NextResponse } from 'next/server';
 import { getSql as getDbSql } from '../../../lib/db.js';
+import { apiErrorResponse } from '../../../lib/apiErrors.js';
 import { validateActionOutcome } from '../../../lib/validate.js';
 import { getOrgId } from '../../../lib/org.js';
 import { EVENTS, publishOrgEvent } from '../../../lib/events.js';
-import { scanSensitiveData } from '../../../lib/security.js';
+import { redactAny } from '../../../lib/security.js';
 import { estimateCost } from '../../../lib/billing.js';
 import { getModelPricing } from '../../../lib/repositories/settings.repository.js';
 import { maybeFireCostAlert } from '../../../lib/cost-alerts.js';
@@ -25,20 +26,6 @@ function isRecommendationApplied(value) {
   return value === true || value === 1 || value === '1';
 }
 
-function redactAny(value, findings) {
-  if (typeof value === 'string') {
-    const scan = scanSensitiveData(value);
-    if (!scan.clean) findings.push(...scan.findings);
-    return scan.redacted;
-  }
-  if (Array.isArray(value)) return value.map((v) => redactAny(v, findings));
-  if (value && typeof value === 'object') {
-    const out = {};
-    for (const [k, v] of Object.entries(value)) out[k] = redactAny(v, findings);
-    return out;
-  }
-  return value;
-}
 
 export async function GET(request, { params }) {
   try {
@@ -53,8 +40,7 @@ export async function GET(request, { params }) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error('Action detail GET error:', error);
-    return NextResponse.json({ error: 'An error occurred while fetching the action' }, { status: 500 });
+    return apiErrorResponse(error, 'ACTION_GET');
   }
 }
 
@@ -63,7 +49,8 @@ export async function PATCH(request, { params }) {
     const sql = getDbSql();
     const orgId = getOrgId(request);
     const { actionId } = await params;
-    const body = await request.json();
+    let body;
+    try { body = await request.json(); } catch { return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 }); }
 
     // A literal `null` (or non-object) JSON body would otherwise crash on the
     // body.close_if_running read below and surface as a 500; return the normal
@@ -229,7 +216,6 @@ export async function PATCH(request, { params }) {
       ...(costAlert.fired ? { cost_alert: { threshold: costAlert.threshold, severity: costAlert.signal.severity } } : {}),
     });
   } catch (error) {
-    console.error('Action detail PATCH error:', error);
-    return NextResponse.json({ error: 'An error occurred while updating the action' }, { status: 500 });
+    return apiErrorResponse(error, 'ACTION_PATCH');
   }
 }

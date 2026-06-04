@@ -15,6 +15,7 @@ export async function ensureAgentPairingsTable(sql = null) {
       public_key TEXT NOT NULL,
       algorithm TEXT NOT NULL DEFAULT 'RSASSA-PKCS1-v1_5',
       status TEXT NOT NULL DEFAULT 'pending',
+      permission_level TEXT NOT NULL DEFAULT 'danger',
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
       expires_at TEXT NOT NULL

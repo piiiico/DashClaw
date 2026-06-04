@@ -26,6 +26,7 @@ export default function LearningDashboard() {
   const [decisionForm, setDecisionForm] = useState({ decision: '', category: 'general', context: '', outcome: 'pending' });
   const [lessonForm, setLessonForm] = useState({ lesson: '', category: 'general', confidence: 80, tags: '' });
   const [submitting, setSubmitting] = useState(false);
+  const [lessonError, setLessonError] = useState('');
   const [rebuilding, setRebuilding] = useState(false);
   const [rebuildResult, setRebuildResult] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
@@ -253,17 +254,29 @@ export default function LearningDashboard() {
 
   const handleAddLesson = async () => {
     setSubmitting(true);
+    setLessonError('');
     try {
-      await fetch('/api/learning', {
+      const res = await fetch('/api/learning', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'lesson', ...lessonForm, tags: lessonForm.tags.split(',').map(t => t.trim()).filter(Boolean) }),
+        body: JSON.stringify({
+          decision: lessonForm.lesson,
+          category: lessonForm.category,
+          confidence: lessonForm.confidence,
+          tags: lessonForm.tags.split(',').map(t => t.trim()).filter(Boolean),
+        }),
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setLessonError(data.error || 'Failed to add lesson');
+        return;
+      }
       setShowLessonModal(false);
       setLessonForm({ lesson: '', category: 'general', confidence: 80, tags: '' });
       fetchData();
     } catch (err) {
       console.error('Failed to add lesson:', err);
+      setLessonError('Failed to add lesson');
     } finally {
       setSubmitting(false);
     }
@@ -823,12 +836,18 @@ export default function LearningDashboard() {
 
       {/* Add Lesson Modal */}
       {showLessonModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setShowLessonModal(false)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => { setShowLessonModal(false); setLessonError(''); }}>
           <div className="bg-surface-secondary border border-[rgba(255,255,255,0.1)] rounded-xl p-6 w-full max-w-md shadow-xl" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
               <Lightbulb size={18} className="text-warning" />
               Add Lesson
             </h3>
+
+            {lessonError && (
+              <div className="mb-4 text-xs text-error bg-error-subtle border border-error/20 rounded-md px-3 py-2">
+                {lessonError}
+              </div>
+            )}
 
             <div className="space-y-4">
               <div>
@@ -888,7 +907,7 @@ export default function LearningDashboard() {
 
             <div className="flex justify-end gap-3 mt-6">
               <button
-                onClick={() => setShowLessonModal(false)}
+                onClick={() => { setShowLessonModal(false); setLessonError(''); }}
                 className="px-4 py-2 rounded-lg text-sm text-secondary hover:text-white transition-colors"
               >
                 Cancel

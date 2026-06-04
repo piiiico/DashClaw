@@ -113,7 +113,15 @@ async function singleAttempt({
       };
     }
 
-    const rawData = await response.json();
+    const rawData = await response.json().catch(() => null);
+    if (rawData === null) {
+      return {
+        success: false,
+        error: 'capability_response_invalid',
+        message: 'Capability returned a non-JSON response',
+        elapsed_ms: elapsedMs,
+      };
+    }
     const data = mapResponse(rawData, responseMapping);
 
     return {

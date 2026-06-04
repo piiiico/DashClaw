@@ -13,9 +13,7 @@ import { useRealtime } from '../hooks/useRealtime';
 import { TABS } from './_components/helpers';
 import MessageList from './_components/MessageList';
 import ThreadList from './_components/ThreadList';
-import DocList from './_components/DocList';
 import MessageDetail from './_components/MessageDetail';
-import DocDetail from './_components/DocDetail';
 import ComposeModal from './_components/ComposeModal';
 import ThreadConversation from './_components/ThreadConversation';
 import SmartInbox from './_components/SmartInbox';
@@ -27,8 +25,7 @@ export default function MessagesPage() {
   const [tab, setTab] = useState('inbox');
   const [messages, setMessages] = useState([]);
   const [threads, setThreads] = useState([]);
-  const [docs, setDocs] = useState([]);
-  const [stats, setStats] = useState({ unread: 0, today: 0, activeThreads: 0, docCount: 0 });
+  const [stats, setStats] = useState({ unread: 0, today: 0, activeThreads: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selected, setSelected] = useState(null);
@@ -58,37 +55,24 @@ export default function MessagesPage() {
     return res.json();
   }, [filterAgentId]);
 
-  const fetchDocs = useCallback(async () => {
-    const params = new URLSearchParams({ limit: '20' });
-    const res = await fetch(`/api/messages/docs?${params}`);
-    // Fail-soft: the docs surface is optional. A non-ok response (e.g. the
-    // route is not present on this instance) must not block the inbox/threads
-    // render via the shared Promise.all below.
-    if (!res.ok) return { docs: [], total: 0 };
-    return res.json();
-  }, []);
-
   const fetchAll = useCallback(async () => {
     try {
       setError(null);
-      const [inboxData, sentData, threadData, docData] = await Promise.all([
+      const [inboxData, sentData, threadData] = await Promise.all([
         fetchMessages('inbox'),
         fetchMessages('sent'),
         fetchThreads(),
-        fetchDocs(),
       ]);
 
       const currentMessages = tab === 'sent' ? sentData.messages : inboxData.messages;
       setMessages(currentMessages);
       setThreads(threadData.threads);
-      setDocs(docData.docs);
 
       // Sync selected message with fresh server data
       setSelected(prev => {
         if (!prev) return prev;
         const fresh = currentMessages.find(m => m.id === prev.id)
-          || threadData.threads.find(t => t.id === prev.id)
-          || docData.docs.find(d => d.id === prev.id);
+          || threadData.threads.find(t => t.id === prev.id);
         return fresh || prev;
       });
 
@@ -101,14 +85,13 @@ export default function MessagesPage() {
         unread: inboxData.unread_count || 0,
         today: todayCount,
         activeThreads: threadData.threads.filter(t => t.status === 'open').length,
-        docCount: docData.total || 0,
       });
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, [tab, fetchMessages, fetchThreads, fetchDocs]);
+  }, [tab, fetchMessages, fetchThreads]);
 
   // Agents for compose dropdown
   useEffect(() => {
@@ -266,8 +249,7 @@ export default function MessagesPage() {
   // ── Current list for keyboard nav ─────────────────────────────
 
   const currentList = tab === 'inbox' || tab === 'sent' ? messages
-    : tab === 'threads' ? threads
-    : docs;
+    : threads;
 
   // ── Keyboard navigation ───────────────────────────────────────
 
@@ -284,7 +266,7 @@ export default function MessagesPage() {
           setSelectedIndex(prev => {
             const next = Math.min(prev + 1, currentList.length - 1);
             if (currentList[next]) {
-              const type = tab === 'threads' ? 'thread' : tab === 'docs' ? 'doc' : 'message';
+              const type = tab === 'threads' ? 'thread' : 'message';
               selectItem(currentList[next], type);
             }
             return next;
@@ -296,7 +278,7 @@ export default function MessagesPage() {
           setSelectedIndex(prev => {
             const next = Math.max(prev - 1, 0);
             if (currentList[next]) {
-              const type = tab === 'threads' ? 'thread' : tab === 'docs' ? 'doc' : 'message';
+              const type = tab === 'threads' ? 'thread' : 'message';
               selectItem(currentList[next], type);
             }
             return next;
@@ -364,7 +346,7 @@ export default function MessagesPage() {
       )}
 
       {/* Instrument rail */}
-      <div className="mb-4 grid grid-cols-2 divide-x divide-border overflow-hidden rounded-xl border border-border bg-surface-secondary md:grid-cols-4">
+      <div className="mb-4 grid grid-cols-2 divide-x divide-border overflow-hidden rounded-xl border border-border bg-surface-secondary md:grid-cols-3">
         <div className="p-4">
           <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Unread</div>
           <div className="mt-1 text-2xl font-semibold tabular-nums text-brand">{stats.unread}</div>
@@ -376,10 +358,6 @@ export default function MessagesPage() {
         <div className="p-4">
           <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Active threads</div>
           <div className="mt-1 text-2xl font-semibold tabular-nums text-success">{stats.activeThreads}</div>
-        </div>
-        <div className="p-4">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Shared docs</div>
-          <div className="mt-1 text-2xl font-semibold tabular-nums text-white">{stats.docCount}</div>
         </div>
       </div>
 
@@ -522,13 +500,7 @@ export default function MessagesPage() {
                   selectedId={selectedType === 'thread' ? selected?.id : null}
                 />
               </div>
-            ) : (
-              <DocList
-                docs={docs}
-                onSelect={(d) => selectItem(d, 'doc')}
-                selectedId={selectedType === 'doc' ? selected?.id : null}
-              />
-            )}
+            ) : null}
           </div>
 
           {/* Detail panel */}
@@ -538,7 +510,7 @@ export default function MessagesPage() {
                 <CardContent className="pt-4">
                   <div className="mb-3 flex items-center justify-between">
                     <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">
-                      {selectedType === 'message' ? 'Message' : 'Document'}
+                      Message
                     </span>
                     <button
                       onClick={() => { setSelected(null); setSelectedIndex(-1); }}
@@ -558,7 +530,6 @@ export default function MessagesPage() {
                       onViewThread={handleViewThread}
                     />
                   )}
-                  {selectedType === 'doc' && <DocDetail doc={selected} />}
                 </CardContent>
               </Card>
             </div>

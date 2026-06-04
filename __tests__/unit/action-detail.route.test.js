@@ -32,7 +32,23 @@ vi.mock('@/lib/events.js', () => ({
   EVENTS: { ACTION_UPDATED: 'action.updated' },
   publishOrgEvent: mockPublishOrgEvent,
 }));
-vi.mock('@/lib/security.js', () => ({ scanSensitiveData: mockScanSensitiveData }));
+vi.mock('@/lib/security.js', () => ({
+  scanSensitiveData: mockScanSensitiveData,
+  redactAny: function redactAny(value, findings) {
+    if (typeof value === 'string') {
+      const scan = mockScanSensitiveData(value);
+      if (!scan.clean) findings.push(...scan.findings);
+      return scan.redacted;
+    }
+    if (Array.isArray(value)) return value.map((v) => redactAny(v, findings));
+    if (value && typeof value === 'object') {
+      const out = {};
+      for (const [k, v] of Object.entries(value)) out[k] = redactAny(v, findings);
+      return out;
+    }
+    return value;
+  },
+}));
 vi.mock('@/lib/repositories/actions.repository.js', () => ({
   getActionStatus: mockGetActionStatus,
   getActionWithRelations: mockGetActionWithRelations,

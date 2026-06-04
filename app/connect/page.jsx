@@ -249,9 +249,14 @@ pip install dashclaw`}</CodeBlock>
                   <p className="mt-3 text-[11px] text-text-tertiary leading-relaxed">
                     In Claude, open Add custom connector, paste the URL, click Connect, log in, and Authorize.
                   </p>
-                  <Link href="/docs/CLAUDE-DESKTOP-PLUGIN.md" className="mt-3 inline-flex items-center gap-1.5 text-xs text-brand hover:text-brand-hover transition-colors font-medium">
+                  <a
+                    href="https://github.com/ucsandman/DashClaw/blob/main/docs/CLAUDE-DESKTOP-PLUGIN.md"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 inline-flex items-center gap-1.5 text-xs text-brand hover:text-brand-hover transition-colors font-medium"
+                  >
                     Claude app connector guide <ArrowRight size={12} aria-hidden="true" />
-                  </Link>
+                  </a>
                 </div>
               </div>
             </div>
