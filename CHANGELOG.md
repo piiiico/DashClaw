@@ -11,6 +11,26 @@ As of **4.0.0**, DashClaw uses **one version across the platform and both SDKs**
 
 Through 3.x the platform and the SDKs versioned independently, which is why older entries below carry separate platform `[2.x]` numbers and `### SDK [3.0.0]`-style numbers, listed newest-first by release date. The `dashclaw` plugin bundle and CLI keep their own manifest versions and are prefixed with the package name.
 
+## [Unreleased]
+
+> Platform-only bug fixes deployed continuously to Vercel after the 4.0.1 release — **no SDK code changed**, so the published `dashclaw` packages remain correct at 4.0.1. Cut these as **4.0.2** when ready (`npm run version:set 4.0.2` && `npm install` && `npm run release:sdks`), per the unified-version model.
+
+### Fixed
+
+- **`/learning` page crash (React #31).** The recommendation-metrics row rendered `metric.outcomes.applied` / `.baseline` (summary objects) directly in JSX — "objects are not valid as a React child" — crashing the page for any org with recommendation-outcome data. Renders the scalar `.total` now.
+- **`/api/learning/suggestions` 500.** `generatePolicySuggestions` joined a table named `actions`; the table is `action_records` (`relation "actions" does not exist`). The suggestions feature never worked.
+- **Scoring auto-calibrate 500.** `scoringProfiles.autoCalibrate` selected nonexistent `prompt_tokens` / `completion_tokens` from `action_records` (real columns: `tokens_in` / `tokens_out`).
+- **Code-session alerts never recorded.** `insertAlerts` used `ON CONFLICT ON CONSTRAINT code_session_alerts_dedup`, but that name is a unique *index* on `COALESCE()` expressions — which `ON CONSTRAINT` can't match — so every ingest logged "constraint does not exist". Switched to index-inference `ON CONFLICT (org_id, kind, (COALESCE(project_id,'')), (COALESCE(session_id,'')))`.
+- **Latent schema gaps (migration `0017`).** Added the missing `token_budgets` NULL-safe unique index (budget upserts were 500ing on `ON CONFLICT`), and created the `message_attachments` and `prompt_injection_scans` tables that live routes referenced but no migration ever created.
+
+### Added
+
+- **App-level error boundaries** (`app/error.js`, `app/global-error.js`). The app had none, so any render error became an opaque browser "This page couldn't load" with no diagnostics. Now an on-brand surface with the server `digest` (and the stack logged to the console). This is what made the `/learning` client error debuggable.
+
+### Removed
+
+- **Dead onboarding feature.** `OnboardingChecklist` (rendered `null` in every mode since the onboarding API was archived in v2.1.0) + its dashboard render, the demo-mode `/api/onboarding/status` middleware stub, and `scripts/bootstrap-prompt.md` (built on the long-removed `syncState` / archived `/api/sync`). Demo fixtures no longer deep-link to the retired `/workspace` page.
+
 ## [4.0.1] — 2026-06-04
 
 > A correctness + hardening patch from a gated senior-quality pass. **The most important fix is for the Python SDK:** PyPI `dashclaw 4.0.0` shipped with an inverted `_request` argument order that left whole method families non-functional — upgrade to 4.0.1. Platform and both SDKs move together at 4.0.1.
