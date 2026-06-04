@@ -61,7 +61,7 @@ const navGroups = [
       { href: '/sessions', icon: Activity, label: 'Sessions' },
       { href: '/drift', icon: TrendingUp, label: 'Drift' },
       { href: '/learning', icon: GraduationCap, label: 'Learning' },
-      { href: '/quality', icon: BarChart3, label: 'Quality' },
+      { href: '/scoring', icon: BarChart3, label: 'Quality' },
       { href: '/evaluations', icon: ClipboardCheck, label: 'Evaluations' },
       { href: '/prompts', icon: Terminal, label: 'Prompts' },
       { href: '/messages', icon: Inbox, label: 'Messages' },

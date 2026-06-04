@@ -342,8 +342,8 @@ export default function ScoringPage() {
 
   return (
     <PageLayout
-      title="Scoring Profiles"
-      description="Define what 'good' means for your agents with weighted multi-dimensional scoring."
+      title="Quality"
+      description="Define what 'good' means for your agents, then grade real decisions against it — rule-based scoring, no LLM required."
       maturity="stable"
     >
       {/* Tab Bar */}
