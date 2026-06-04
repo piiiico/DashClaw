@@ -339,7 +339,7 @@ export default function WorkflowTemplateDetailPage() {
                   value={runsStatus}
                   onChange={(e) => setRunsStatus(e.target.value)}
                   aria-label="Filter runs by status"
-                  className="rounded-lg bg-[#111] border border-[rgba(255,255,255,0.1)] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-brand"
+                  className="rounded-lg border border-border bg-surface-tertiary px-2.5 py-1.5 text-xs text-white focus:border-brand/50 focus:outline-none"
                 >
                   <option value="all">All runs</option>
                   <option value="running">Running</option>

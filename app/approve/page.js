@@ -90,7 +90,7 @@ function enrichWithPolicyContext(rawActions, rawDecisions) {
 
 function SkeletonCard() {
   return (
-    <div className="h-40 animate-pulse rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#111]" />
+    <div className="h-40 animate-pulse rounded-xl border border-border bg-surface-secondary" />
   );
 }
 
@@ -306,7 +306,7 @@ export default function ApprovePage() {
     <div>
       {/* Fixed header with safe-area padding for iOS notch */}
       <header
-        className="fixed inset-x-0 top-0 z-20 border-b border-[rgba(255,255,255,0.06)] bg-[#0a0a0a]/90 backdrop-blur-sm"
+        className="fixed inset-x-0 top-0 z-20 border-b border-border bg-surface-primary/90 backdrop-blur-sm"
         style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
       >
         <div className="flex h-14 items-center justify-between px-4">
@@ -397,7 +397,7 @@ export default function ApprovePage() {
               return (
                 <li
                   key={action.action_id}
-                  className={`rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#111] p-4 transition-opacity duration-200 ${
+                  className={`rounded-xl border border-border bg-surface-secondary p-4 transition-opacity duration-200 ${
                     isRemoving ? 'opacity-0' : 'opacity-100'
                   }`}
                 >

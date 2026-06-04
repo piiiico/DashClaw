@@ -62,7 +62,7 @@ export default function InviteAcceptPage() {
   // Not logged in
   if (!sessionSettled) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+      <div className="min-h-screen bg-surface-primary flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -71,7 +71,7 @@ export default function InviteAcceptPage() {
   if (!authenticated) {
     // Middleware should redirect to login, but just in case
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-surface-primary flex items-center justify-center px-4">
         <div className="w-full max-w-sm text-center">
           <DashClawLogo size={32} className="mx-auto mb-4" />
           <h1 className="text-xl font-bold text-white mb-2">Sign in Required</h1>
@@ -90,7 +90,7 @@ export default function InviteAcceptPage() {
   // Loading invite
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+      <div className="min-h-screen bg-surface-primary flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -99,7 +99,7 @@ export default function InviteAcceptPage() {
   // Error state
   if (error && !invite) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-surface-primary flex items-center justify-center px-4">
         <div className="w-full max-w-sm text-center">
           <div className="w-12 h-12 rounded-xl bg-error-subtle flex items-center justify-center mx-auto mb-4">
             <AlertTriangle size={24} className="text-error" />
@@ -164,7 +164,7 @@ export default function InviteAcceptPage() {
 
   if (statusDisplay) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-surface-primary flex items-center justify-center px-4">
         <div className="w-full max-w-sm text-center">
           <div className={`w-12 h-12 rounded-xl ${statusDisplay.iconBg} flex items-center justify-center mx-auto mb-4`}>
             {statusDisplay.icon}
@@ -186,7 +186,7 @@ export default function InviteAcceptPage() {
 
   // Valid invite — show accept UI
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-surface-primary flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="w-12 h-12 rounded-xl bg-brand-subtle flex items-center justify-center mx-auto mb-4">

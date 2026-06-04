@@ -253,7 +253,7 @@ left next to the config on first install for full restore.`;
     "Go to /decisions — you should see your Hermes tool call with agent_id 'hermes'. Go to /code-sessions — the live session shows per-turn token counts and tool calls as they happen.";
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
+    <div className="min-h-screen text-white">
       <PublicNavbar />
 
       <main className="px-6 pb-20 pt-28">
@@ -279,7 +279,7 @@ left next to the config on first install for full restore.`;
             baseUrl={baseUrl}
           />
 
-          <section className="mt-6 rounded-3xl border border-[rgba(255,255,255,0.08)] bg-[#111] p-6 sm:p-8">
+          <section className="mt-6 rounded-xl border border-border-hover bg-surface-secondary p-6 sm:p-8">
             <p className="text-xs uppercase tracking-[0.32em] text-tertiary">
               Hermes-specific notes
             </p>
@@ -288,7 +288,7 @@ left next to the config on first install for full restore.`;
             </pre>
           </section>
 
-          <section className="mt-6 rounded-3xl border border-[rgba(255,255,255,0.08)] bg-[#111] p-6 sm:p-8">
+          <section className="mt-6 rounded-xl border border-border-hover bg-surface-secondary p-6 sm:p-8">
             <p className="text-xs uppercase tracking-[0.32em] text-tertiary">
               Discord setup
             </p>

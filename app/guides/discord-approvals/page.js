@@ -217,7 +217,7 @@ policies:
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
+    <div className="min-h-screen text-white">
       <PublicNavbar />
 
       <main className="px-6 pb-20 pt-28">
@@ -236,7 +236,7 @@ policies:
           </nav>
 
           {/* Prerequisites band */}
-          <section className="mb-6 rounded-3xl border border-[rgba(255,255,255,0.08)] bg-[#111] p-6 sm:p-8">
+          <section className="mb-6 rounded-xl border border-border-hover bg-surface-secondary p-6 sm:p-8">
             <p className="text-xs uppercase tracking-[0.32em] text-tertiary">Before you start</p>
             <ul className="mt-4 space-y-2 text-sm text-secondary">
               <li className="flex items-start gap-3">
@@ -276,11 +276,11 @@ policies:
           />
 
           {/* Troubleshooting */}
-          <section className="mt-6 rounded-3xl border border-[rgba(255,255,255,0.08)] bg-[#111] p-6 sm:p-8">
+          <section className="mt-6 rounded-xl border border-border-hover bg-surface-secondary p-6 sm:p-8">
             <p className="text-xs uppercase tracking-[0.32em] text-tertiary">
               If something does not work
             </p>
-            <dl className="mt-5 divide-y divide-[rgba(255,255,255,0.06)]">
+            <dl className="mt-5 divide-y divide-border">
               {troubleshooting.map((row) => (
                 <div key={row.symptom} className="grid gap-2 py-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:gap-6">
                   <dt className="flex items-start gap-2 text-sm font-semibold text-white">
@@ -294,7 +294,7 @@ policies:
           </section>
 
           {/* Next steps */}
-          <section className="mt-6 rounded-3xl border border-[rgba(255,255,255,0.08)] bg-[#0a0a0a] p-6">
+          <section className="mt-6 rounded-xl border border-border-hover bg-surface-primary p-6">
             <p className="text-xs uppercase tracking-[0.32em] text-tertiary">Next steps</p>
             <ul className="mt-4 space-y-2 text-sm text-secondary">
               {nextSteps.map((item) => (

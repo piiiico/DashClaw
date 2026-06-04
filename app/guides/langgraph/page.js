@@ -153,7 +153,7 @@ python main.py`,
     "Go to /decisions — you should see your action in the ledger with action_type 'research', agent_id 'langgraph-research-agent', and status 'completed'.";
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
+    <div className="min-h-screen text-white">
       <PublicNavbar />
 
       <main className="px-6 pb-20 pt-28">

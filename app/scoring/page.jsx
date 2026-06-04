@@ -343,7 +343,7 @@ export default function ScoringPage() {
   return (
     <PageLayout
       title="Quality"
-      description="Define what 'good' means for your agents, then grade real decisions against it — rule-based scoring, no LLM required."
+      subtitle="Define what 'good' means for your agents, then grade real decisions against it — rule-based scoring, no LLM required."
       maturity="stable"
     >
       {/* Tab Bar */}
@@ -379,16 +379,16 @@ export default function ScoringPage() {
             <Card className="mb-6 p-4 space-y-4">
               <input value={newProfile.name} onChange={e => setNewProfile(p => ({ ...p, name: e.target.value }))}
                 placeholder="Profile name (e.g. 'Production Deploy Quality')"
-                className="w-full px-3 py-2 bg-secondary border border rounded-lg text-sm text-white" />
+                className="w-full px-3 py-2 bg-secondary border border-border rounded-lg text-sm text-white" />
               <input value={newProfile.description} onChange={e => setNewProfile(p => ({ ...p, description: e.target.value }))}
                 placeholder="Description (optional)"
-                className="w-full px-3 py-2 bg-secondary border border rounded-lg text-sm text-white" />
+                className="w-full px-3 py-2 bg-secondary border border-border rounded-lg text-sm text-white" />
               <div className="grid grid-cols-2 gap-3">
                 <input value={newProfile.action_type} onChange={e => setNewProfile(p => ({ ...p, action_type: e.target.value }))}
                   placeholder="Action type filter (optional)"
-                  className="px-3 py-2 bg-secondary border border rounded-lg text-sm text-white" />
+                  className="px-3 py-2 bg-secondary border border-border rounded-lg text-sm text-white" />
                 <select value={newProfile.composite_method} onChange={e => setNewProfile(p => ({ ...p, composite_method: e.target.value }))}
-                  className="px-3 py-2 bg-secondary border border rounded-lg text-sm text-white">
+                  className="px-3 py-2 bg-secondary border border-border rounded-lg text-sm text-white">
                   {COMPOSITE_METHODS.map(m => (
                     <option key={m.value} value={m.value}>{m.label}  --  {m.desc}</option>
                   ))}
@@ -402,12 +402,12 @@ export default function ScoringPage() {
                     const dims = [...newProfile.dimensions];
                     dims[i] = { ...dims[i], name: e.target.value };
                     setNewProfile(p => ({ ...p, dimensions: dims }));
-                  }} placeholder="Dimension name" className="px-2 py-1.5 bg-primary border border rounded text-sm text-white" />
+                  }} placeholder="Dimension name" className="px-2 py-1.5 bg-primary border border-border rounded text-sm text-white" />
                   <select value={dim.data_source} onChange={e => {
                     const dims = [...newProfile.dimensions];
                     dims[i] = { ...dims[i], data_source: e.target.value };
                     setNewProfile(p => ({ ...p, dimensions: dims }));
-                  }} className="px-2 py-1.5 bg-primary border border rounded text-sm text-white">
+                  }} className="px-2 py-1.5 bg-primary border border-border rounded text-sm text-white">
                     {DATA_SOURCES.map(ds => <option key={ds.value} value={ds.value}>{ds.label}</option>)}
                   </select>
                   <div className="flex items-center gap-2">
@@ -453,9 +453,9 @@ export default function ScoringPage() {
                     <h3 className="font-medium text-white">{profile.name}</h3>
                     {profile.description && <p className="text-sm text-tertiary mt-1">{profile.description}</p>}
                     <div className="flex gap-2 mt-2">
-                      {profile.action_type && <Badge color="blue">{profile.action_type}</Badge>}
-                      <Badge color="zinc">{profile.composite_method?.replace(/_/g, ' ')}</Badge>
-                      <Badge color="zinc">{(profile.dimensions || []).length} dimensions</Badge>
+                      {profile.action_type && <Badge variant="info">{profile.action_type}</Badge>}
+                      <Badge variant="default">{profile.composite_method?.replace(/_/g, ' ')}</Badge>
+                      <Badge variant="default">{(profile.dimensions || []).length} dimensions</Badge>
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -505,7 +505,7 @@ export default function ScoringPage() {
                 {dimEditId !== profile.id && profile.dimensions && profile.dimensions.length > 0 && (
                   <div className="mt-3 grid grid-cols-2 lg:grid-cols-4 gap-2">
                     {profile.dimensions.map(dim => (
-                      <div key={dim.id} className="p-2 rounded bg-secondary border border">
+                      <div key={dim.id} className="p-2 rounded bg-secondary border border-border">
                         <div className="flex justify-between items-center">
                           <span className="text-xs font-medium text-secondary">{dim.name}</span>
                           <span className="text-xs text-disabled">{Math.round(dim.weight * 100)}%</span>
@@ -529,15 +529,15 @@ export default function ScoringPage() {
                       <div key={dim.id} className="grid grid-cols-12 gap-2 items-center">
                         <input value={dim.name} aria-label="Dimension name"
                           onChange={e => setManageDims(ds => ds.map((d, j) => j === i ? { ...d, name: e.target.value } : d))}
-                          className="col-span-4 px-2 py-1.5 bg-primary border border rounded text-sm text-white" />
+                          className="col-span-4 px-2 py-1.5 bg-primary border border-border rounded text-sm text-white" />
                         <select value={dim.data_source} aria-label="Dimension data source"
                           onChange={e => setManageDims(ds => ds.map((d, j) => j === i ? { ...d, data_source: e.target.value } : d))}
-                          className="col-span-3 px-2 py-1.5 bg-primary border border rounded text-sm text-white">
+                          className="col-span-3 px-2 py-1.5 bg-primary border border-border rounded text-sm text-white">
                           {DATA_SOURCES.map(ds => <option key={ds.value} value={ds.value}>{ds.label}</option>)}
                         </select>
                         <input type="number" min="0" max="1" step="0.05" value={dim.weight} aria-label="Dimension weight"
                           onChange={e => setManageDims(ds => ds.map((d, j) => j === i ? { ...d, weight: parseFloat(e.target.value) || 0 } : d))}
-                          className="col-span-2 px-2 py-1.5 bg-primary border border rounded text-sm text-white" />
+                          className="col-span-2 px-2 py-1.5 bg-primary border border-border rounded text-sm text-white" />
                         <button onClick={() => handleSaveDimension(profile.id, manageDims[i])} disabled={dimBusy || !dim.name}
                           className="col-span-2 text-xs text-brand hover:text-brand/80 disabled:opacity-40">Save</button>
                         <button onClick={() => handleDeleteDimension(profile.id, dim.id)} disabled={dimBusy}
@@ -547,15 +547,15 @@ export default function ScoringPage() {
                     <div className="grid grid-cols-12 gap-2 items-center pt-1">
                       <input value={newDim.name} aria-label="New dimension name"
                         onChange={e => setNewDim(d => ({ ...d, name: e.target.value }))}
-                        placeholder="New dimension" className="col-span-4 px-2 py-1.5 bg-primary border border rounded text-sm text-white" />
+                        placeholder="New dimension" className="col-span-4 px-2 py-1.5 bg-primary border border-border rounded text-sm text-white" />
                       <select value={newDim.data_source} aria-label="New dimension data source"
                         onChange={e => setNewDim(d => ({ ...d, data_source: e.target.value }))}
-                        className="col-span-3 px-2 py-1.5 bg-primary border border rounded text-sm text-white">
+                        className="col-span-3 px-2 py-1.5 bg-primary border border-border rounded text-sm text-white">
                         {DATA_SOURCES.map(ds => <option key={ds.value} value={ds.value}>{ds.label}</option>)}
                       </select>
                       <input type="number" min="0" max="1" step="0.05" value={newDim.weight} aria-label="New dimension weight"
                         onChange={e => setNewDim(d => ({ ...d, weight: parseFloat(e.target.value) || 0 }))}
-                        className="col-span-2 px-2 py-1.5 bg-primary border border rounded text-sm text-white" />
+                        className="col-span-2 px-2 py-1.5 bg-primary border border-border rounded text-sm text-white" />
                       <button onClick={() => handleAddDimension(profile.id)} disabled={dimBusy || !newDim.name}
                         className="col-span-3 text-xs text-brand hover:text-brand/80 disabled:opacity-40">+ Add dimension</button>
                     </div>
@@ -583,7 +583,7 @@ export default function ScoringPage() {
                 { label: 'Std dev', value: scoreStats.stddev_score ?? '—' },
                 { label: 'Agents', value: scoreStats.unique_agents ?? '—' },
               ].map(s => (
-                <div key={s.label} className="p-2 rounded bg-secondary border border text-center">
+                <div key={s.label} className="p-2 rounded bg-secondary border border-border text-center">
                   <div className="text-sm font-semibold text-white tabular-nums">{s.value}</div>
                   <div className="text-[10px] text-tertiary">{s.label}</div>
                 </div>
@@ -615,7 +615,7 @@ export default function ScoringPage() {
                               style={{ width: `${ds.score || 0}%` }} />
                           </div>
                           <span className={`w-8 text-right ${scoreColor(ds.score || 0)}`}>{ds.score ?? '-'}</span>
-                          <Badge color={ds.label === 'excellent' ? 'green' : ds.label === 'good' ? 'blue' : ds.label === 'poor' ? 'red' : 'zinc'}>
+                          <Badge variant={ds.label === 'excellent' ? 'success' : ds.label === 'good' ? 'info' : ds.label === 'poor' ? 'error' : 'default'}>
                             {ds.label}
                           </Badge>
                         </div>
@@ -654,16 +654,16 @@ export default function ScoringPage() {
             </div>
             <input value={newTemplate.name} onChange={e => setNewTemplate(t => ({ ...t, name: e.target.value }))}
               placeholder="Template name (e.g. 'Production Safety')"
-              className="w-full px-3 py-2 bg-secondary border border rounded-lg text-sm text-white" />
+              className="w-full px-3 py-2 bg-secondary border border-border rounded-lg text-sm text-white" />
             <div className="grid grid-cols-2 gap-3">
               <input value={newTemplate.action_type} onChange={e => setNewTemplate(t => ({ ...t, action_type: e.target.value }))}
                 placeholder="Action type (optional)"
-                className="px-3 py-2 bg-secondary border border rounded-lg text-sm text-white" />
+                className="px-3 py-2 bg-secondary border border-border rounded-lg text-sm text-white" />
               <div className="flex items-center gap-2">
                 <label className="text-xs text-tertiary">Base risk:</label>
                 <input type="number" min="0" max="100" value={newTemplate.base_risk}
                   onChange={e => setNewTemplate(t => ({ ...t, base_risk: parseInt(e.target.value) || 0 }))}
-                  className="w-20 px-2 py-2 bg-secondary border border rounded-lg text-sm text-white" />
+                  className="w-20 px-2 py-2 bg-secondary border border-border rounded-lg text-sm text-white" />
               </div>
             </div>
 
@@ -675,13 +675,13 @@ export default function ScoringPage() {
                   rules[i] = { ...rules[i], condition: e.target.value };
                   setNewTemplate(t => ({ ...t, rules }));
                 }} placeholder="e.g. metadata.environment == 'production'"
-                  className="flex-1 px-2 py-1.5 bg-primary border border rounded text-sm text-white font-mono" />
+                  className="flex-1 px-2 py-1.5 bg-primary border border-border rounded text-sm text-white font-mono" />
                 <span className="text-xs text-tertiary">+</span>
                 <input type="number" value={rule.add} onChange={e => {
                   const rules = [...newTemplate.rules];
                   rules[i] = { ...rules[i], add: parseInt(e.target.value) || 0 };
                   setNewTemplate(t => ({ ...t, rules }));
-                }} className="w-16 px-2 py-1.5 bg-primary border border rounded text-sm text-white text-center" />
+                }} className="w-16 px-2 py-1.5 bg-primary border border-border rounded text-sm text-white text-center" />
                 <button onClick={() => setNewTemplate(t => ({ ...t, rules: t.rules.filter((_, j) => j !== i) }))}
                   className="text-error text-xs hover:text-error">x</button>
               </div>
@@ -704,9 +704,9 @@ export default function ScoringPage() {
                   <div>
                     <h3 className="text-sm font-medium text-white">{tmpl.name}</h3>
                     <div className="flex gap-2 mt-1">
-                      {tmpl.action_type && <Badge color="blue">{tmpl.action_type}</Badge>}
-                      <Badge color="zinc">Base: {tmpl.base_risk}</Badge>
-                      <Badge color="zinc">{(tmpl.rules || []).length} rules</Badge>
+                      {tmpl.action_type && <Badge variant="info">{tmpl.action_type}</Badge>}
+                      <Badge variant="default">Base: {tmpl.base_risk}</Badge>
+                      <Badge variant="default">{(tmpl.rules || []).length} rules</Badge>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -745,19 +745,19 @@ export default function ScoringPage() {
               <input value={calibrateForm.action_type}
                 onChange={e => setCalibrateForm(f => ({ ...f, action_type: e.target.value }))}
                 placeholder="Action type (optional, blank = all)"
-                className="px-3 py-2 bg-secondary border border rounded-lg text-sm text-white" />
+                className="px-3 py-2 bg-secondary border border-border rounded-lg text-sm text-white" />
               <div className="flex items-center gap-2">
                 <label className="text-xs text-tertiary">Lookback:</label>
                 <input type="number" value={calibrateForm.lookback_days}
                   onChange={e => setCalibrateForm(f => ({ ...f, lookback_days: parseInt(e.target.value) || 30 }))}
-                  className="w-20 px-2 py-2 bg-secondary border border rounded-lg text-sm text-white" />
+                  className="w-20 px-2 py-2 bg-secondary border border-border rounded-lg text-sm text-white" />
                 <span className="text-xs text-tertiary">days</span>
               </div>
             </div>
             <input value={calibrateForm.agent_id}
               onChange={e => setCalibrateForm(f => ({ ...f, agent_id: e.target.value }))}
               placeholder="Agent ID (optional, blank = all agents)"
-              className="w-full px-3 py-2 bg-secondary border border rounded-lg text-sm text-white" />
+              className="w-full px-3 py-2 bg-secondary border border-border rounded-lg text-sm text-white" />
             <div>
               <label className="text-xs text-tertiary">Metrics to analyze:</label>
               <div className="flex flex-wrap gap-2 mt-1.5">

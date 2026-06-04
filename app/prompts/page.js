@@ -295,9 +295,9 @@ export default function PromptsPage() {
               {showCreate && (
                 <Card>
                   <CardContent className="space-y-3 pt-5">
-                    <input value={newTemplate.name} onChange={e => setNewTemplate(s => ({ ...s, name: e.target.value }))} placeholder="Template name" className="w-full px-3 py-2 rounded-lg bg-[#111] border border-[rgba(255,255,255,0.1)] text-sm text-white placeholder:text-disabled focus:outline-none focus:border-brand" />
-                    <input value={newTemplate.description} onChange={e => setNewTemplate(s => ({ ...s, description: e.target.value }))} placeholder="Description (optional)" className="w-full px-3 py-2 rounded-lg bg-[#111] border border-[rgba(255,255,255,0.1)] text-sm text-white placeholder:text-disabled focus:outline-none focus:border-brand" />
-                    <select value={newTemplate.category} onChange={e => setNewTemplate(s => ({ ...s, category: e.target.value }))} className="w-full px-3 py-2 rounded-lg bg-[#111] border border-[rgba(255,255,255,0.1)] text-sm text-white focus:outline-none focus:border-brand">
+                    <input value={newTemplate.name} onChange={e => setNewTemplate(s => ({ ...s, name: e.target.value }))} placeholder="Template name" className="w-full rounded-lg border border-border bg-surface-tertiary px-3 py-2 text-sm text-white placeholder:text-disabled focus:border-brand/50 focus:outline-none" />
+                    <input value={newTemplate.description} onChange={e => setNewTemplate(s => ({ ...s, description: e.target.value }))} placeholder="Description (optional)" className="w-full rounded-lg border border-border bg-surface-tertiary px-3 py-2 text-sm text-white placeholder:text-disabled focus:border-brand/50 focus:outline-none" />
+                    <select value={newTemplate.category} onChange={e => setNewTemplate(s => ({ ...s, category: e.target.value }))} className="w-full rounded-lg border border-border bg-surface-tertiary px-3 py-2 text-sm text-white focus:border-brand/50 focus:outline-none">
                       {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                     <div className="flex justify-end gap-2">
@@ -327,7 +327,7 @@ export default function PromptsPage() {
                               handleSelectTemplate(t);
                             }
                           }}
-                          className={`w-full flex items-center justify-between py-2 px-3 rounded-lg text-left transition-colors cursor-pointer focus:outline-none focus:border-brand ${selectedTemplate?.id === t.id ? 'bg-brand/10 border border-brand/30' : 'bg-[#111] border border-[rgba(255,255,255,0.04)] hover:border-[rgba(255,255,255,0.1)]'}`}
+                          className={`w-full flex items-center justify-between py-2 px-3 rounded-lg text-left transition-colors cursor-pointer focus:outline-none focus:border-brand ${selectedTemplate?.id === t.id ? 'bg-brand/10 border border-brand/30' : 'bg-surface-tertiary border border-border hover:border-border-hover'}`}
                         >
                           <div className="min-w-0">
                             <div className="text-sm text-white font-medium truncate">{t.name}</div>
@@ -384,9 +384,9 @@ export default function PromptsPage() {
                   {editingTemplate && (
                     <Card>
                       <CardContent className="space-y-3 pt-5">
-                        <input value={editForm.name} onChange={e => setEditForm(s => ({ ...s, name: e.target.value }))} placeholder="Template name" className="w-full px-3 py-2 rounded-lg bg-[#111] border border-[rgba(255,255,255,0.1)] text-sm text-white placeholder:text-disabled focus:outline-none focus:border-brand" />
-                        <input value={editForm.description} onChange={e => setEditForm(s => ({ ...s, description: e.target.value }))} placeholder="Description (optional)" className="w-full px-3 py-2 rounded-lg bg-[#111] border border-[rgba(255,255,255,0.1)] text-sm text-white placeholder:text-disabled focus:outline-none focus:border-brand" />
-                        <select value={editForm.category} onChange={e => setEditForm(s => ({ ...s, category: e.target.value }))} className="w-full px-3 py-2 rounded-lg bg-[#111] border border-[rgba(255,255,255,0.1)] text-sm text-white focus:outline-none focus:border-brand">
+                        <input value={editForm.name} onChange={e => setEditForm(s => ({ ...s, name: e.target.value }))} placeholder="Template name" className="w-full rounded-lg border border-border bg-surface-tertiary px-3 py-2 text-sm text-white placeholder:text-disabled focus:border-brand/50 focus:outline-none" />
+                        <input value={editForm.description} onChange={e => setEditForm(s => ({ ...s, description: e.target.value }))} placeholder="Description (optional)" className="w-full rounded-lg border border-border bg-surface-tertiary px-3 py-2 text-sm text-white placeholder:text-disabled focus:border-brand/50 focus:outline-none" />
+                        <select value={editForm.category} onChange={e => setEditForm(s => ({ ...s, category: e.target.value }))} className="w-full rounded-lg border border-border bg-surface-tertiary px-3 py-2 text-sm text-white focus:border-brand/50 focus:outline-none">
                           {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
                         <div className="flex justify-end gap-2">

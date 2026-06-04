@@ -19,7 +19,7 @@ function CopyButton({ value }) {
   return (
     <button
       onClick={handleCopy}
-      className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(255,255,255,0.08)] bg-[#161616] px-3 py-1.5 text-xs text-secondary transition-colors hover:border-[rgba(255,255,255,0.16)] hover:text-white"
+      className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-tertiary px-3 py-1.5 text-xs text-secondary transition-colors hover:border-border-hover hover:text-white"
     >
       {copied ? <Check size={12} className="text-success" /> : <Copy size={12} />}
       {copied ? 'Copied' : 'Copy'}
@@ -28,11 +28,11 @@ function CopyButton({ value }) {
 }
 
 function CodeCard({ title, body, tone = 'default' }) {
-  const toneClass = tone === 'accent' ? 'border-brand/30' : 'border-[rgba(255,255,255,0.08)]';
+  const toneClass = tone === 'accent' ? 'border-brand/30' : 'border-border-hover';
 
   return (
-    <div className={`rounded-2xl border bg-[#111] ${toneClass}`}>
-      <div className="flex items-center justify-between gap-3 border-b border-[rgba(255,255,255,0.06)] px-4 py-3">
+    <div className={`rounded-xl border bg-surface-secondary ${toneClass}`}>
+      <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
         <p className="text-sm font-medium text-secondary">{title}</p>
         <CopyButton value={body} />
       </div>
@@ -43,7 +43,7 @@ function CodeCard({ title, body, tone = 'default' }) {
 
 function StepSection({ number, title, summary, children }) {
   return (
-    <section className="rounded-3xl border border-[rgba(255,255,255,0.08)] bg-[#111] p-5 sm:p-6">
+    <section className="rounded-xl border border-border-hover bg-surface-secondary p-5 sm:p-6">
       <div className="flex items-start gap-4">
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand/15 text-sm font-semibold text-brand">
           {number}
@@ -87,7 +87,7 @@ export default function GuideClient({
   return (
     <div className="space-y-6">
       {/* Hero */}
-      <section className="rounded-3xl border border-brand/25 bg-[#111] p-6 sm:p-8">
+      <section className="rounded-xl border border-brand/25 bg-surface-secondary p-6 sm:p-8">
         {frameworkIcon && (
           <p className="text-2xl" aria-hidden="true">
             {frameworkIcon}
@@ -130,7 +130,7 @@ export default function GuideClient({
       ))}
 
       {/* Proof moment */}
-      <section className="rounded-3xl border border-success/20 bg-[#0a0a0a] p-6">
+      <section className="rounded-xl border border-success/20 bg-surface-primary p-6">
         <p className="text-xs uppercase tracking-[0.32em] text-success">What success looks like</p>
         <p className="mt-4 text-sm text-secondary">{proofMoment}</p>
         <p className="mt-3 text-sm text-tertiary">
@@ -141,7 +141,7 @@ export default function GuideClient({
 
       {/* Governance as Code */}
       {guardrailsYaml && (
-        <section className="rounded-3xl border border-[rgba(255,255,255,0.08)] bg-[#0a0a0a] p-6">
+        <section className="rounded-xl border border-border-hover bg-surface-primary p-6">
           <p className="text-xs uppercase tracking-[0.32em] text-tertiary">Governance as Code</p>
           <p className="mt-3 text-sm text-secondary">
             Drop a{' '}

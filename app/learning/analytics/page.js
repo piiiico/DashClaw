@@ -22,7 +22,7 @@ const TABS = [
 ];
 
 const MATURITY_CONFIG = {
-  master: { color: 'text-purple-400', bg: 'bg-purple-500', variant: 'info' },
+  master: { color: 'text-success', bg: 'bg-status-success', variant: 'success' },
   expert: { color: 'text-success', bg: 'bg-status-success', variant: 'success' },
   proficient: { color: 'text-info', bg: 'bg-status-info', variant: 'info' },
   competent: { color: 'text-warning', bg: 'bg-status-warning', variant: 'warning' },
@@ -73,6 +73,7 @@ export default function LearningAnalyticsPage() {
   const [curves, setCurves] = useState([]);
   const [loading, setLoading] = useState(true);
   const [computing, setComputing] = useState(false);
+  const [computeError, setComputeError] = useState(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -97,6 +98,7 @@ export default function LearningAnalyticsPage() {
 
   const handleCompute = async () => {
     setComputing(true);
+    setComputeError(null);
     try {
       await fetch('/api/learning/analytics/velocity', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -107,7 +109,7 @@ export default function LearningAnalyticsPage() {
         body: JSON.stringify({ lookback_days: 60 }),
       });
       fetchData();
-    } catch { alert('Computation failed'); }
+    } catch { setComputeError('Computation failed'); }
     finally { setComputing(false); }
   };
 
@@ -143,6 +145,12 @@ export default function LearningAnalyticsPage() {
       }
     >
       <div className="p-6 space-y-6">
+        {computeError && (
+          <div className="rounded-xl border border-error/20 bg-error-subtle px-4 py-3 text-sm text-error">
+            {computeError}
+          </div>
+        )}
+
         {/* Stats row */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <Card hover={false}>
@@ -173,7 +181,7 @@ export default function LearningAnalyticsPage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 border-b border-[rgba(255,255,255,0.06)]">
+        <div className="flex gap-1 border-b border-border">
           {TABS.map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 ${activeTab === tab.id ? 'text-white border-brand' : 'text-tertiary border-transparent hover:text-secondary'}`}>
               {tab.label}
@@ -192,7 +200,7 @@ export default function LearningAnalyticsPage() {
                 ) : (
                   <div className="space-y-3">
                     {agents.map((a, i) => (
-                      <div key={a.agent_id} className="py-2 px-3 rounded-lg bg-[#111] border border-[rgba(255,255,255,0.04)]">
+                      <div key={a.agent_id} className="py-2 px-3 rounded-lg bg-surface-tertiary border border-border">
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-2">
                             <span className="text-xs text-disabled tabular-nums w-4">#{i + 1}</span>
@@ -253,7 +261,7 @@ export default function LearningAnalyticsPage() {
               ) : (
                 <div className="space-y-2">
                   {velocity.map((v, i) => (
-                    <div key={i} className="py-2 px-3 rounded-lg bg-[#111] border border-[rgba(255,255,255,0.04)]">
+                    <div key={i} className="py-2 px-3 rounded-lg bg-surface-tertiary border border-border">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <span className="text-sm text-white">{v.agent_id}</span>
@@ -291,7 +299,7 @@ export default function LearningAnalyticsPage() {
               ) : (
                 <div className="space-y-2">
                   {curves.map((c, i) => (
-                    <div key={i} className="flex items-center justify-between py-1.5 px-2 rounded bg-[#111] border border-[rgba(255,255,255,0.04)]">
+                    <div key={i} className="flex items-center justify-between py-1.5 px-2 rounded bg-surface-tertiary border border-border">
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-secondary">{c.agent_id}</span>
                         <Badge size="xs">{c.action_type}</Badge>
@@ -320,7 +328,7 @@ export default function LearningAnalyticsPage() {
                 ) : (
                   <div className="space-y-3">
                     {agents.map(a => (
-                      <div key={a.agent_id} className="py-3 px-3 rounded-lg bg-[#111] border border-[rgba(255,255,255,0.04)]">
+                      <div key={a.agent_id} className="py-3 px-3 rounded-lg bg-surface-tertiary border border-border">
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-sm text-white font-medium">{a.agent_id}</span>
                           <MaturityBar score={a.maturity_score} level={a.maturity_level} />
@@ -357,7 +365,7 @@ export default function LearningAnalyticsPage() {
               <CardContent>
                 <div className="space-y-3">
                   {[
-                    { level: 'master', desc: '1000+ episodes, 92%+ success, 85+ avg score', color: 'bg-purple-500' },
+                    { level: 'master', desc: '1000+ episodes, 92%+ success, 85+ avg score', color: 'bg-status-success' },
                     { level: 'expert', desc: '500+ episodes, 85%+ success, 75+ avg score', color: 'bg-status-success' },
                     { level: 'proficient', desc: '150+ episodes, 75%+ success, 65+ avg score', color: 'bg-status-info' },
                     { level: 'competent', desc: '50+ episodes, 60%+ success, 55+ avg score', color: 'bg-status-warning' },

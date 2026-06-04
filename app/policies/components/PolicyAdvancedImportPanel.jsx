@@ -5,8 +5,8 @@ import { AlertTriangle, Upload, X } from 'lucide-react';
 import { Badge } from '../../components/ui/Badge';
 import { Card, CardContent } from '../../components/ui/Card';
 
-const inputClass = 'w-full px-3 py-2 rounded-lg bg-[#111] border border-[rgba(255,255,255,0.1)] text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-brand';
-const selectClass = 'w-full px-3 py-2 rounded-lg bg-[#111] border border-[rgba(255,255,255,0.1)] text-sm text-white focus:outline-none focus:border-brand';
+const inputClass = 'w-full px-3 py-2 rounded-lg bg-surface-secondary border border-border-hover text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-brand';
+const selectClass = 'w-full px-3 py-2 rounded-lg bg-surface-secondary border border-border-hover text-sm text-white focus:outline-none focus:border-brand';
 
 export default function PolicyAdvancedImportPanel({
   open,
@@ -53,8 +53,8 @@ export default function PolicyAdvancedImportPanel({
         onClick={onClose}
         className="absolute inset-0 cursor-default"
       />
-      <Card className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-[rgba(255,255,255,0.08)]">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[rgba(255,255,255,0.06)]">
+      <Card className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-border-hover">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
           <div className="flex items-center gap-3">
             <div className="h-9 w-9 rounded-full bg-warning-subtle border border-warning/20 flex items-center justify-center">
               <Upload size={16} className="text-warning" />
@@ -88,7 +88,7 @@ export default function PolicyAdvancedImportPanel({
                 className={`rounded-xl border p-4 text-left transition-colors ${
                   importMode === 'pack'
                     ? 'border-brand bg-brand/10'
-                    : 'border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] hover:bg-[rgba(255,255,255,0.04)]'
+                    : 'border-border-hover bg-surface-secondary hover:bg-surface-tertiary'
                 }`}
               >
                 <div className="flex items-center gap-2">
@@ -105,7 +105,7 @@ export default function PolicyAdvancedImportPanel({
                 className={`rounded-xl border p-4 text-left transition-colors ${
                   importMode === 'yaml'
                     ? 'border-brand bg-brand/10'
-                    : 'border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] hover:bg-[rgba(255,255,255,0.04)]'
+                    : 'border-border-hover bg-surface-secondary hover:bg-surface-tertiary'
                 }`}
               >
                 <div className="flex items-center gap-2">
@@ -115,31 +115,6 @@ export default function PolicyAdvancedImportPanel({
                 <p className="mt-2 text-xs text-secondary">
                   Import a prewritten definition directly. Use this only when the YAML is already validated and ready to load.
                 </p>
-              </button>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setImportMode('pack')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                  importMode === 'pack'
-                    ? 'bg-brand text-white'
-                    : 'bg-elevated text-secondary hover:bg-zinc-600'
-                }`}
-              >
-                Policy pack
-              </button>
-              <button
-                type="button"
-                onClick={() => setImportMode('yaml')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                  importMode === 'yaml'
-                    ? 'bg-brand text-white'
-                    : 'bg-elevated text-secondary hover:bg-zinc-600'
-                }`}
-              >
-                Raw YAML
               </button>
             </div>
 
@@ -168,7 +143,7 @@ export default function PolicyAdvancedImportPanel({
                 </div>
 
                 {preview && (
-                  <div className="rounded-lg bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.06)] p-3">
+                  <div className="rounded-lg bg-surface-secondary border border-border p-3">
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-xs font-medium text-white">{preview.name}</span>
                       {selectedTemplate && (
@@ -180,7 +155,7 @@ export default function PolicyAdvancedImportPanel({
                       <p className="text-[10px] text-disabled mt-1">Recommended for: {preview.recommended_for}</p>
                     )}
                     {selectedTemplate?.policies?.length > 0 && (
-                      <ul className="mt-2 space-y-1 border-t border-[rgba(255,255,255,0.06)] pt-2">
+                      <ul className="mt-2 space-y-1 border-t border-border pt-2">
                         {selectedTemplate.policies.map((p, i) => (
                           <li key={i} className="text-[10px] text-secondary">
                             <span className="text-white">{p.name}</span>
@@ -244,7 +219,7 @@ export default function PolicyAdvancedImportPanel({
                   {importPreview.error}
                 </div>
               ) : (
-                <div className="p-3 rounded-lg bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.06)] text-sm space-y-2">
+                <div className="p-3 rounded-lg bg-surface-secondary border border-border text-sm space-y-2">
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant="success">{`${importPreview.would_create ?? 0} would be created`}</Badge>
                     {(importPreview.would_skip ?? 0) > 0 && (
@@ -255,7 +230,7 @@ export default function PolicyAdvancedImportPanel({
                     Review the policies below, then confirm to import. Existing names are skipped, not overwritten.
                   </p>
                   {Array.isArray(importPreview.policies) && importPreview.policies.length > 0 && (
-                    <ul className="space-y-1 border-t border-[rgba(255,255,255,0.06)] pt-2">
+                    <ul className="space-y-1 border-t border-border pt-2">
                       {importPreview.policies.map((p, i) => (
                         <li key={i} className="flex items-center justify-between gap-2 text-[11px]">
                           <span className="truncate text-secondary">
@@ -278,7 +253,7 @@ export default function PolicyAdvancedImportPanel({
                   {importResult.error}
                 </div>
               ) : (
-                <div className="p-3 rounded-lg bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.06)] text-sm space-y-2">
+                <div className="p-3 rounded-lg bg-surface-secondary border border-border text-sm space-y-2">
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant="success">{`${importResult.imported ?? 0} imported`}</Badge>
                     {(importResult.skipped ?? 0) > 0 && (

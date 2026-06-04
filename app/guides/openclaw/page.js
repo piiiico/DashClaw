@@ -132,7 +132,7 @@ DASHCLAW_AGENT_ID=my-openclaw-agent`,
     "Go to /decisions. You should see your OpenClaw tool call in the ledger with agent_id 'my-openclaw-agent', a classified action_type that matches the tool call, and status 'completed'. Token usage and cost are attributed automatically once the agent's next LLM turn completes.";
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
+    <div className="min-h-screen text-white">
       <PublicNavbar />
 
       <main className="px-6 pb-20 pt-28">
@@ -159,16 +159,16 @@ DASHCLAW_AGENT_ID=my-openclaw-agent`,
           />
 
           {/* What gets governed (plugin-specific reference, mirrors the README classification table) */}
-          <section className="mt-6 rounded-3xl border border-[rgba(255,255,255,0.08)] bg-[#111] p-6 sm:p-8">
+          <section className="mt-6 rounded-xl border border-border-hover bg-surface-secondary p-6 sm:p-8">
             <p className="text-xs uppercase tracking-[0.32em] text-tertiary">
               What gets governed
             </p>
             <p className="mt-4 text-sm text-secondary leading-relaxed">
               The plugin classifies each tool call before it executes. Bash commands are parsed against known intent sets (git, rm, curl, npm). File operations are scanned for sensitive paths (<span className="font-mono text-secondary">.env</span>, credentials, private keys). Unknown tools fall through to action_type <span className="font-mono text-secondary">other</span> with a configurable default risk score of 50. Tools listed in <span className="font-mono text-secondary">highRiskTools</span> always start at risk 85; the classifier may raise the score further but will not lower it.
             </p>
-            <div className="mt-5 overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.08)]">
+            <div className="mt-5 overflow-hidden rounded-xl border border-border-hover">
               <table className="w-full text-left text-sm">
-                <thead className="bg-[#161616]">
+                <thead className="bg-surface-tertiary">
                   <tr>
                     <th scope="col" className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-tertiary">Tool call</th>
                     <th scope="col" className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-tertiary">action_type</th>
@@ -183,7 +183,7 @@ DASHCLAW_AGENT_ID=my-openclaw-agent`,
                     { tool: 'write: .env.production', type: 'security', risk: 85, reversible: 'yes' },
                     { tool: 'read: config.json', type: 'review', risk: 15, reversible: 'yes' },
                   ].map((row) => (
-                    <tr key={row.tool} className="border-t border-[rgba(255,255,255,0.06)]">
+                    <tr key={row.tool} className="border-t border-border">
                       <td className="px-4 py-3 font-mono text-xs">{row.tool}</td>
                       <td className="px-4 py-3 font-mono text-xs">{row.type}</td>
                       <td className="px-4 py-3 text-xs tabular-nums">{row.risk}</td>

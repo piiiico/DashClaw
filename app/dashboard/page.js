@@ -162,7 +162,7 @@ export default function Dashboard() {
             value={saveName}
             onChange={(e) => setSaveName(e.target.value)}
             placeholder="Layout name..."
-            className="px-3 py-1.5 rounded-lg bg-[#111] border border-[rgba(255,255,255,0.1)] text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-brand w-48"
+            className="w-48 rounded-lg border border-border bg-surface-tertiary px-3 py-1.5 text-sm text-white placeholder:text-disabled focus:border-brand/50 focus:outline-none"
             onKeyDown={(e) => e.key === 'Enter' && handleSaveLayout()}
             autoFocus
           />

@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
 
-const inputClass = 'w-full px-3 py-2 rounded-lg bg-[#111] border border-[rgba(255,255,255,0.1)] text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-brand';
-const selectClass = 'w-full px-3 py-2 rounded-lg bg-[#111] border border-[rgba(255,255,255,0.1)] text-sm text-white focus:outline-none focus:border-brand';
+const inputClass = 'w-full rounded-lg border border-border bg-surface-tertiary px-3 py-1.5 text-sm text-white placeholder-zinc-600 focus:border-brand/50 focus:outline-none';
+const selectClass = 'w-full rounded-lg border border-border bg-surface-tertiary px-3 py-1.5 text-sm text-white focus:border-brand/50 focus:outline-none';
 
 const DECISION_ACTIONS = [
   { value: 'block', label: 'Block' },
@@ -74,7 +74,7 @@ function ActionTypePicker({ selected, options, onChange, label, hint }) {
             className={`px-2.5 py-1 rounded-md text-xs transition-colors ${
               list.includes(type)
                 ? 'bg-brand text-white'
-                : 'bg-[#1a1a1a] text-secondary border border-[rgba(255,255,255,0.06)] hover:text-white'
+                : 'bg-surface-tertiary text-secondary border border-border hover:text-white'
             }`}
           >
             {type}
@@ -512,7 +512,7 @@ export default function PolicyRuleBuilderSection({
                   className={`px-2.5 py-1 rounded-md text-xs transition-colors ${
                     (form.freshness || []).includes(state)
                       ? 'bg-brand text-white'
-                      : 'bg-[#1a1a1a] text-secondary border border-[rgba(255,255,255,0.06)] hover:text-white'
+                      : 'bg-surface-tertiary text-secondary border border-border hover:text-white'
                   }`}
                 >
                   {state}

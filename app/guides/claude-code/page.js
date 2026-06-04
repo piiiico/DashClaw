@@ -98,21 +98,14 @@ DISCORD_APPROVER_ORG_ID=<your-org-id>
   const steps = [
     {
       number: 1,
-      title: 'Watch the 3-minute walkthrough',
-      summary:
-        'See the full install → first approval round-trip end to end. Skip if you prefer to follow the written steps below.',
-      note: 'Screencast: <SCREENCAST_URL>',
+      title: 'Deploy DashClaw',
+      summary: 'Get a running instance. Click the Vercel deploy button or run locally.',
+      note: 'Already have an instance? Skip to Step 2.',
     },
     {
       number: 2,
-      title: 'Deploy DashClaw',
-      summary: 'Get a running instance. Click the Vercel deploy button or run locally.',
-      note: 'Already have an instance? Skip to Step 3.',
-    },
-    {
-      number: 3,
       title: 'Install the hook scripts',
-      summary: 'Already running the DashClaw plugin (claude plugin install dashclaw@dashclaw)? The Pre/Post/Stop hooks are bundled — they fire as soon as the plugin is enabled (no trust gate), so you can skip straight to Step 4 (env vars). Otherwise, one command copies all three governance hooks plus the vendored intel module and merges the matching settings.json blocks. Re-run after each git pull to upgrade.',
+      summary: 'Already running the DashClaw plugin (claude plugin install dashclaw@dashclaw)? The Pre/Post/Stop hooks are bundled — they fire as soon as the plugin is enabled (no trust gate), so you can skip straight to Step 3 (env vars). Otherwise, one command copies all three governance hooks plus the vendored intel module and merges the matching settings.json blocks. Re-run after each git pull to upgrade.',
       codeTitle: 'Terminal',
       codeBody: `# From the DashClaw repo root:
 npm run hooks:install
@@ -133,7 +126,7 @@ cp hooks/dashclaw_stop.py     .claude/hooks/
 cp -r hooks/dashclaw_agent_intel .claude/hooks/`,
     },
     {
-      number: 4,
+      number: 3,
       title: 'Set environment variables',
       summary: 'Claude Code reads these from the shell or a .env file in the project root. The hooks accept DASHCLAW_URL as a fallback for DASHCLAW_BASE_URL (the MCP server uses DASHCLAW_URL) — set either. If only one of the URL/key is present, PreToolUse prints a one-line "half-configured" warning instead of failing silently. DASHCLAW_GUARD_UNAVAILABLE_POLICY defaults to block, which fails closed if the guard is unreachable after three retry attempts. Set it to warn for development if you would rather proceed with a stderr warning when the guard is down.',
       codeTitle: '.env',
@@ -144,7 +137,7 @@ DASHCLAW_GUARD_UNAVAILABLE_POLICY=block
 DASHCLAW_GUARD_TIMEOUT=5`,
     },
     {
-      number: 5,
+      number: 4,
       title: 'Add hooks to Claude Code settings',
       summary:
         'Merge this into your project\'s .claude/settings.json (or ~/.claude/settings.json for global).',
@@ -154,7 +147,7 @@ DASHCLAW_GUARD_TIMEOUT=5`,
         'Heads-up: a PROJECT .claude/settings.json only loads after you accept Claude Code\'s "trust this folder?" prompt. In a fresh clone, a Docker container, or a headless run, project hooks silently won\'t fire (a global ~/.claude Stop hook still will — the classic "Stop ran but Pre/PostToolUse didn\'t"). Put the hooks in ~/.claude/settings.json (or run `install-hooks.mjs --global --governance`) to fire out of the box with no trust step.',
     },
     {
-      number: 6,
+      number: 5,
       title: 'Connect Discord (2 minutes)',
       summary:
         'A Discord bot turns your phone into a one-tap approval surface for risky tool calls. The built-in Discord adapter posts a DM with Approve / Deny buttons when a policy requires human judgment. Telegram parity; ENV-only setup.',
@@ -164,7 +157,7 @@ DASHCLAW_GUARD_TIMEOUT=5`,
         'Step-by-step Discord Developer Portal walkthrough is printed below.',
     },
     {
-      number: 7,
+      number: 6,
       title: 'Run Claude Code and trigger a tool call',
       summary:
         'Ask Claude Code to do anything that uses Bash, Edit, Write, or MultiEdit, or an MCP tool (e.g. a connected Gmail/Stripe send). The hook fires automatically. For policies that require approval, your phone will DM you.',
@@ -173,7 +166,7 @@ DASHCLAW_GUARD_TIMEOUT=5`,
       note: 'Watch the terminal — you should see [DashClaw] messages as the hook evaluates the action.',
     },
     {
-      number: 8,
+      number: 7,
       title: 'See the result in DashClaw',
       summary: 'Open your DashClaw dashboard to confirm the action was recorded.',
       note: "Go to /decisions — you should see your tool call in the ledger with action_type 'other' (for a simple file write) or 'security' (for sensitive files), status 'completed'. Approvals that ran through Discord show approved_by starting with 'discord:'.",
@@ -210,7 +203,7 @@ DASHCLAW_GUARD_TIMEOUT=5`,
     "Go to /decisions — you should see your Claude Code tool call in the ledger. Look for action_type 'other' or 'security' with agent_id 'claude-code' and status 'completed'.";
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
+    <div className="min-h-screen text-white">
       <PublicNavbar />
 
       <main className="px-6 pb-20 pt-28">
@@ -236,27 +229,13 @@ DASHCLAW_GUARD_TIMEOUT=5`,
             baseUrl={baseUrl}
           />
 
-          <section className="mt-6 rounded-3xl border border-[rgba(255,255,255,0.08)] bg-[#111] p-6 sm:p-8">
+          <section className="mt-6 rounded-xl border border-border-hover bg-surface-secondary p-6 sm:p-8">
             <p className="text-xs uppercase tracking-[0.32em] text-tertiary">
               Discord setup
             </p>
             <pre className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-secondary">
               {discordPortalWalkthrough}
             </pre>
-          </section>
-
-          <section className="mt-6 rounded-3xl border border-[rgba(255,255,255,0.08)] bg-[#0a0a0a] p-6">
-            <p className="text-xs uppercase tracking-[0.32em] text-tertiary">
-              Watch the 3-minute walkthrough
-            </p>
-            <p className="mt-3 text-sm text-secondary">
-              End-to-end install to first Discord approval. Published on
-              Loom / YouTube (Unlisted) — backfilled by plan 02-01 once
-              recorded.
-            </p>
-            <p className="mt-3 font-mono text-xs text-tertiary">
-              Screencast: &lt;SCREENCAST_URL&gt;
-            </p>
           </section>
         </div>
       </main>

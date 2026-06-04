@@ -209,12 +209,12 @@ export default function WorkflowsPage() {
       maturity="beta"
       actions={
         <div className="flex items-center gap-2">
-          <div className="flex gap-0.5 rounded-lg bg-[#111] p-0.5">
+          <div className="flex gap-0.5 rounded-lg bg-surface-secondary p-0.5">
             {['all', 'draft', 'active', 'archived'].map((s) => (
               <button
                 key={s}
                 onClick={() => setStatusFilter(s)}
-                className={`rounded px-2.5 py-1 text-xs font-medium capitalize transition-colors ${statusFilter === s ? 'bg-[#222] text-white' : 'text-tertiary hover:text-secondary'}`}
+                className={`rounded px-2.5 py-1 text-xs font-medium capitalize transition-colors ${statusFilter === s ? 'bg-surface-elevated text-white' : 'text-tertiary hover:text-secondary'}`}
               >
                 {s}
               </button>
