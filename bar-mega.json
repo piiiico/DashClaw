@@ -1,0 +1,78 @@
+{
+  "meta": {
+    "name": "bar-mega",
+    "phase": 2,
+    "purpose": "Ratchet for the three-feature implementation (Group A cleanup, Group B Agent Reputation, Group C Agent Registry). A green bar means every in-scope item is implemented and tested, the full pre-existing suite is green with no regressions, all contract checks pass after their generate steps, lint and build are clean, every changed file is within the allowlist, the sibling and reference repos are untouched, and the planning docs exist and cite real files.",
+    "spec": "SPEC-mega.md",
+    "map": "docs/absorbed-projects.md",
+    "created": "2026-06-04",
+    "standards": "zero slop; no em or en dashes; no fabricated findings or metrics; plain language"
+  },
+  "groups": {
+    "A": {
+      "title": "Cleanup and integration",
+      "target": "all IN SCOPE items implemented and tested; OUT OF SCOPE items documented only",
+      "items": [
+        { "id": "A1", "scope": "in", "status": "pending", "summary": "Policy authoring testable recipes: rules.tests authored field + /api/policies/test runs them through the real evaluatePolicy", "test": "unit: inline recipe expecting block passes/fails correctly; empty body preserves legacy response" },
+        { "id": "A2", "scope": "in", "status": "pending", "summary": "Policy packs as primary start-with-safe-defaults flow wiring the existing import?preview=true; raw YAML/JSON kept as advanced", "test": "component: preview step renders would_create/conflict and only commits on confirm" },
+        { "id": "A3", "scope": "in", "status": "pending", "summary": "Replace alert() policy simulation with in-page result panel", "test": "component: panel renders summary + sample matches; window.alert not called" },
+        { "id": "A4", "scope": "out", "status": "documented", "summary": "Per-policy observe/warn/enforce dry-run lifecycle", "reason": "does not exist; full lifecycle is a risky change to the core guard path plus a migration; simulate already covers ad-hoc dry-run; documented as a gap" },
+        { "id": "A5", "scope": "in", "status": "pending", "summary": "Fix compliance page to read actual API shapes (summary.*, remediation_plan, risk_assessment.*, quick_wins array, gap_recommendations, uppercase risk) and add imda-agentic label", "test": "component: page reads real fields and renders non-zero coverage from a mocked response" },
+        { "id": "A6", "scope": "in", "status": "pending", "summary": "Scoped gapToPolicyDraft helper + deep-link prefill from a compliance gap to the policy authoring form for recognized patterns; free-text gaps documented as manual", "test": "unit: gapToPolicyDraft returns a valid {policy_type, rules} for a block control and null for a free-text-only control" },
+        { "id": "A7", "scope": "out", "status": "documented", "summary": "Recommended future CLI commands", "reason": "brief says recommend only; do not create a new published package; documented against the existing cli/ package" }
+      ]
+    },
+    "B": {
+      "title": "Agent Reputation",
+      "target": "all IN SCOPE items implemented and tested; depends on nothing new",
+      "items": [
+        { "id": "B1", "scope": "in", "status": "pending", "summary": "drizzle/0018_agent_reputation.sql: agent_reputation_events, agent_reputation_snapshots, agent_reputation_receipts; Postgres-only, idempotent, org-scoped, reg-style id prefixes", "test": "npm run db:migrate applies cleanly and is re-runnable" },
+        { "id": "B2", "scope": "in", "status": "pending", "summary": "reputation.repository.js (all SQL) + reputation.js (decay, Bayesian smoothing, volume/confidence); vector with the required fields; hash via digestJson, sign via signCanonical (Ed25519, no new dep), risk_score wraps existing action_records.risk_score", "test": "unit: decay half-life=0.5, prior at zero events, volume/confidence monotonic, vector hash determinism, receipt sign/verify round-trip, org-scoped listing" },
+        { "id": "B3", "scope": "in", "status": "pending", "summary": "Routes (no inline SQL): GET agents/[id], GET .../events, POST .../recompute, GET .../receipt, POST /api/reputation/verify; org-scoped, no cross-org, clean 404", "test": "route tests per endpoint incl org scoping and missing agent" },
+        { "id": "B3-opt", "scope": "in", "status": "pending", "summary": "Optional if easy: GET /api/reputation/leaderboard, GET .../summary", "test": "route tests if implemented" },
+        { "id": "B3-recompute-all", "scope": "out", "status": "documented", "summary": "recompute-all endpoint", "reason": "iterating all agents is an unbounded batch; document as a future scheduled job" },
+        { "id": "B4", "scope": "in", "status": "pending", "summary": "Source from action_records (spine, both outcome axes), guard_decisions, eval_scores (join), profile_scores, approvals, feedback lib; architected so drift/learning/scoring plug in later", "test": "covered by B2/B3 plus a sourcing unit test" },
+        { "id": "B5", "scope": "in", "status": "pending", "summary": "Node + Python SDK methods (get/list-events/recompute/get-receipt/verify); docs section across the SDK checklist surfaces; one contract-style test (seed agent+action+outcome -> recompute -> fetch vector+receipt -> verify)", "test": "sdk unit tests + contract test; sdk:count reconciled" }
+      ]
+    },
+    "C": {
+      "title": "Agent Registry",
+      "target": "all IN SCOPE items implemented and tested; depends on B for the trust metric; delegates to the capability runtime",
+      "items": [
+        { "id": "C1", "scope": "in", "status": "pending", "summary": "Every registry invocation delegates to the existing guard/action/capability seams; risk from RISK_SCORE_MAP + getPredictiveRisk clamped 0-100; no reimplemented HTTP/guard/action/outcome", "test": "asserted by C3 invoke tests" },
+        { "id": "C2", "scope": "in", "status": "pending", "summary": "Registered agent defined as external owned delegatable provider (endpoint, auth_type incl x402 metadata, risk_class, default budget, status) grouping capabilities; distinct noun/prefix from derived agents; reconciled with swarm/pairings/connections", "test": "documented in SPEC-mega.md and absorbed-projects.md" },
+        { "id": "C3", "scope": "in", "status": "pending", "summary": "drizzle/0019_agent_registry.sql (registered_agents, registered_agent_capabilities, agent_invocations referencing action_id); repository + lib + routes POST/GET /api/agents/registry, GET/PATCH .../[id], capability subroutes, POST /api/agents/invoke delegating to the capability runtime + guard + action; x402/auth metadata only, no settlement", "test": "route tests; invoke blocks on guard block; SSRF rejects loopback; cross-org returns not-found" },
+        { "id": "C3-shared-helper", "scope": "out", "status": "needs_user_decision", "summary": "Extract a shared invokeGovernedCapability() from the capability invoke route so both routes share it", "reason": "refactors an existing hot-path route; default is to compose existing seams; only build if the user approves, which adds the invoke route to the allowlist" },
+        { "id": "C4", "scope": "in", "status": "pending", "summary": "Node + Python SDK methods (register/list/get/update/addCapability/listCapabilities/invoke); minimal dashboard under app/agents/registry/ (list, detail with capabilities + reputation trust metric from B, invocation history, register form) reusing fleet/table/card components; docs; tests", "test": "repository/lib/route tests; component test for dashboard; sdk:count reconciled" }
+      ]
+    }
+  },
+  "gates": {
+    "lint": { "command": "npm run lint", "target": "clean exit 0", "current": "not-run" },
+    "test_full_suite": { "command": "npx vitest run", "target": "0 failures; regressions=0 vs baseline captured at Phase 2 start", "baseline_pass_count": null, "current": "not-run", "note": "full suite only; targeted runs miss regressions in unrelated files" },
+    "build": { "command": "npx next build", "target": "clean exit 0 (required for any app/** change)", "current": "not-run" },
+    "openapi_check": { "command": "npm run openapi:generate && npm run openapi:check", "target": "no drift; reputation routes are experimental (inventory only), registry routes under /api/agents are experimental (inventory only), so the stable OpenAPI spec should be unchanged", "current": "not-run" },
+    "api_inventory_check": { "command": "npm run api:inventory:generate && npm run api:inventory:check", "target": "no drift after regenerating json+md", "current": "not-run" },
+    "route_sql_check": { "command": "npm run route-sql:check", "target": "no new route.js with direct SQL; no per-file SQL increase vs baseline", "current": "not-run" },
+    "docs_check": { "command": "npm run docs:check", "target": "markdown links resolve; Next.js major consistent", "current": "not-run" },
+    "version_check": { "command": "npm run version:check", "target": "no hardcoded version", "current": "not-run" },
+    "version_sync_check": { "command": "npm run version:sync:check", "target": "platform and both SDKs share one version", "current": "not-run" },
+    "sdk_count": { "command": "npm run sdk:count", "target": "manual reconciliation aid (not a CI gate); cited counts updated across the SDK checklist surfaces after B5 and C4", "current": "not-run" }
+  },
+  "invariants": {
+    "allowlist_only": { "target": "every changed file is within the SPEC-mega.md allowlist", "check": "git diff --name-only vs allowlist", "current": "not-checked" },
+    "siblings_untouched": { "target": "no changes under C:/Projects/dashclaw-guardrails, C:/Projects/AI-Agent-Governance-Compliance-Kit, C:/Projects/Agent-Reputation-Oracle", "current": "not-checked" },
+    "no_git_add_all": { "target": "commits stage explicit paths only; never git add -A", "current": "enforced" },
+    "import_only_modules_unchanged": { "target": "guard.js, predictive-risk.js, capability-invoke.js, capability-runtime.js, integrity/**, signing-keys.repository.js, actions.repository.js, webhooks.js are not modified (unless the C3 shared-helper extraction is user-approved)", "current": "not-checked" },
+    "no_new_crypto_dependency": { "target": "reputation receipts use Ed25519 via node:crypto only; package.json crypto deps unchanged", "current": "not-checked" },
+    "planning_docs_present": { "target": "SPEC-mega.md, docs/absorbed-projects.md, bar-mega.json present and citing real files", "current": "true" }
+  },
+  "adversarial_break_inputs": [
+    "malformed reputation event (missing required fields, bad event_type)",
+    "cross-org reputation/registry lookup returns not-found, never another org's data",
+    "missing fields on register and invoke return clean validation errors",
+    "blocked invocation records a blocked action and does not execute",
+    "oversized invocation payload handled without crashing",
+    "private or loopback registry endpoint rejected by the inherited capability runtime SSRF defense"
+  ]
+}
