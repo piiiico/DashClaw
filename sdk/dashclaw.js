@@ -1420,6 +1420,49 @@ class DashClaw {
   async invokeRegisteredAgent({ registered_agent_id, capability_id, agent_id, payload, declared_goal } = {}) {
     return this._request('/api/agents/invoke', 'POST', { registered_agent_id, capability_id, agent_id, payload, declared_goal });
   }
+
+  // ---------------------------------------------------------------------------
+  // x402 spend governance — provider registry + governed paid acquisition.
+  // The agent executes the actual x402 call itself; these methods register
+  // providers and record/govern the spend. DashClaw never holds a wallet.
+  // ---------------------------------------------------------------------------
+
+  /** GET /api/x402/providers — list registered providers. */
+  async listProviders(filters = {}) {
+    return this._request('/api/x402/providers', 'GET', null, filters);
+  }
+  /** POST /api/x402/providers — register a paid provider. */
+  async createProvider(data = {}) {
+    return this._request('/api/x402/providers', 'POST', data);
+  }
+  /** GET /api/x402/providers/:id — provider detail + endpoints. */
+  async getProvider(id) {
+    return this._request(`/api/x402/providers/${id}`, 'GET');
+  }
+  /** PATCH /api/x402/providers/:id — update a provider. */
+  async updateProvider(id, patch = {}) {
+    return this._request(`/api/x402/providers/${id}`, 'PATCH', patch);
+  }
+  /** GET /api/x402/providers/:id/endpoints — list a provider's endpoints. */
+  async listProviderEndpoints(id) {
+    return this._request(`/api/x402/providers/${id}/endpoints`, 'GET');
+  }
+  /** POST /api/x402/providers/:id/endpoints — add an endpoint. */
+  async createProviderEndpoint(id, data = {}) {
+    return this._request(`/api/x402/providers/${id}/endpoints`, 'POST', data);
+  }
+  /**
+   * POST /api/x402/purchases — govern + record a paid acquisition.
+   * Required: agent_id, provider, declared_goal, purchase_reason, context_gap, expected_value.
+   * Returns { action, purchase, decision }; branch on action.status (running | pending_approval).
+   */
+  async recordPurchase(data = {}) {
+    return this._request('/api/x402/purchases', 'POST', data);
+  }
+  /** GET /api/x402/purchases — list governed purchases. */
+  async listPurchases(filters = {}) {
+    return this._request('/api/x402/purchases', 'GET', null, filters);
+  }
 }
 
 export { DashClaw, ApprovalDeniedError, GuardBlockedError };
