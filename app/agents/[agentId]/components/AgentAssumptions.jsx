@@ -42,7 +42,7 @@ export default function AgentAssumptions({ agentId, summary }) {
   const visible = showAll ? sorted : sorted.slice(0, 5);
 
   return (
-    <div className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#111] px-5 py-4">
+    <div className="rounded-2xl border border-border bg-surface-secondary px-5 py-4">
       <div className="mb-3 flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-white">Assumptions</span>

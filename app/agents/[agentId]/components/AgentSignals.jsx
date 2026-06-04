@@ -5,7 +5,7 @@ export default function AgentSignals({ signals }) {
   const amberCount = signals.filter(s => s.severity === 'amber').length;
 
   return (
-    <div className="rounded-2xl border border-error/20 bg-[#111] px-5 py-4">
+    <div className="rounded-2xl border border-error/20 bg-surface-secondary px-5 py-4">
       <div className="mb-3 flex items-center gap-2">
         <span className="text-xs font-medium uppercase tracking-widest text-tertiary">Active Signals</span>
         <span className="rounded-full bg-error-subtle px-2 py-0.5 text-[10px] font-semibold text-error">

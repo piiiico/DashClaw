@@ -65,7 +65,7 @@ export default function AgentPoliciesSection({ agentId, policies, onRefresh }) {
   const activeCount = applicablePolicies.filter(p => p.active === 1).length;
 
   return (
-    <div className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#111] px-5 py-4">
+    <div className="rounded-2xl border border-border bg-surface-secondary px-5 py-4">
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Shield size={14} className="text-tertiary" />

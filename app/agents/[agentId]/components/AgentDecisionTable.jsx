@@ -78,8 +78,8 @@ export default function AgentDecisionTable({ agentId }) {
   useEffect(() => { fetchActions(); }, [fetchActions]);
 
   return (
-    <div className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#111]">
-      <div className="flex items-center justify-between gap-3 border-b border-[rgba(255,255,255,0.06)] px-5 py-3 flex-wrap">
+    <div className="rounded-2xl border border-border bg-surface-secondary">
+      <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-3 flex-wrap">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-white">Decision History</span>
           <span className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] font-medium text-secondary">{total}</span>

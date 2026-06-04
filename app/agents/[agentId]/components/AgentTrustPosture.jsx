@@ -17,7 +17,7 @@ export default function AgentTrustPosture({ trust }) {
   const approvalVariant = approvalPct === null ? 'default' : approvalPct >= 80 ? 'success' : approvalPct >= 50 ? 'warning' : 'error';
 
   return (
-    <div className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#111] px-5 py-4">
+    <div className="rounded-2xl border border-border bg-surface-secondary px-5 py-4">
       <div className="mb-3 flex items-center gap-2">
         <Shield size={14} className="text-tertiary" />
         <span className="text-xs font-medium uppercase tracking-widest text-tertiary">Trust Posture</span>

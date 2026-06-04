@@ -30,7 +30,7 @@ export default function AgentVitalsStrip({ agent, identityVerified }) {
   const status = agent.presence?.status || 'unknown';
 
   return (
-    <div className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#111] px-5 py-4">
+    <div className="rounded-2xl border border-border bg-surface-secondary px-5 py-4">
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3 min-w-0">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand/10 border border-brand/20 text-brand">
