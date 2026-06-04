@@ -14,7 +14,7 @@ export async function generatePolicySuggestions(sql, orgId, { lookbackDays = 14,
       AVG(f.rating) as avg_rating,
       MAX(f.created_at) as latest_feedback
     FROM feedback f
-    JOIN actions a ON f.action_id = a.action_id AND a.org_id = f.org_id
+    JOIN action_records a ON f.action_id = a.action_id AND a.org_id = f.org_id
     WHERE f.org_id = ${orgId}
       AND f.sentiment = 'negative'
       AND f.created_at > NOW() - ${lookbackDays + ' days'}::interval
