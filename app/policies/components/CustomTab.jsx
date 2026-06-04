@@ -139,6 +139,27 @@ export default function CustomTab() {
       .catch(() => { /* fall back to static previews */ });
   }, []);
 
+  // A6: open the authoring form prefilled from a compliance-gap deep-link
+  // (/policies?prefill=<encoded { name, policy_type, rules }>).
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const raw = new URLSearchParams(window.location.search).get('prefill');
+    if (!raw) return;
+    try {
+      const draft = JSON.parse(raw);
+      if (draft && draft.policy_type) {
+        setEditingId(null);
+        setAuthoringForm(decompilePolicyForm({
+          name: draft.name || '',
+          policy_type: draft.policy_type,
+          rules: typeof draft.rules === 'string' ? draft.rules : JSON.stringify(draft.rules || {}),
+          agent_ids: null,
+        }));
+        setShowAuthoring(true);
+      }
+    } catch { /* ignore malformed prefill */ }
+  }, []);
+
   const filtered = policies.filter(p => {
     if (search && !p.name?.toLowerCase().includes(search.toLowerCase())) return false;
     if (filterType && p.policy_type !== filterType) return false;

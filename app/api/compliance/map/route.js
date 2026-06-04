@@ -36,7 +36,20 @@ export async function GET(request) {
     const policyDoc = convertPolicies(policies, `org-${orgId}`);
     const complianceMap = mapPolicies(policyDoc, framework);
 
-    return NextResponse.json(complianceMap);
+    // Expose each control's expected policy_mappings (from the framework
+    // definition) alongside the mapping result so the UI can offer a
+    // deterministic "create policy from this gap" prefill (A6). Additive only;
+    // mapPolicies itself is unchanged.
+    const mappingsById = new Map((framework.controls || []).map((c) => [c.id, c.policy_mappings || []]));
+    const enriched = {
+      ...complianceMap,
+      controls: (complianceMap.controls || []).map((c) => ({
+        ...c,
+        policy_mappings: mappingsById.get(c.control_id) || [],
+      })),
+    };
+
+    return NextResponse.json(enriched);
   } catch (err) {
     console.error('[COMPLIANCE/MAP] GET error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

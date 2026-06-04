@@ -15,6 +15,7 @@ import { ListSkeleton } from '../components/ui/Skeleton';
 import { HelpIcon } from '../components/HelpIcon';
 import { HELP_TIPS } from '../lib/demo/fixtures/help-tips.js';
 import { isDemoMode } from '../lib/isDemoMode';
+import { gapToPolicyDraft } from '../lib/compliance/gap-to-policy.js';
 
 const FRAMEWORK_LABELS = {
   'soc2': 'SOC 2',
@@ -375,6 +376,19 @@ export default function CompliancePage() {
                                 </ul>
                               </div>
                             )}
+                            {control.status === 'gap' && (() => {
+                              const draft = gapToPolicyDraft(control);
+                              if (!draft) return null;
+                              const prefill = encodeURIComponent(JSON.stringify(draft));
+                              return (
+                                <Link
+                                  href={`/policies?prefill=${prefill}`}
+                                  className="inline-flex items-center gap-1.5 text-xs text-brand transition-colors hover:text-brand-hover"
+                                >
+                                  <Shield size={12} aria-hidden="true" /> Create policy from this gap
+                                </Link>
+                              );
+                            })()}
                           </div>
                         )}
                       </div>
