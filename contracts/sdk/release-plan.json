@@ -1,14 +1,14 @@
 {
   "node": {
-    "current_version": "4.0.2",
+    "current_version": "4.1.0",
     "next_bump": "none",
-    "reason": "4.0.2 — platform-only release republished at the unified version (out-of-box governance hooks, team-invite security fix, secret/prompt-injection auto-scan, Policy Coach recorder toggle, live Decisions ledger, dashboard/sessions/drift/quality fixes). No Node SDK code changed since 4.0.1; the package republishes at 4.0.2 per the unified-version model. Self-dep stays ^4.0.0.",
+    "reason": "4.1.0 — minor feature release. Adds Agent Reputation methods (getAgentReputation, listAgentReputationEvents, recomputeAgentReputation, getAgentReputationReceipt, verifyReputationReceipt) and Agent Registry methods (registerAgent, listRegisteredAgents, getRegisteredAgent, updateRegisteredAgent, addAgentCapability, listAgentCapabilities, invokeRegisteredAgent) plus the Group A policy/compliance improvements. Additive; no breaking changes to existing methods. Self-dep stays ^4.0.0.",
     "domains": []
   },
   "python": {
-    "current_version": "4.0.2",
+    "current_version": "4.1.0",
     "next_bump": "none",
-    "reason": "4.0.2 — platform-only release republished at the unified version. No Python SDK code changed since 4.0.1; the package republishes at 4.0.2 per the unified-version model.",
+    "reason": "4.1.0 — minor feature release. Adds the snake_case Agent Reputation methods (get_agent_reputation, list_agent_reputation_events, recompute_agent_reputation, get_agent_reputation_receipt, verify_reputation_receipt) and Agent Registry methods (register_agent, list_registered_agents, get_registered_agent, update_registered_agent, add_agent_capability, list_agent_capabilities, invoke_registered_agent). Additive; no breaking changes.",
     "domains": []
   }
 }
