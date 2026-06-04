@@ -336,7 +336,7 @@ hermes dashclaw doctor`}
                 </a>
               </div>
               <p className="text-xs text-text-secondary leading-relaxed mb-3">
-                Canonical 104-method surface across core governance, durable finality, scoring, learning, messaging, handoffs, scanning, threads, sessions, and the execution-studio domains.
+                Canonical 116-method surface across core governance, durable finality, scoring, learning, messaging, handoffs, scanning, threads, sessions, and the execution-studio domains.
               </p>
               <CommandBlock label={`Install (v${process.env.NEXT_PUBLIC_SDK_NODE_VERSION})`}>{`npm install dashclaw`}</CommandBlock>
             </div>

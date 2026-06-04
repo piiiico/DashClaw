@@ -58,7 +58,7 @@ export default function LandingPage() {
               Self host the runtime <ArrowRight size={18} aria-hidden="true" />
             </TrackedLink>
             <Link
-              href="#live-demo"
+              href="/demo"
               className="px-8 py-3 rounded-lg bg-surface-tertiary border border-border-hover text-text-secondary text-sm font-medium hover:bg-surface-elevated hover:text-text-primary transition-all inline-flex items-center gap-2"
             >
               <Terminal size={16} aria-hidden="true" /> Run live demo
@@ -720,7 +720,7 @@ if (decision === "allow") {
                     title: 'Claude Code lifecycle',
                     desc: 'Two stdlib-only Python scripts for PreToolUse / PostToolUse. No pip install. Safe to ship even without DashClaw configured. Governs Bash, Edit, Write, MultiEdit, sub-agent (Agent/Task) spawns, and MCP tool calls (mcp__*) — including Gmail/Stripe/Calendar sends.',
                     example: 'cp hooks/dashclaw_*.py .claude/hooks/',
-                    href: '/docs#agent-tools',
+                    href: '/docs',
                   },
                   {
                     label: 'CLI',

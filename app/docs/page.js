@@ -180,15 +180,11 @@ const navItems = [
   { href: '#hosted-workspaces-delete', label: 'DELETE /workspaces/:id', indent: true },
   { href: '#hosted-cleanup', label: 'POST /cleanup', indent: true },
   { href: '#error-handling', label: 'Error Handling' },
-  { href: '#agent-tools', label: 'Agent Tools (Python)' },
   { href: '#legacy-v1', label: 'Legacy API (v1)', legacy: true },
   { href: '#real-time-events', label: 'Real-Time Events', indent: true, legacy: true },
-  { href: '#behavioral-drift', label: 'Behavioral Drift', indent: true, legacy: true },
-  { href: '#compliance-exports', label: 'Compliance Exports', indent: true, legacy: true },
   { href: '#dashboard-data', label: 'Dashboard Data', indent: true, legacy: true },
   { href: '#automation-snippets', label: 'Automation Snippets', indent: true, legacy: true },
   { href: '#user-preferences', label: 'User Preferences', indent: true, legacy: true },
-  { href: '#daily-digest', label: 'Daily Digest', indent: true, legacy: true },
   { href: '#compliance-engine', label: 'Compliance Engine', indent: true, legacy: true },
   { href: '#mapCompliance', label: 'mapCompliance', indent: true, legacy: true },
   { href: '#getProofReport', label: 'getProofReport', indent: true, legacy: true },
@@ -196,12 +192,6 @@ const navItems = [
   { href: '#getActivityLogs', label: 'getActivityLogs', indent: true, legacy: true },
   { href: '#webhooks', label: 'Webhooks', indent: true, legacy: true },
   { href: '#createWebhook', label: 'createWebhook', indent: true, legacy: true },
-  { href: '#policy-testing', label: 'Policy Testing', indent: true, legacy: true },
-  { href: '#task-routing', label: 'Task Routing', indent: true, legacy: true },
-  { href: '#agent-schedules', label: 'Agent Schedules', indent: true, legacy: true },
-  { href: '#agent-pairing', label: 'Agent Pairing', indent: true, legacy: true },
-  { href: '#identity-binding', label: 'Identity Binding', indent: true, legacy: true },
-  { href: '#org-management', label: 'Organization Management', indent: true, legacy: true },
 ];
 
 /* ─── page ─── */
