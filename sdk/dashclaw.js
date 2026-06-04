@@ -1463,6 +1463,23 @@ class DashClaw {
   async listPurchases(filters = {}) {
     return this._request('/api/x402/purchases', 'GET', null, filters);
   }
+  /**
+   * POST /api/artifacts — attach the x402 result snapshot to its purchase action.
+   * Reuses the existing artifacts endpoint; links by source_action_id so the
+   * snapshot appears in that action's evidence bundle.
+   * @param {string} actionId - the act_ id returned by recordPurchase
+   * @param {Object} result - { summary?, data?, url? }
+   */
+  async recordPurchaseResult(actionId, result = {}) {
+    return this._request('/api/artifacts', 'POST', {
+      artifact_type: 'x402_purchase_result',
+      name: `x402 result ${actionId}`,
+      description: result.summary || null,
+      content_json: result.data ?? {},
+      content_url: result.url || null,
+      source_action_id: actionId,
+    });
+  }
 }
 
 export { DashClaw, ApprovalDeniedError, GuardBlockedError };

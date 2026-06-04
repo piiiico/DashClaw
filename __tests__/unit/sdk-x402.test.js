@@ -58,4 +58,11 @@ describe('DashClaw — x402 SDK wrappers', () => {
     expect(c.method).toBe('GET');
     expect(c.url).toContain('/api/x402/purchases');
   });
+  it('recordPurchaseResult POSTs an artifact linked by source_action_id', async () => {
+    await claw.recordPurchaseResult('act_a', { summary: '12 sources', data: { count: 12 } });
+    const c = lastCall();
+    expect(c.method).toBe('POST');
+    expect(c.url).toContain('/api/artifacts');
+    expect(c.body).toMatchObject({ artifact_type: 'x402_purchase_result', source_action_id: 'act_a' });
+  });
 });
