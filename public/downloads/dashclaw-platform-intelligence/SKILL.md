@@ -5,7 +5,7 @@ description: DashClaw platform expert for integration, troubleshooting, and gove
 
 # DashClaw Platform Intelligence
 
-**Shape snapshot:** `sha1:d567efaf54c6da12bfd2a3b4e5c8aa24dae28e51`
+**Shape snapshot:** `sha1:4ce059d481529bec3476bdeb0fe372cf9743376d`
 **This file is auto-generated.** Do not edit by hand — regenerate with:
 
 ```bash
@@ -720,7 +720,8 @@ Per-org settings stored in the `settings` table. Set via `PUT /api/settings/:key
 ### Communication
 
 - `TELEGRAM_BOT_TOKEN`
-- `TELEGRAM_CHAT_ID`
+- `TELEGRAM_ADMIN_CHAT_ID`
+- `DASHCLAW_ALERTS_TELEGRAM`
 - `DISCORD_BOT_TOKEN`
 - `DISCORD_CLIENT_ID`
 - `DISCORD_GUILD_ID`

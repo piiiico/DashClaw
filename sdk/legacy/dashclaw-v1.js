@@ -1419,6 +1419,7 @@ class DashClaw {
 
   /**
    * Capture a key point from the current session.
+   * @deprecated The /api/context/points endpoint was retired in platform v4. This method always 404s.
    * @param {Object} point
    * @param {string} point.content - The key point content
    * @param {string} [point.category] - One of: decision, task, insight, question, general
@@ -1427,6 +1428,7 @@ class DashClaw {
    * @returns {Promise<{point: Object, point_id: string}>}
    */
   async captureKeyPoint(point) {
+    console.warn('[DashClaw] captureKeyPoint targets a retired endpoint (/api/context/points) and will 404. Upgrade to platform v4+.');
     return this._request('/api/context/points', 'POST', {
       agent_id: this.agentId,
       ...point
@@ -1435,6 +1437,7 @@ class DashClaw {
 
   /**
    * Get key points with optional filters.
+   * @deprecated The /api/context/points endpoint was retired in platform v4. This method always 404s.
    * @param {Object} [filters]
    * @param {string} [filters.category] - Filter by category
    * @param {string} [filters.session_date] - Filter by date
@@ -1442,6 +1445,7 @@ class DashClaw {
    * @returns {Promise<{points: Object[], total: number}>}
    */
   async getKeyPoints(filters = {}) {
+    console.warn('[DashClaw] getKeyPoints targets a retired endpoint (/api/context/points) and will 404. Upgrade to platform v4+.');
     const params = new URLSearchParams({ agent_id: this.agentId });
     if (filters.category) params.set('category', filters.category);
     if (filters.session_date) params.set('session_date', filters.session_date);
@@ -1451,12 +1455,14 @@ class DashClaw {
 
   /**
    * Create a context thread for tracking a topic across entries.
+   * @deprecated The /api/context/threads endpoint was retired in platform v4. This method always 404s.
    * @param {Object} thread
    * @param {string} thread.name - Thread name (unique per agent per org)
    * @param {string} [thread.summary] - Initial summary
    * @returns {Promise<{thread: Object, thread_id: string}>}
    */
   async createThread(thread) {
+    console.warn('[DashClaw] createThread targets a retired endpoint (/api/context/threads) and will 404. Upgrade to platform v4+.');
     return this._request('/api/context/threads', 'POST', {
       agent_id: this.agentId,
       ...thread
@@ -1465,12 +1471,14 @@ class DashClaw {
 
   /**
    * Add an entry to an existing thread.
+   * @deprecated The /api/context/threads endpoint was retired in platform v4. This method always 404s.
    * @param {string} threadId - The thread ID
    * @param {string} content - Entry content
    * @param {string} [entryType] - Entry type (default: 'note')
    * @returns {Promise<{entry: Object, entry_id: string}>}
    */
   async addThreadEntry(threadId, content, entryType) {
+    console.warn('[DashClaw] addThreadEntry targets a retired endpoint (/api/context/threads) and will 404. Upgrade to platform v4+.');
     return this._request(`/api/context/threads/${threadId}/entries`, 'POST', {
       content,
       entry_type: entryType || 'note'
@@ -1479,11 +1487,13 @@ class DashClaw {
 
   /**
    * Close a thread with an optional summary.
+   * @deprecated The /api/context/threads endpoint was retired in platform v4. This method always 404s.
    * @param {string} threadId - The thread ID
    * @param {string} [summary] - Final summary
    * @returns {Promise<{thread: Object}>}
    */
   async closeThread(threadId, summary) {
+    console.warn('[DashClaw] closeThread targets a retired endpoint (/api/context/threads) and will 404. Upgrade to platform v4+.');
     const body = { status: 'closed' };
     if (summary) body.summary = summary;
     return this._request(`/api/context/threads/${threadId}`, 'PATCH', body);
@@ -1491,12 +1501,14 @@ class DashClaw {
 
   /**
    * Get threads with optional filters.
+   * @deprecated The /api/context/threads endpoint was retired in platform v4. This method always 404s.
    * @param {Object} [filters]
    * @param {string} [filters.status] - Filter by status (active, closed)
    * @param {number} [filters.limit] - Max results
    * @returns {Promise<{threads: Object[], total: number}>}
    */
   async getThreads(filters = {}) {
+    console.warn('[DashClaw] getThreads targets a retired endpoint (/api/context/threads) and will 404. Upgrade to platform v4+.');
     const params = new URLSearchParams({ agent_id: this.agentId });
     if (filters.status) params.set('status', filters.status);
     if (filters.limit) params.set('limit', String(filters.limit));
@@ -1505,9 +1517,11 @@ class DashClaw {
 
   /**
    * Get a combined context summary: today's key points + active threads.
+   * @deprecated The /api/context endpoints were retired in platform v4. This method always 404s.
    * @returns {Promise<{points: Object[], threads: Object[]}>}
    */
   async getContextSummary() {
+    console.warn('[DashClaw] getContextSummary targets retired endpoints (/api/context/*) and will 404. Upgrade to platform v4+.');
     const today = new Date().toISOString().split('T')[0];
     const [pointsResult, threadsResult] = await Promise.all([
       this.getKeyPoints({ session_date: today }),
@@ -1793,11 +1807,6 @@ class DashClaw {
     return this._request(`/api/messages?${params}`, 'GET');
   }
 
-  /**
-   * Mark messages as read.
-   * @param {string[]} messageIds - Array of message IDs to mark read
-   * @returns {Promise<{updated: number}>}
-   */
   /**
    * Get sent messages from this agent.
    * @param {Object} [params]
@@ -2818,10 +2827,12 @@ class DashClaw {
   }
 
   async scoreWithProfile(profileId, action) {
+    if (Array.isArray(action)) throw new TypeError('use batchScoreWithProfile for arrays');
     return this._request('POST', '/api/scoring/score', { profile_id: profileId, action });
   }
 
   async batchScoreWithProfile(profileId, actions) {
+    if (!Array.isArray(actions)) throw new TypeError('batchScoreWithProfile expects an array');
     return this._request('POST', '/api/scoring/score', { profile_id: profileId, actions });
   }
 

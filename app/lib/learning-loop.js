@@ -16,7 +16,7 @@ function toBool(value) {
   return value === true || value === 1 || value === '1';
 }
 
-function quantile(values, q) {
+export function quantile(values, q) {
   if (!values.length) return null;
   const sorted = [...values].sort((a, b) => a - b);
   const pos = (sorted.length - 1) * clamp(q, 0, 1);

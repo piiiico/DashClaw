@@ -61,7 +61,7 @@ export async function generateExport(request, exportId) {
       // Generate the framework report
       let frameworkReport;
       if (format === 'json') {
-        frameworkReport = JSON.stringify(generateJsonReport(complianceMap), null, 2);
+        frameworkReport = generateJsonReport(complianceMap);
       } else {
         frameworkReport = generateMarkdownReport(complianceMap);
       }
@@ -119,17 +119,22 @@ Estimated Total Effort: ${gapAnalysis.summary.estimated_total_effort}
         action_breakdown: actionEvidence,
       };
 
-      // Append evidence section to report
-      const evidenceSection = buildEvidenceSection(evidenceSummary, format);
-      sections.push(evidenceSection);
+      // Append evidence section to report (markdown only; JSON payload carries evidenceSummary directly)
+      if (format !== 'json') {
+        const evidenceSection = buildEvidenceSection(evidenceSummary, format);
+        sections.push(evidenceSection);
+      }
     }
 
     // Build trend data if requested
     if (exportRecord.include_trends) {
       const snapshots = await listSnapshots(sql, orgId, null, 50);
       if (snapshots.length > 1) {
-        const trendSection = buildTrendSection(snapshots, format);
-        sections.push(trendSection);
+        // Trend sections are markdown tables; skip for JSON exports
+        if (format !== 'json') {
+          const trendSection = buildTrendSection(snapshots, format);
+          sections.push(trendSection);
+        }
       }
     }
 

@@ -347,11 +347,11 @@ export default function ScoringPage() {
       maturity="stable"
     >
       {/* Tab Bar */}
-      <div className="flex gap-1 mb-6 bg-[#111] rounded-lg p-1 w-fit">
+      <div className="flex gap-1 mb-6 bg-secondary rounded-lg p-1 w-fit">
         {TABS.map(tab => (
           <button key={tab} onClick={() => setActiveTab(tab)}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              activeTab === tab ? 'bg-[#222] text-white' : 'text-tertiary hover:text-secondary'
+              activeTab === tab ? 'bg-elevated text-white' : 'text-tertiary hover:text-secondary'
             }`}>{tab}</button>
         ))}
       </div>
@@ -362,10 +362,10 @@ export default function ScoringPage() {
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center gap-3">
               <h2 className="text-lg font-semibold">Scoring Profiles</h2>
-              <div className="flex gap-0.5 bg-[#111] rounded-lg p-0.5">
+              <div className="flex gap-0.5 bg-secondary rounded-lg p-0.5">
                 {['active', 'archived'].map(s => (
                   <button key={s} onClick={() => setProfileStatus(s)}
-                    className={`px-2.5 py-1 rounded text-xs font-medium capitalize transition-colors ${profileStatus === s ? 'bg-[#222] text-white' : 'text-tertiary hover:text-secondary'}`}>{s}</button>
+                    className={`px-2.5 py-1 rounded text-xs font-medium capitalize transition-colors ${profileStatus === s ? 'bg-elevated text-white' : 'text-tertiary hover:text-secondary'}`}>{s}</button>
                 ))}
               </div>
             </div>
@@ -379,16 +379,16 @@ export default function ScoringPage() {
             <Card className="mb-6 p-4 space-y-4">
               <input value={newProfile.name} onChange={e => setNewProfile(p => ({ ...p, name: e.target.value }))}
                 placeholder="Profile name (e.g. 'Production Deploy Quality')"
-                className="w-full px-3 py-2 bg-[#111] border border-[rgba(255,255,255,0.1)] rounded-lg text-sm text-white" />
+                className="w-full px-3 py-2 bg-secondary border border rounded-lg text-sm text-white" />
               <input value={newProfile.description} onChange={e => setNewProfile(p => ({ ...p, description: e.target.value }))}
                 placeholder="Description (optional)"
-                className="w-full px-3 py-2 bg-[#111] border border-[rgba(255,255,255,0.1)] rounded-lg text-sm text-white" />
+                className="w-full px-3 py-2 bg-secondary border border rounded-lg text-sm text-white" />
               <div className="grid grid-cols-2 gap-3">
                 <input value={newProfile.action_type} onChange={e => setNewProfile(p => ({ ...p, action_type: e.target.value }))}
                   placeholder="Action type filter (optional)"
-                  className="px-3 py-2 bg-[#111] border border-[rgba(255,255,255,0.1)] rounded-lg text-sm text-white" />
+                  className="px-3 py-2 bg-secondary border border rounded-lg text-sm text-white" />
                 <select value={newProfile.composite_method} onChange={e => setNewProfile(p => ({ ...p, composite_method: e.target.value }))}
-                  className="px-3 py-2 bg-[#111] border border-[rgba(255,255,255,0.1)] rounded-lg text-sm text-white">
+                  className="px-3 py-2 bg-secondary border border rounded-lg text-sm text-white">
                   {COMPOSITE_METHODS.map(m => (
                     <option key={m.value} value={m.value}>{m.label}  --  {m.desc}</option>
                   ))}
@@ -402,12 +402,12 @@ export default function ScoringPage() {
                     const dims = [...newProfile.dimensions];
                     dims[i] = { ...dims[i], name: e.target.value };
                     setNewProfile(p => ({ ...p, dimensions: dims }));
-                  }} placeholder="Dimension name" className="px-2 py-1.5 bg-[#0a0a0a] border border-[rgba(255,255,255,0.06)] rounded text-sm text-white" />
+                  }} placeholder="Dimension name" className="px-2 py-1.5 bg-primary border border rounded text-sm text-white" />
                   <select value={dim.data_source} onChange={e => {
                     const dims = [...newProfile.dimensions];
                     dims[i] = { ...dims[i], data_source: e.target.value };
                     setNewProfile(p => ({ ...p, dimensions: dims }));
-                  }} className="px-2 py-1.5 bg-[#0a0a0a] border border-[rgba(255,255,255,0.06)] rounded text-sm text-white">
+                  }} className="px-2 py-1.5 bg-primary border border rounded text-sm text-white">
                     {DATA_SOURCES.map(ds => <option key={ds.value} value={ds.value}>{ds.label}</option>)}
                   </select>
                   <div className="flex items-center gap-2">
@@ -505,12 +505,12 @@ export default function ScoringPage() {
                 {dimEditId !== profile.id && profile.dimensions && profile.dimensions.length > 0 && (
                   <div className="mt-3 grid grid-cols-2 lg:grid-cols-4 gap-2">
                     {profile.dimensions.map(dim => (
-                      <div key={dim.id} className="p-2 rounded bg-[#111] border border-[rgba(255,255,255,0.04)]">
+                      <div key={dim.id} className="p-2 rounded bg-secondary border border">
                         <div className="flex justify-between items-center">
                           <span className="text-xs font-medium text-secondary">{dim.name}</span>
                           <span className="text-xs text-disabled">{Math.round(dim.weight * 100)}%</span>
                         </div>
-                        <div className="w-full bg-[#222] rounded-full h-1 mt-1">
+                        <div className="w-full bg-elevated rounded-full h-1 mt-1">
                           <div className="bg-brand h-1 rounded-full" style={{ width: `${dim.weight * 100}%` }} />
                         </div>
                       </div>
@@ -520,7 +520,7 @@ export default function ScoringPage() {
 
                 {/* Dimension editor (post-creation CRUD) */}
                 {dimEditId === profile.id && (
-                  <div className="mt-3 border-t border-[rgba(255,255,255,0.06)] pt-3 space-y-2">
+                  <div className="mt-3 border-t border pt-3 space-y-2">
                     <h4 className="text-xs font-medium text-secondary">Manage dimensions</h4>
                     {manageDims.length === 0 && (
                       <p className="text-xs text-tertiary">No dimensions yet — add one below.</p>
@@ -529,15 +529,15 @@ export default function ScoringPage() {
                       <div key={dim.id} className="grid grid-cols-12 gap-2 items-center">
                         <input value={dim.name} aria-label="Dimension name"
                           onChange={e => setManageDims(ds => ds.map((d, j) => j === i ? { ...d, name: e.target.value } : d))}
-                          className="col-span-4 px-2 py-1.5 bg-[#0a0a0a] border border-[rgba(255,255,255,0.06)] rounded text-sm text-white" />
+                          className="col-span-4 px-2 py-1.5 bg-primary border border rounded text-sm text-white" />
                         <select value={dim.data_source} aria-label="Dimension data source"
                           onChange={e => setManageDims(ds => ds.map((d, j) => j === i ? { ...d, data_source: e.target.value } : d))}
-                          className="col-span-3 px-2 py-1.5 bg-[#0a0a0a] border border-[rgba(255,255,255,0.06)] rounded text-sm text-white">
+                          className="col-span-3 px-2 py-1.5 bg-primary border border rounded text-sm text-white">
                           {DATA_SOURCES.map(ds => <option key={ds.value} value={ds.value}>{ds.label}</option>)}
                         </select>
                         <input type="number" min="0" max="1" step="0.05" value={dim.weight} aria-label="Dimension weight"
                           onChange={e => setManageDims(ds => ds.map((d, j) => j === i ? { ...d, weight: parseFloat(e.target.value) || 0 } : d))}
-                          className="col-span-2 px-2 py-1.5 bg-[#0a0a0a] border border-[rgba(255,255,255,0.06)] rounded text-sm text-white" />
+                          className="col-span-2 px-2 py-1.5 bg-primary border border rounded text-sm text-white" />
                         <button onClick={() => handleSaveDimension(profile.id, manageDims[i])} disabled={dimBusy || !dim.name}
                           className="col-span-2 text-xs text-brand hover:text-brand/80 disabled:opacity-40">Save</button>
                         <button onClick={() => handleDeleteDimension(profile.id, dim.id)} disabled={dimBusy}
@@ -547,15 +547,15 @@ export default function ScoringPage() {
                     <div className="grid grid-cols-12 gap-2 items-center pt-1">
                       <input value={newDim.name} aria-label="New dimension name"
                         onChange={e => setNewDim(d => ({ ...d, name: e.target.value }))}
-                        placeholder="New dimension" className="col-span-4 px-2 py-1.5 bg-[#0a0a0a] border border-[rgba(255,255,255,0.06)] rounded text-sm text-white" />
+                        placeholder="New dimension" className="col-span-4 px-2 py-1.5 bg-primary border border rounded text-sm text-white" />
                       <select value={newDim.data_source} aria-label="New dimension data source"
                         onChange={e => setNewDim(d => ({ ...d, data_source: e.target.value }))}
-                        className="col-span-3 px-2 py-1.5 bg-[#0a0a0a] border border-[rgba(255,255,255,0.06)] rounded text-sm text-white">
+                        className="col-span-3 px-2 py-1.5 bg-primary border border rounded text-sm text-white">
                         {DATA_SOURCES.map(ds => <option key={ds.value} value={ds.value}>{ds.label}</option>)}
                       </select>
                       <input type="number" min="0" max="1" step="0.05" value={newDim.weight} aria-label="New dimension weight"
                         onChange={e => setNewDim(d => ({ ...d, weight: parseFloat(e.target.value) || 0 }))}
-                        className="col-span-2 px-2 py-1.5 bg-[#0a0a0a] border border-[rgba(255,255,255,0.06)] rounded text-sm text-white" />
+                        className="col-span-2 px-2 py-1.5 bg-primary border border rounded text-sm text-white" />
                       <button onClick={() => handleAddDimension(profile.id)} disabled={dimBusy || !newDim.name}
                         className="col-span-3 text-xs text-brand hover:text-brand/80 disabled:opacity-40">+ Add dimension</button>
                     </div>
@@ -583,7 +583,7 @@ export default function ScoringPage() {
                 { label: 'Std dev', value: scoreStats.stddev_score ?? '—' },
                 { label: 'Agents', value: scoreStats.unique_agents ?? '—' },
               ].map(s => (
-                <div key={s.label} className="p-2 rounded bg-[#111] border border-[rgba(255,255,255,0.04)] text-center">
+                <div key={s.label} className="p-2 rounded bg-secondary border border text-center">
                   <div className="text-sm font-semibold text-white tabular-nums">{s.value}</div>
                   <div className="text-[10px] text-tertiary">{s.label}</div>
                 </div>
@@ -610,7 +610,7 @@ export default function ScoringPage() {
                       <div key={i}>
                         <div className="flex items-center gap-2 text-xs">
                           <span className="text-tertiary w-24 truncate">{ds.dimension_name}</span>
-                          <div className="flex-1 bg-[#111] rounded-full h-2">
+                          <div className="flex-1 bg-secondary rounded-full h-2">
                             <div className={`h-2 rounded-full ${scoreBg(ds.score || 0)}`}
                               style={{ width: `${ds.score || 0}%` }} />
                           </div>
@@ -654,16 +654,16 @@ export default function ScoringPage() {
             </div>
             <input value={newTemplate.name} onChange={e => setNewTemplate(t => ({ ...t, name: e.target.value }))}
               placeholder="Template name (e.g. 'Production Safety')"
-              className="w-full px-3 py-2 bg-[#111] border border-[rgba(255,255,255,0.1)] rounded-lg text-sm text-white" />
+              className="w-full px-3 py-2 bg-secondary border border rounded-lg text-sm text-white" />
             <div className="grid grid-cols-2 gap-3">
               <input value={newTemplate.action_type} onChange={e => setNewTemplate(t => ({ ...t, action_type: e.target.value }))}
                 placeholder="Action type (optional)"
-                className="px-3 py-2 bg-[#111] border border-[rgba(255,255,255,0.1)] rounded-lg text-sm text-white" />
+                className="px-3 py-2 bg-secondary border border rounded-lg text-sm text-white" />
               <div className="flex items-center gap-2">
                 <label className="text-xs text-tertiary">Base risk:</label>
                 <input type="number" min="0" max="100" value={newTemplate.base_risk}
                   onChange={e => setNewTemplate(t => ({ ...t, base_risk: parseInt(e.target.value) || 0 }))}
-                  className="w-20 px-2 py-2 bg-[#111] border border-[rgba(255,255,255,0.1)] rounded-lg text-sm text-white" />
+                  className="w-20 px-2 py-2 bg-secondary border border rounded-lg text-sm text-white" />
               </div>
             </div>
 
@@ -675,13 +675,13 @@ export default function ScoringPage() {
                   rules[i] = { ...rules[i], condition: e.target.value };
                   setNewTemplate(t => ({ ...t, rules }));
                 }} placeholder="e.g. metadata.environment == 'production'"
-                  className="flex-1 px-2 py-1.5 bg-[#0a0a0a] border border-[rgba(255,255,255,0.06)] rounded text-sm text-white font-mono" />
+                  className="flex-1 px-2 py-1.5 bg-primary border border rounded text-sm text-white font-mono" />
                 <span className="text-xs text-tertiary">+</span>
                 <input type="number" value={rule.add} onChange={e => {
                   const rules = [...newTemplate.rules];
                   rules[i] = { ...rules[i], add: parseInt(e.target.value) || 0 };
                   setNewTemplate(t => ({ ...t, rules }));
-                }} className="w-16 px-2 py-1.5 bg-[#0a0a0a] border border-[rgba(255,255,255,0.06)] rounded text-sm text-white text-center" />
+                }} className="w-16 px-2 py-1.5 bg-primary border border rounded text-sm text-white text-center" />
                 <button onClick={() => setNewTemplate(t => ({ ...t, rules: t.rules.filter((_, j) => j !== i) }))}
                   className="text-error text-xs hover:text-error">x</button>
               </div>
@@ -745,19 +745,19 @@ export default function ScoringPage() {
               <input value={calibrateForm.action_type}
                 onChange={e => setCalibrateForm(f => ({ ...f, action_type: e.target.value }))}
                 placeholder="Action type (optional, blank = all)"
-                className="px-3 py-2 bg-[#111] border border-[rgba(255,255,255,0.1)] rounded-lg text-sm text-white" />
+                className="px-3 py-2 bg-secondary border border rounded-lg text-sm text-white" />
               <div className="flex items-center gap-2">
                 <label className="text-xs text-tertiary">Lookback:</label>
                 <input type="number" value={calibrateForm.lookback_days}
                   onChange={e => setCalibrateForm(f => ({ ...f, lookback_days: parseInt(e.target.value) || 30 }))}
-                  className="w-20 px-2 py-2 bg-[#111] border border-[rgba(255,255,255,0.1)] rounded-lg text-sm text-white" />
+                  className="w-20 px-2 py-2 bg-secondary border border rounded-lg text-sm text-white" />
                 <span className="text-xs text-tertiary">days</span>
               </div>
             </div>
             <input value={calibrateForm.agent_id}
               onChange={e => setCalibrateForm(f => ({ ...f, agent_id: e.target.value }))}
               placeholder="Agent ID (optional, blank = all agents)"
-              className="w-full px-3 py-2 bg-[#111] border border-[rgba(255,255,255,0.1)] rounded-lg text-sm text-white" />
+              className="w-full px-3 py-2 bg-secondary border border rounded-lg text-sm text-white" />
             <div>
               <label className="text-xs text-tertiary">Metrics to analyze:</label>
               <div className="flex flex-wrap gap-2 mt-1.5">
@@ -769,7 +769,7 @@ export default function ScoringPage() {
                         ...f, metrics: on ? f.metrics.filter(x => x !== m) : [...f.metrics, m],
                       }))}
                       className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
-                        on ? 'bg-brand text-black' : 'bg-[#111] text-tertiary hover:text-secondary'
+                        on ? 'bg-brand text-black' : 'bg-secondary text-tertiary hover:text-secondary'
                       }`}>{m.replace(/_/g, ' ')}</button>
                   );
                 })}
@@ -811,7 +811,7 @@ export default function ScoringPage() {
                   {/* Distribution visualization */}
                   <div className="mt-3 flex items-center gap-1 text-xs">
                     <span className="text-disabled w-16">min: {s.distribution.min}</span>
-                    <div className="flex-1 h-6 bg-[#111] rounded relative overflow-hidden">
+                    <div className="flex-1 h-6 bg-secondary rounded relative overflow-hidden">
                       <div className="absolute inset-y-0 bg-error-subtle" style={{
                         left: '0%', width: `${((s.distribution.p25 - s.distribution.min) / (s.distribution.max - s.distribution.min)) * 100}%`
                       }} />

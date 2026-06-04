@@ -3,6 +3,26 @@
 import Link from 'next/link';
 import { useMemo } from 'react';
 
+// SVG fill/stroke colours for node tones and connector lines.
+// Values mirror app/globals.css tokens; update the token variable to propagate
+// changes to both the Tailwind class layer and these canvas/SVG surfaces.
+const SVG_TONE_ERROR_FILL        = 'rgba(239,68,68,0.18)';   // --color-error-subtle
+const SVG_TONE_ERROR_STROKE      = '#ef4444';                 // --color-error
+const SVG_TONE_SUCCESS_FILL      = 'rgba(16,185,129,0.12)';  // --color-success-subtle (emerald)
+const SVG_TONE_SUCCESS_STROKE_60 = 'rgba(16,185,129,0.6)';   // --color-success @ 60%
+const SVG_TONE_SUCCESS_STROKE_55 = 'rgba(16,185,129,0.55)';  // --color-success @ 55%
+const SVG_TONE_PURPLE_FILL       = 'rgba(168,85,247,0.14)';  // purple-500 @ 14% (unresolved assumption)
+const SVG_TONE_PURPLE_STROKE     = 'rgba(168,85,247,0.6)';   // purple-500 @ 60%
+const SVG_TONE_APPROVAL_STROKE   = '#a855f7';                 // purple-500 (approval state)
+const SVG_TONE_APPROVAL_FILL     = 'rgba(168,85,247,0.18)';  // purple-500 @ 18%
+const SVG_TONE_WARNING_FILL      = 'rgba(245,158,11,0.16)';  // --color-warning @ 16%
+const SVG_TONE_WARNING_STROKE    = 'rgba(245,158,11,0.7)';   // --color-warning @ 70%
+const SVG_TONE_INFO_FILL         = 'rgba(14,165,233,0.14)';  // sky-500 @ 14% (running)
+const SVG_TONE_INFO_STROKE       = 'rgba(14,165,233,0.65)';  // sky-500 @ 65%
+const SVG_TONE_ZINC_FILL         = 'rgba(113,113,122,0.14)'; // zinc-500 @ 14% (default)
+const SVG_TONE_ZINC_STROKE       = 'rgba(113,113,122,0.55)'; // zinc-500 @ 55%
+const SVG_EDGE_STROKE            = 'rgba(255,255,255,0.18)';  // --color-border at a slightly higher opacity for edges
+
 const NODE_WIDTH = 220;
 const NODE_HEIGHT = 60;
 const COL_GAP = 60;
@@ -15,19 +35,19 @@ const PADDING = 20;
  */
 function statusTone(type, status) {
   if (type === 'assumption') {
-    if (status === 'invalidated') return { fill: 'rgba(239,68,68,0.18)', stroke: '#ef4444' };
-    if (status === 'validated') return { fill: 'rgba(16,185,129,0.12)', stroke: 'rgba(16,185,129,0.6)' };
-    return { fill: 'rgba(168,85,247,0.14)', stroke: 'rgba(168,85,247,0.6)' }; // unresolved
+    if (status === 'invalidated') return { fill: SVG_TONE_ERROR_FILL, stroke: SVG_TONE_ERROR_STROKE };
+    if (status === 'validated') return { fill: SVG_TONE_SUCCESS_FILL, stroke: SVG_TONE_SUCCESS_STROKE_60 };
+    return { fill: SVG_TONE_PURPLE_FILL, stroke: SVG_TONE_PURPLE_STROKE }; // unresolved
   }
   if (type === 'loop') {
-    return { fill: 'rgba(245,158,11,0.16)', stroke: 'rgba(245,158,11,0.7)' };
+    return { fill: SVG_TONE_WARNING_FILL, stroke: SVG_TONE_WARNING_STROKE };
   }
   // action
-  if (status === 'failed' || status === 'blocked') return { fill: 'rgba(239,68,68,0.18)', stroke: '#ef4444' };
-  if (status === 'pending_approval') return { fill: 'rgba(168,85,247,0.18)', stroke: '#a855f7' };
-  if (status === 'completed') return { fill: 'rgba(16,185,129,0.12)', stroke: 'rgba(16,185,129,0.55)' };
-  if (status === 'running') return { fill: 'rgba(14,165,233,0.14)', stroke: 'rgba(14,165,233,0.65)' };
-  return { fill: 'rgba(113,113,122,0.14)', stroke: 'rgba(113,113,122,0.55)' };
+  if (status === 'failed' || status === 'blocked') return { fill: SVG_TONE_ERROR_FILL, stroke: SVG_TONE_ERROR_STROKE };
+  if (status === 'pending_approval') return { fill: SVG_TONE_APPROVAL_FILL, stroke: SVG_TONE_APPROVAL_STROKE };
+  if (status === 'completed') return { fill: SVG_TONE_SUCCESS_FILL, stroke: SVG_TONE_SUCCESS_STROKE_55 };
+  if (status === 'running') return { fill: SVG_TONE_INFO_FILL, stroke: SVG_TONE_INFO_STROKE };
+  return { fill: SVG_TONE_ZINC_FILL, stroke: SVG_TONE_ZINC_STROKE };
 }
 
 function typeLabel(node) {
@@ -135,16 +155,16 @@ export default function ExecutionGraph({ graph }) {
         <div className="text-xs uppercase tracking-wider text-tertiary">Execution Graph</div>
         <div className="flex items-center gap-3 text-[10px] text-tertiary">
           <span className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-sm" style={{ backgroundColor: 'rgba(16,185,129,0.55)' }} /> completed
+            <span className="w-2 h-2 rounded-sm" style={{ backgroundColor: SVG_TONE_SUCCESS_STROKE_55 }} /> completed
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-sm" style={{ backgroundColor: '#ef4444' }} /> failed / invalidated
+            <span className="w-2 h-2 rounded-sm" style={{ backgroundColor: SVG_TONE_ERROR_STROKE }} /> failed / invalidated
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-sm" style={{ backgroundColor: '#a855f7' }} /> approval
+            <span className="w-2 h-2 rounded-sm" style={{ backgroundColor: SVG_TONE_APPROVAL_STROKE }} /> approval
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-sm" style={{ backgroundColor: 'rgba(245,158,11,0.7)' }} /> open loop
+            <span className="w-2 h-2 rounded-sm" style={{ backgroundColor: SVG_TONE_WARNING_STROKE }} /> open loop
           </span>
         </div>
       </div>
@@ -173,7 +193,7 @@ export default function ExecutionGraph({ graph }) {
                 <path
                   d={path}
                   fill="none"
-                  stroke="rgba(255,255,255,0.18)"
+                  stroke={SVG_EDGE_STROKE}
                   strokeWidth="1.5"
                 />
                 {edge.label && !isSideRail && (

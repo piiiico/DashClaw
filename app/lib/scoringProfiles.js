@@ -86,10 +86,6 @@ export async function updateProfile(sql, orgId, profileId, updates) {
 
   fields.updated_at = new Date().toISOString();
 
-  const setClauses = Object.entries(fields)
-    .map(([k]) => k)
-    .join(', ');
-
   // Build dynamic update
   const [updated] = await sql`
     UPDATE scoring_profiles
@@ -240,7 +236,7 @@ function scoreDimensionValue(rawValue, scale) {
       case 'gt': matched = val > target; break;
       case 'gte': matched = val >= target; break;
       case 'eq': matched = val === target || String(val) === String(target); break;
-      case 'between': matched = val >= target[0] && val <= target[1]; break;
+      case 'between': matched = Array.isArray(target) && val >= target[0] && val <= target[1]; break;
       case 'contains':
         matched = typeof val === 'string' && val.toLowerCase().includes(String(target).toLowerCase());
         break;
@@ -321,7 +317,7 @@ export async function scoreAction(sql, orgId, profileId, action) {
       ${action.agent_id || null},
       ${compositeScore},
       ${JSON.stringify(dimensionResults)},
-      ${JSON.stringify({ profile_name: profile.name, action_type: action.action_type || null })}
+      ${JSON.stringify({ profile_name: profile.name, action_type: action.action_type || null, ...(action.is_seed ? { is_seed: true } : {}) })}
     )
   `;
 
@@ -388,6 +384,7 @@ export async function getProfileScoreStats(sql, orgId, profileId) {
       COUNT(DISTINCT action_id)::int AS unique_actions
     FROM profile_scores
     WHERE org_id = ${orgId} AND profile_id = ${profileId}
+      AND (metadata->>'is_seed' IS NULL OR metadata->>'is_seed' != 'true')
   `;
   return stats;
 }
@@ -584,11 +581,11 @@ export async function autoCalibrate(sql, orgId, options = {}) {
     const values = actions
       .map(a => {
         switch (metric) {
-          case 'duration_ms': return a.duration_ms;
-          case 'cost_estimate': return a.cost_estimate;
-          case 'tokens_total': return (a.prompt_tokens || 0) + (a.completion_tokens || 0);
-          case 'risk_score': return a.risk_score;
-          case 'confidence': return a.confidence;
+          case 'duration_ms': return Number(a.duration_ms);
+          case 'cost_estimate': return Number(a.cost_estimate);
+          case 'tokens_total': return (Number(a.prompt_tokens) || 0) + (Number(a.completion_tokens) || 0);
+          case 'risk_score': return Number(a.risk_score);
+          case 'confidence': return Number(a.confidence);
           default: return null;
         }
       })
@@ -816,7 +813,7 @@ export async function seedDefaultData(sql, orgId) {
     `;
     if (count < DEFAULT_SAMPLE_ACTIONS.length) {
       for (const action of DEFAULT_SAMPLE_ACTIONS) {
-        try { await scoreAction(sql, orgId, generalProfile.id, action); } catch { /* skip */ }
+        try { await scoreAction(sql, orgId, generalProfile.id, { ...action, is_seed: true }); } catch { /* skip */ }
       }
     }
   }

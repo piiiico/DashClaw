@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSql } from '../../../lib/db.js';
 import { findActiveKeyByHash } from '../../../lib/repositories/apiKeys.repository.js';
 import { createLiveVerificationProofToken } from '../../../lib/liveVerificationProof.mjs';
+import { timingSafeCompare } from '../../../lib/timing-safe.js';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,19 +12,6 @@ async function hashKey(key) {
   return Array.from(new Uint8Array(hashBuffer))
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('');
-}
-
-function timingSafeEqual(a, b) {
-  if (typeof a !== 'string' || typeof b !== 'string') return false;
-  const encoder = new TextEncoder();
-  const aBuf = encoder.encode(a);
-  const bBuf = encoder.encode(b);
-  const maxLen = Math.max(aBuf.length, bBuf.length);
-  let result = aBuf.length ^ bBuf.length;
-  for (let i = 0; i < maxLen; i++) {
-    result |= (aBuf[i] || 0) ^ (bBuf[i] || 0);
-  }
-  return result === 0;
 }
 
 async function buildSuccessResponse(start, request) {
@@ -76,7 +64,7 @@ export async function POST(request) {
 
   // Fast path: check against environment variable
   const expectedKey = process.env.DASHCLAW_API_KEY;
-  if (expectedKey && timingSafeEqual(apiKey, expectedKey)) {
+  if (expectedKey && timingSafeCompare(apiKey, expectedKey)) {
     return buildSuccessResponse(start, request);
   }
 

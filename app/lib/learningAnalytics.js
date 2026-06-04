@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { getSql } from './db.js';
 import { getOrgId } from './org.js';
+import { average, quantile } from './learning-loop.js';
 
 // -----------------------------------------------
 // Statistical Utilities
@@ -8,26 +9,12 @@ import { getOrgId } from './org.js';
 
 function round(v) { return Math.round(v * 1000) / 1000; }
 
-function calcMean(arr) {
-  if (arr.length === 0) return 0;
-  return arr.reduce((s, v) => s + v, 0) / arr.length;
-}
-
-function calcPercentile(sorted, pct) {
-  if (sorted.length === 0) return 0;
-  const idx = (pct / 100) * (sorted.length - 1);
-  const lo = Math.floor(idx);
-  const hi = Math.ceil(idx);
-  if (lo === hi) return sorted[lo];
-  return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
-}
-
 function linearRegSlope(values) {
   // Simple linear regression slope: how fast scores change over time
   const n = values.length;
   if (n < 2) return 0;
   const xMean = (n - 1) / 2;
-  const yMean = calcMean(values);
+  const yMean = average(values);
   let num = 0, den = 0;
   for (let i = 0; i < n; i++) {
     num += (i - xMean) * (values[i] - yMean);
@@ -107,7 +94,7 @@ export async function computeVelocity(request, { agent_id, lookback_days, period
       });
       if (windowEps.length > 0) {
         const scores = windowEps.map(e => Number(e.score));
-        const avgScore = round(calcMean(scores));
+        const avgScore = round(average(scores));
         const successCount = windowEps.filter(e => e.outcome_label === 'success').length;
         const successRate = round(successCount / windowEps.length);
         windows.push({
@@ -143,7 +130,7 @@ export async function computeVelocity(request, { agent_id, lookback_days, period
     // Overall maturity
     const totalEpisodes = episodes.length;
     const overallSuccessRate = episodes.filter(e => e.outcome_label === 'success').length / totalEpisodes;
-    const overallAvgScore = calcMean(episodes.map(e => Number(e.score)));
+    const overallAvgScore = average(episodes.map(e => Number(e.score)));
     const maturity = classifyMaturity(totalEpisodes, overallSuccessRate, overallAvgScore);
 
     // Store velocity record
@@ -227,7 +214,7 @@ export async function computeLearningCurves(request, { agent_id, lookback_days }
 
           await sql`
             INSERT INTO learning_curves (id, org_id, agent_id, action_type, window_start, window_end, episode_count, avg_score, success_rate, avg_duration_ms, avg_cost, p25_score, p75_score)
-            VALUES (${id}, ${orgId}, ${agentId}, ${action_type}, ${new Date(winStart).toISOString()}, ${new Date(winEnd).toISOString()}, ${windowEps.length}, ${round(calcMean(scores))}, ${round(successCount / windowEps.length)}, ${round(durations.length > 0 ? calcMean(durations) : 0)}, ${round(costs.length > 0 ? calcMean(costs) : 0)}, ${round(calcPercentile(scores, 25))}, ${round(calcPercentile(scores, 75))})
+            VALUES (${id}, ${orgId}, ${agentId}, ${action_type}, ${new Date(winStart).toISOString()}, ${new Date(winEnd).toISOString()}, ${windowEps.length}, ${round(average(scores))}, ${round(successCount / windowEps.length)}, ${round(durations.length > 0 ? average(durations) : 0)}, ${round(costs.length > 0 ? average(costs) : 0)}, ${round(quantile(scores, 0.25) ?? 0)}, ${round(quantile(scores, 0.75) ?? 0)})
           `;
 
           results.push({ agent_id: agentId, action_type, window_start: new Date(winStart).toISOString(), count: windowEps.length });

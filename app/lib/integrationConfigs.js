@@ -130,7 +130,8 @@ export const INTEGRATION_CONFIGS = {
     description: 'Chat bot interface',
     fields: [
       { key: 'TELEGRAM_BOT_TOKEN', label: 'Bot Token', type: 'password', required: true },
-      { key: 'TELEGRAM_CHAT_ID', label: 'Chat ID', type: 'text', required: false }
+      { key: 'TELEGRAM_ADMIN_CHAT_ID', label: 'Admin Chat ID', type: 'text', required: false },
+      { key: 'DASHCLAW_ALERTS_TELEGRAM', label: 'Enable approval alerts', type: 'toggle', required: false }
     ]
   },
   discord: {

@@ -7,7 +7,6 @@ const GCM_IV_LENGTH = 12; // 96-bit nonce recommended for GCM
 
 // Legacy v1 format (CBC) is supported for backward-compatible decrypt only.
 const LEGACY_ALGORITHM = 'aes-256-cbc';
-const LEGACY_IV_LENGTH = 16;
 
 function getKeyBytes() {
   const key = process.env.ENCRYPTION_KEY;

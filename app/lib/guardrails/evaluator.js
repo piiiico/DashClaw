@@ -6,12 +6,13 @@
 import { globToRegex } from '../globToRegex.js';
 
 /**
- * Evaluate a single policy against an input action
+ * Evaluate a single policy against an input action.
+ * Distinct name avoids silent confusion with the 6-arg async guard.js evaluatePolicy.
  * @param {object} policy - Policy object from guardrails.yml
  * @param {object} input - Action input { tool, args, approval?, context? }
  * @returns {{ allowed: boolean, reason?: string, policy_id: string }}
  */
-export function evaluatePolicy(policy, input) {
+export function evaluateGuardrailPolicy(policy, input) {
   const { id, applies_to, rule } = policy;
 
   // Check if policy applies to this tool
@@ -54,10 +55,15 @@ export function evaluatePolicy(policy, input) {
  */
 export function evaluatePolicies(policies, input) {
   for (const policy of policies) {
-    const result = evaluatePolicy(policy, input);
+    const result = evaluateGuardrailPolicy(policy, input);
     if (!result.allowed) {
       return result;
     }
   }
   return { allowed: true, reason: 'all policies passed' };
 }
+
+// Backward-compat alias — kept for existing tests and legacy callers.
+// New code should import evaluateGuardrailPolicy to avoid confusion with
+// the 6-arg async evaluatePolicy in app/lib/guard.js.
+export const evaluatePolicy = evaluateGuardrailPolicy;

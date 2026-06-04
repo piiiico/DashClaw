@@ -45,7 +45,7 @@ export const slackAdapter = {
       return { success: true, message: 'Posted via webhook' };
     }
 
-    const channel = creds.SLACK_CHANNEL_ID || creds.SLACK_DEFAULT_CHANNEL;
+    const channel = creds.SLACK_CHANNEL_ID;
     if (!channel) return { success: false, message: 'No channel configured' };
 
     const res = await fetch('https://slack.com/api/chat.postMessage', {

@@ -73,7 +73,7 @@ export async function listActions(sql, orgId, filters = {}) {
   const VALID_OUTCOMES = new Set(['pending', 'completed', 'partial', 'failed', 'lost_confirmation']);
   const outcomeFilter = VALID_OUTCOMES.has(outcome_status) ? outcome_status : null;
 
-  const parsedRiskMin = risk_min != null ? parseInt(risk_min, 10) : null;
+  const parsedRiskMin = Number.isFinite(Number(risk_min)) ? Number(risk_min) : null;
   const parsedLimit = Math.min(parseInt(limit, 10) || 50, 200);
   const parsedOffset = parseInt(offset, 10) || 0;
 

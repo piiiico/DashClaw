@@ -5,6 +5,16 @@ import {
   CheckCircle2, XCircle, HelpCircle, RefreshCw, Zap, GitBranch,
 } from 'lucide-react';
 
+// SVG stroke colours for connector lines.  These mirror the CSS token values
+// from app/globals.css so that a single token update propagates to both the
+// Tailwind class layer and these canvas/SVG surfaces.
+const SVG_COLOR_SUCCESS  = '#22c55e'; // --color-success
+const SVG_COLOR_ERROR    = '#ef4444'; // --color-error
+const SVG_COLOR_WARNING  = '#f59e0b'; // --color-warning (amber-500)
+const SVG_COLOR_ZINC     = '#71717a'; // text-disabled / zinc-500 (muted/cancelled)
+const SVG_COLOR_BORDER   = '#3f3f46'; // zinc-700, close to --color-border elevated
+const SVG_COLOR_INFO     = '#3b82f6'; // --color-info (blue-500)
+
 /**
  * SVG + HTML trace graph for the post-mortem page.
  * Shows parent chain (center column), assumptions (left), loops (right), related actions (bottom).
@@ -193,16 +203,16 @@ export default function AssumptionGraph({ trace, currentActionId, onNodeClick })
 
   const getLineColor = (node) => {
     if (node.type === 'assumption') {
-      if (node.validated) return '#22c55e';
-      if (node.invalidated) return '#ef4444';
-      return '#f59e0b';
+      if (node.validated) return SVG_COLOR_SUCCESS;
+      if (node.invalidated) return SVG_COLOR_ERROR;
+      return SVG_COLOR_WARNING;
     }
     if (node.type === 'loop') {
-      if (node.status === 'resolved') return '#22c55e';
-      if (node.status === 'cancelled') return '#71717a';
-      return '#f59e0b';
+      if (node.status === 'resolved') return SVG_COLOR_SUCCESS;
+      if (node.status === 'cancelled') return SVG_COLOR_ZINC;
+      return SVG_COLOR_WARNING;
     }
-    return '#3f3f46';
+    return SVG_COLOR_BORDER;
   };
 
   const handleClick = (node) => {
@@ -258,7 +268,7 @@ export default function AssumptionGraph({ trace, currentActionId, onNodeClick })
                 key={`center-${idx}`}
                 x1={prev.x + NODE_W / 2 + offsetX} y1={prev.y + NODE_H}
                 x2={node.x + NODE_W / 2 + offsetX} y2={node.y}
-                stroke="#3f3f46" strokeWidth={1.5} strokeDasharray="4 3"
+                stroke={SVG_COLOR_BORDER} strokeWidth={1.5} strokeDasharray="4 3"
               />
             );
           })}
@@ -269,7 +279,7 @@ export default function AssumptionGraph({ trace, currentActionId, onNodeClick })
               key={`sub-${child.id}`}
               d={`M${currentActionNode.x + NODE_W / 2 + offsetX},${currentActionNode.y + NODE_H} C${currentActionNode.x + NODE_W / 2 + offsetX},${child.y} ${child.x + NODE_W / 2 + offsetX},${currentActionNode.y + NODE_H} ${child.x + NODE_W / 2 + offsetX},${child.y}`}
               fill="none"
-              stroke="#3b82f6"
+              stroke={SVG_COLOR_INFO}
               strokeWidth={1.5}
               strokeOpacity={0.4}
               strokeDasharray="4 2"

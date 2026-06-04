@@ -4,6 +4,7 @@ import urllib.parse
 import urllib.request
 import urllib.error
 import base64
+import warnings
 from datetime import datetime, timezone
 from contextlib import contextmanager
 
@@ -322,7 +323,17 @@ class DashClaw:
         return self._request("/api/actions", "POST", json=payload)
 
     def record_assumption(self, assumption):
-        """Record what the agent believed to be true when making a decision."""
+        """Record what the agent believed to be true when making a decision.
+
+        .. deprecated::
+            Use :meth:`register_assumption` instead. Both methods POST to the
+            same endpoint; ``register_assumption`` is the canonical form.
+        """
+        warnings.warn(
+            "record_assumption is deprecated; use register_assumption",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return self._request("/api/assumptions", "POST", json=assumption)
 
     def _connect_sse(self, action_id, timeout):
@@ -1670,9 +1681,13 @@ class DashClaw:
         return self._request(f"/api/scoring/profiles/{profile_id}/dimensions/{dimension_id}", method="DELETE")
 
     def score_with_profile(self, profile_id, action):
+        if isinstance(action, list):
+            raise TypeError("use batch_score_with_profile for arrays")
         return self._request("/api/scoring/score", method="POST", json={"profile_id": profile_id, "action": action})
 
     def batch_score_with_profile(self, profile_id, actions):
+        if not isinstance(actions, list):
+            raise TypeError("batch_score_with_profile expects a list")
         return self._request("/api/scoring/score", method="POST", json={"profile_id": profile_id, "actions": actions})
 
     def get_profile_scores(self, **params):

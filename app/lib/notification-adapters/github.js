@@ -11,7 +11,7 @@ export const githubAdapter = {
 
     const title = `[DashClaw] ${critical.length} critical governance signal${critical.length > 1 ? 's' : ''}`;
     const body = critical.map(s =>
-      `### ${s.severity === 'red' ? '\uD83D\uDD34' : '\uD83D\uDFE1'} ${s.label}\n${s.detail}${s.agent_id ? `\n**Agent:** ${s.agent_id}` : ''}\n**Action:** ${s.help}`
+      `### ${s.severity === 'red' ? '\uD83D\uDD34' : '\uD83D\uDFE1'} ${s.label}\n${s.detail}${s.agent_id ? `\n**Agent:** ${s.agent_id}` : ''}${s.help ? `\n**Action:** ${s.help}` : ''}`
     ).join('\n\n---\n\n');
 
     const res = await fetch(`https://api.github.com/repos/${repo}/issues`, {

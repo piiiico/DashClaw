@@ -11,6 +11,7 @@ import {
   Terminal, TrendingUp, GraduationCap, Plug,
   Download, Workflow, Cpu, BookOpen, Wrench, Fingerprint, Bell, Inbox,
   FlaskConical, ChevronDown, GitBranch, Stethoscope, ClipboardCheck, Lock, ShieldCheck,
+  LayoutDashboard, Bot, UserCog, Network,
 } from 'lucide-react';
 import DashClawLogo from './DashClawLogo';
 
@@ -19,6 +20,7 @@ const navGroups = [
     label: 'Govern',
     items: [
       { href: '/mission-control', icon: Radar, label: 'Mission Control' },
+      { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
       { href: '/decisions', icon: Zap, label: 'Decisions' },
       { href: '/approvals', icon: Clock, label: 'Approvals' },
       { href: '/policies', icon: Shield, label: 'Policies' },
@@ -30,6 +32,7 @@ const navGroups = [
     label: 'Observe',
     items: [
       { href: '/security', icon: ShieldAlert, label: 'Security' },
+      { href: '/my-agent', icon: Bot, label: 'My Agent' },
       { href: '/code-sessions', icon: Terminal, label: 'Code Sessions' },
       { href: '/analytics', icon: TrendingUp, label: 'Analytics' },
       { href: '/activity', icon: Activity, label: 'Activity' },
@@ -43,6 +46,7 @@ const navGroups = [
       { href: '/integrations', icon: Plug, label: 'Integrations' },
       { href: '/webhooks', icon: Bell, label: 'Webhooks' },
       { href: '/identities', icon: Fingerprint, label: 'Identities' },
+      { href: '/team', icon: UserCog, label: 'Team' },
       { href: '/secrets', icon: Lock, label: 'Secrets' },
       { href: '/doctor', icon: Stethoscope, label: 'Doctor' },
       { href: '/settings', icon: Settings, label: 'Settings' },
@@ -65,6 +69,7 @@ const navGroups = [
       { href: '/model-strategies', icon: Cpu, label: 'Model Strategies' },
       { href: '/knowledge', icon: BookOpen, label: 'Knowledge' },
       { href: '/capabilities', icon: Wrench, label: 'Capabilities' },
+      { href: '/swarm', icon: Network, label: 'Swarm' },
       { href: '/labs/branch-finish', icon: GitBranch, label: 'Branch Finish' },
     ],
   },

@@ -9,10 +9,13 @@
  * - registerResource(name, ResourceTemplate, config, readCallback) — URI template resources
  */
 
+import { createRequire } from 'module';
 import { McpServer, ResourceTemplate, fromJsonSchema } from '@modelcontextprotocol/server';
 import { DashClawClient } from './client.js';
 import { TOOL_DEFINITIONS, createToolHandlers } from './tools.js';
 import { RESOURCE_DEFINITIONS, createResourceHandlers } from './resources.js';
+
+const { version } = createRequire(import.meta.url)('../package.json');
 
 /**
  * Convert a JSON Schema object to a Standard Schema wrapper accepted by registerTool.
@@ -54,7 +57,7 @@ export function createServer(config = {}) {
   const server = new McpServer(
     {
       name: '@dashclaw/mcp-server',
-      version: '1.0.2',
+      version,
     },
     {
       capabilities: {

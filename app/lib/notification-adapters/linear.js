@@ -18,7 +18,7 @@ export const linearAdapter = {
 
     const title = `[DashClaw] ${critical.length} critical governance signal${critical.length > 1 ? 's' : ''}`;
     const description = critical.map(s =>
-      `### ${s.label}\n${s.detail}${s.agent_id ? `\n**Agent:** ${s.agent_id}` : ''}\n**Action:** ${s.help}`
+      `### ${s.label}\n${s.detail}${s.agent_id ? `\n**Agent:** ${s.agent_id}` : ''}${s.help ? `\n**Action:** ${s.help}` : ''}`
     ).join('\n\n---\n\n');
 
     const mutation = `mutation($input: IssueCreateInput!) { issueCreate(input: $input) { success issue { id identifier url } } }`;

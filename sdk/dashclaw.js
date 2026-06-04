@@ -232,6 +232,11 @@ class DashClaw {
       signal: controller.signal,
     });
 
+    if (res.status === 403) {
+      let body = {};
+      try { body = await res.json(); } catch { /* ignore */ }
+      throw new GuardBlockedError(body.decision || { reason: 'SSE stream blocked by policy' });
+    }
     if (!res.ok || !res.body) return;
 
     const reader = res.body.getReader();
@@ -319,7 +324,7 @@ class DashClaw {
         if (!controller.signal.aborted) controller.abort();
       }
     } catch (err) {
-      if (err instanceof ApprovalDeniedError || err.message?.includes('Timed out')) throw err;
+      if (err instanceof ApprovalDeniedError || err instanceof GuardBlockedError || err.message?.includes('Timed out')) throw err;
       // SSE failed — fall through to polling
     }
 
@@ -454,7 +459,7 @@ class DashClaw {
     return this._request('/api/learning/lessons', 'GET', null, {
       agent_id: this.agentId,
       ...(actionType && { action_type: actionType }),
-      ...(limit && { limit }),
+      ...(limit != null && { limit }),
     });
   }
 
@@ -543,6 +548,7 @@ class DashClaw {
    * POST /api/scoring/score — score a single action against a profile
    */
   async scoreWithProfile(profileId, action) {
+    if (Array.isArray(action)) throw new TypeError('scoreWithProfile expects a single action object; use batchScoreWithProfile for arrays');
     return this._request('/api/scoring/score', 'POST', { profile_id: profileId, action });
   }
 
@@ -550,6 +556,7 @@ class DashClaw {
    * POST /api/scoring/score — batch score multiple actions against a profile
    */
   async batchScoreWithProfile(profileId, actions) {
+    if (!Array.isArray(actions)) throw new TypeError('batchScoreWithProfile expects an array of actions');
     return this._request('/api/scoring/score', 'POST', { profile_id: profileId, actions });
   }
 
@@ -651,7 +658,7 @@ class DashClaw {
       direction: 'inbox',
       ...(type && { type }),
       ...(unread != null && { unread }),
-      ...(limit && { limit }),
+      ...(limit != null && { limit }),
     });
   }
 
@@ -664,7 +671,7 @@ class DashClaw {
       direction: 'sent',
       ...(type && { type }),
       ...(threadId && { thread_id: threadId }),
-      ...(limit && { limit }),
+      ...(limit != null && { limit }),
     });
   }
 
@@ -678,7 +685,7 @@ class DashClaw {
       ...(type && { type }),
       ...(unread != null && { unread }),
       ...(threadId && { thread_id: threadId }),
-      ...(limit && { limit }),
+      ...(limit != null && { limit }),
     });
   }
 

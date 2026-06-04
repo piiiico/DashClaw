@@ -13,6 +13,21 @@
  */
 
 /**
+ * Safely parse a JSON array stored as a string in a DB field.
+ * Returns [] on null, undefined, or malformed JSON instead of throwing.
+ * @param {string|Array|null} val
+ * @returns {Array}
+ */
+function safeParseJsonArray(val) {
+  if (Array.isArray(val)) return val;
+  try {
+    return JSON.parse(val || '[]');
+  } catch {
+    return [];
+  }
+}
+
+/**
  * Find best matching agent for a task
  * @param {Object} task - Task with required_skills, urgency
  * @param {Array} candidates - Agent objects with capabilities, current_load, max_concurrent, status
@@ -20,9 +35,7 @@
  * @returns {Object|null} { agent, score, reasons } or null
  */
 export function findBestMatch(task, candidates, allMetrics = []) {
-  const requiredSkills = typeof task.required_skills === 'string'
-    ? JSON.parse(task.required_skills || '[]')
-    : (task.required_skills || []);
+  const requiredSkills = safeParseJsonArray(task.required_skills);
 
   if (requiredSkills.length === 0) {
     const available = candidates
@@ -47,9 +60,7 @@ function scoreAgent(agent, requiredSkills, task, allMetrics) {
   let score = 0;
 
   // Parse capabilities - handle both string JSON and array formats
-  const capabilities = typeof agent.capabilities === 'string'
-    ? JSON.parse(agent.capabilities || '[]')
-    : (agent.capabilities || []);
+  const capabilities = safeParseJsonArray(agent.capabilities);
 
   const capObjects = capabilities.map(c =>
     typeof c === 'string' ? { skill: c, priority: 0 } : c
@@ -108,9 +119,7 @@ function scoreAgent(agent, requiredSkills, task, allMetrics) {
  * Rank all candidate agents for a task (for routing decision logs)
  */
 export function rankAgents(task, candidates, allMetrics = []) {
-  const requiredSkills = typeof task.required_skills === 'string'
-    ? JSON.parse(task.required_skills || '[]')
-    : (task.required_skills || []);
+  const requiredSkills = safeParseJsonArray(task.required_skills);
 
   return candidates
     .map(agent => scoreAgent(agent, requiredSkills, task, allMetrics))

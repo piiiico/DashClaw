@@ -21,7 +21,7 @@ export async function getClient(sql, clientId) {
     clientId: r.client_id,
     clientName: r.client_name,
     scope: r.scope,
-    redirectUris: typeof r.redirect_uris === 'string' ? JSON.parse(r.redirect_uris) : r.redirect_uris,
+    redirectUris: (() => { try { return typeof r.redirect_uris === 'string' ? JSON.parse(r.redirect_uris) : r.redirect_uris; } catch { return []; } })(),
   };
 }
 

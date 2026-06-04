@@ -248,9 +248,9 @@ export default function PublicReplayPage() {
                       Risk: {action.risk_score || 0}
                     </div>
                   </div>
-                  {guardDecision?.reason && (
+                  {(guardDecision?.reason ?? guardDecision?.reasons?.[0]) && (
                     <p className="mt-3 text-sm text-secondary italic border-l-2 border-white/5 pl-3 leading-relaxed group-hover/decision:text-secondary transition-colors">
-                      &ldquo;{guardDecision.reason}&rdquo;
+                      &ldquo;{guardDecision?.reason ?? guardDecision?.reasons?.[0]}&rdquo;
                     </p>
                   )}
                 </div>

@@ -10,6 +10,21 @@ import { findBestMatch, rankAgents } from './matcher.js';
 import { safeUrlWithIps, buildPinnedDispatcher } from '../webhooks.js';
 
 /**
+ * Safely parse a JSON array stored as a string in a DB field.
+ * Returns [] on null, undefined, or malformed JSON instead of throwing.
+ * @param {string|Array|null} val
+ * @returns {Array}
+ */
+function safeParseJsonArray(val) {
+  if (Array.isArray(val)) return val;
+  try {
+    return JSON.parse(val || '[]');
+  } catch {
+    return [];
+  }
+}
+
+/**
  * Submit and auto-route a task
  */
 export async function submitTask(sql, orgId, task) {
@@ -110,9 +125,7 @@ export async function completeTask(sql, orgId, taskId, { success = true, result,
 
     const createdAt = new Date(task.created_at);
     const durationMs = Date.now() - createdAt.getTime();
-    const skills = typeof task.required_skills === 'string'
-      ? JSON.parse(task.required_skills || '[]')
-      : (task.required_skills || []);
+    const skills = safeParseJsonArray(task.required_skills);
 
     for (const skill of skills) {
       await updateMetrics(sql, orgId, task.assigned_to, skill, success !== false, durationMs);
@@ -289,9 +302,7 @@ export async function getRoutingStats(sql, orgId) {
 function formatTask(task) {
   return {
     ...task,
-    required_skills: typeof task.required_skills === 'string'
-      ? JSON.parse(task.required_skills || '[]')
-      : (task.required_skills || []),
+    required_skills: safeParseJsonArray(task.required_skills),
   };
 }
 

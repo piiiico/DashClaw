@@ -1,4 +1,10 @@
 #!/usr/bin/env node
+// STATUS:deferred — this script is NOT wired into package.json, CI, or the
+// pre-commit pipeline. It fails against current repo state (README first 50
+// lines are missing the /guides/claude-code link). Do not run as a gate until
+// the underlying README content is updated and this file is promoted.
+// See finding: unwired-failing-check-scripts
+//
 // check-readme-lead.mjs — asserts the README stays Claude-Code-forward.
 //
 // Added by plan 02-03 (CCI-05). Optional gate — not wired into npm test or

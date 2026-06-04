@@ -15,7 +15,7 @@ vi.mock('@/lib/repositories/guardrails.repository.js', () => ({
   createTestRun: mockCreateTestRun,
 }));
 vi.mock('@/lib/guardrails/converter.js', () => ({ convertPolicies: mockConvertPolicies }));
-vi.mock('@/lib/guardrails/evaluator.js', () => ({ evaluatePolicy: mockEvaluatePolicy }));
+vi.mock('@/lib/guardrails/evaluator.js', () => ({ evaluateGuardrailPolicy: mockEvaluatePolicy }));
 
 import { POST } from '@/api/policies/test/route.js';
 

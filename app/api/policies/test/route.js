@@ -6,7 +6,7 @@ import { randomUUID } from 'node:crypto';
 import { getSql } from '../../../lib/db.js';
 import { getOrgId } from '../../../lib/org.js';
 import { convertPolicies } from '../../../lib/guardrails/converter.js';
-import { evaluatePolicy } from '../../../lib/guardrails/evaluator.js';
+import { evaluateGuardrailPolicy } from '../../../lib/guardrails/evaluator.js';
 import { getActivePolicies, createTestRun } from '../../../lib/repositories/guardrails.repository.js';
 
 /**
@@ -36,7 +36,7 @@ export async function POST(request) {
       const testResults = [];
       for (const testCase of policy.tests || []) {
         totalTests++;
-        const result = evaluatePolicy(policy, testCase.input);
+        const result = evaluateGuardrailPolicy(policy, testCase.input);
         const testPassed = result.allowed === testCase.expect.allowed;
         if (testPassed) passed++;
         testResults.push({

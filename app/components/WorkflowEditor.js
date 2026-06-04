@@ -19,13 +19,34 @@ import '@xyflow/react/dist/style.css';
 // Custom node types
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Node fill/border colours for the React Flow canvas — mirrors app/globals.css tokens.
+// These are canvas-side style values (not Tailwind), so they must stay as rgba strings;
+// update the CSS token first, then propagate the change here.
 const NODE_COLORS = {
-  action: { bg: 'rgba(14,165,233,0.15)', border: 'rgba(14,165,233,0.6)', label: 'Action' },
-  guard: { bg: 'rgba(16,185,129,0.15)', border: 'rgba(16,185,129,0.6)', label: 'Guard' },
-  approval: { bg: 'rgba(168,85,247,0.15)', border: 'rgba(168,85,247,0.6)', label: 'Approval' },
-  condition: { bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.6)', label: 'Condition' },
-  default: { bg: 'rgba(113,113,122,0.15)', border: 'rgba(113,113,122,0.6)', label: 'Step' },
+  action:    { bg: 'rgba(14,165,233,0.15)', border: 'rgba(14,165,233,0.6)', label: 'Action' },    // --color-info (sky-500)
+  guard:     { bg: 'rgba(16,185,129,0.15)', border: 'rgba(16,185,129,0.6)', label: 'Guard' },     // --color-success (emerald-500)
+  approval:  { bg: 'rgba(168,85,247,0.15)', border: 'rgba(168,85,247,0.6)', label: 'Approval' },  // purple-500
+  condition: { bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.6)', label: 'Condition' }, // --color-warning (amber-500)
+  default:   { bg: 'rgba(113,113,122,0.15)', border: 'rgba(113,113,122,0.6)', label: 'Step' },    // zinc-500
 };
+
+// Inline style colours for StepNode text labels (React-Flow renders these inside
+// an isolated div; Tailwind utility classes do not apply inside the canvas layer).
+const STEP_NODE_LABEL_COLOR = '#a1a1aa'; // --color-text-secondary
+const STEP_NODE_TITLE_COLOR = '#fff';    // --color-text-primary
+
+// React Flow edge styling — all edges share these defaults.
+const EDGE_MARKER_COLOR = 'rgba(255,255,255,0.3)'; // near --color-border-hover
+const EDGE_STROKE_COLOR  = 'rgba(255,255,255,0.2)'; // --color-border
+
+// React Flow canvas / control colours.
+const RF_CANVAS_BG       = '#0a0a0a';              // --color-bg-primary
+const RF_BG_DOT_COLOR    = 'rgba(255,255,255,0.03)'; // very subtle grid
+const RF_CONTROLS_BG     = 'rgba(0,0,0,0.6)';
+const RF_CONTROLS_BORDER = 'rgba(255,255,255,0.1)'; // --color-border-hover approx
+const RF_MINIMAP_NODE    = 'rgba(249,115,22,0.5)';  // --color-brand at 50%
+const RF_MINIMAP_MASK    = 'rgba(0,0,0,0.7)';
+const RF_MINIMAP_BG      = '#111111';              // --color-bg-secondary
 
 function StepNode({ data, id }) {
   const colors = NODE_COLORS[data.stepType] || NODE_COLORS.default;
@@ -41,14 +62,14 @@ function StepNode({ data, id }) {
       }}
     >
       <Handle type="target" position={Position.Left} style={{ background: colors.border }} />
-      <div style={{ fontSize: 10, color: '#a1a1aa', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>
+      <div style={{ fontSize: 10, color: STEP_NODE_LABEL_COLOR, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>
         {colors.label}
       </div>
-      <div style={{ fontSize: 13, fontWeight: 600, color: '#fff', wordBreak: 'break-word' }}>
+      <div style={{ fontSize: 13, fontWeight: 600, color: STEP_NODE_TITLE_COLOR, wordBreak: 'break-word' }}>
         {data.label || id}
       </div>
       {data.description && (
-        <div style={{ fontSize: 11, color: '#a1a1aa', marginTop: 4, lineHeight: 1.3 }}>
+        <div style={{ fontSize: 11, color: STEP_NODE_LABEL_COLOR, marginTop: 4, lineHeight: 1.3 }}>
           {data.description}
         </div>
       )}
@@ -106,8 +127,8 @@ function stepsToFlow(steps) {
         id: e.id,
         source: e.source,
         target: e.target,
-        markerEnd: { type: MarkerType.ArrowClosed, color: 'rgba(255,255,255,0.3)' },
-        style: { stroke: 'rgba(255,255,255,0.2)' },
+        markerEnd: { type: MarkerType.ArrowClosed, color: EDGE_MARKER_COLOR },
+        style: { stroke: EDGE_STROKE_COLOR },
       })),
     };
   }
@@ -128,8 +149,8 @@ function stepsToFlow(steps) {
       id: `edge_${i}`,
       source: nodes[i].id,
       target: n.id,
-      markerEnd: { type: MarkerType.ArrowClosed, color: 'rgba(255,255,255,0.3)' },
-      style: { stroke: 'rgba(255,255,255,0.2)' },
+      markerEnd: { type: MarkerType.ArrowClosed, color: EDGE_MARKER_COLOR },
+      style: { stroke: EDGE_STROKE_COLOR },
     }));
     return { nodes, edges };
   }
@@ -190,8 +211,8 @@ export default function WorkflowEditor({ steps, onChange, readOnly = false }) {
       if (readOnly) return;
       setEdges((eds) => addEdge({
         ...connection,
-        markerEnd: { type: MarkerType.ArrowClosed, color: 'rgba(255,255,255,0.3)' },
-        style: { stroke: 'rgba(255,255,255,0.2)' },
+        markerEnd: { type: MarkerType.ArrowClosed, color: EDGE_MARKER_COLOR },
+        style: { stroke: EDGE_STROKE_COLOR },
       }, eds));
     },
     [readOnly, setEdges]
@@ -342,26 +363,26 @@ export default function WorkflowEditor({ steps, onChange, readOnly = false }) {
         nodeTypes={nodeTypes}
         fitView
         proOptions={{ hideAttribution: true }}
-        style={{ background: '#0a0a0a' }}
+        style={{ background: RF_CANVAS_BG }}
         nodesDraggable={!readOnly}
         nodesConnectable={!readOnly}
         elementsSelectable={!readOnly}
       >
-        <Background color="rgba(255,255,255,0.03)" gap={24} />
+        <Background color={RF_BG_DOT_COLOR} gap={24} />
         <Controls
           showInteractive={false}
-          style={{ background: 'rgba(0,0,0,0.6)', borderColor: 'rgba(255,255,255,0.1)' }}
+          style={{ background: RF_CONTROLS_BG, borderColor: RF_CONTROLS_BORDER }}
         />
         <MiniMap
-          nodeColor={() => 'rgba(249,115,22,0.5)'}
-          maskColor="rgba(0,0,0,0.7)"
-          style={{ background: '#111' }}
+          nodeColor={() => RF_MINIMAP_NODE}
+          maskColor={RF_MINIMAP_MASK}
+          style={{ background: RF_MINIMAP_BG }}
         />
       </ReactFlow>
 
       {/* Node edit panel */}
       {!readOnly && selectedNode && (
-        <div className="absolute bottom-4 right-4 w-72 bg-[#111] border border-white/10 rounded-lg p-4 z-10 shadow-2xl">
+        <div className="absolute bottom-4 right-4 w-72 bg-secondary border border rounded-lg p-4 z-10 shadow-2xl">
           <div className="text-xs text-tertiary uppercase tracking-wider mb-3">Edit Step</div>
           <div className="space-y-3">
             <div>

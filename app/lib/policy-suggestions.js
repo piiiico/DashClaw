@@ -31,7 +31,7 @@ export async function generatePolicySuggestions(sql, orgId, { lookbackDays = 14,
       WHERE org_id = ${orgId}
         AND active = 1
         AND (
-          rules::text LIKE ${`%${trend.action_type}%`}
+          rules::jsonb @> ${JSON.stringify({ action_types: [trend.action_type] })}::jsonb
           OR (agent_ids IS NOT NULL AND agent_ids::text LIKE ${`%${trend.agent_id}%`})
         )
       LIMIT 1

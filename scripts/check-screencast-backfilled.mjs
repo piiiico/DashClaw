@@ -1,4 +1,10 @@
 #!/usr/bin/env node
+// STATUS:deferred — this script is NOT wired into package.json, CI, or the
+// pre-commit pipeline. It fails against current repo state (SCREENCAST_URL
+// placeholders remain in app/guides/claude-code/page.js). Do not run as a
+// gate until the screencasts are recorded and placeholders replaced.
+// See finding: unwired-failing-check-scripts
+//
 // check-screencast-backfilled.mjs — asserts every <SCREENCAST_URL> placeholder
 // has been backfilled with a real watch URL.
 //

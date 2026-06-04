@@ -221,7 +221,7 @@ export default async function SettingsPage({ searchParams }) {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-tertiary">Version</span>
-                  <span className="font-mono text-xs tabular-nums text-white">v2.5</span>
+                  <span className="font-mono text-xs tabular-nums text-white">{process.env.NEXT_PUBLIC_DASHCLAW_VERSION || '—'}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-tertiary">Mode</span>

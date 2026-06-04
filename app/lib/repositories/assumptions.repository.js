@@ -20,7 +20,7 @@ export async function listAssumptions(sql, orgId, filters = {}) {
   } else if (validated === 'false') {
     conditions.push(`a.validated = 0 AND a.invalidated = 0`);
   }
-  if (stale === 'true') {
+  if (stale === 'true' && validated !== 'true') {
     conditions.push(`a.validated = 0 AND a.invalidated = 0 AND a.created_at < NOW() - INTERVAL '7 days'`);
   }
   if (action_id) {

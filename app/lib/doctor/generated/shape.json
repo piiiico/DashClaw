@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:d567efaf54c6da12bfd2a3b4e5c8aa24dae28e51",
+  "timestamp": "sha1:4ce059d481529bec3476bdeb0fe372cf9743376d",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -3721,7 +3721,8 @@
       "name": "NEXT_PUBLIC_DASHCLAW_VERSION",
       "required": false,
       "files": [
-        "app/components/Sidebar.js"
+        "app/components/Sidebar.js",
+        "app/settings/page.js"
       ],
       "in_env_example": false
     },
@@ -4763,7 +4764,11 @@
       "section": "Communication"
     },
     {
-      "name": "TELEGRAM_CHAT_ID",
+      "name": "TELEGRAM_ADMIN_CHAT_ID",
+      "section": "Communication"
+    },
+    {
+      "name": "DASHCLAW_ALERTS_TELEGRAM",
       "section": "Communication"
     },
     {

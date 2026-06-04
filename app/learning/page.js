@@ -27,6 +27,7 @@ export default function LearningDashboard() {
   const [lessonForm, setLessonForm] = useState({ lesson: '', category: 'general', confidence: 80, tags: '' });
   const [submitting, setSubmitting] = useState(false);
   const [lessonError, setLessonError] = useState('');
+  const [decisionError, setDecisionError] = useState('');
   const [rebuilding, setRebuilding] = useState(false);
   const [rebuildResult, setRebuildResult] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
@@ -236,17 +237,24 @@ export default function LearningDashboard() {
 
   const handleLogDecision = async () => {
     setSubmitting(true);
+    setDecisionError('');
     try {
-      await fetch('/api/learning', {
+      const res = await fetch('/api/learning', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'decision', ...decisionForm }),
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setDecisionError(data.error || 'Failed to log decision');
+        return;
+      }
       setShowDecisionModal(false);
       setDecisionForm({ decision: '', category: 'general', context: '', outcome: 'pending' });
       fetchData();
     } catch (err) {
       console.error('Failed to log decision:', err);
+      setDecisionError('Failed to log decision');
     } finally {
       setSubmitting(false);
     }
@@ -316,7 +324,7 @@ export default function LearningDashboard() {
           </Link>
           <button
             onClick={fetchData}
-            className="px-3 py-1.5 text-sm text-secondary hover:text-white bg-surface-tertiary border border-[rgba(255,255,255,0.06)] rounded-lg hover:border-[rgba(255,255,255,0.12)] transition-colors duration-150 flex items-center gap-1.5"
+            className="px-3 py-1.5 text-sm text-secondary hover:text-white bg-surface-tertiary border border rounded-lg hover:border-hover transition-colors duration-150 flex items-center gap-1.5"
           >
             <RotateCw size={14} />
             Refresh
@@ -462,7 +470,7 @@ export default function LearningDashboard() {
               <button
                 onClick={handleRebuildRecommendations}
                 disabled={rebuilding}
-                className="px-3 py-1.5 text-xs font-medium text-secondary hover:text-white bg-surface-tertiary border border-[rgba(255,255,255,0.06)] rounded-lg hover:border-brand/40 transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                className="px-3 py-1.5 text-xs font-medium text-secondary hover:text-white bg-surface-tertiary border border rounded-lg hover:border-brand/40 transition-colors disabled:opacity-50 flex items-center gap-1.5"
               >
                 <Sparkles size={12} />
                 {rebuilding ? 'Rebuilding...' : 'Rebuild Now'}
@@ -502,7 +510,7 @@ export default function LearningDashboard() {
                         <button
                           onClick={() => handleRecommendationToggle(rec)}
                           disabled={updatingRecommendationId === rec.id}
-                          className="px-2.5 py-1 text-xs rounded border border-[rgba(255,255,255,0.12)] text-secondary hover:text-white disabled:opacity-50"
+                          className="px-2.5 py-1 text-xs rounded border border-hover text-secondary hover:text-white disabled:opacity-50"
                         >
                           {updatingRecommendationId === rec.id
                             ? 'Saving...'
@@ -669,7 +677,7 @@ export default function LearningDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <button
               onClick={() => setShowPatterns((prev) => !prev)}
-              className="bg-surface-tertiary rounded-lg p-4 text-left hover:border-[rgba(255,255,255,0.12)] transition-colors duration-150"
+              className="bg-surface-tertiary rounded-lg p-4 text-left hover:border-hover transition-colors duration-150"
             >
               <div className="text-sm font-medium text-purple-400 flex items-center gap-1.5">
                 <Sparkles size={14} />
@@ -679,7 +687,7 @@ export default function LearningDashboard() {
             </button>
             <button
               onClick={() => setShowDecisionModal(true)}
-              className="bg-surface-tertiary rounded-lg p-4 text-left hover:border-[rgba(255,255,255,0.12)] transition-colors duration-150"
+              className="bg-surface-tertiary rounded-lg p-4 text-left hover:border-hover transition-colors duration-150"
             >
               <div className="text-sm font-medium text-info flex items-center gap-1.5">
                 <FileText size={14} />
@@ -689,7 +697,7 @@ export default function LearningDashboard() {
             </button>
             <button
               onClick={() => setShowLessonModal(true)}
-              className="bg-surface-tertiary rounded-lg p-4 text-left hover:border-[rgba(255,255,255,0.12)] transition-colors duration-150"
+              className="bg-surface-tertiary rounded-lg p-4 text-left hover:border-hover transition-colors duration-150"
             >
               <div className="text-sm font-medium text-warning flex items-center gap-1.5">
                 <Lightbulb size={14} />
@@ -701,25 +709,25 @@ export default function LearningDashboard() {
 
           {/* Inline Patterns Panel */}
           {showPatterns && (
-            <div className="mt-4 bg-surface-tertiary rounded-lg p-4 border border-[rgba(255,255,255,0.06)]">
+            <div className="mt-4 bg-surface-tertiary rounded-lg p-4 border border">
               <div className="text-sm font-medium text-purple-400 mb-3 flex items-center gap-1.5">
                 <Sparkles size={14} />
                 Pattern Summary
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
-                <div className="bg-[#111] rounded-lg p-3">
+                <div className="bg-secondary rounded-lg p-3">
                   <div className="text-xs text-tertiary">Patterns Found</div>
                   <div className="text-lg font-semibold text-white tabular-nums">{stats.patterns}</div>
                 </div>
-                <div className="bg-[#111] rounded-lg p-3">
+                <div className="bg-secondary rounded-lg p-3">
                   <div className="text-xs text-tertiary">Decisions Tracked</div>
                   <div className="text-lg font-semibold text-white tabular-nums">{stats.totalDecisions}</div>
                 </div>
-                <div className="bg-[#111] rounded-lg p-3">
+                <div className="bg-secondary rounded-lg p-3">
                   <div className="text-xs text-tertiary">Success Rate</div>
                   <div className="text-lg font-semibold text-white tabular-nums">{stats.successRate}%</div>
                 </div>
-                <div className="bg-[#111] rounded-lg p-3">
+                <div className="bg-secondary rounded-lg p-3">
                   <div className="text-xs text-tertiary">Lessons Learned</div>
                   <div className="text-lg font-semibold text-white tabular-nums">{stats.totalLessons}</div>
                 </div>
@@ -736,7 +744,7 @@ export default function LearningDashboard() {
                       if (d.outcome === 'success') categories[cat].success++;
                     });
                     return Object.entries(categories).map(([cat, data]) => (
-                      <div key={cat} className="flex items-center justify-between bg-[#111] rounded-md px-3 py-2">
+                      <div key={cat} className="flex items-center justify-between bg-secondary rounded-md px-3 py-2">
                         <span className="text-sm text-secondary capitalize">{cat}</span>
                         <span className="text-xs text-tertiary">
                           {data.total} decision{data.total !== 1 ? 's' : ''} | {data.total > 0 ? Math.round((data.success / data.total) * 100) : 0}% success
@@ -755,12 +763,18 @@ export default function LearningDashboard() {
 
       {/* Log Decision Modal */}
       {showDecisionModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setShowDecisionModal(false)}>
-          <div className="bg-surface-secondary border border-[rgba(255,255,255,0.1)] rounded-xl p-6 w-full max-w-md shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => { setShowDecisionModal(false); setDecisionError(''); }}>
+          <div className="bg-surface-secondary border border rounded-xl p-6 w-full max-w-md shadow-xl" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
               <FileText size={18} className="text-info" />
               Log Decision
             </h3>
+
+            {decisionError && (
+              <div className="mb-4 text-xs text-error bg-error-subtle border border-error/20 rounded-md px-3 py-2">
+                {decisionError}
+              </div>
+            )}
 
             <div className="space-y-4">
               <div>
@@ -770,7 +784,7 @@ export default function LearningDashboard() {
                   value={decisionForm.decision}
                   onChange={(e) => setDecisionForm((prev) => ({ ...prev, decision: e.target.value }))}
                   placeholder="What was decided?"
-                  className="w-full px-3 py-2 rounded-lg bg-[#111] border border-[rgba(255,255,255,0.1)] text-sm text-white focus:outline-none focus:border-brand"
+                  className="w-full px-3 py-2 rounded-lg bg-secondary border border text-sm text-white focus:outline-none focus:border-brand"
                 />
               </div>
 
@@ -779,7 +793,7 @@ export default function LearningDashboard() {
                 <select
                   value={decisionForm.category}
                   onChange={(e) => setDecisionForm((prev) => ({ ...prev, category: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-lg bg-[#111] border border-[rgba(255,255,255,0.1)] text-sm text-white focus:outline-none focus:border-brand"
+                  className="w-full px-3 py-2 rounded-lg bg-secondary border border text-sm text-white focus:outline-none focus:border-brand"
                 >
                   <option value="general">General</option>
                   <option value="technical">Technical</option>
@@ -796,7 +810,7 @@ export default function LearningDashboard() {
                   onChange={(e) => setDecisionForm((prev) => ({ ...prev, context: e.target.value }))}
                   placeholder="Why was this decision made?"
                   rows={3}
-                  className="w-full px-3 py-2 rounded-lg bg-[#111] border border-[rgba(255,255,255,0.1)] text-sm text-white focus:outline-none focus:border-brand resize-none"
+                  className="w-full px-3 py-2 rounded-lg bg-secondary border border text-sm text-white focus:outline-none focus:border-brand resize-none"
                 />
               </div>
 
@@ -805,7 +819,7 @@ export default function LearningDashboard() {
                 <select
                   value={decisionForm.outcome}
                   onChange={(e) => setDecisionForm((prev) => ({ ...prev, outcome: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-lg bg-[#111] border border-[rgba(255,255,255,0.1)] text-sm text-white focus:outline-none focus:border-brand"
+                  className="w-full px-3 py-2 rounded-lg bg-secondary border border text-sm text-white focus:outline-none focus:border-brand"
                 >
                   <option value="pending">Pending</option>
                   <option value="success">Success</option>
@@ -817,7 +831,7 @@ export default function LearningDashboard() {
 
             <div className="flex justify-end gap-3 mt-6">
               <button
-                onClick={() => setShowDecisionModal(false)}
+                onClick={() => { setShowDecisionModal(false); setDecisionError(''); }}
                 className="px-4 py-2 rounded-lg text-sm text-secondary hover:text-white transition-colors"
               >
                 Cancel
@@ -837,7 +851,7 @@ export default function LearningDashboard() {
       {/* Add Lesson Modal */}
       {showLessonModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => { setShowLessonModal(false); setLessonError(''); }}>
-          <div className="bg-surface-secondary border border-[rgba(255,255,255,0.1)] rounded-xl p-6 w-full max-w-md shadow-xl" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-surface-secondary border border rounded-xl p-6 w-full max-w-md shadow-xl" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
               <Lightbulb size={18} className="text-warning" />
               Add Lesson
@@ -857,7 +871,7 @@ export default function LearningDashboard() {
                   onChange={(e) => setLessonForm((prev) => ({ ...prev, lesson: e.target.value }))}
                   placeholder="What was learned?"
                   rows={3}
-                  className="w-full px-3 py-2 rounded-lg bg-[#111] border border-[rgba(255,255,255,0.1)] text-sm text-white focus:outline-none focus:border-brand resize-none"
+                  className="w-full px-3 py-2 rounded-lg bg-secondary border border text-sm text-white focus:outline-none focus:border-brand resize-none"
                 />
               </div>
 
@@ -866,7 +880,7 @@ export default function LearningDashboard() {
                 <select
                   value={lessonForm.category}
                   onChange={(e) => setLessonForm((prev) => ({ ...prev, category: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-lg bg-[#111] border border-[rgba(255,255,255,0.1)] text-sm text-white focus:outline-none focus:border-brand"
+                  className="w-full px-3 py-2 rounded-lg bg-secondary border border text-sm text-white focus:outline-none focus:border-brand"
                 >
                   <option value="general">General</option>
                   <option value="technical">Technical</option>
@@ -900,7 +914,7 @@ export default function LearningDashboard() {
                   value={lessonForm.tags}
                   onChange={(e) => setLessonForm((prev) => ({ ...prev, tags: e.target.value }))}
                   placeholder="e.g. optimization, caching, api"
-                  className="w-full px-3 py-2 rounded-lg bg-[#111] border border-[rgba(255,255,255,0.1)] text-sm text-white focus:outline-none focus:border-brand"
+                  className="w-full px-3 py-2 rounded-lg bg-secondary border border text-sm text-white focus:outline-none focus:border-brand"
                 />
               </div>
             </div>
