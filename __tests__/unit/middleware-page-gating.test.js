@@ -24,7 +24,7 @@ function pageReq(pathname) {
 }
 
 // Real authenticated dashboards that were missing from the matcher.
-const NEWLY_GATED = ['/analytics', '/assumptions', '/my-agent', '/scoring', '/policy-coach', '/labs'];
+const NEWLY_GATED = ['/analytics', '/assumptions', '/scoring', '/policy-coach', '/labs'];
 // Deleted pages whose stale matcher entries were removed.
 const REMOVED_DEAD = ['/goals', '/content', '/relationships', '/calendar', '/tokens'];
 

@@ -5,7 +5,7 @@ import { describe, it, expect } from 'vitest';
 // Option B active: importing from a sibling helper keeps the JSX-bearing
 // page file out of vitest's oxc parser path (Option A failed because
 // vite's JSX transform doesn't auto-engage on a plain .js extension at
-// import time). app/activity/page.js re-exports these for production use.
+// import time). app/activity/page.jsx re-exports these for production use.
 import { groupEventsByDay, summarizeDay } from '../../app/activity/dayGrouping.js';
 
 // Per D-14: if useAgentFilter is active upstream, the array fed to

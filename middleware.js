@@ -1477,8 +1477,6 @@ export const config = {
     '/analytics/:path*',
     '/assumptions',
     '/assumptions/:path*',
-    '/my-agent',
-    '/my-agent/:path*',
     '/scoring',
     '/scoring/:path*',
     '/policy-coach',

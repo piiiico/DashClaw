@@ -1,6 +1,11 @@
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, within } from '@testing-library/react';
+
+// Render-state coverage for /activity (app/activity/page.jsx). These assertions
+// migrated from the retired /my-agent page test when Agent Summary was folded
+// into Activity: narrative hero, Today/This-week scope toggle, pinned denials,
+// install-prompt empty state, and agent-filter querystring propagation.
 
 // --- Mocks (declared before the target module is imported) ---
 
@@ -52,51 +57,37 @@ vi.mock('../../app/lib/AgentFilterContext', () => ({
 function makeAction({
   action_id = 'act_' + Math.random().toString(36).slice(2, 10),
   agent_id = 'claude-code',
-  action_type = 'other',
   declared_goal = 'do a thing',
   status = 'completed',
-  risk_score = 20,
   approved_by = null,
   timestamp_start = new Date().toISOString(),
 } = {}) {
-  return {
-    action_id, agent_id, action_type, declared_goal,
-    status, risk_score, approved_by, timestamp_start,
-  };
+  return { action_id, agent_id, declared_goal, status, approved_by, timestamp_start };
 }
 
 function makeGuard({
   id = 'g_' + Math.random().toString(36).slice(2, 10),
-  action_id = 'act_' + Math.random().toString(36).slice(2, 10),
   agent_id = 'claude-code',
   decision = 'allow',
   reason = 'policy permitted',
   matched_policies = [],
   created_at = new Date().toISOString(),
 } = {}) {
-  return { id, action_id, agent_id, decision, reason, matched_policies, created_at };
+  return { id, agent_id, decision, reason, matched_policies, created_at };
 }
 
-function stubFetch({ actions = [], evaluations = [] } = {}) {
+function stubFetch({ actions = [], decisions = [] } = {}) {
   return vi.fn(async (url) => {
     const u = String(url);
     if (u.startsWith('/api/actions')) {
       return { ok: true, status: 200, json: async () => ({ actions }) };
     }
     if (u.startsWith('/api/guard')) {
-      // GET /api/guard returns { decisions: [...] } (see listGuardDecisions);
-      // the stub's `evaluations` arg is the list of guard decisions to return.
-      return { ok: true, status: 200, json: async () => ({ decisions: evaluations }) };
+      // GET /api/guard returns { decisions: [...] } (see listGuardDecisions).
+      return { ok: true, status: 200, json: async () => ({ decisions }) };
     }
-    if (u === '/api/session/effective') {
-      return {
-        ok: true,
-        status: 200,
-        json: async () => ({ authenticated: true, authType: 'local', role: 'admin', isAdmin: true }),
-      };
-    }
-    if (u === '/api/agents') {
-      return { ok: true, status: 200, json: async () => ({ agents: [] }) };
+    if (u.startsWith('/api/activity')) {
+      return { ok: true, status: 200, json: async () => ({ events: [] }) };
     }
     return { ok: true, status: 200, json: async () => ({}) };
   });
@@ -113,7 +104,7 @@ async function waitForFetches(fetchMock, expectedCalls = 2) {
 
 // --- Tests ---
 
-describe('MyAgentPage — /my-agent render states', () => {
+describe('GlobalActivityFeed — /activity render states', () => {
   beforeEach(() => {
     realtimeSubscriber = null;
     currentAgentFilter = { agentId: null };
@@ -125,10 +116,10 @@ describe('MyAgentPage — /my-agent render states', () => {
     vi.restoreAllMocks();
   });
 
-  it('renders the install-prompt hero for a zero-activity user (D-10)', async () => {
-    global.fetch = stubFetch({ actions: [], evaluations: [] });
-    const { default: MyAgentPage } = await import('../../app/my-agent/page.jsx');
-    render(<MyAgentPage />);
+  it('renders the install-prompt hero for a zero-activity user', async () => {
+    global.fetch = stubFetch({ actions: [], decisions: [] });
+    const { default: ActivityPage } = await import('../../app/activity/page.jsx');
+    render(<ActivityPage />);
 
     await waitFor(() => {
       expect(screen.getByText(/your agent hasn't run anything yet/i)).toBeTruthy();
@@ -145,9 +136,9 @@ describe('MyAgentPage — /my-agent render states', () => {
     const actions = [
       makeAction({ status: 'completed', timestamp_start: new Date().toISOString() }),
     ];
-    global.fetch = stubFetch({ actions, evaluations: [] });
-    const { default: MyAgentPage } = await import('../../app/my-agent/page.jsx');
-    render(<MyAgentPage />);
+    global.fetch = stubFetch({ actions, decisions: [] });
+    const { default: ActivityPage } = await import('../../app/activity/page.jsx');
+    render(<ActivityPage />);
 
     await waitFor(() => {
       // Singular grammar: "1 command." (no trailing s)
@@ -155,34 +146,32 @@ describe('MyAgentPage — /my-agent render states', () => {
     });
   });
 
-  it('renders correctly at 50+ events and respects the toggle re-filter', async () => {
+  it('respects the Today/This-week scope toggle re-filter', async () => {
     const now = Date.now();
     const DAY = 24 * 60 * 60 * 1000;
-    // 30 approvals within the last day (today scope)
+    // 30 commands within the last day (today scope)
     const todayActions = Array.from({ length: 30 }, (_, i) =>
       makeAction({ status: 'completed', timestamp_start: new Date(now - i * 60 * 1000).toISOString() })
     );
-    // 25 approvals scattered across the prior 6 days (days 2–6), still within week
+    // 25 commands scattered across the prior days, still within week
     const weekOnlyActions = Array.from({ length: 25 }, (_, i) =>
       makeAction({
         status: 'completed',
-        // Spread across hours so none collide with the today cutoff, staying
-        // strictly inside the week window (t > now - 7*DAY).
         timestamp_start: new Date(now - (1.5 * DAY + i * 2 * 60 * 60 * 1000)).toISOString(),
       })
     );
     const actions = [...todayActions, ...weekOnlyActions];
 
-    global.fetch = stubFetch({ actions, evaluations: [] });
-    const { default: MyAgentPage } = await import('../../app/my-agent/page.jsx');
-    render(<MyAgentPage />);
+    global.fetch = stubFetch({ actions, decisions: [] });
+    const { default: ActivityPage } = await import('../../app/activity/page.jsx');
+    render(<ActivityPage />);
 
     // Today scope first
     await waitFor(() => {
       expect(screen.getByText(/your agent ran 30 commands\./i)).toBeTruthy();
     });
 
-    // Click the "This week" toggle — week count includes today + prior 6 days
+    // Click the "This week" toggle — week count includes today + prior days
     const weekBtn = screen.getByRole('button', { name: /this week/i });
     fireEvent.click(weekBtn);
 
@@ -191,13 +180,13 @@ describe('MyAgentPage — /my-agent render states', () => {
     });
   });
 
-  it('propagates useAgentFilter.agentId into fetch querystring (D-14)', async () => {
+  it('propagates useAgentFilter.agentId into fetch querystring', async () => {
     currentAgentFilter = { agentId: 'claude-code' };
-    const fetchMock = stubFetch({ actions: [makeAction()], evaluations: [] });
+    const fetchMock = stubFetch({ actions: [makeAction()], decisions: [] });
     global.fetch = fetchMock;
 
-    const { default: MyAgentPage } = await import('../../app/my-agent/page.jsx');
-    render(<MyAgentPage />);
+    const { default: ActivityPage } = await import('../../app/activity/page.jsx');
+    render(<ActivityPage />);
 
     await waitForFetches(fetchMock);
     const actionCalls = fetchMock.mock.calls.filter(([u]) => String(u).startsWith('/api/actions'));
@@ -206,9 +195,8 @@ describe('MyAgentPage — /my-agent render states', () => {
     expect(guardCalls[0][0]).toMatch(/agent_id=claude-code/);
   });
 
-  it('pins denials above the chronological list (D-11)', async () => {
+  it('pins denials above the live feed', async () => {
     const now = Date.now();
-    // 5 approvals (older) + 2 denials (newer by chronology but still pinned first)
     const approvals = Array.from({ length: 5 }, (_, i) =>
       makeAction({
         action_id: `act_approved_${i}`,
@@ -234,41 +222,72 @@ describe('MyAgentPage — /my-agent render states', () => {
       }),
     ];
 
-    global.fetch = stubFetch({ actions: approvals, evaluations: denials });
-    const { default: MyAgentPage } = await import('../../app/my-agent/page.jsx');
-    const { container } = render(<MyAgentPage />);
+    global.fetch = stubFetch({ actions: approvals, decisions: denials });
+    const { default: ActivityPage } = await import('../../app/activity/page.jsx');
+    const { container } = render(<ActivityPage />);
 
     await waitFor(() => {
-      expect(screen.getByText(/rm -rf blocked/i)).toBeTruthy();
+      // Denials appear both in the pinned section and the chronological feed
+      // (Activity is the full record; the pin is an added highlight), so the
+      // text legitimately matches more than once.
+      expect(screen.getAllByText(/rm -rf blocked/i).length).toBeGreaterThan(0);
     });
 
-    // Denial section must render a testid=denials-section ABOVE testid=chrono-section
+    // Denial section must render testid=denials-section ABOVE the live feed.
     const denialsSection = container.querySelector('[data-testid="denials-section"]');
-    const chronoSection = container.querySelector('[data-testid="chrono-section"]');
     expect(denialsSection).toBeTruthy();
-    expect(chronoSection).toBeTruthy();
-    // DocumentPosition: denials should precede chrono
-    const order = denialsSection.compareDocumentPosition(chronoSection);
+    // The pinned denial reason precedes the live-feed "Live feed" header.
+    const liveFeedHeader = screen.getByText(/live feed/i);
+    const order = denialsSection.compareDocumentPosition(liveFeedHeader);
     // Node.DOCUMENT_POSITION_FOLLOWING === 4 (bit set when other node follows)
     expect(order & 4).toBeTruthy();
   });
 
-  it('re-fetches when a realtime action.updated event fires (D-12)', async () => {
-    const fetchMock = stubFetch({ actions: [makeAction()], evaluations: [] });
-    global.fetch = fetchMock;
-
-    const { default: MyAgentPage } = await import('../../app/my-agent/page.jsx');
-    render(<MyAgentPage />);
-
-    await waitForFetches(fetchMock);
-    const callsAfterMount = fetchMock.mock.calls.length;
-    expect(realtimeSubscriber).toBeTruthy();
-
-    // Simulate an SSE event
-    realtimeSubscriber('action.updated', { action_id: 'act_new' });
+  it('counts denials in the narrative and uses the warning tone', async () => {
+    const now = Date.now();
+    const actions = [makeAction({ status: 'completed', timestamp_start: new Date(now).toISOString() })];
+    const denials = [
+      makeGuard({ id: 'g_d', decision: 'block', reason: 'blocked', created_at: new Date(now).toISOString() }),
+    ];
+    global.fetch = stubFetch({ actions, decisions: denials });
+    const { default: ActivityPage } = await import('../../app/activity/page.jsx');
+    render(<ActivityPage />);
 
     await waitFor(() => {
-      expect(fetchMock.mock.calls.length).toBeGreaterThan(callsAfterMount);
+      // Narrative includes the denial clause.
+      expect(screen.getByText(/1 was denied\./i)).toBeTruthy();
+    });
+  });
+
+  it('patches a realtime guard.decision.created event into the feed in place', async () => {
+    const now = Date.now();
+    const fetchMock = stubFetch({
+      actions: [makeAction({ timestamp_start: new Date(now).toISOString() })],
+      decisions: [],
+    });
+    global.fetch = fetchMock;
+
+    const { default: ActivityPage } = await import('../../app/activity/page.jsx');
+    const { container } = render(<ActivityPage />);
+
+    await waitForFetches(fetchMock);
+    expect(realtimeSubscriber).toBeTruthy();
+
+    // Fire a denial SSE event — it should appear in the pinned denials section.
+    realtimeSubscriber('guard.decision.created', {
+      id: 'g_live',
+      agent_id: 'claude-code',
+      decision: 'block',
+      reason: 'live denial reason',
+      created_at: new Date(now).toISOString(),
+    });
+
+    await waitFor(() => {
+      // The realtime denial must surface specifically in the pinned section
+      // (it also lands in the feed, so scope the assertion to disambiguate).
+      const denialsSection = container.querySelector('[data-testid="denials-section"]');
+      expect(denialsSection).toBeTruthy();
+      expect(within(denialsSection).getByText(/live denial reason/i)).toBeTruthy();
     });
   });
 });
