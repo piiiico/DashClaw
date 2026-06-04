@@ -56,6 +56,9 @@ export const VALID_SETTING_KEYS = [
   // DASHCLAW_BEHAVIOR_SAMPLES_ENABLED env var still overrides them.
   'BEHAVIOR_RECORDER_ENABLED',
   'BEHAVIOR_RECORDER_UNTIL',
+  // Auto-scan: when 'true', the guard hard-blocks an action whose outbound
+  // content contains a detected secret/credential. Default (unset) = warn only.
+  'DASHCLAW_AUTOSCAN_BLOCK',
 ];
 
 export const VALID_CATEGORIES = ['integration', 'general', 'system'];

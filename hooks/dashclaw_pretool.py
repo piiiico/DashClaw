@@ -783,6 +783,26 @@ def main():
     if enrichment.get("target"):
         context["target"] = enrichment["target"]
 
+    # Auto-scan: forward the outbound file content so the guard can secret-scan
+    # it (warn by default; hard-blocks only when the org sets DASHCLAW_AUTOSCAN_
+    # BLOCK). Capped to the guard schema's content limit. Best-effort — a failure
+    # here must never break the tool call.
+    try:
+        _content = None
+        if tool_name == "Write":
+            _content = tool_input.get("content")
+        elif tool_name == "Edit":
+            _content = tool_input.get("new_string")
+        elif tool_name == "MultiEdit":
+            _edits = tool_input.get("edits") or []
+            _content = "\n".join(str(e.get("new_string", "")) for e in _edits if isinstance(e, dict))
+        elif tool_name == "NotebookEdit":
+            _content = tool_input.get("new_source")
+        if _content:
+            context["content"] = str(_content)[:50000]
+    except Exception:
+        pass
+
     # Sub-agent provenance. Claude Code puts agent_id / agent_type on hook stdin
     # ONLY when the call fires inside a sub-agent. We keep the governed agent_id =
     # the configured parent (sub-agents inherit the parent's pairing and policies,
@@ -811,6 +831,17 @@ def main():
 
     # Step 6: Handle decision
     decision = guard_resp.get("decision", "allow")
+
+    # Auto-scan advisory: surface a visible warning when the guard detected a
+    # secret in the outbound content, even on allow (warn-by-default). A 'block'
+    # decision is handled by handle_block below.
+    try:
+        _scan = guard_resp.get("secret_scan") or {}
+        if _scan.get("detected") and decision != "block":
+            _cats = ", ".join(sorted({f.get("category", "secret") for f in _scan.get("findings", [])})) or "secret"
+            log("[DashClaw] ⚠ Possible secret in this content (%s) — flagged by auto-scan. Review before it leaves your machine." % _cats)
+    except Exception:
+        pass
 
     # Behavior Learning: passively record a redacted sample of this governed
     # tool call (opt-in via DASHCLAW_BEHAVIOR_SAMPLES_ENABLED; fully fail-silent).

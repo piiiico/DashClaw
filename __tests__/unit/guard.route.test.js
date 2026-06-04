@@ -90,6 +90,46 @@ describe('/api/guard', () => {
       expect(res.status).toBe(200);
     });
 
+    it('auto-scans content for secrets and attaches an advisory warning (no raw secret leaked)', async () => {
+      mockValidateGuardInput.mockReturnValue({
+        valid: true,
+        data: { action_type: 'write', content: 'aws key AKIAIOSFODNN7EXAMPLE in config' },
+        errors: [],
+      });
+      mockEvaluateGuard.mockResolvedValue({ decision: 'allow', reasons: [], warnings: [], matched_policies: [] });
+
+      const res = await POST(makeRequest('http://localhost/api/guard', {
+        headers: { 'x-org-id': 'org_1' },
+        body: { action_type: 'write', content: 'aws key AKIAIOSFODNN7EXAMPLE in config' },
+      }));
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.secret_scan?.detected).toBe(true);
+      expect(data.secret_scan.findings.length).toBeGreaterThan(0);
+      // The raw secret must never appear in the response.
+      expect(JSON.stringify(data)).not.toContain('AKIAIOSFODNN7EXAMPLE');
+    });
+
+    it('hard-blocks a secret in content when DASHCLAW_AUTOSCAN_BLOCK is enabled', async () => {
+      mockValidateGuardInput.mockReturnValue({
+        valid: true,
+        data: { action_type: 'write', content: 'AKIAIOSFODNN7EXAMPLE' },
+        errors: [],
+      });
+      mockEvaluateGuard.mockResolvedValue({ decision: 'allow', reasons: [], warnings: [], matched_policies: [] });
+      // getSettings reads via mockSql — return the opt-in block flag.
+      mockSql.mockImplementation(async () => [{ key: 'DASHCLAW_AUTOSCAN_BLOCK', value: 'true' }]);
+
+      const res = await POST(makeRequest('http://localhost/api/guard', {
+        headers: { 'x-org-id': 'org_1' },
+        body: { action_type: 'write', content: 'AKIAIOSFODNN7EXAMPLE' },
+      }));
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.decision).toBe('block');
+      expect(mockEvaluateGuard).not.toHaveBeenCalled();
+    });
+
     it('passes include_signals option', async () => {
       mockValidateGuardInput.mockReturnValue({ valid: true, data: { action_type: 'read' }, errors: [] });
       mockEvaluateGuard.mockResolvedValue({ decision: 'allow', reasons: [], warnings: [], matched_policies: [] });

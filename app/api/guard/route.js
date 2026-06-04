@@ -8,6 +8,8 @@ import { evaluateGuard } from '../../lib/guard';
 import { getSql } from '../../lib/db.js';
 import { apiErrorResponse } from '../../lib/apiErrors.js';
 import { scanForPromptInjection } from '../../lib/promptInjection.js';
+import { scanSensitiveData } from '../../lib/security.js';
+import { getSettings } from '../../lib/repositories/settings.repository.js';
 import { listGuardDecisions } from '../../lib/repositories/guard.repository.js';
 import { isSelfHostModeEnabled } from '../../lib/selfHost.js';
 import { verifyJwt, extractBearerToken } from '../../lib/jwks-verifier.js';
@@ -171,6 +173,32 @@ export async function POST(request) {
       data.act_hash = null;
     }
 
+    // SECURITY: auto-scan the outbound `content` for secrets/credentials so
+    // protection is built in, not opt-in. Warn by default (advisory in the
+    // response — the agent hook surfaces it); only hard-block when the org
+    // opts in via the DASHCLAW_AUTOSCAN_BLOCK setting. Never echo the raw
+    // secret — only finding type/category/severity leave the server.
+    let secretScan = null;
+    if (data.content) {
+      const scan = scanSensitiveData(data.content);
+      if (!scan.clean) {
+        const findings = scan.findings.map((f) => ({ pattern: f.pattern, category: f.category, severity: f.severity }));
+        const generalSettings = await getSettings(sql, orgId, { category: 'general' });
+        const blockOn = generalSettings.some(
+          (s) => s.key === 'DASHCLAW_AUTOSCAN_BLOCK' && String(s.value).toLowerCase() === 'true'
+        );
+        if (blockOn) {
+          return NextResponse.json({
+            decision: 'block',
+            allowed: false,
+            reasons: ['Secret or credential detected in outbound content'],
+            secret_scan: { detected: true, recommendation: 'block', findings },
+          }, { status: 200 });
+        }
+        secretScan = { detected: true, recommendation: 'warn', findings };
+      }
+    }
+
     const includeSignals = request.nextUrl.searchParams.get('include_signals') === 'true';
 
     let computeSignalsFn = null;
@@ -183,6 +211,8 @@ export async function POST(request) {
       includeSignals,
       computeSignals: computeSignalsFn,
     });
+
+    if (secretScan) result.secret_scan = secretScan;
 
     return NextResponse.json(result, { status: 200 });
   } catch (err) {

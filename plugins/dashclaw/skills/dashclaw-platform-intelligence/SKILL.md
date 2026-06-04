@@ -5,7 +5,7 @@ description: DashClaw platform expert for integration, troubleshooting, and gove
 
 # DashClaw Platform Intelligence
 
-**Shape snapshot:** `sha1:bfc857c8f04957d1758df8f03546cc86498d683a`
+**Shape snapshot:** `sha1:22c84d9f7ccd4188bead232ffdde419e68578ba3`
 **This file is auto-generated.** Do not edit by hand — regenerate with:
 
 ```bash
@@ -815,6 +815,10 @@ Per-org settings stored in the `settings` table. Set via `PUT /api/settings/:key
 
 - `BEHAVIOR_RECORDER_ENABLED`
 - `BEHAVIOR_RECORDER_UNTIL`
+
+### content contains a detected secret/credential. Default (unset) = warn only.
+
+- `DASHCLAW_AUTOSCAN_BLOCK`
 
 ## Realtime & Webhook Events
 

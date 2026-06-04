@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:bfc857c8f04957d1758df8f03546cc86498d683a",
+  "timestamp": "sha1:22c84d9f7ccd4188bead232ffdde419e68578ba3",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -5023,6 +5023,10 @@
     {
       "name": "BEHAVIOR_RECORDER_UNTIL",
       "section": "DASHCLAW_BEHAVIOR_SAMPLES_ENABLED env var still overrides them."
+    },
+    {
+      "name": "DASHCLAW_AUTOSCAN_BLOCK",
+      "section": "content contains a detected secret/credential. Default (unset) = warn only."
     }
   ],
   "events": [
