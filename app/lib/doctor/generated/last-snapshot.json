@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:4ce059d481529bec3476bdeb0fe372cf9743376d",
+  "timestamp": "sha1:4d9403adcde2aaab2e4b7b0b032a441d3acce3bb",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -2992,7 +2992,6 @@
         "app/api/keys/reveal/route.js",
         "app/api/setup/migrate/route.js",
         "app/api/setup/ping/route.js",
-        "app/components/OnboardingChecklist.js",
         "app/docs/page.js",
         "app/guides/openai-agents-sdk/page.js",
         "app/landingData.js",

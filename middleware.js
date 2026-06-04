@@ -614,7 +614,7 @@ export async function middleware(request) {
         return response;
       }
 
-      // Health + onboarding
+      // Health
       if (pathname === '/api/health') {
         return demoJson(request, {
           status: 'healthy',
@@ -626,18 +626,6 @@ export async function middleware(request) {
           // demo-mode middleware short-circuits before that handler runs.
           mode: 'demo',
           checks: { demo: { status: 'healthy' } },
-        });
-      }
-
-      if (pathname === '/api/onboarding/status') {
-        return demoJson(request, {
-          onboarding_required: false,
-          org_id: 'org_demo',
-          steps: {
-            workspace_created: true,
-            api_key_exists: true,
-            first_action_sent: true,
-          },
         });
       }
 

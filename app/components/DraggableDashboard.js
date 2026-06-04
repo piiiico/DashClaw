@@ -13,7 +13,6 @@ import LearningStatsCard from './LearningStatsCard';
 import IntegrationsCard from './IntegrationsCard';
 import ContextCard from './ContextCard';
 import ActivityTimeline from './ActivityTimeline';
-import OnboardingChecklist from './OnboardingChecklist';
 import CapabilityHighlightsCard from './CapabilityHighlightsCard';
 import RecentMessagesCard from './RecentMessagesCard';
 import FleetPresenceCard from './FleetPresenceCard';
@@ -205,10 +204,7 @@ export default function DraggableDashboard({ activePreset, onPresetApplied }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-start">
-        <div className="flex-1">
-          <OnboardingChecklist />
-        </div>
+      <div className="flex justify-end items-start">
         <button
           onClick={() => setIsCustomizeOpen(true)}
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-secondary hover:text-secondary bg-surface-tertiary border border-border rounded-lg transition-colors ml-4 shrink-0"

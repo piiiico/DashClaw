@@ -767,18 +767,11 @@ async function testActivityAndNotifications() {
 }
 
 // ──────────────────────────────────────────────
-// Phase 12: Onboarding & Setup
+// Phase 12: Setup
 // ──────────────────────────────────────────────
 
-async function testOnboardingAndSetup() {
-  console.log('\n━━━ Phase 12: Onboarding & Setup ━━━');
-
-  // GET /api/onboarding/status
-  const { status: s1, data: d1 } = await request('GET', '/api/onboarding/status');
-  assert(s1 === 200 || s1 === 401, `GET /api/onboarding/status returns 200 or 401 (got ${s1})`);
-  if (s1 === 200) {
-    assert(d1.steps !== undefined || d1.onboarding_required !== undefined, 'Onboarding returns status info');
-  }
+async function testSetup() {
+  console.log('\n━━━ Phase 12: Setup ━━━');
 
   // GET /api/setup/status
   const { status: s2, data: d2 } = await request('GET', '/api/setup/status');
@@ -1375,7 +1368,7 @@ async function main() {
     testGoalsAndContent,
     testAgentsAndConnections,
     testActivityAndNotifications,
-    testOnboardingAndSetup,
+    testSetup,
     testCronRoutes,
     testMiscEndpoints,
     testOrgManagement,
