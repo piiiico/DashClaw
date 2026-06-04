@@ -164,7 +164,12 @@ class DashClaw {
    * to have a `non_fabrication` guard policy verify the content before the
    * action proceeds. A violation blocks the action or routes it to approval and
    * is recorded with a signed receipt in the decision ledger.
+   *
+   * Optional `session_id`: pass the id from `createSession()` to link this
+   * action to a session via the Direct path (exact attribution). When omitted,
+   * the server falls back to time-window correlation by agent_id.
    * @param {Object} action
+   * @param {string} [action.session_id] Session to attribute this action to.
    */
   async createAction(action) {
     return this._request('/api/actions', 'POST', {
