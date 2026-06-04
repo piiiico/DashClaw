@@ -22,6 +22,7 @@ const FRAMEWORK_LABELS = {
   'nist-ai-rmf': 'NIST AI RMF',
   'eu-ai-act': 'EU AI Act',
   'gdpr': 'GDPR',
+  'imda-agentic': 'IMDA Agentic AI',
 };
 
 const STATUS_VARIANTS = {
@@ -157,14 +158,30 @@ export default function CompliancePage() {
   };
 
   const controls = controlMap?.controls || [];
-  const coverage = controlMap?.coverage || {};
-  const coveragePercent = coverage.total
-    ? Math.round((coverage.covered / coverage.total) * 100)
-    : 0;
+  // The /api/compliance/map route returns `summary` (total_controls, covered,
+  // partial, gaps, coverage_percentage), not a `coverage` object. Read that.
+  const summary = controlMap?.summary || {};
+  const coveragePercent = Number.isFinite(summary.coverage_percentage)
+    ? summary.coverage_percentage
+    : (summary.total_controls
+      ? Math.round((summary.covered / summary.total_controls) * 100)
+      : 0);
 
-  const gaps = gapAnalysis?.gaps || [];
-  const remediations = gapAnalysis?.remediations || [];
-  const riskLevel = gapAnalysis?.risk_level || 'unknown';
+  // The /api/compliance/gaps route returns remediation_plan[] (each item carries
+  // status, control_id, title, recommendations, estimated_effort), risk_assessment
+  // (overall_risk UPPERCASE, narrative, immediate_actions), and quick_wins as an array.
+  const remediationPlan = gapAnalysis?.remediation_plan || [];
+  const gaps = remediationPlan.filter((r) => r.status === 'gap');
+  const remediations = remediationPlan;
+  const quickWins = Array.isArray(gapAnalysis?.quick_wins) ? gapAnalysis.quick_wins : [];
+  const riskLevel = gapAnalysis?.risk_assessment?.overall_risk || 'unknown';
+  const riskLower = String(riskLevel).toLowerCase();
+  const riskVariant =
+    riskLower === 'high' || riskLower === 'critical' ? 'error'
+    : riskLower === 'medium' ? 'warning'
+    : riskLower === 'low' ? 'success'
+    : 'default';
+  const narrative = gapAnalysis?.risk_assessment?.narrative;
 
   const coverageTextColor =
     coveragePercent >= 80 ? 'text-success'
@@ -244,19 +261,19 @@ export default function CompliancePage() {
           <div className="grid grid-cols-2 divide-x divide-border overflow-hidden rounded-xl border border-border bg-surface-secondary sm:grid-cols-5">
             <div className="p-4">
               <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Total controls</div>
-              <div className="mt-1 text-2xl font-semibold tabular-nums text-white">{coverage.total ?? 0}</div>
+              <div className="mt-1 text-2xl font-semibold tabular-nums text-white">{summary.total_controls ?? 0}</div>
             </div>
             <div className="p-4">
               <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Covered</div>
-              <div className="mt-1 text-2xl font-semibold tabular-nums text-success">{coverage.covered ?? 0}</div>
+              <div className="mt-1 text-2xl font-semibold tabular-nums text-success">{summary.covered ?? 0}</div>
             </div>
             <div className="p-4">
               <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Partial</div>
-              <div className="mt-1 text-2xl font-semibold tabular-nums text-warning">{coverage.partial ?? 0}</div>
+              <div className="mt-1 text-2xl font-semibold tabular-nums text-warning">{summary.partial ?? 0}</div>
             </div>
             <div className="p-4">
               <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Gaps</div>
-              <div className="mt-1 text-2xl font-semibold tabular-nums text-error">{coverage.gaps ?? 0}</div>
+              <div className="mt-1 text-2xl font-semibold tabular-nums text-error">{summary.gaps ?? 0}</div>
             </div>
             <div className="p-4">
               <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Coverage</div>
@@ -304,7 +321,7 @@ export default function CompliancePage() {
                     const cid = control.control_id || control.id;
                     const isExpanded = expandedControls[cid];
                     const policies = control.matched_policies || control.policies || [];
-                    const recs = control.recommendations || [];
+                    const recs = control.gap_recommendations || control.recommendations || [];
                     return (
                       <div key={cid} className="py-2.5">
                         <button
@@ -386,17 +403,24 @@ export default function CompliancePage() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Risk level</span>
-                    <Badge variant={riskLevel === 'high' ? 'error' : riskLevel === 'medium' ? 'warning' : 'success'}>
+                    <Badge variant={riskVariant}>
                       {riskLevel}
                     </Badge>
                   </div>
-                  {gapAnalysis.narrative && (
-                    <p className="text-xs text-secondary">{gapAnalysis.narrative}</p>
+                  {narrative && (
+                    <p className="text-xs text-secondary">{narrative}</p>
                   )}
-                  {gapAnalysis.quick_wins && (
+                  {quickWins.length > 0 && (
                     <div>
                       <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Quick wins</div>
-                      <p className="mt-1 text-xs text-secondary">{gapAnalysis.quick_wins}</p>
+                      <ul className="mt-1 space-y-1">
+                        {quickWins.slice(0, 5).map((q, i) => (
+                          <li key={i} className="flex items-start gap-1.5 text-xs text-secondary">
+                            <CheckCircle size={12} className="mt-0.5 shrink-0 text-success" aria-hidden="true" />
+                            {typeof q === 'string' ? q : (q.title || q.control_id)}
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                   )}
                   {gaps.length > 0 && (
@@ -408,7 +432,7 @@ export default function CompliancePage() {
                         {gaps.slice(0, 5).map((g, i) => (
                           <li key={i} className="flex items-start gap-1.5 text-xs text-secondary">
                             <AlertCircle size={12} className="mt-0.5 shrink-0 text-error" aria-hidden="true" />
-                            {typeof g === 'string' ? g : g.title || g.control || g.description}
+                            {typeof g === 'string' ? g : g.title || g.control_id || g.control || g.description}
                           </li>
                         ))}
                       </ul>
@@ -420,10 +444,10 @@ export default function CompliancePage() {
                       <ul className="mt-1 space-y-1.5">
                         {remediations.slice(0, 5).map((r, i) => (
                           <li key={i} className="flex items-center gap-2 text-xs text-secondary">
-                            <span className="flex-1">{typeof r === 'string' ? r : r.action || r.description}</span>
-                            {r.effort && (
+                            <span className="flex-1">{typeof r === 'string' ? r : (r.title || r.action || r.description)}</span>
+                            {(r.estimated_effort || r.effort) && (
                               <Badge variant={EFFORT_VARIANTS[r.effort] || 'default'} size="xs">
-                                {r.effort}
+                                {r.estimated_effort || r.effort}
                               </Badge>
                             )}
                           </li>
