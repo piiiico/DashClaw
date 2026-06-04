@@ -4,7 +4,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 
-const testArgs = ['-m', 'unittest', 'discover', '-s', 'sdk-python/tests', '-p', 'test_ws5_*.py'];
+// Discover ALL test_*.py under sdk-python/tests (not just the ws5 parity set).
+// All currently pass offline; keeping the net wide so new SDK tests gate by default.
+const testArgs = ['-m', 'unittest', 'discover', '-s', 'sdk-python/tests', '-p', 'test_*.py'];
 
 function isWindows() {
   return process.platform === 'win32';
