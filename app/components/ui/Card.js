@@ -31,7 +31,7 @@ export function CardHeader({ title, icon: Icon, action, count, children }) {
 
 export function CardContent({ children, className = '' }) {
   return (
-    <div className={`flex-1 min-h-0 overflow-hidden group-focus-within/card:overflow-y-auto px-5 pb-5 ${className}`}>
+    <div className={`flex-1 min-h-0 overflow-y-auto px-5 pb-5 ${className}`}>
       {children}
     </div>
   );

@@ -56,44 +56,65 @@ const CARD_LABELS = {
 
 const SHARED_CONSTRAINTS = { maxW: 4, maxH: 8, minW: 1, minH: 2 };
 
+// Default layout positions EVERY card in CARD_COMPONENTS. The grid renders all
+// registered cards (filtered only by hiddenTiles), so any card omitted here is
+// auto-placed by react-grid-layout at a tiny default size and looks clipped —
+// the reason projects/learning/integrations appeared cramped. Heights are sized
+// to the content each card actually renders so nothing is cut off out of the box.
 const DEFAULT_LAYOUTS = {
   lg: [
-    // Row 1: Fleet and decision tiles
-    { i: 'fleet-presence',    x: 0, y: 0,  w: 2, h: 4, ...SHARED_CONSTRAINTS },
-    { i: 'recent-actions',    x: 2, y: 0,  w: 2, h: 3, ...SHARED_CONSTRAINTS },
+    // Fleet + decision ledger
+    { i: 'fleet-presence',    x: 0, y: 0,  w: 2, h: 5, ...SHARED_CONSTRAINTS },
+    { i: 'recent-actions',    x: 2, y: 0,  w: 2, h: 5, ...SHARED_CONSTRAINTS },
 
-    // Row 2: Risk + timeline start
-    { i: 'risk-signals',      x: 0, y: 4,  w: 2, h: 3, ...SHARED_CONSTRAINTS },
-    { i: 'open-loops',        x: 2, y: 3,  w: 2, h: 4, ...SHARED_CONSTRAINTS },
+    // Integrity signals + open loops
+    { i: 'risk-signals',      x: 0, y: 5,  w: 2, h: 4, ...SHARED_CONSTRAINTS },
+    { i: 'open-loops',        x: 2, y: 5,  w: 2, h: 4, ...SHARED_CONSTRAINTS },
 
-    // Row 3: Timeline + Context
-    { i: 'activity-timeline', x: 0, y: 7,  w: 3, h: 4, ...SHARED_CONSTRAINTS, minW: 2 },
-    { i: 'context',           x: 3, y: 7,  w: 1, h: 4, ...SHARED_CONSTRAINTS },
+    // Timeline (dense, scrolls internally) + context
+    { i: 'activity-timeline', x: 0, y: 9,  w: 3, h: 6, ...SHARED_CONSTRAINTS, minW: 2 },
+    { i: 'context',           x: 3, y: 9,  w: 1, h: 6, ...SHARED_CONSTRAINTS },
 
-    // Row 4: Extensions
-    { i: 'scoring',           x: 0, y: 11, w: 1, h: 2, ...SHARED_CONSTRAINTS },
-    { i: 'drift',             x: 1, y: 11, w: 1, h: 2, ...SHARED_CONSTRAINTS },
-    { i: 'eval-scores',       x: 2, y: 11, w: 1, h: 2, ...SHARED_CONSTRAINTS },
-    { i: 'prompt-stats',      x: 3, y: 11, w: 1, h: 2, ...SHARED_CONSTRAINTS },
+    // Systems + integrations
+    { i: 'projects',          x: 0, y: 15, w: 2, h: 3, ...SHARED_CONSTRAINTS },
+    { i: 'integrations',      x: 2, y: 15, w: 2, h: 3, ...SHARED_CONSTRAINTS },
+
+    // Quality/observability tiles
+    { i: 'eval-scores',       x: 0, y: 18, w: 2, h: 4, ...SHARED_CONSTRAINTS },
+    { i: 'learning',          x: 2, y: 18, w: 1, h: 3, ...SHARED_CONSTRAINTS },
+    { i: 'scoring',           x: 3, y: 18, w: 1, h: 3, ...SHARED_CONSTRAINTS },
+    { i: 'drift',             x: 2, y: 21, w: 1, h: 3, ...SHARED_CONSTRAINTS },
+    { i: 'prompt-stats',      x: 3, y: 21, w: 1, h: 3, ...SHARED_CONSTRAINTS },
   ],
   md: [
-    { i: 'fleet-presence',    x: 0, y: 0,  w: 2, h: 4, ...SHARED_CONSTRAINTS },
-    { i: 'risk-signals',      x: 0, y: 4,  w: 1, h: 3, ...SHARED_CONSTRAINTS },
-    { i: 'recent-actions',    x: 1, y: 4,  w: 1, h: 3, ...SHARED_CONSTRAINTS },
-    { i: 'activity-timeline', x: 0, y: 7,  w: 2, h: 4, ...SHARED_CONSTRAINTS, minW: 2 },
-    { i: 'open-loops',        x: 0, y: 11, w: 1, h: 3, ...SHARED_CONSTRAINTS },
-    { i: 'context',           x: 1, y: 11, w: 1, h: 3, ...SHARED_CONSTRAINTS },
-    { i: 'learning',          x: 0, y: 14, w: 1, h: 2, ...SHARED_CONSTRAINTS },
-    { i: 'scoring',           x: 1, y: 14, w: 1, h: 2, ...SHARED_CONSTRAINTS },
-    { i: 'drift',             x: 0, y: 16, w: 1, h: 2, ...SHARED_CONSTRAINTS },
-    { i: 'eval-scores',       x: 1, y: 16, w: 1, h: 2, ...SHARED_CONSTRAINTS },
+    { i: 'fleet-presence',    x: 0, y: 0,  w: 2, h: 5, ...SHARED_CONSTRAINTS },
+    { i: 'recent-actions',    x: 0, y: 5,  w: 1, h: 4, ...SHARED_CONSTRAINTS },
+    { i: 'risk-signals',      x: 1, y: 5,  w: 1, h: 4, ...SHARED_CONSTRAINTS },
+    { i: 'activity-timeline', x: 0, y: 9,  w: 2, h: 6, ...SHARED_CONSTRAINTS, minW: 2 },
+    { i: 'open-loops',        x: 0, y: 15, w: 1, h: 4, ...SHARED_CONSTRAINTS },
+    { i: 'context',           x: 1, y: 15, w: 1, h: 4, ...SHARED_CONSTRAINTS },
+    { i: 'projects',          x: 0, y: 19, w: 2, h: 3, ...SHARED_CONSTRAINTS },
+    { i: 'integrations',      x: 0, y: 22, w: 2, h: 3, ...SHARED_CONSTRAINTS },
+    { i: 'eval-scores',       x: 0, y: 25, w: 2, h: 4, ...SHARED_CONSTRAINTS },
+    { i: 'learning',          x: 0, y: 29, w: 1, h: 3, ...SHARED_CONSTRAINTS },
+    { i: 'scoring',           x: 1, y: 29, w: 1, h: 3, ...SHARED_CONSTRAINTS },
+    { i: 'drift',             x: 0, y: 32, w: 1, h: 3, ...SHARED_CONSTRAINTS },
+    { i: 'prompt-stats',      x: 1, y: 32, w: 1, h: 3, ...SHARED_CONSTRAINTS },
   ],
   sm: [
-    { i: 'fleet-presence',    x: 0, y: 0,  w: 1, h: 4, ...SHARED_CONSTRAINTS },
-    { i: 'risk-signals',      x: 0, y: 4,  w: 1, h: 3, ...SHARED_CONSTRAINTS },
-    { i: 'recent-actions',    x: 0, y: 7,  w: 1, h: 3, ...SHARED_CONSTRAINTS },
-    { i: 'open-loops',        x: 0, y: 10, w: 1, h: 3, ...SHARED_CONSTRAINTS },
-    { i: 'activity-timeline', x: 0, y: 13, w: 1, h: 4, ...SHARED_CONSTRAINTS },
+    { i: 'fleet-presence',    x: 0, y: 0,  w: 1, h: 5, ...SHARED_CONSTRAINTS },
+    { i: 'recent-actions',    x: 0, y: 5,  w: 1, h: 5, ...SHARED_CONSTRAINTS },
+    { i: 'risk-signals',      x: 0, y: 10, w: 1, h: 4, ...SHARED_CONSTRAINTS },
+    { i: 'open-loops',        x: 0, y: 14, w: 1, h: 4, ...SHARED_CONSTRAINTS },
+    { i: 'activity-timeline', x: 0, y: 18, w: 1, h: 6, ...SHARED_CONSTRAINTS },
+    { i: 'context',           x: 0, y: 24, w: 1, h: 5, ...SHARED_CONSTRAINTS },
+    { i: 'projects',          x: 0, y: 29, w: 1, h: 3, ...SHARED_CONSTRAINTS },
+    { i: 'integrations',      x: 0, y: 32, w: 1, h: 3, ...SHARED_CONSTRAINTS },
+    { i: 'eval-scores',       x: 0, y: 35, w: 1, h: 4, ...SHARED_CONSTRAINTS },
+    { i: 'learning',          x: 0, y: 39, w: 1, h: 3, ...SHARED_CONSTRAINTS },
+    { i: 'scoring',           x: 0, y: 42, w: 1, h: 3, ...SHARED_CONSTRAINTS },
+    { i: 'drift',             x: 0, y: 45, w: 1, h: 3, ...SHARED_CONSTRAINTS },
+    { i: 'prompt-stats',      x: 0, y: 48, w: 1, h: 3, ...SHARED_CONSTRAINTS },
   ],
 };
 

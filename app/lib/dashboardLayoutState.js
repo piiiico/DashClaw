@@ -1,6 +1,6 @@
 const LAYOUT_STORAGE_KEY = 'dashclaw_dashboard_layouts';
 const NAMED_LAYOUTS_KEY = 'dashclaw_named_layouts';
-const LAYOUT_VERSION = 8;
+const LAYOUT_VERSION = 9;
 
 export function loadLayouts(storage = globalThis?.localStorage) {
   try {
