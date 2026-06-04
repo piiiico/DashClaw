@@ -847,6 +847,30 @@ export async function evaluatePolicy(policy, rules, context, sql, orgId, effecti
       return null;
     }
 
+    case 'x402_spend_limit': {
+      if (context.action_type !== 'x402_purchase') return null;
+      const maxSpend = rules.max_spend_usd ?? Infinity;
+      const approvalThreshold = rules.approval_threshold ?? Infinity;
+      const allowed = Array.isArray(rules.allowed_providers) ? rules.allowed_providers : [];
+      const blocked = Array.isArray(rules.blocked_providers) ? rules.blocked_providers : [];
+      const provider = context.provider || context.vendor || 'unknown';
+      const spend = Number(context.cost_estimate ?? context.cost ?? 0) || 0;
+
+      if (blocked.includes(provider)) {
+        return { action: 'block', reason: `Provider "${provider}" is blocked by policy` };
+      }
+      if (allowed.length > 0 && !allowed.includes(provider)) {
+        return { action: 'block', reason: `Provider "${provider}" not in approved list` };
+      }
+      if (spend > maxSpend) {
+        return { action: 'block', reason: `Spend $${spend.toFixed(4)} exceeds max $${maxSpend}` };
+      }
+      if (spend >= approvalThreshold) {
+        return { action: 'require_approval', reason: `Spend $${spend.toFixed(4)} >= approval threshold $${approvalThreshold}` };
+      }
+      return null;
+    }
+
     default:
       return null;
   }
