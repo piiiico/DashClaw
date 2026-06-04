@@ -138,6 +138,17 @@ export async function computeVelocity(request, { agent_id, lookback_days, period
     await sql`
       INSERT INTO learning_velocity (id, org_id, agent_id, period, period_start, period_end, episode_count, avg_score, success_rate, score_delta, velocity, acceleration, maturity_score, maturity_level)
       VALUES (${id}, ${orgId}, ${agentId}, ${periodType}, ${new Date(startTime).toISOString()}, ${new Date().toISOString()}, ${totalEpisodes}, ${round(overallAvgScore)}, ${round(overallSuccessRate)}, ${scoreDelta}, ${velocity}, ${acceleration}, ${maturity.score}, ${maturity.level})
+      ON CONFLICT (org_id, agent_id, period) DO UPDATE SET
+        period_start = EXCLUDED.period_start,
+        period_end = EXCLUDED.period_end,
+        episode_count = EXCLUDED.episode_count,
+        avg_score = EXCLUDED.avg_score,
+        success_rate = EXCLUDED.success_rate,
+        score_delta = EXCLUDED.score_delta,
+        velocity = EXCLUDED.velocity,
+        acceleration = EXCLUDED.acceleration,
+        maturity_score = EXCLUDED.maturity_score,
+        maturity_level = EXCLUDED.maturity_level
     `;
 
     results.push({
@@ -215,6 +226,15 @@ export async function computeLearningCurves(request, { agent_id, lookback_days }
           await sql`
             INSERT INTO learning_curves (id, org_id, agent_id, action_type, window_start, window_end, episode_count, avg_score, success_rate, avg_duration_ms, avg_cost, p25_score, p75_score)
             VALUES (${id}, ${orgId}, ${agentId}, ${action_type}, ${new Date(winStart).toISOString()}, ${new Date(winEnd).toISOString()}, ${windowEps.length}, ${round(average(scores))}, ${round(successCount / windowEps.length)}, ${round(durations.length > 0 ? average(durations) : 0)}, ${round(costs.length > 0 ? average(costs) : 0)}, ${round(quantile(scores, 0.25) ?? 0)}, ${round(quantile(scores, 0.75) ?? 0)})
+            ON CONFLICT (org_id, agent_id, action_type, window_start) DO UPDATE SET
+              window_end = EXCLUDED.window_end,
+              episode_count = EXCLUDED.episode_count,
+              avg_score = EXCLUDED.avg_score,
+              success_rate = EXCLUDED.success_rate,
+              avg_duration_ms = EXCLUDED.avg_duration_ms,
+              avg_cost = EXCLUDED.avg_cost,
+              p25_score = EXCLUDED.p25_score,
+              p75_score = EXCLUDED.p75_score
           `;
 
           results.push({ agent_id: agentId, action_type, window_start: new Date(winStart).toISOString(), count: windowEps.length });

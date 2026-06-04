@@ -360,7 +360,9 @@ export const learningVelocity = pgTable('learning_velocity', {
   maturityScore: real('maturity_score').default(0),
   maturityLevel: text('maturity_level').default('novice'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-});
+}, (t) => ({
+  orgAgentPeriod: uniqueIndex('idx_learning_velocity_org_agent_period').on(t.orgId, t.agentId, t.period),
+}));
 
 export const learningCurves = pgTable('learning_curves', {
   id: text('id').primaryKey(),
@@ -377,7 +379,9 @@ export const learningCurves = pgTable('learning_curves', {
   p25Score: real('p25_score').default(0),
   p75Score: real('p75_score').default(0),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-});
+}, (t) => ({
+  orgAgentActionWindow: uniqueIndex('idx_learning_curves_org_agent_action_window').on(t.orgId, t.agentId, t.actionType, t.windowStart),
+}));
 
 // --- Health & Monitoring ---
 
