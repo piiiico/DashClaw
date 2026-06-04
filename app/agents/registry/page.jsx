@@ -11,6 +11,8 @@ import { RISK_CLASSES, AUTH_TYPES, INPUT_CLASS } from './components/constants';
 import InvokePanel from './components/InvokePanel';
 import CapabilitiesCard from './components/CapabilitiesCard';
 import EditPanel from './components/EditPanel';
+import HowItWorks from './components/HowItWorks';
+import RegistryEmptyState from './components/RegistryEmptyState';
 
 const EMPTY_FORM = { name: '', endpoint: '', auth_type: 'none', risk_class: 'medium', default_budget_usd: '' };
 
@@ -110,7 +112,7 @@ export default function AgentRegistryPage() {
   return (
     <PageLayout
       title="Agent Registry"
-      subtitle="External, org-owned providers that group capabilities and are invoked through governance"
+      subtitle="Register external services or sub-agents that DashClaw can invoke for you — each call is governed, risk-scored, and recorded."
       breadcrumbs={['Agents', 'Registry']}
       maturity="beta"
       actions={
@@ -136,20 +138,24 @@ export default function AgentRegistryPage() {
               <label className="text-xs text-secondary">Endpoint
                 <input value={form.endpoint} onChange={(e) => setForm({ ...form, endpoint: e.target.value })} placeholder="https://provider.example.com"
                   className={INPUT_CLASS} />
+                <span className="mt-1 block text-[11px] text-tertiary">Base URL DashClaw calls when this agent is invoked.</span>
               </label>
               <label className="text-xs text-secondary">Auth type
                 <select value={form.auth_type} onChange={(e) => setForm({ ...form, auth_type: e.target.value })} className={INPUT_CLASS}>
                   {AUTH_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
                 </select>
+                <span className="mt-1 block text-[11px] text-tertiary">How DashClaw authenticates to the provider.</span>
               </label>
               <label className="text-xs text-secondary">Risk class
                 <select value={form.risk_class} onChange={(e) => setForm({ ...form, risk_class: e.target.value })} className={INPUT_CLASS}>
                   {RISK_CLASSES.map((r) => <option key={r} value={r}>{r}</option>)}
                 </select>
+                <span className="mt-1 block text-[11px] text-tertiary">Baseline risk for calls to this agent; feeds the guard decision and can trigger approval.</span>
               </label>
               <label className="text-xs text-secondary">Default budget (USD)
                 <input type="number" value={form.default_budget_usd} onChange={(e) => setForm({ ...form, default_budget_usd: e.target.value })}
                   className={INPUT_CLASS} />
+                <span className="mt-1 block text-[11px] text-tertiary">Per-call spend authority; higher budgets raise the risk score.</span>
               </label>
             </div>
             <button onClick={handleRegister} disabled={saving || !form.name.trim()}
@@ -160,6 +166,8 @@ export default function AgentRegistryPage() {
         </Card>
       )}
 
+      <HowItWorks />
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
         <div className="lg:col-span-2">
           <Card>
@@ -168,7 +176,7 @@ export default function AgentRegistryPage() {
               {loading ? (
                 <div className="p-5"><ListSkeleton rows={4} /></div>
               ) : agents.length === 0 ? (
-                <div className="p-8"><EmptyState icon={Boxes} title="No registered agents" description="Register an external provider to delegate governed work to it." /></div>
+                <RegistryEmptyState onRegister={() => { setShowForm(true); setError(null); }} />
               ) : (
                 <div className="divide-y divide-border">
                   {agents.map((a) => (

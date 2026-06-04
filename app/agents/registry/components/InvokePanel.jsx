@@ -128,6 +128,7 @@ export default function InvokePanel({ agent, capabilities = [] }) {
                     <option key={a.agent_id} value={a.agent_id}>{a.agent_name || a.agent_id}</option>
                   ))}
                 </select>
+                <span className="mt-1 block text-[11px] text-tertiary">Attribute this invocation to one of your governed Fleet agents.</span>
               </label>
               <label className="text-xs text-secondary sm:col-span-2">Declared goal (optional)
                 <input value={declaredGoal} onChange={(e) => setDeclaredGoal(e.target.value)}
