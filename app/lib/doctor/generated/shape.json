@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:55ae4821a5776e84c4d2eb79894ad3dff8079c10",
+  "timestamp": "sha1:32adfa33556cc769b34a288265d765ceb1035754",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -2234,6 +2234,79 @@
       "file_path": "app/api/prompts/templates/[templateId]/versions/[versionId]/route.js"
     },
     {
+      "path": "/api/reputation/agents/[agentId]",
+      "methods": [
+        "GET"
+      ],
+      "dynamic_params": [
+        "agentId"
+      ],
+      "archived": false,
+      "file_path": "app/api/reputation/agents/[agentId]/route.js"
+    },
+    {
+      "path": "/api/reputation/agents/[agentId]/events",
+      "methods": [
+        "GET"
+      ],
+      "dynamic_params": [
+        "agentId"
+      ],
+      "archived": false,
+      "file_path": "app/api/reputation/agents/[agentId]/events/route.js"
+    },
+    {
+      "path": "/api/reputation/agents/[agentId]/receipt",
+      "methods": [
+        "GET"
+      ],
+      "dynamic_params": [
+        "agentId"
+      ],
+      "archived": false,
+      "file_path": "app/api/reputation/agents/[agentId]/receipt/route.js"
+    },
+    {
+      "path": "/api/reputation/agents/[agentId]/recompute",
+      "methods": [
+        "POST"
+      ],
+      "dynamic_params": [
+        "agentId"
+      ],
+      "archived": false,
+      "file_path": "app/api/reputation/agents/[agentId]/recompute/route.js"
+    },
+    {
+      "path": "/api/reputation/agents/[agentId]/summary",
+      "methods": [
+        "GET"
+      ],
+      "dynamic_params": [
+        "agentId"
+      ],
+      "archived": false,
+      "file_path": "app/api/reputation/agents/[agentId]/summary/route.js"
+    },
+    {
+      "path": "/api/reputation/leaderboard",
+      "methods": [
+        "GET"
+      ],
+      "dynamic_params": [],
+      "archived": false,
+      "file_path": "app/api/reputation/leaderboard/route.js"
+    },
+    {
+      "path": "/api/reputation/verify",
+      "methods": [
+        "POST"
+      ],
+      "dynamic_params": [],
+      "archived": false,
+      "file_path": "app/api/reputation/verify/route.js"
+    },
+    {
       "path": "/api/scoring/calibrate",
       "methods": [
         "POST"
@@ -3366,6 +3439,7 @@
         "__tests__/unit/policies-test.route.test.js",
         "__tests__/unit/policies.route.test.js",
         "__tests__/unit/prompt-injection-guard.test.js",
+        "__tests__/unit/reputation-routes.test.js",
         "__tests__/unit/routing-agents-detail.route.test.js",
         "__tests__/unit/routing-agents.route.test.js",
         "__tests__/unit/routing-stats.route.test.js",

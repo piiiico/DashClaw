@@ -5,7 +5,7 @@ description: DashClaw platform expert for integration, troubleshooting, and gove
 
 # DashClaw Platform Intelligence
 
-**Shape snapshot:** `sha1:55ae4821a5776e84c4d2eb79894ad3dff8079c10`
+**Shape snapshot:** `sha1:32adfa33556cc769b34a288265d765ceb1035754`
 **This file is auto-generated.** Do not edit by hand — regenerate with:
 
 ```bash
@@ -45,7 +45,7 @@ neither exists. When you cannot run the queries above, fall back **in this order
 
 ## At a Glance
 
-- **226** active API routes across **57** categories
+- **233** active API routes across **58** categories
 - **4** required + **137** optional environment variables
 - **89** database tables
 
@@ -348,6 +348,16 @@ neither exists. When you cannot run the queries above, fall back **in this order
 - `GET, POST` `/api/prompts/templates/[templateId]/versions`
 - `GET, POST` `/api/prompts/templates/[templateId]/versions/[versionId]`
 
+### `reputation`
+
+- `GET` `/api/reputation/agents/[agentId]`
+- `GET` `/api/reputation/agents/[agentId]/events`
+- `GET` `/api/reputation/agents/[agentId]/receipt`
+- `POST` `/api/reputation/agents/[agentId]/recompute`
+- `GET` `/api/reputation/agents/[agentId]/summary`
+- `GET` `/api/reputation/leaderboard`
+- `POST` `/api/reputation/verify`
+
 ### `scoring`
 
 - `POST` `/api/scoring/calibrate`
@@ -453,7 +463,7 @@ neither exists. When you cannot run the queries above, fall back **in this order
 These must be set — DashClaw will fail to start without them.
 
 - **`DASHCLAW_API_KEY`** - referenced in 56 file(s)
-- **`DATABASE_URL`** - referenced in 89 file(s)
+- **`DATABASE_URL`** - referenced in 90 file(s)
 - **`ENCRYPTION_KEY`** - referenced in 4 file(s)
 - **`NEXTAUTH_SECRET`** - referenced in 5 file(s)
 

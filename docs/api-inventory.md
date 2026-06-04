@@ -13,10 +13,10 @@ doc-type: architecture
 
 ## Summary
 
-- Total routes: `273`
+- Total routes: `280`
 - Stable routes: `47`
 - Beta routes: `24`
-- Experimental routes: `202`
+- Experimental routes: `209`
 
 ## Routes
 
@@ -243,6 +243,13 @@ doc-type: architecture
 | `/api/prompts/templates/{templateId}` | `DELETE, GET, PATCH` | `experimental` | `(default)` | `app/api/prompts/templates/[templateId]/route.js` |
 | `/api/prompts/templates/{templateId}/versions` | `GET, POST` | `experimental` | `(default)` | `app/api/prompts/templates/[templateId]/versions/route.js` |
 | `/api/prompts/templates/{templateId}/versions/{versionId}` | `GET, POST` | `experimental` | `(default)` | `app/api/prompts/templates/[templateId]/versions/[versionId]/route.js` |
+| `/api/reputation/agents/{agentId}` | `GET` | `experimental` | `(default)` | `app/api/reputation/agents/[agentId]/route.js` |
+| `/api/reputation/agents/{agentId}/events` | `GET` | `experimental` | `(default)` | `app/api/reputation/agents/[agentId]/events/route.js` |
+| `/api/reputation/agents/{agentId}/receipt` | `GET` | `experimental` | `(default)` | `app/api/reputation/agents/[agentId]/receipt/route.js` |
+| `/api/reputation/agents/{agentId}/recompute` | `POST` | `experimental` | `(default)` | `app/api/reputation/agents/[agentId]/recompute/route.js` |
+| `/api/reputation/agents/{agentId}/summary` | `GET` | `experimental` | `(default)` | `app/api/reputation/agents/[agentId]/summary/route.js` |
+| `/api/reputation/leaderboard` | `GET` | `experimental` | `(default)` | `app/api/reputation/leaderboard/route.js` |
+| `/api/reputation/verify` | `POST` | `experimental` | `(default)` | `app/api/reputation/verify/route.js` |
 | `/api/scoring/calibrate` | `POST` | `experimental` | `(default)` | `app/api/scoring/calibrate/route.js` |
 | `/api/scoring/profiles` | `GET, POST` | `experimental` | `(default)` | `app/api/scoring/profiles/route.js` |
 | `/api/scoring/profiles/{profileId}` | `DELETE, GET, PATCH` | `experimental` | `(default)` | `app/api/scoring/profiles/[profileId]/route.js` |

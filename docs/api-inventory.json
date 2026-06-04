@@ -47,10 +47,10 @@
     ]
   },
   "summary": {
-    "total_routes": 273,
+    "total_routes": 280,
     "stable_routes": 47,
     "beta_routes": 24,
-    "experimental_routes": 202
+    "experimental_routes": 209
   },
   "routes": [
     {
@@ -2143,6 +2143,69 @@
       "maturity": "experimental",
       "matched_prefix": "(default)",
       "file": "app/api/prompts/templates/[templateId]/versions/[versionId]/route.js"
+    },
+    {
+      "path": "/api/reputation/agents/{agentId}",
+      "methods": [
+        "GET"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/reputation/agents/[agentId]/route.js"
+    },
+    {
+      "path": "/api/reputation/agents/{agentId}/events",
+      "methods": [
+        "GET"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/reputation/agents/[agentId]/events/route.js"
+    },
+    {
+      "path": "/api/reputation/agents/{agentId}/receipt",
+      "methods": [
+        "GET"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/reputation/agents/[agentId]/receipt/route.js"
+    },
+    {
+      "path": "/api/reputation/agents/{agentId}/recompute",
+      "methods": [
+        "POST"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/reputation/agents/[agentId]/recompute/route.js"
+    },
+    {
+      "path": "/api/reputation/agents/{agentId}/summary",
+      "methods": [
+        "GET"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/reputation/agents/[agentId]/summary/route.js"
+    },
+    {
+      "path": "/api/reputation/leaderboard",
+      "methods": [
+        "GET"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/reputation/leaderboard/route.js"
+    },
+    {
+      "path": "/api/reputation/verify",
+      "methods": [
+        "POST"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/reputation/verify/route.js"
     },
     {
       "path": "/api/scoring/calibrate",

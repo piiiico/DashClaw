@@ -187,3 +187,46 @@ export async function recomputeReputation(sql, orgId, agentId, { now = new Date(
 
   return { vector, receipt };
 }
+
+/**
+ * Read-only: compute the current vector from live evidence without persisting
+ * anything. Used by GET endpoints so a read never has side effects; the
+ * persisting + signing path is recomputeReputation (POST).
+ */
+export async function computeReputationVector(sql, orgId, agentId, { now = new Date().toISOString(), sinceDays = DEFAULT_LOOKBACK_DAYS } = {}) {
+  const events = await gatherEvidenceEvents(sql, orgId, agentId, { sinceDays });
+  return computeVector(agentId, events, { now });
+}
+
+/**
+ * Read-only: compute the current vector and sign a receipt for it without
+ * persisting. Used by GET .../receipt when no stored receipt exists yet.
+ */
+export async function buildCurrentReceipt(sql, orgId, agentId, opts = {}) {
+  const vector = await computeReputationVector(sql, orgId, agentId, opts);
+  const key = await getServerSigningKey(sql);
+  return buildReputationReceipt(vector, { kid: key.kid, privateKeyJwk: key.privateKeyJwk }, vector.computed_at);
+}
+
+/**
+ * Coerce a stored snapshot row into the vector shape. The Neon HTTP driver
+ * returns numeric columns as strings, so coerce with Number() before returning.
+ */
+export function snapshotToVector(s) {
+  if (!s) return null;
+  const num = (v) => (v == null ? null : Number(v));
+  return {
+    agent_id: s.agent_id,
+    reliability_score: num(s.reliability_score),
+    completion_rate: num(s.completion_rate),
+    policy_violation_rate: num(s.policy_violation_rate),
+    approval_adherence: num(s.approval_adherence),
+    quality_score: num(s.quality_score),
+    risk_score: s.risk_score == null ? null : Number(s.risk_score),
+    volume_weight: num(s.volume_weight),
+    confidence: num(s.confidence),
+    total_events: Number(s.total_events) || 0,
+    last_event_at: s.last_event_at,
+    computed_at: s.computed_at,
+  };
+}
