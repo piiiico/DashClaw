@@ -11,7 +11,7 @@ import {
   Terminal, TrendingUp, GraduationCap, Plug,
   Download, Workflow, Cpu, BookOpen, Wrench, Fingerprint, Bell, Inbox,
   FlaskConical, ChevronDown, GitBranch, Stethoscope, ClipboardCheck, Lock, ShieldCheck,
-  LayoutDashboard, UserCog, Network,
+  LayoutDashboard, UserCog, Network, Award,
 } from 'lucide-react';
 import DashClawLogo from './DashClawLogo';
 
@@ -26,11 +26,13 @@ const navGroups = [
       { href: '/policies', icon: Shield, label: 'Policies' },
       { href: '/policy-coach', icon: ShieldCheck, label: 'Policy Coach' },
       { href: '/agents', icon: Users, label: 'Fleet' },
+      { href: '/agents/registry', icon: Network, label: 'Registry' },
     ],
   },
   {
     label: 'Observe',
     items: [
+      { href: '/reputation', icon: Award, label: 'Reputation' },
       { href: '/security', icon: ShieldAlert, label: 'Security' },
       { href: '/code-sessions', icon: Terminal, label: 'Code Sessions' },
       { href: '/analytics', icon: TrendingUp, label: 'Analytics' },
@@ -113,6 +115,8 @@ export default function Sidebar() {
 
   const isActive = (href) => {
     if (href === '/mission-control') return pathname === '/mission-control' || pathname === '/';
+    // Fleet (/agents) must not also light up for the sibling /agents/registry route.
+    if (href === '/agents') return pathname === '/agents' || (pathname.startsWith('/agents/') && !pathname.startsWith('/agents/registry'));
     return pathname.startsWith(href);
   };
 

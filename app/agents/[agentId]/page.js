@@ -9,6 +9,7 @@ import { Card, CardContent } from '../../components/ui/Card';
 import { Skeleton } from '../../components/ui/Skeleton';
 import AgentVitalsStrip from './components/AgentVitalsStrip';
 import AgentTrustPosture from './components/AgentTrustPosture';
+import AgentReputation from './components/AgentReputation';
 import AgentSignals from './components/AgentSignals';
 import AgentDecisionTable from './components/AgentDecisionTable';
 import AgentAssumptions from './components/AgentAssumptions';
@@ -119,6 +120,8 @@ export default function AgentProfilePage() {
         />
 
         <AgentTrustPosture trust={profile.trust} />
+
+        <AgentReputation agentId={decodedAgentId} />
 
         <AgentSignals signals={profile.signals} />
 
