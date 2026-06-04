@@ -121,6 +121,23 @@ class TestCreateAction(unittest.TestCase):
         self.assertEqual(call["body"]["risk_level"], "high")
         self.assertEqual(call["body"]["tags"], ["important"])
 
+    def test_includes_session_id_when_provided(self):
+        client = RecordingDashClaw()
+        client.create_action("api_call", "goal", session_id="sess_7")
+        call = client.calls[-1]
+        self.assertEqual(call["body"]["session_id"], "sess_7")
+
+    def test_omits_session_id_when_not_provided(self):
+        client = RecordingDashClaw()
+        client.create_action("api_call", "goal")
+        call = client.calls[-1]
+        self.assertNotIn("session_id", call["body"])
+
+    def test_session_id_is_a_named_parameter(self):
+        import inspect
+        params = inspect.signature(DashClaw.create_action).parameters
+        self.assertIn("session_id", params)
+
 
 # ---------------------------------------------------------------------------
 # update_outcome

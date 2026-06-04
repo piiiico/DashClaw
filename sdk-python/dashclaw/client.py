@@ -298,7 +298,7 @@ class DashClaw:
             print(f"[DashClaw] Failed to sign action: {str(e)}")
             return None
 
-    def create_action(self, action_type, declared_goal, **kwargs):
+    def create_action(self, action_type, declared_goal, session_id=None, **kwargs):
         """I am attempting X.
 
         Non-fabrication (optional): pass ``content`` (the outbound text) and
@@ -307,6 +307,10 @@ class DashClaw:
         ``non_fabrication`` guard policy verify the content before the action
         proceeds. A violation blocks the action or routes it to approval and is
         recorded with a signed receipt in the decision ledger.
+
+        Optional ``session_id``: pass the id from ``create_session()`` to link
+        this action to a session via the Direct path (exact attribution). When
+        omitted, the server falls back to time-window correlation by agent_id.
         """
         payload = {
             "action_type": action_type,
@@ -314,7 +318,9 @@ class DashClaw:
             "agent_id": self.agent_id,
             **kwargs
         }
-        
+        if session_id is not None:
+            payload["session_id"] = session_id
+
         # Identity Verification: Sign the payload if a private key is available.
         signature = self._sign_payload(payload)
         if signature:
