@@ -1,14 +1,14 @@
 {
   "node": {
-    "current_version": "4.0.0",
+    "current_version": "4.0.1",
     "next_bump": "none",
-    "reason": "4.0.0 staged (sdk/package.json bumped; publish via `npm run release:sdks`). BREAKING: removed the archived context-thread methods createThread/addThreadEntry/closeThread (/api/context/threads*) — removed in source by bbbb517b; they only ever 404'd (no next.config rewrite; context_threads table never existed). Canonical public-method count is 104. The root package.json self-dependency stays at ^3.0.0 until 4.0.0 is published to npm — bumping it earlier desyncs package-lock.json (registry-pinned 3.0.0) and breaks `npm ci`.",
+    "reason": "4.0.1 staged (sdk/package.json + sdk-python/pyproject.toml + platform unified at 4.0.1; publish via `npm run release:sdks`). Node fixes: _connectSSE now sends Authorization: Bearer when authToken set; CJS bridge (sdk/index.cjs) rewritten with a recursive deferred proxy so nested namespaces (execution.capabilities.*) resolve and ApprovalDeniedError/GuardBlockedError instanceof works across the ESM/CJS boundary; added deleteCapability; removed syncState (archived /api/sync); waitForApproval re-raises GuardBlockedError; limit:0 no longer dropped; scoreWithProfile/batchScoreWithProfile input guards. Public-method count net unchanged at 104 (syncState -1, deleteCapability +1). Self-dep stays ^4.0.0 (patch; 4.0.0 satisfies it until 4.0.1 publishes).",
     "domains": []
   },
   "python": {
-    "current_version": "4.0.0",
+    "current_version": "4.0.1",
     "next_bump": "none",
-    "reason": "4.0.0 staged (sdk-python/pyproject.toml bumped; publish via `npm run release:sdks`). BREAKING: removed the archived context-thread methods create_thread/add_thread_entry/close_thread/get_threads (211 -> 207, also bbbb517b) and the key-point methods capture_key_point/get_key_points/get_context_summary (/api/context/points; 207 -> 204) — all targeted the archived /api/context/* and only ever 404'd. Public-method count is 204.",
+    "reason": "4.0.1 staged (sdk-python/pyproject.toml bumped; publish via `npm run release:sdks`). CRITICAL fix: _request arg-order inversion corrected at 41 call sites (compliance exports/schedules/trends, drift, learning-analytics, scoring) — these passed the HTTP verb as the path on PyPI 4.0.0, so the entire surface was non-functional. Also: SSE Authorization: Bearer; removed sync_state (archived /api/sync); removed dead _guard_check; record_assumption now emits DeprecationWarning -> register_assumption; score_with_profile/batch_score_with_profile input guards; langchain report_token_usage call fixed to positional args. Public-method count 204 -> 203 (sync_state removed; run `npm run sdk:count` to confirm before updating docs).",
     "domains": []
   }
 }
