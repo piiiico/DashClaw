@@ -13,10 +13,10 @@ doc-type: architecture
 
 ## Summary
 
-- Total routes: `287`
+- Total routes: `288`
 - Stable routes: `47`
 - Beta routes: `24`
-- Experimental routes: `216`
+- Experimental routes: `217`
 
 ## Routes
 
@@ -309,4 +309,5 @@ doc-type: architecture
 | `/api/x402/providers` | `GET, POST` | `experimental` | `(default)` | `app/api/x402/providers/route.js` |
 | `/api/x402/providers/{id}` | `GET, PATCH` | `experimental` | `(default)` | `app/api/x402/providers/[id]/route.js` |
 | `/api/x402/providers/{id}/endpoints` | `GET, POST` | `experimental` | `(default)` | `app/api/x402/providers/[id]/endpoints/route.js` |
+| `/api/x402/purchases` | `GET, POST` | `experimental` | `(default)` | `app/api/x402/purchases/route.js` |
 
