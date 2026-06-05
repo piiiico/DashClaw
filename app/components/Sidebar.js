@@ -35,6 +35,7 @@ const navGroups = [
     items: [
       { href: '/spend', icon: DollarSign, label: 'Overview' },
       { href: '/spend/x402', icon: ShoppingCart, label: 'Purchases' },
+      { href: '/spend/code', icon: Terminal, label: 'Your Claude Code' },
     ],
   },
   {
@@ -125,6 +126,8 @@ export default function Sidebar() {
     if (href === '/mission-control') return pathname === '/mission-control' || pathname === '/';
     // Fleet (/agents) must not also light up for the sibling /agents/registry route.
     if (href === '/agents') return pathname === '/agents' || (pathname.startsWith('/agents/') && !pathname.startsWith('/agents/registry'));
+    // Spend overview must not also light up for sibling /spend/* routes.
+    if (href === '/spend') return pathname === '/spend';
     return pathname.startsWith(href);
   };
 
