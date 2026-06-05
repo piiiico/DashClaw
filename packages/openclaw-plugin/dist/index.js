@@ -59,7 +59,7 @@ function resolveConfig(raw) {
     const x402Enabled = cfg.x402Enabled !== false; // default true
     const rawPatterns = Array.isArray(cfg.x402CommandPatterns) && cfg.x402CommandPatterns.length
         ? cfg.x402CommandPatterns.filter((v) => typeof v === 'string')
-        : ['agentcash[\\s@][\\s\\S]*\\bfetch\\b'];
+        : ['agentcash[\\s\\S]*?fetch']; // matches the agentcash CLI `fetch` AND wrappers like .../agentcash/fetch-json.mjs
     const x402CommandPatterns = rawPatterns
         .map((p) => {
         try {
@@ -78,6 +78,9 @@ function resolveConfig(raw) {
         ? cfg.x402EstimatedCostUsd
         : 0.01;
     const x402AutoRegisterProviders = cfg.x402AutoRegisterProviders !== false; // default true
+    const x402Debug = cfg.x402Debug === true ||
+        env.DASHCLAW_X402_DEBUG === '1' ||
+        env.DASHCLAW_X402_DEBUG === 'true';
     return {
         dashclawUrl,
         dashclawApiKey,
@@ -91,6 +94,7 @@ function resolveConfig(raw) {
         x402ToolNames,
         x402EstimatedCostUsd,
         x402AutoRegisterProviders,
+        x402Debug,
     };
 }
 // ---------------------------------------------------------------------------
@@ -216,12 +220,32 @@ function errorMessage(err) {
     }
     return '';
 }
+/** Debug breadcrumb (enable with config.x402Debug or DASHCLAW_X402_DEBUG=1). */
+function x402log(config, msg) {
+    if (config.x402Debug)
+        console.log(`[dashclaw-governance][x402] ${msg}`);
+}
+/**
+ * Pull a command string from a tool's params across the common shapes — bash/exec
+ * `command`, Codex `shell_command`, and wrapper tools — accepting a string or a
+ * string[] under command / cmd / script / args.
+ */
+function extractCommand(params) {
+    if (!params)
+        return '';
+    const c = params.command ?? params.cmd ?? params.script ?? params.args;
+    if (typeof c === 'string')
+        return c;
+    if (Array.isArray(c))
+        return c.map((x) => String(x)).join(' ');
+    return '';
+}
 function detectX402(toolName, params, config) {
     if (!config.x402Enabled)
         return null;
-    const command = toolName === 'bash' || toolName === 'exec'
-        ? String(params?.command ?? '')
-        : '';
+    // Match against ANY tool's command (bash/exec, Codex `shell_command`, a wrapper
+    // script) — the command pattern is the real filter — plus explicit tool names.
+    const command = extractCommand(params);
     const matchedByName = config.x402ToolNames.has(toolName);
     const matchedByCommand = command.length > 0 && config.x402CommandPatterns.some((re) => re.test(command));
     if (!matchedByName && !matchedByCommand)
@@ -261,13 +285,22 @@ function detectX402(toolName, params, config) {
  * parseable payload), so we only record purchases that actually moved money.
  */
 function parseX402Receipt(result) {
-    let obj = result;
-    if (typeof result === 'string') {
+    // Unwrap common shell-result shapes ({ stdout }, { output }, { text }, …) to
+    // the JSON string when the result isn't already the raw agentcash envelope.
+    let candidate = result;
+    if (result && typeof result === 'object' && !Array.isArray(result)) {
+        const o = result;
+        if (!(o.data || o.metadata || o.costDollars)) {
+            candidate = o.stdout ?? o.output ?? o.text ?? o.result ?? o.content ?? result;
+        }
+    }
+    let obj = candidate;
+    if (typeof candidate === 'string') {
         try {
-            obj = JSON.parse(result);
+            obj = JSON.parse(candidate);
         }
         catch {
-            const block = result.match(/\{[\s\S]*\}/);
+            const block = candidate.match(/\{[\s\S]*\}/);
             if (!block)
                 return null;
             try {
@@ -513,6 +546,7 @@ export default definePluginEntry({
             const x402 = detectX402(toolName, params, config);
             if (x402) {
                 const x402Goal = `x402 purchase: ${x402.origin}`;
+                x402log(config, `gate: tool=${toolName} origin=${x402.origin} estimate=$${x402.estimate}`);
                 let x402Decision;
                 try {
                     x402Decision = await client.guard({
@@ -764,12 +798,28 @@ export default definePluginEntry({
                 catch {
                     return;
                 }
+                if (config.x402Debug) {
+                    let preview = '';
+                    try {
+                        preview =
+                            typeof event.result === 'string'
+                                ? event.result.slice(0, 300)
+                                : JSON.stringify(event.result)?.slice(0, 300) ?? '';
+                    }
+                    catch {
+                        preview = '[unserializable]';
+                    }
+                    x402log(config, `record: origin=${x402pending.origin} hasError=${!!error} resultType=${typeof event.result} resultPresent=${event.result !== undefined} preview=${preview}`);
+                }
                 if (error) {
                     // The payment tool errored → nothing settled to record.
                     console.warn(`[dashclaw-governance] x402 call to ${x402pending.origin} failed: ${error}`);
                     return;
                 }
                 const receipt = parseX402Receipt(event.result);
+                x402log(config, receipt
+                    ? `parsed receipt: $${receipt.spend} tx=${receipt.txHash ?? 'none'}`
+                    : `parse FAILED — no settled spend found in tool result (set x402Debug to inspect the shape)`);
                 if (!receipt) {
                     // No settled-payment receipt (free check, 402-not-paid, or the gateway
                     // didn't deliver the tool result to the plugin) — nothing to record.

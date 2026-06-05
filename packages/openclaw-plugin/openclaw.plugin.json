@@ -2,7 +2,7 @@
   "id": "dashclaw-governance",
   "name": "DashClaw Governance",
   "description": "Policy enforcement, human-in-the-loop approval, and decision recording for every OpenClaw tool call. Powered by DashClaw.",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "entry": "src/index.ts",
   "main": "./src/index.ts",
   "configSchema": {
@@ -59,8 +59,8 @@
       "x402CommandPatterns": {
         "type": "array",
         "items": { "type": "string" },
-        "default": ["agentcash[\\s@][\\s\\S]*\\bfetch\\b"],
-        "description": "Case-insensitive regex patterns matched against a bash/exec command to identify an x402 PAYMENT (default: the agentcash `fetch` subcommand). Free quote commands like `agentcash check` are intentionally not matched."
+        "default": ["agentcash[\\s\\S]*?fetch"],
+        "description": "Case-insensitive regexes matched against any tool's command (bash/exec, Codex shell_command, or a wrapper script) to identify an x402 PAYMENT. The default matches both the agentcash `fetch` CLI and wrappers like .../agentcash/fetch-json.mjs. Free quote commands like `agentcash check` are not matched."
       },
       "x402ToolNames": {
         "type": "array",
@@ -77,6 +77,11 @@
         "type": "boolean",
         "default": true,
         "description": "Look up or create an x402 provider by the endpoint origin (best-effort) so /spend/x402 groups purchases by provider. Falls back to a free-text provider when lookup fails; never blocks recording."
+      },
+      "x402Debug": {
+        "type": "boolean",
+        "default": false,
+        "description": "Log x402 detection + recording breadcrumbs to the gateway console (gate, record, receipt parse). Also enabled by env DASHCLAW_X402_DEBUG=1. Use to confirm whether the plugin sees and parses a payment's tool result."
       }
     }
   },
@@ -94,6 +99,7 @@
     "x402CommandPatterns": { "label": "x402 command patterns", "advanced": true },
     "x402ToolNames": { "label": "x402 tool names", "advanced": true },
     "x402EstimatedCostUsd": { "label": "x402 pre-payment estimate (USD)", "advanced": true },
-    "x402AutoRegisterProviders": { "label": "Auto-register x402 providers", "advanced": true }
+    "x402AutoRegisterProviders": { "label": "Auto-register x402 providers", "advanced": true },
+    "x402Debug": { "label": "x402 debug logging", "advanced": true }
   }
 }
