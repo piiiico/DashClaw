@@ -13,6 +13,10 @@ Through 3.x the platform and the SDKs versioned independently, which is why olde
 
 ## [Unreleased]
 
+## [4.1.2] — 2026-06-05
+
+> Security/reliability hardening of the governed-action paths (identity, authoritative risk, durable guard audit, x402 integrity), plus the accumulated session_id-stamping and policy-form work. No SDK API changes (Node 125 / Python 223 unchanged); both SDK packages republish at 4.1.2 per the unified-version model.
+
 ### Added
 
 - **MCP + SDK `session_id` stamping for exact session→action linkage.** `action_records.session_id` was already accepted, persisted, and unioned in the per-session aggregate (a Direct path plus a time-window Fallback), but no client ever set it. Now the MCP `dashclaw_record` tool auto-stamps the session opened by `dashclaw_session_start` — an ambient id held in the per-client `createToolHandlers` closure, so it persists across calls in a stdio process but stays inert per-request on the stateless `/api/mcp` HTTP transport (no cross-org leak); an explicit `session_id` argument overrides it, and a matching `dashclaw_session_end` clears it. The Node SDK documents `createAction({ session_id })` as first-class (the `...action` spread already forwarded it), and the Python SDK adds an explicit `create_action(session_id=None, …)` parameter (sent only when provided, backward compatible). When omitted, the server still falls back to time-window correlation by `agent_id`. No new routes, methods, tools, or migrations — purely client-side.
