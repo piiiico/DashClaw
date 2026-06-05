@@ -1480,6 +1480,60 @@ class DashClaw {
       source_action_id: actionId,
     });
   }
+  /**
+   * Convenience: record a SETTLED x402 payment end-to-end in one call — govern +
+   * record the purchase, mark it succeeded, and (when given) attach the on-chain
+   * receipt. Use this when your agent pays OUTSIDE an OpenClaw governance hook
+   * (e.g. a Codex/native-shell agentcash wrapper) and must self-report so the
+   * spend lands on Spend → x402. The server resolves/auto-registers the provider
+   * from `provider`, so you do NOT register one first. Only call this for a
+   * settled payment — a free quote or a failed call has nothing to record.
+   *
+   * @param {Object} p
+   * @param {string} p.agent_id
+   * @param {string} p.provider - provider name/origin, e.g. "stableenrich.dev"
+   * @param {number} p.spend - settled USD amount (> 0)
+   * @param {string} [p.declared_goal]
+   * @param {string} [p.purchase_reason]
+   * @param {string} [p.context_gap]
+   * @param {string} [p.expected_value]
+   * @param {string} [p.transaction_hash] - on-chain tx hash (receipt evidence)
+   * @param {string} [p.request_id]
+   * @param {string} [p.currency='USDC']
+   * @param {string} [p.payment_method='x402']
+   * @returns {Promise<{ action, purchase, decision, outcome }>}
+   */
+  async recordX402Purchase({
+    agent_id, provider, spend,
+    declared_goal, purchase_reason, context_gap, expected_value,
+    transaction_hash, request_id, currency = 'USDC', payment_method = 'x402',
+  } = {}) {
+    const origin = provider;
+    const res = await this.recordPurchase({
+      agent_id,
+      provider: origin,
+      declared_goal: declared_goal || `x402 capability call to ${origin}`,
+      purchase_reason: purchase_reason || `Paid x402 capability call to ${origin}`,
+      context_gap: context_gap || `Capability gated behind payment at ${origin}`,
+      expected_value: expected_value || `Paid result from ${origin}`,
+      spend_amount: spend,
+      cost_estimate: spend,
+      currency,
+      payment_method,
+    });
+    const actionId = res?.action?.action_id ?? res?.action?.id;
+    let outcome = null;
+    if (actionId) {
+      outcome = await this.reportActionSuccess(actionId, `x402 settled: $${spend} ${currency} at ${origin}`);
+      if (transaction_hash || request_id) {
+        await this.recordPurchaseResult(actionId, {
+          summary: `x402 settled: $${spend} ${currency} at ${origin}`,
+          data: { origin, transactionHash: transaction_hash, requestId: request_id },
+        });
+      }
+    }
+    return { action: res?.action, purchase: res?.purchase, decision: res?.decision, outcome };
+  }
 }
 
 export { DashClaw, ApprovalDeniedError, GuardBlockedError };

@@ -1,14 +1,14 @@
 {
   "node": {
-    "current_version": "4.1.2",
+    "current_version": "4.2.0",
     "next_bump": "none",
-    "reason": "4.1.2 — patch. Platform security/reliability hardening (authoritative risk persistence, durable guard audit, shared agent-identity resolution on actions+x402, x402 input/provider/endpoint validation + reference redaction + outcome sync, outcome lifecycle gating). No SDK API changes; the Node SDK republishes at 4.1.2 per the unified-version model. Self-dep stays ^4.0.0.",
-    "domains": []
+    "reason": "4.2.0 — minor. Adds recordX402Purchase: a one-call x402 self-report convenience (govern + record purchase + report outcome + attach receipt) for the pay-outside-a-hook pattern. Node surface 125 → 126. The server-side provider auto-resolution fix (resolveProviderByName) for name-only purchases ships alongside. Additive; no breaking changes. Self-dep stays ^4.0.0.",
+    "domains": ["x402"]
   },
   "python": {
-    "current_version": "4.1.2",
+    "current_version": "4.2.0",
     "next_bump": "none",
-    "reason": "4.1.2 — patch. Platform security/reliability hardening (see Node entry). No Python SDK API changes; the package republishes at 4.1.2 per the unified-version model. Additive; no breaking changes.",
-    "domains": []
+    "reason": "4.2.0 — minor. Adds record_x402_purchase (parity with Node recordX402Purchase): a one-call x402 self-report convenience that inlines the receipt artifact (Python has no standalone record_purchase_result). Python surface 223 → 224. Additive; no breaking changes.",
+    "domains": ["x402"]
   }
 }

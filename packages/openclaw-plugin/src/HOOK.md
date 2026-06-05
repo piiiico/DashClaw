@@ -1,7 +1,7 @@
 ---
 name: dashclaw-governance
 description: Policy enforcement, human-in-the-loop approval, and decision recording for every OpenClaw tool call. Powered by DashClaw.
-version: 1.3.1
+version: 1.3.2
 ---
 
 # DashClaw Governance Hook
@@ -25,6 +25,10 @@ When a tool call is an **x402 payment** (by default, a `bash`/`exec` command mat
 2. **Record (after settlement)** — `after_tool_call` parses the agentcash success envelope from the tool result (`data.costDollars.total` → spend, `metadata.payment.transactionHash`, `data.requestId`) and records it via `recordPurchase()` (POST `/api/x402/purchases`) + `recordPurchaseResult()` for the receipt snapshot. With `x402AutoRegisterProviders` (default on), the origin is looked up or registered as a provider so the spend groups by provider.
 
 Only settled payments are recorded — a free `agentcash check`, a 402-not-paid route, or a tool error records nothing. The agent always performs the payment itself; DashClaw guards and records it (govern-not-do). Set `x402Enabled: false` to disable this path entirely.
+
+### Pay-outside-a-hook (self-report)
+
+This path only fires for payments OpenClaw proxies through its tool-call hooks. If your agent pays through a runtime the gateway doesn't proxy — e.g. a Codex native `shell_command`, or a wrapper the harness runs directly — the hooks never fire, so the plugin can neither gate nor record the payment. The paying code must then **self-report** the settled spend via the SDK so it still lands on Spend → x402: `claw.recordX402Purchase({ agent_id, provider, spend, transaction_hash?, request_id? })` (Python: `record_x402_purchase`). The server resolves the provider from the `provider` name, so no client-side registration is needed. This records after settlement (no pre-payment gate); to keep the gate, route the paid call through an OpenClaw-native tool so `before_tool_call` fires.
 
 ## Configuration
 

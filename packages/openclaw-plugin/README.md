@@ -166,6 +166,24 @@ Only **settled** payments are recorded: a free `agentcash check`, a 402-not-paid
 
 > **Custom payment tooling?** If your agent pays via a wrapper script or a dedicated MCP tool rather than `npx agentcash fetch`, point `x402CommandPatterns` at your command shape or list your tool under `x402ToolNames`. The plugin reads the spend/receipt from the tool's result envelope; if your tool returns a different shape, the spend won't parse — open an issue with the envelope and we'll widen the parser.
 
+### When the payment bypasses the hook layer (self-report)
+
+Some runtimes execute tools the gateway never proxies — e.g. a Codex native `shell_command`, or a wrapper the harness runs directly. The plugin's `before_tool_call`/`after_tool_call` hooks never fire for those, so it can neither gate nor record the payment, regardless of `x402CommandPatterns`. The paying code must then **self-report** the settled spend with the SDK so it still lands on Spend → x402:
+
+```js
+import { DashClaw } from 'dashclaw';
+const claw = new DashClaw({ baseUrl: process.env.DASHCLAW_BASE_URL, apiKey: process.env.DASHCLAW_API_KEY });
+await claw.recordX402Purchase({
+  agent_id: 'moltfire',
+  provider: 'stableenrich.dev',   // origin — the server resolves the provider_id
+  spend: 0.007,                   // settled USD
+  transaction_hash: receipt.transactionHash,
+  request_id: receipt.requestId,
+});
+```
+
+Python parity: `claw.record_x402_purchase(...)`. This records AFTER settlement, so it skips the pre-payment `x402_spend_limit` gate (fine for micropayments); to keep that gate, route the paid call through an OpenClaw-native tool so `before_tool_call` fires (`recordX402Purchase` requires `dashclaw` ≥ 4.2.0).
+
 ## Token usage and cost (v1.2.1+)
 
 The plugin hooks OpenClaw's `llm_output` and `agent_end` events to attribute LLM token usage back to the governed tool calls that assistant response induced. Each `llm_output` reports `{input, output, cacheRead, cacheWrite}` plus the resolved `model`; when the next `llm_output` (or `agent_end`) fires, the plugin PATCHes `tokens_in`, `tokens_out`, and `model` onto every action opened since the last usage boundary. DashClaw derives `cost_estimate` server-side from its pricing table.

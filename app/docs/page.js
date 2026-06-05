@@ -2424,6 +2424,30 @@ if (action.status === 'pending_approval') {
                   </CodeBlock>
                 }
               />
+              <MethodEntry
+                id="recordX402Purchase"
+                signature="POST /api/x402/purchases → /api/actions/:id/outcome → /api/artifacts"
+                description="Convenience: record a SETTLED x402 payment end-to-end in one call — govern + record the purchase, mark it succeeded, and (when given) attach the on-chain receipt. Use this for the pay-outside-a-hook self-report pattern: your agent pays through a native shell / wrapper that OpenClaw's hooks never see, so it must report the spend itself. The server resolves/auto-registers the provider from `provider`, so you don't register one first. Python parity: record_x402_purchase()."
+                params={[
+                  { name: 'agent_id', type: 'string', required: true, desc: 'Identifier of the agent that paid' },
+                  { name: 'provider', type: 'string', required: true, desc: 'Provider name/origin, e.g. "stableenrich.dev" — the server resolves it to a provider_id' },
+                  { name: 'spend', type: 'number', required: true, desc: 'Settled USD amount (> 0)' },
+                  { name: 'transaction_hash', type: 'string', required: false, desc: 'On-chain tx hash, attached as receipt evidence' },
+                  { name: 'request_id', type: 'string', required: false, desc: 'Provider request id, attached as receipt evidence' },
+                ]}
+                returns="{ action, purchase, decision, outcome }"
+                example={
+                  <CodeBlock title="Self-report a settled payment">
+{`const settled = await claw.recordX402Purchase({
+  agent_id: 'research-agent',
+  provider: 'stableenrich.dev',   // name/origin
+  spend: 0.007,                   // settled USD
+  transaction_hash: '0xabc…',
+  request_id: 'req_123',
+});`}
+                  </CodeBlock>
+                }
+              />
             </div>
           </section>
 

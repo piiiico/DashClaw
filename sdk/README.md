@@ -1112,6 +1112,18 @@ if (action.status === 'pending_approval') {
 // Agent executes the x402 call, then records the result
 const x402Result = { summary: 'Found 14 papers', data: { count: 14 }, url: 'https://...' };
 await claw.recordPurchaseResult(action.id, x402Result);
+
+// Or self-report a SETTLED payment in ONE call — when you pay OUTSIDE a
+// governance hook (e.g. a native-shell agentcash wrapper) and just need the
+// spend on Spend → x402. The server resolves/auto-registers the provider from
+// `provider`, so you don't register one first.
+const settled = await claw.recordX402Purchase({
+  agent_id: 'research-agent',
+  provider: 'stableenrich.dev',   // name/origin
+  spend: 0.007,                   // settled USD
+  transaction_hash: '0xabc…',
+  request_id: 'req_123',
+});
 ```
 
 - `claw.listProviders(filters?)` -- GET /api/x402/providers
@@ -1123,8 +1135,9 @@ await claw.recordPurchaseResult(action.id, x402Result);
 - `claw.recordPurchase(data)` -- POST /api/x402/purchases (guard-gated; returns `{ action, purchase, decision }`)
 - `claw.listPurchases(filters?)` -- GET /api/x402/purchases
 - `claw.recordPurchaseResult(actionId, result)` -- POST /api/artifacts (attaches the x402 result snapshot to the purchase action via `source_action_id`)
+- `claw.recordX402Purchase({ agent_id, provider, spend, transaction_hash?, request_id?, ... })` -- one call: govern + record the purchase, mark it succeeded, and attach the receipt. Use for the **pay-outside-a-hook** self-report pattern. Python parity: `record_x402_purchase(...)`.
 
-> **Note:** `recordPurchaseResult` is Node-only. It is a convenience wrapper over `POST /api/artifacts` — Python callers post directly to that endpoint with `artifact_type: 'x402_purchase_result'` and `source_action_id` set to the `act_` id from `record_purchase`.
+> **Note:** `recordPurchaseResult` is Node-only. It is a convenience wrapper over `POST /api/artifacts` — Python callers post directly to that endpoint with `artifact_type: 'x402_purchase_result'` and `source_action_id` set to the `act_` id from `record_purchase`. (`recordX402Purchase` / `record_x402_purchase` exist in both SDKs and handle the receipt internally.)
 
 > **Operator surface (no SDK wrapper):** The platform also exposes `GET /api/finops/spend?lens=fleet|claude-code` — a read-only operator rollup that aggregates agent LLM cost + x402 purchases (Fleet lens) or Code Sessions cost (Claude-Code lens). It is a presentation layer backed by repository functions (`getFleetSpend` / `getClaudeCodeSpend`), **not** an SDK method, so it does not appear in the method count. Query it directly over HTTP.
 

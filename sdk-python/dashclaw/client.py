@@ -2130,6 +2130,77 @@ class DashClaw:
             params["provider_id"] = provider_id
         return self._request("/api/x402/purchases", "GET", params=params)
 
+    def record_x402_purchase(
+        self,
+        agent_id,
+        provider,
+        spend,
+        declared_goal=None,
+        purchase_reason=None,
+        context_gap=None,
+        expected_value=None,
+        transaction_hash=None,
+        request_id=None,
+        currency="USDC",
+        payment_method="x402",
+    ):
+        """Record a SETTLED x402 payment end-to-end in one call.
+
+        Governs + records the purchase, marks it succeeded, and (when given)
+        attaches the on-chain receipt. Use this when your agent pays OUTSIDE an
+        OpenClaw governance hook (e.g. a native-shell agentcash wrapper) and must
+        self-report so the spend lands on Spend -> x402. The server
+        resolves/auto-registers the provider from ``provider``, so you do not
+        register one first. Only call this for a settled payment -- a free quote
+        or a failed call has nothing to record.
+
+        Returns ``{action, purchase, decision, outcome}``.
+        """
+        origin = provider
+        res = self.record_purchase(
+            agent_id=agent_id,
+            provider=origin,
+            declared_goal=declared_goal or f"x402 capability call to {origin}",
+            purchase_reason=purchase_reason or f"Paid x402 capability call to {origin}",
+            context_gap=context_gap or f"Capability gated behind payment at {origin}",
+            expected_value=expected_value or f"Paid result from {origin}",
+            spend_amount=spend,
+            cost_estimate=spend,
+            currency=currency,
+            payment_method=payment_method,
+        )
+        action = res.get("action") if isinstance(res, dict) else None
+        action_id = (action or {}).get("action_id") or (action or {}).get("id")
+        outcome = None
+        if action_id:
+            summary = f"x402 settled: ${spend} {currency} at {origin}"
+            outcome = self.report_action_success(action_id, summary)
+            if transaction_hash or request_id:
+                # Attach the receipt snapshot. Python has no standalone
+                # record_purchase_result; the artifact POST is inlined here.
+                self._request(
+                    "/api/artifacts",
+                    "POST",
+                    json={
+                        "artifact_type": "x402_purchase_result",
+                        "name": f"x402 result {action_id}",
+                        "description": summary,
+                        "content_json": {
+                            "origin": origin,
+                            "transactionHash": transaction_hash,
+                            "requestId": request_id,
+                        },
+                        "content_url": None,
+                        "source_action_id": action_id,
+                    },
+                )
+        return {
+            "action": action,
+            "purchase": res.get("purchase") if isinstance(res, dict) else None,
+            "decision": res.get("decision") if isinstance(res, dict) else None,
+            "outcome": outcome,
+        }
+
 
 # Backward compatibility alias (Legacy)
 OpenClawAgent = DashClaw

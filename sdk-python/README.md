@@ -22,7 +22,7 @@ Python agents typically pair the SDK with one or more of these:
 
 ## Quick Start
 
-The Python SDK is the full platform SDK (223 methods). The constructor accepts both v2-compatible and v1-extended parameters.
+The Python SDK is the full platform SDK (224 methods). The constructor accepts both v2-compatible and v1-extended parameters.
 
 ### v2-compatible constructor (recommended for new agents)
 
@@ -1013,9 +1013,9 @@ integration.instrument_agent(assistant)
 
 ## API Parity
 
-This SDK provides the full DashClaw platform surface (223 methods), which is parity with the [Node.js v1 (legacy) SDK](https://github.com/ucsandman/DashClaw/tree/main/sdk/legacy).
+This SDK provides the full DashClaw platform surface (224 methods), which is parity with the [Node.js v1 (legacy) SDK](https://github.com/ucsandman/DashClaw/tree/main/sdk/legacy).
 
-The Node.js v2 SDK exposes a curated subset of **125 methods** focused on agent governance. The following Python methods are available in both the Node.js v2 SDK and this Python SDK:
+The Node.js v2 SDK exposes a curated subset of **126 methods** focused on agent governance. The following Python methods are available in both the Node.js v2 SDK and this Python SDK:
 
 | Category | Node v2 method | Python equivalent | In v2? |
 |----------|---------------|-------------------|:------:|
@@ -1344,6 +1344,18 @@ if action["status"] == "pending_approval":
 
 # Agent executes the x402 call, then posts the result directly to /api/artifacts
 # (Python has no record_purchase_result wrapper — post directly to the artifacts endpoint)
+
+# Or self-report a SETTLED payment in ONE call — when you pay OUTSIDE a
+# governance hook (e.g. a native-shell agentcash wrapper) and just need the
+# spend on Spend -> x402. The server resolves/auto-registers the provider from
+# `provider`, so you don't register one first.
+settled = claw.record_x402_purchase(
+    agent_id="research-agent",
+    provider="stableenrich.dev",   # name/origin
+    spend=0.007,                   # settled USD
+    transaction_hash="0xabc...",
+    request_id="req_123",
+)
 ```
 
 | Method | Description |
@@ -1356,8 +1368,9 @@ if action["status"] == "pending_approval":
 | `create_provider_endpoint(provider_id, name, **kwargs)` | Add an endpoint to a provider |
 | `record_purchase(agent_id, provider, declared_goal, purchase_reason, context_gap, expected_value, **kwargs)` | Govern + record a paid acquisition; branch on `action['status']` |
 | `list_purchases(provider_id=None)` | List governed purchases (org-scoped) |
+| `record_x402_purchase(agent_id, provider, spend, transaction_hash=None, request_id=None, **kwargs)` | One call: govern + record the purchase, mark it succeeded, and attach the receipt. The **pay-outside-a-hook** self-report path; the server resolves the provider from `provider`. Node parity: `recordX402Purchase`. |
 
-> **Note:** There is no `record_purchase_result` in the Python SDK. To attach an x402 result snapshot to a purchase action, post directly to `POST /api/artifacts` with `artifact_type='x402_purchase_result'` and `source_action_id` set to the `act_` id from `record_purchase`. The Node SDK ships a convenience wrapper for this; Python callers use the artifacts endpoint directly.
+> **Note:** There is no `record_purchase_result` in the Python SDK. To attach an x402 result snapshot to a purchase action, post directly to `POST /api/artifacts` with `artifact_type='x402_purchase_result'` and `source_action_id` set to the `act_` id from `record_purchase`. The Node SDK ships a convenience wrapper for this; Python callers use the artifacts endpoint directly. (`record_x402_purchase` handles the receipt internally, so most self-report callers don't need the raw artifact POST.)
 
 > **Operator surface (no SDK wrapper):** The platform also exposes `GET /api/finops/spend?lens=fleet|claude-code` — a read-only operator rollup that aggregates agent LLM cost + x402 purchases (Fleet lens) or Code Sessions cost (Claude-Code lens). It is a presentation layer backed by repository functions (`getFleetSpend` / `getClaudeCodeSpend`), **not** an SDK method, so it does not appear in the method count. Query it directly over HTTP.
 

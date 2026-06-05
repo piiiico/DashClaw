@@ -13,6 +13,18 @@ Through 3.x the platform and the SDKs versioned independently, which is why olde
 
 ## [Unreleased]
 
+## [4.2.0] — 2026-06-05
+
+> Adds a one-call x402 self-report path to both SDKs and fixes server-side provider attribution for name-only purchases, so spend an agent makes OUTSIDE an OpenClaw hook (a Codex native shell, a wrapper script) still lands correctly on Spend → x402. The SDK surface grows by one method each (Node 125 → 126, Python 223 → 224); additive, no breaking changes. `@dashclaw/openclaw-plugin` 1.3.2 documents the same fallback.
+
+### Added
+
+- **`recordX402Purchase` / `record_x402_purchase` — one-call x402 self-report (both SDKs).** Records a settled x402 payment end-to-end — govern + record the purchase, mark it succeeded, and (when a tx hash / request id is given) attach the on-chain receipt — in a single call. For the **pay-outside-a-hook** pattern: when an agent pays through a runtime OpenClaw doesn't proxy (e.g. a Codex native `shell_command` or a wrapper script), the plugin's `before_tool_call`/`after_tool_call` hooks never fire, so the paying code must self-report. The server resolves/auto-registers the provider from the `provider` name, so callers don't register one first. Node `recordX402Purchase({ agent_id, provider, spend, transaction_hash?, request_id? })`; Python `record_x402_purchase(...)`. No new routes — it composes the existing `/api/x402/purchases`, `/api/actions/:id/outcome`, and `/api/artifacts`.
+
+### Fixed
+
+- **x402 purchases recorded with a provider name but no `provider_id` showed a blank provider on Spend → x402.** `POST /api/x402/purchases` accepted `provider` (a name/origin) for guard context but only persisted `provider_id`, so any name-only caller (the SDK self-report path, MCP, a wrapper) left `x402_purchases.provider_id` null. The route now resolves/auto-registers a provider from the `provider` name server-side (`resolveProviderByName`) before guard and persists it — mirroring the plugin's client-side resolution, so every caller gets attribution without registering a provider first. `scripts/backfill-x402-provider-id.mjs` repairs pre-fix null rows (dry-run by default, side-effect-free).
+
 ## [4.1.2] — 2026-06-05
 
 > Security/reliability hardening of the governed-action paths (identity, authoritative risk, durable guard audit, x402 integrity), plus the accumulated session_id-stamping and policy-form work. No SDK API changes (Node 125 / Python 223 unchanged); both SDK packages republish at 4.1.2 per the unified-version model.

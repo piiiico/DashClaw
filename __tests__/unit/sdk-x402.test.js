@@ -65,4 +65,28 @@ describe('DashClaw — x402 SDK wrappers', () => {
     expect(c.url).toContain('/api/artifacts');
     expect(c.body).toMatchObject({ artifact_type: 'x402_purchase_result', source_action_id: 'act_a' });
   });
+  it('recordX402Purchase records the purchase, reports success, and attaches the receipt in one call', async () => {
+    mockFetch
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ action: { action_id: 'act_x402' }, purchase: { provider_id: 'prov_1' }, decision: { decision: 'allow' } }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ outcome: { status: 'completed' } }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ artifact: { id: 'art_1' } }) });
+    const out = await claw.recordX402Purchase({ agent_id: 'a1', provider: 'stableenrich.dev', spend: 0.007, transaction_hash: '0xabc', request_id: 'req1' });
+    expect(mockFetch).toHaveBeenCalledTimes(3); // purchase -> outcome -> artifact
+    const calls = mockFetch.mock.calls.map(([url, opts]) => ({ url, method: opts.method, body: opts.body ? JSON.parse(opts.body) : undefined }));
+    expect(calls[0].url).toBe('http://localhost:3000/api/x402/purchases');
+    expect(calls[0].body).toMatchObject({ provider: 'stableenrich.dev', spend_amount: 0.007, cost_estimate: 0.007, currency: 'USDC', payment_method: 'x402' });
+    expect(calls[1].url).toBe('http://localhost:3000/api/actions/act_x402/outcome');
+    expect(calls[1].body).toMatchObject({ status: 'completed' });
+    expect(calls[2].url).toContain('/api/artifacts');
+    expect(calls[2].body).toMatchObject({ artifact_type: 'x402_purchase_result', source_action_id: 'act_x402', content_json: { transactionHash: '0xabc', requestId: 'req1' } });
+    expect(out.action.action_id).toBe('act_x402');
+    expect(out.outcome.outcome.status).toBe('completed');
+  });
+  it('recordX402Purchase skips the receipt artifact when no tx/request id is supplied', async () => {
+    mockFetch
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ action: { action_id: 'act_y' } }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ outcome: { status: 'completed' } }) });
+    await claw.recordX402Purchase({ agent_id: 'a1', provider: 'exa.dev', spend: 0.01 });
+    expect(mockFetch).toHaveBeenCalledTimes(2); // purchase + outcome only
+  });
 });
