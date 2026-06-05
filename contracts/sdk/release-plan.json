@@ -1,14 +1,14 @@
 {
   "node": {
-    "current_version": "4.1.1",
+    "current_version": "4.1.2",
     "next_bump": "none",
-    "reason": "4.1.1 — patch. Client-side session_id stamping: MCP dashclaw_record auto-stamps the active dashclaw_session_start session (explicit override) and createAction documents session_id as a first-class field for exact session→action linkage. Additive; no breaking changes. Self-dep stays ^4.0.0.",
+    "reason": "4.1.2 — patch. Platform security/reliability hardening (authoritative risk persistence, durable guard audit, shared agent-identity resolution on actions+x402, x402 input/provider/endpoint validation + reference redaction + outcome sync, outcome lifecycle gating). No SDK API changes; the Node SDK republishes at 4.1.2 per the unified-version model. Self-dep stays ^4.0.0.",
     "domains": []
   },
   "python": {
-    "current_version": "4.1.1",
+    "current_version": "4.1.2",
     "next_bump": "none",
-    "reason": "4.1.1 — patch. Client-side session_id stamping: create_action gains an explicit session_id param for exact session→action linkage (Direct path), backward compatible. Additive; no breaking changes.",
+    "reason": "4.1.2 — patch. Platform security/reliability hardening (see Node entry). No Python SDK API changes; the package republishes at 4.1.2 per the unified-version model. Additive; no breaking changes.",
     "domains": []
   }
 }
