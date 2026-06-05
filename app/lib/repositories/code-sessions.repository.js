@@ -656,6 +656,54 @@ export async function aggregateCodeSignalsByKind(sql, orgId, sinceIso) {
 }
 
 // ---------------------------------------------------------------------------
+// FinOps Claude-Code lens — read-only spend rollup over stored cost_usd.
+// Both Agent Spend and this cost already run through billing.js at ingest,
+// so this is a pure aggregation of stored values (no re-pricing).
+// ---------------------------------------------------------------------------
+
+const CODE_SPEND_PERIOD_DAYS = { '7d': 7, '30d': 30, '90d': 90 };
+
+export async function getCodeSessionSpendAggregation(sql, orgId, { period = '30d' } = {}) {
+  const days = CODE_SPEND_PERIOD_DAYS[period] ?? 30;
+  const sinceIso = new Date(Date.now() - days * 86_400_000).toISOString();
+
+  const [totals] = await sql`
+    SELECT COALESCE(SUM(cost_usd), 0)::real AS total_cost_usd,
+           COALESCE(SUM(cache_savings_usd), 0)::real AS total_cache_savings_usd,
+           COUNT(*)::integer AS session_count
+    FROM code_sessions
+    WHERE org_id = ${orgId} AND created_at >= ${sinceIso}`;
+
+  const byDay = await sql`
+    SELECT DATE(created_at) AS date,
+           COALESCE(SUM(cost_usd), 0)::real AS cost_usd,
+           COUNT(*)::integer AS session_count
+    FROM code_sessions
+    WHERE org_id = ${orgId} AND created_at >= ${sinceIso}
+    GROUP BY DATE(created_at)
+    ORDER BY date DESC`;
+
+  const byProject = await sql`
+    SELECT p.id AS project_id, p.slug AS project_name,
+           COALESCE(SUM(s.cost_usd), 0)::real AS cost_usd,
+           COUNT(*)::integer AS session_count
+    FROM code_sessions s
+    JOIN code_projects p ON p.id = s.project_id
+    WHERE s.org_id = ${orgId} AND s.created_at >= ${sinceIso}
+    GROUP BY p.id, p.slug
+    ORDER BY cost_usd DESC`;
+
+  return {
+    period,
+    total_cost_usd: totals?.total_cost_usd ?? 0,
+    total_cache_savings_usd: totals?.total_cache_savings_usd ?? 0,
+    session_count: totals?.session_count ?? 0,
+    by_day: byDay,
+    by_project: byProject,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Optimal Files manifests
 // ---------------------------------------------------------------------------
 
