@@ -18,11 +18,17 @@ Key principle everywhere: **aggregation, not fusion.** Domains stay sovereign; t
 | x402 spend governance — **Phase 1 (foundation)** | ✅ SHIPPED to `main` (2026-06-04) | `cd9c658e`..`ffb6c663` (13 commits) |
 | Unified FinOps spec + RFC 0002 reconciliation | ✅ committed (2026-06-05) | `e5e1fd87` |
 | FinOps **Phase A (foundation + Fleet lens)** | ✅ SHIPPED to `main` (2026-06-05) | plan `3230c5c9`; code `0311635b`..`df4f8a49` (7 commits) |
-| FinOps **Phase B** (Claude-Code lens + rate-card reconciliation) | ⬜ NOT STARTED — needs a plan | — |
+| FinOps **Phase B** (Claude-Code lens + rate-card parity) | ✅ SHIPPED to `main` (2026-06-05) | spec `64541bf7`; plan `aa8c5bf9`; code `1504a9d6`..`8540f6a2` (5 commits) |
 | FinOps **Phase C** (CostClaw recoverable + paid unlock) | ⬜ NOT STARTED — gated on RFC 0002 §8 | — |
-| x402 Plan 2/3 (operator UI, scoring) | ↪️ SUBSUMED — Plan 2 (x402 dashboard) shipped inside FinOps Phase A; scoring/ranking → FinOps Phase B/C era | — |
+| RFC 0002 **Tier 0** (cross-link Code Sessions ↔ costclaw.io) | ⬜ NOT STARTED — independent, ship anytime | — |
+| `@claw/engine` + true pricing merge (RFC Tier 1) | ⏸️ DEFERRED to the planned **TypeScript migration** (a parity test guards drift meanwhile) | — |
+| x402 Plan 2/3 (operator UI, scoring) | ↪️ SUBSUMED — Plan 2 (x402 dashboard) shipped inside FinOps Phase A; scoring/ranking → FinOps Phase C era | — |
 
-**Current `main` HEAD after this session: `df4f8a49`.** SDK method counts: **Node 125 / Python 223**. Unified platform/SDK version: **4.1.1**.
+**Current `main` HEAD after this session: `8540f6a2`.** SDK method counts unchanged: **Node 125 / Python 223** (FinOps endpoints are operator-dashboard reads, not SDK methods; `?lens=` added no route path). Unified platform/SDK version: **4.1.1**.
+
+## The reframe (Phase B research, adversarially verified 2026-06-05)
+
+The premise "two rate cards that diverge on price" was **false**. `app/lib/billing.js` and `app/lib/claude-code/pricing.js` are **bit-identical on every shared model** (both regenerated from the same LiteLLM block), and **both stored cost figures already run through `billing.js`** — `action_records.cost_estimate` (4-arg) and `code_sessions.cost_usd` (5-arg cache-aware, re-costed at ingest in `code-sessions.repository.js:125-138`). `pricing.js` is **analytics-only** (rules engine + per-message breakdown; its parser cost is overwritten at persist). So **`billing.js` is canonical for all stored cost**; the cards differ only structurally (coverage: billing.js carries GPT/Gemini/Codex/Llama, pricing.js is Claude-only with a Sonnet fallback; unknown-model fallback $0 vs Sonnet; the intentional A10 0.1×-cache-fold method — do NOT collapse it). The only live hazard is drift, now guarded by a CI parity test. The true single-source merge + `@claw/engine` are deferred to the TS migration.
 
 ## What shipped — x402 spend governance (Phase 1)
 
@@ -45,6 +51,19 @@ Foundation for governed paid acquisition. Delivered:
 
 Acceptance: Fleet spend = Agent Spend + x402, the two distinct, summing to the old conflated total.
 
+## What shipped — FinOps Phase B (Claude-Code lens + rate-card parity)
+
+Subagent-driven (5 implementers + 5 adversarial reviewers, all approved; plan adversarially pre-reviewed by 4 skeptics). Delivered:
+- `getCodeSessionSpendAggregation` (`code-sessions.repository.js`) — read-only by-day/by-project rollup over stored `code_sessions.cost_usd` (org-scoped, 7d/30d/90d, `created_at` cast-free like the sibling `aggregateCodeSignalsByKind`; pure read, no re-pricing).
+- `getClaudeCodeSpend` (`finops.repository.js`) — composes it under `{ lens:'claude_code', period, code_sessions, code_total_usd }`; owns no tables.
+- `GET /api/finops/spend?lens=claude-code` — allow-listed lens branch (`fleet` default), same period allow-list, no new route path.
+- `/spend/code` page — advisory "Your machine" lens (cards + token-resolved recharts trend + by-project), nav item under the Spend group, **plus a fix to the pre-existing `/spend` active-state over-match** (`if (href === '/spend') return pathname === '/spend'`).
+- **Rate-card parity test** (`__tests__/unit/rate-card-parity.test.js`) — probes `billing.js` via `estimateCost` and asserts 4-column agreement with `pricing.js` for all 11 Claude keys + a reverse-coverage guard. Locks the invariant; fails the build on drift.
+
+Gates green: lint, `route-sql:check` (83→83), full `npx vitest run` (**2797 passed / 5 skipped, 0 failures**), `npx next build` (`/spend/code` present). Boundary held: read-only aggregation, no table, no money, advisory `governed:false`.
+
+**Design gotcha worth remembering:** recharts renders `stroke`/`fill`/`stopColor` as SVG **presentation attributes**, where CSS `var()` is NOT reliably honored (would silently render black while the build passes green). The page resolves tokens via `getComputedStyle(document.documentElement)` with token-valued fallbacks — token-driven AND guaranteed to paint. (Every other recharts chart in the repo hardcodes hex for this reason.)
+
 ## Artifacts (paths + tracked status)
 
 - `docs/superpowers/specs/2026-06-04-x402-spend-governance-design.md` — x402 spec. **UNTRACKED** (operator chose "write spec, no commit").
@@ -55,8 +74,8 @@ Acceptance: Fleet spend = Agent Spend + x402, the two distinct, summing to the o
 
 ## Next steps (for the new session)
 
-1. **FinOps Phase B** — write a plan: re-home Code Sessions cost into a "Your Claude Code spend" lens; reconcile the **two** rate cards (`app/lib/billing.js` for Agent Spend vs `app/lib/claude-code/pricing.js` for Code Sessions) toward one canonical source. Pairs with RFC 0002 **Tier 1** (`@claw/engine` shared package extraction from CostClaw `C:\projects\costclaw`).
-2. **FinOps Phase C** — CostClaw recoverable-spend preview (`costclaw_recoverable` source) + license-gated `optimize` unlock. **Gated on RFC 0002 §8** billing/entitlement decision (ask before building — touches money).
+1. **FinOps Phase C** — CostClaw recoverable-spend preview (`costclaw_recoverable` source) + license-gated `optimize` unlock. **Gated on RFC 0002 §8** billing/entitlement decision (ask before building — touches money).
+2. **TypeScript migration** (own milestone) — incremental (`allowJs`, strict-on-new), pure libs first (`billing.js`/`pricing.js`/`url-safety.js`); the single-source pricing merge + `@claw/engine` ride this. The parity test guards drift until then. Operator is "debating" this — spec it when they're ready.
 3. **RFC 0002 Tier 0** (cross-link DashClaw Code Sessions ↔ costclaw.io) — independent, ship anytime.
 4. Optional hardening from x402 reviews (deferred, consistent with `0019`): no cross-table FKs; no endpoint-level index; `setPurchaseOutcome`/`getEndpoint`/`getPurchase` are pre-declared surface for later phases.
 
