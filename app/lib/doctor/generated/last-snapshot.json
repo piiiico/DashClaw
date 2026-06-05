@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:e18f93edd033e79d909e6db328c76912478350f2",
+  "timestamp": "sha1:9dbea6b71c4a6fea21a90fa3aed09e179c9f5386",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -3558,6 +3558,7 @@
         "scripts/backfill-embeddings.mjs",
         "scripts/backfill-learning-episodes.mjs",
         "scripts/backfill-null-model-cost.mjs",
+        "scripts/backfill-x402-provider-id.mjs",
         "scripts/cleanup-actions.mjs",
         "scripts/cleanup-org-default.mjs",
         "scripts/create-org.mjs",

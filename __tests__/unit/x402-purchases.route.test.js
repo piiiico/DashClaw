@@ -7,6 +7,9 @@ const m = vi.hoisted(() => ({
   createBlockedActionRecord: vi.fn(),
   createPurchase: vi.fn(),
   listPurchases: vi.fn(),
+  getProvider: vi.fn(),
+  getEndpoint: vi.fn(),
+  resolveProviderByName: vi.fn(),
 }));
 vi.mock('@/lib/db.js', () => ({ getSql: () => m.sql }));
 vi.mock('@/lib/org.js', () => ({ getOrgId: () => 'org_1' }));
@@ -14,9 +17,12 @@ vi.mock('@/lib/guard.js', () => ({ evaluateGuard: m.evaluateGuard }));
 vi.mock('@/lib/repositories/actions.repository.js', () => ({
   createActionRecord: m.createActionRecord,
   createBlockedActionRecord: m.createBlockedActionRecord,
+  deleteActionsByIds: vi.fn(),
 }));
 vi.mock('@/lib/repositories/x402.repository.js', () => ({
   createPurchase: m.createPurchase, listPurchases: m.listPurchases,
+  getProvider: m.getProvider, getEndpoint: m.getEndpoint,
+  resolveProviderByName: m.resolveProviderByName,
 }));
 
 const { POST, GET } = await import('@/api/x402/purchases/route.js');
@@ -27,7 +33,11 @@ function req(body) {
 }
 const valid = { agent_id: 'a1', provider: 'exa', declared_goal: 'research', cost_estimate: 0.05, purchase_reason: 'gap', context_gap: 'no current data', expected_value: 'fresh sources' };
 
-beforeEach(() => vi.clearAllMocks());
+beforeEach(() => {
+  vi.clearAllMocks();
+  // Default: a name-only purchase resolves/auto-registers a provider_id.
+  m.resolveProviderByName.mockResolvedValue({ provider_id: 'prov_exa', name: 'exa' });
+});
 
 describe('POST /api/x402/purchases', () => {
   it('400 when rationale fields are missing (guard not even called)', async () => {
@@ -69,6 +79,28 @@ describe('POST /api/x402/purchases', () => {
     expect(res.status).toBe(201);
     expect((await res.json()).action.status).toBe('running');
     expect(m.createPurchase).toHaveBeenCalledWith(m.sql, 'org_1', expect.stringMatching(/^act_/), expect.objectContaining({ execution_status: 'approved' }));
+  });
+
+  it('resolves a provider_id from the name when none is supplied, and persists it on the purchase + guard context', async () => {
+    m.evaluateGuard.mockResolvedValue({ decision: 'allow' });
+    m.createActionRecord.mockResolvedValue({ action_id: 'act_a', status: 'running' });
+    m.createPurchase.mockResolvedValue({ action_id: 'act_a' });
+    await POST(req(valid)); // valid has provider: 'exa', no provider_id
+    expect(m.resolveProviderByName).toHaveBeenCalledWith(m.sql, 'org_1', 'exa');
+    // The resolved id is persisted on the detail row...
+    expect(m.createPurchase).toHaveBeenCalledWith(m.sql, 'org_1', expect.stringMatching(/^act_/), expect.objectContaining({ provider_id: 'prov_exa' }));
+    // ...and handed to guard so x402_spend_limit policies keyed by id match.
+    expect(m.evaluateGuard).toHaveBeenCalledWith('org_1', expect.objectContaining({ provider: 'exa', provider_id: 'prov_exa' }), m.sql);
+  });
+
+  it('does NOT auto-resolve when a valid provider_id is already supplied', async () => {
+    m.getProvider.mockResolvedValue({ provider_id: 'prov_given', name: 'Given', status: 'active' });
+    m.evaluateGuard.mockResolvedValue({ decision: 'allow' });
+    m.createActionRecord.mockResolvedValue({ action_id: 'act_a', status: 'running' });
+    m.createPurchase.mockResolvedValue({ action_id: 'act_a' });
+    await POST(req({ ...valid, provider_id: 'prov_given' }));
+    expect(m.resolveProviderByName).not.toHaveBeenCalled();
+    expect(m.createPurchase).toHaveBeenCalledWith(m.sql, 'org_1', expect.stringMatching(/^act_/), expect.objectContaining({ provider_id: 'prov_given' }));
   });
 
   it('GET lists purchases (org-scoped)', async () => {

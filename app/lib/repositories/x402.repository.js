@@ -69,6 +69,35 @@ export async function updateProvider(sql, orgId, providerId, patch = {}) {
   return rows[0] || null;
 }
 
+// Resolve a provider row from a free-text provider name/origin (e.g. an x402
+// purchase that supplies `provider: "stableenrich.dev"` but no provider_id),
+// auto-registering one when none matches so the spend still groups under a real
+// provider instead of a null provider_id (which renders blank on Spend → x402).
+// Matches an existing provider by slug (derived from the name) or a
+// case-insensitive exact name, so a provider the plugin or a prior purchase
+// already registered is REUSED rather than duplicated.
+export async function resolveProviderByName(sql, orgId, providerName) {
+  const name = String(providerName || '').trim();
+  if (!name) return null;
+  const slug = slugify(name);
+  const existing = await sql`
+    SELECT * FROM x402_providers
+    WHERE org_id = ${orgId} AND (slug = ${slug} OR LOWER(name) = ${name.toLowerCase()})
+    ORDER BY created_at ASC
+    LIMIT 1`;
+  if (existing[0]) return existing[0];
+  // No match — register a minimal active provider keyed by the name. base_url is
+  // set when the name looks like a bare host so /spend/x402 can link out to it.
+  const looksLikeHost = /^[a-z0-9.-]+\.[a-z]{2,}$/i.test(name);
+  return createProvider(sql, orgId, {
+    name,
+    slug,
+    base_url: looksLikeHost ? `https://${name}` : null,
+    category: 'x402',
+    status: 'active',
+  });
+}
+
 // --- Endpoints -------------------------------------------------------------
 
 export async function createEndpoint(sql, orgId, providerId, data = {}) {

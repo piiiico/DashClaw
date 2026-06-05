@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  createProvider, listProviders, getProvider, updateProvider,
+  createProvider, listProviders, getProvider, updateProvider, resolveProviderByName,
   createEndpoint, listEndpoints, getEndpoint,
   createPurchase, getPurchase, listPurchases, setPurchaseOutcome,
 } from '@/lib/repositories/x402.repository.js';
@@ -68,6 +68,31 @@ describe('x402 provider repository', () => {
     sql.mockResolvedValueOnce([]); // getProvider miss
     expect(await updateProvider(sql, 'org_1', 'prov_missing', { status: 'disabled' })).toBeNull();
     expect(sql.mock.calls).toHaveLength(1); // no second (UPDATE) query was issued
+  });
+
+  it('resolveProviderByName reuses an existing provider matched by slug/name without inserting', async () => {
+    sql.mockResolvedValueOnce([{ provider_id: 'prov_existing', name: 'stableenrich.dev', slug: 'stableenrich-dev' }]);
+    const row = await resolveProviderByName(sql, 'org_1', 'stableenrich.dev');
+    expect(row.provider_id).toBe('prov_existing');
+    expect(sql.mock.calls).toHaveLength(1); // SELECT only — no INSERT when a match exists
+    const call = sql.mock.calls[0];
+    expect(sqlText(call)).toContain('FROM x402_providers');
+    expect(sqlValues(call)).toEqual(['org_1', 'stableenrich-dev', 'stableenrich.dev']); // org, slug, lower(name)
+  });
+
+  it('resolveProviderByName auto-registers a minimal active provider when none matches', async () => {
+    sql.mockResolvedValueOnce([]); // SELECT miss
+    sql.mockResolvedValueOnce([{ provider_id: 'prov_new', slug: 'stableenrich-dev' }]); // INSERT
+    const row = await resolveProviderByName(sql, 'org_1', 'stableenrich.dev');
+    expect(row.provider_id).toBe('prov_new');
+    expect(sql.mock.calls).toHaveLength(2);
+    expect(sqlText(sql.mock.calls[1])).toContain('INSERT INTO x402_providers');
+    expect(sql.mock.calls[1][4]).toBe('stableenrich-dev'); // slug derived from the name
+  });
+
+  it('resolveProviderByName returns null for a blank name without touching the DB', async () => {
+    expect(await resolveProviderByName(sql, 'org_1', '   ')).toBeNull();
+    expect(sql.mock.calls).toHaveLength(0);
   });
 });
 

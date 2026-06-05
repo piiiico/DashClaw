@@ -11,7 +11,7 @@ import { validateX402Purchase } from '../../../lib/validate.js';
 import { resolveAgentIdentity } from '../../../lib/identity-resolution.js';
 import { redactAny } from '../../../lib/security.js';
 import { createActionRecord, createBlockedActionRecord, deleteActionsByIds } from '../../../lib/repositories/actions.repository.js';
-import { createPurchase, listPurchases, getProvider, getEndpoint } from '../../../lib/repositories/x402.repository.js';
+import { createPurchase, listPurchases, getProvider, getEndpoint, resolveProviderByName } from '../../../lib/repositories/x402.repository.js';
 
 /**
  * Mask a wallet/payment reference for storage and responses. We keep only the
@@ -104,6 +104,29 @@ export async function POST(request) {
       }
     }
 
+    // (R6+) Resolve a provider_id for the purchase. Prefer an explicitly
+    // supplied provider_id (validated above) or one derived from the endpoint;
+    // otherwise resolve/auto-register from the free-text `provider` name so the
+    // purchase carries real provider attribution instead of a null provider_id
+    // (which renders blank on Spend → x402). This mirrors the plugin's
+    // client-side resolveProviderId, but server-side so EVERY caller benefits —
+    // SDK, the wrapper self-report path, MCP — without registering a provider
+    // first. Done before guard so x402_spend_limit policies keyed by provider_id
+    // match name-only callers too. Non-fatal: a governed purchase must never
+    // fail over an attribution nicety.
+    let resolvedProviderId = v.provider_id || providerRow?.provider_id || null;
+    if (!resolvedProviderId && v.provider) {
+      try {
+        const resolved = await resolveProviderByName(sql, orgId, v.provider);
+        if (resolved) {
+          providerRow = resolved;
+          resolvedProviderId = resolved.provider_id;
+        }
+      } catch (provErr) {
+        console.warn('[X402/PURCHASES] provider auto-resolve failed:', provErr?.message || provErr);
+      }
+    }
+
     const action_id = `act_${crypto.randomUUID()}`;
     const timestamp_start = new Date().toISOString();
 
@@ -117,7 +140,7 @@ export async function POST(request) {
       // is consistent with the action's persisted `verified` flag.
       verification_status: identity.verification_status,
       provider: providerRow?.name || v.provider,
-      provider_id: v.provider_id || null,
+      provider_id: resolvedProviderId,
       declared_goal: v.declared_goal,
       cost_estimate: v.spend_amount,
       risk_score: v.risk_score ?? 0,
@@ -186,7 +209,7 @@ export async function POST(request) {
     let purchase;
     try {
       purchase = await createPurchase(sql, orgId, action_id, {
-        provider_id: v.provider_id,
+        provider_id: resolvedProviderId,
         endpoint_id: v.endpoint_id,
         agent_id: agentId,
         spend_amount: v.spend_amount,
