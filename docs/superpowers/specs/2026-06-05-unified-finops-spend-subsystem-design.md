@@ -23,7 +23,7 @@ Verified against source (2026-06-05):
 | Code Sessions | `app/code-sessions/**` | per-project/session Claude Code cost, cache savings, subagent ROI | `code_sessions.cost_usd` (4-column) |
 | x402 (Phase 1) | — | none yet | `x402_purchases.spend_amount` |
 
-Two pricing tables exist and can diverge: `app/lib/billing.js` (`estimateCost`/`DEFAULT_PRICING`, the canonical Agent-Spend rate card, LiteLLM-refreshed) and `app/lib/claude-code/pricing.js` (the 4-column Code Sessions rate card, ported from AgentLens). Nav (`app/components/Sidebar.js`) has groups Govern / Observe / Configure / Labs but **no "Spend" section** — cost is scattered.
+Two pricing tables exist: `app/lib/billing.js` (`estimateCost`/`DEFAULT_PRICING`, the canonical Agent-Spend rate card, LiteLLM-refreshed) and `app/lib/claude-code/pricing.js` (the 4-column Code Sessions rate card, ported from AgentLens). **Correction (2026-06-05, see the Phase B spec §1):** the two do **not** diverge on price — both are regenerated from the same LiteLLM block and are bit-identical on every shared model, and *both* stored cost figures (`action_records.cost_estimate` and `code_sessions.cost_usd`) already run through `billing.js`. `pricing.js` is analytics-only (the rules engine + per-message breakdown). The reconciliation hazard is structural drift (coverage/aliases), not a price difference. Nav (`app/components/Sidebar.js`) has groups Govern / Observe / Configure / Labs but **no "Spend" section** — cost is scattered.
 
 **Latent bug to fix here:** the x402 route writes `spend_amount` into `action_records.cost_estimate` (`app/api/x402/purchases/route.js`). So x402 micropayments are *already* silently summed into "Agent Spend" alongside LLM token cost, undifferentiated. The aggregation layer must split them by `action_type`.
 
@@ -127,7 +127,7 @@ Each phase gets its own implementation plan. Phase A is the only one in scope fo
 - Exact `finops.repository.js` home (`app/lib/finops/` vs `app/lib/repositories/`) and whether the recoverable figure is computed inline or behind the future `@claw/engine`.
 - Currency handling for x402 when `currency = 'USDC'` — store a USD-equivalent figure for rollup, or display native + a converted total? (Phase A can assume 1 USDC ≈ 1 USD and revisit.)
 - Whether the "Spend" section is its own nav group or nested under Govern (Observe is cost-adjacent via Code Sessions).
-- Phase B rate-card reconciliation: does `billing.js` adopt `@claw/engine`, or do they stay separate with a parity test? (Decide with RFC Tier 1.)
+- Phase B rate-card reconciliation: does `billing.js` adopt `@claw/engine`, or do they stay separate with a parity test? (Decide with RFC Tier 1.) — **Resolved 2026-06-05: stay separate with a parity test now; the true single-source merge (and `@claw/engine`) defer to the planned TypeScript migration.** Research showed the two cards are already bit-identical on shared models (same LiteLLM block) and that *both* stored cost figures already run through `billing.js` — `pricing.js` is analytics-only. See `docs/superpowers/specs/2026-06-05-finops-phase-b-claude-code-lens-design.md` §1, §6.
 
 ## 12. Verification approach
 

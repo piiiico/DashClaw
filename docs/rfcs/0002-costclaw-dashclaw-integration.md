@@ -71,12 +71,16 @@ Resolution: the Code Sessions subsystem **already** ingests `~/.claude` JSONL an
 
 Goal: one source of truth for the shared core so the rate card stops diverging.
 
-- Create a new package `@claw/engine` (home: CostClaw monorepo `packages/engine` is the natural host since it is already pure and TS; rename/republish under the `@claw` scope, or add a thin `@claw/engine` that re-exports). It must ship **compiled JS + `.d.ts`** (CostClaw already bundles via `tsup`) so DashClaw — which is JavaScript with no `tsconfig.json` (per RFC 0001 §4) — can `import` it without a TS interop boundary.
+- Create a new package `@claw/engine` (home: CostClaw monorepo `packages/engine` is the natural host since it is already pure and TS; rename/republish under the `@claw` scope, or add a thin `@claw/engine` that re-exports). It must ship **compiled JS + `.d.ts`** so DashClaw — which is JavaScript with no `tsconfig.json` (per RFC 0001 §4) — can `import` it without a TS interop boundary. **Correction (2026-06-05):** an earlier draft said "CostClaw already bundles via `tsup`." Verified false — `packages/engine` builds with **`tsc`** (`tsc -p tsconfig.build.json`) and its `main`/`exports` point at the raw `./src/index.ts`. So the extraction needs a real compiled-JS build step this RFC under-described, not a free re-export. This (together with the deferral in §5.2.1) is why Tier 1 is **not** the "do-now pure win" the framing implied.
 - Shared surface (the parts that are genuinely identical): `parser`, `pricing` (rate card + `costForUsage`/`cacheSavingsForUsage`/`cacheHitRate`), `secret-scan`, `sanitize`, shared `types`.
 - The rate card moves to the **auto-refreshed** mechanism DashClaw already runs (`npm run pricing:refresh` from LiteLLM, weekly GH Action). This is the fix for CostClaw's stale 2026-05-13 snapshot (Opus at $15/$75 vs current $5/$25).
 - **Keep product-specific and out of the shared package:** each side's optimizer rule family, CostClaw's six-pillar scoring, DashClaw's optimal-files generators, DashClaw's persistence/repository layer, DashClaw's runtime governance.
 - DashClaw migration: replace the duplicated internals of `app/lib/claude-code/parser.js`, `pricing.js`, and `optimal-files/secret-scan.js` with imports from `@claw/engine`, preserving DashClaw-only fields (`naive_cost_usd`, `parser_version`, repository wiring). Keep the `Ported from AgentLens` provenance note updated to point at the shared package.
 - Verify: DashClaw `npx vitest run` (full suite) + `npx next build`; CostClaw `npm test --workspaces`. Confirm cost numbers for a fixture session match between the two products after unification (they currently won't, due to the stale card — that mismatch disappearing is the acceptance signal).
+
+#### 5.2.1 Tier 1 deferral (added 2026-06-05)
+
+Tier 1 is **deferred to DashClaw's planned TypeScript migration.** Verified ground truth changed the calculus: DashClaw's two rate cards (`billing.js`, `claude-code/pricing.js`) are already regenerated from the same LiteLLM block and are **bit-identical on every shared model**, and *both* stored cost figures (`action_records.cost_estimate`, `code_sessions.cost_usd`) already run through `billing.js` — so there is no live "two disagreeing numbers" bug on the DashClaw side to fix now. The genuine duplication (the price *table* + the cost primitives) is best collapsed into one canonical module **in TypeScript**, which is also the natural home for `@claw/engine` (TS-native). Until then, FinOps Phase B ships a **parity test** that fails CI if the two cards drift on shared Claude models/aliases (`docs/superpowers/specs/2026-06-05-finops-phase-b-claude-code-lens-design.md` §4). CostClaw's own stale-card bug (Opus $15/$75 frozen vs current $5/$25) is a one-file rate-data edit in `pricing.ts` and can be fixed in-place in CostClaw independently of the extraction.
 
 ### 5.3 Tier 2 — In-product preview + paid local unlock
 
@@ -139,11 +143,11 @@ This maps the paywall to real net-new capability rather than an artificial throt
 The operator chose to unify DashClaw's spend surfaces under one **FinOps subsystem** (spec: `docs/superpowers/specs/2026-06-05-unified-finops-spend-subsystem-design.md`) rather than ship CostClaw as a parallel track. The subsystem is a **read-only aggregation/presentation layer** over distinct, independently-owned spend sources (agent LLM cost, x402 micropayments, Code Sessions cost, CostClaw recoverable) — it owns no data and fuses no domains, so this RFC's boundary commitments (§4, §9) hold. What changes relative to this RFC:
 
 - **Tier 2 → the Claude-Code lens.** The recoverable-spend preview becomes the `costclaw_recoverable` source under the subsystem's "Your Claude Code spend" lens; the six-pillar score + `optimize` artifacts remain the license-gated, locally-generated paid depth (§5.3 unchanged in substance). It is the subsystem's Phase C, gated on this RFC's §8 billing decision.
-- **Tier 1 → unchanged, plus one motivation.** `@claw/engine` stays an independent enabler; the subsystem additionally motivates reconciling DashClaw's **two** rate cards (`billing.js` for Agent Spend vs `claude-code/pricing.js` for Code Sessions) toward one canonical source so the FinOps lenses agree on prices (subsystem Phase B).
+- **Tier 1 → deferred to the TS migration (updated 2026-06-05).** `@claw/engine` stays an independent enabler but is no longer "do-now": research showed DashClaw's two rate cards are already bit-identical (same LiteLLM block) and both stored costs run through `billing.js`, so the subsystem's reconciliation reduces to a **parity test** in Phase B, with the true single-source merge + `@claw/engine` deferred to DashClaw's TypeScript migration. See §5.2.1 and the Phase B spec §6.
 - **Tier 0 → unchanged.**
 - **§7 correction** (withdrawal of the Tier-1-helps-x402 claim) — recorded inline in §7.
 
-Subsystem sequencing: Phase A = FinOps foundation + Fleet lens (Agent Spend + x402, with the x402 break-out fix); Phase B = Code Sessions cost lens + rate-card reconciliation (with Tier 1); Phase C = this RFC's Tier 2.
+Subsystem sequencing: Phase A = FinOps foundation + Fleet lens (Agent Spend + x402, with the x402 break-out fix); Phase B = Code Sessions cost lens + rate-card **parity test** (Tier 1 / merge deferred to the TS migration); Phase C = this RFC's Tier 2.
 
 ---
 
