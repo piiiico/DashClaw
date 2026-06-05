@@ -13,10 +13,10 @@ doc-type: architecture
 
 ## Summary
 
-- Total routes: `288`
+- Total routes: `289`
 - Stable routes: `47`
 - Beta routes: `24`
-- Experimental routes: `217`
+- Experimental routes: `218`
 
 ## Routes
 
@@ -172,6 +172,7 @@ doc-type: architecture
 | `/api/evaluations/scorers/preview` | `POST` | `experimental` | `(default)` | `app/api/evaluations/scorers/preview/route.js` |
 | `/api/evaluations/scorers/{scorerId}` | `DELETE, PATCH` | `experimental` | `(default)` | `app/api/evaluations/scorers/[scorerId]/route.js` |
 | `/api/evaluations/stats` | `GET` | `experimental` | `(default)` | `app/api/evaluations/stats/route.js` |
+| `/api/finops/spend` | `GET` | `experimental` | `(default)` | `app/api/finops/spend/route.js` |
 | `/api/guard` | `GET, POST` | `stable` | `/api/guard` | `app/api/guard/route.js` |
 | `/api/guard/decisions` | `GET` | `stable` | `/api/guard` | `app/api/guard/decisions/route.js` |
 | `/api/handoffs` | `GET, POST` | `stable` | `/api/handoffs` | `app/api/handoffs/route.js` |

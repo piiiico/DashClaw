@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:7a5ff5e099058a282451fccabeac49db4ec34ef7",
+  "timestamp": "sha1:e18f93edd033e79d909e6db328c76912478350f2",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -1520,6 +1520,15 @@
       "dynamic_params": [],
       "archived": false,
       "file_path": "app/api/evaluations/stats/route.js"
+    },
+    {
+      "path": "/api/finops/spend",
+      "methods": [
+        "GET"
+      ],
+      "dynamic_params": [],
+      "archived": false,
+      "file_path": "app/api/finops/spend/route.js"
     },
     {
       "path": "/api/guard",

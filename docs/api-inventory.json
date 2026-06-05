@@ -47,10 +47,10 @@
     ]
   },
   "summary": {
-    "total_routes": 288,
+    "total_routes": 289,
     "stable_routes": 47,
     "beta_routes": 24,
-    "experimental_routes": 217
+    "experimental_routes": 218
   },
   "routes": [
     {
@@ -1468,6 +1468,15 @@
       "maturity": "experimental",
       "matched_prefix": "(default)",
       "file": "app/api/evaluations/stats/route.js"
+    },
+    {
+      "path": "/api/finops/spend",
+      "methods": [
+        "GET"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/finops/spend/route.js"
     },
     {
       "path": "/api/guard",

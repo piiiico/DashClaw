@@ -48,9 +48,9 @@ p.kicker{background:var(--accent-bg);border:1px solid var(--accent-border);borde
 p.kicker b{color:var(--accent-deep)}
 </style></head><body>
 <h1>DashClaw Livingcode Dashboard</h1>
-<div class="sig" id="sig">Shape signature: sha1:7a5ff5e099058a282451fccabeac49db4ec34ef7 · signature-stable</div>
+<div class="sig" id="sig">Shape signature: sha1:e18f93edd033e79d909e6db328c76912478350f2 · signature-stable</div>
 <div class="grid">
-      <div class="cell"><div class="n">241</div><div class="k">Active routes</div></div>
+      <div class="cell"><div class="n">242</div><div class="k">Active routes</div></div>
       <div class="cell"><div class="n">48</div><div class="k">Archived routes</div></div>
       <div class="cell"><div class="n">4</div><div class="k">Required env vars</div></div>
       <div class="cell"><div class="n">137</div><div class="k">Optional env vars</div></div>
@@ -279,7 +279,7 @@ p.kicker b{color:var(--accent-deep)}
       <div class="cell"><div class="n">1</div><div class="k">TODOs</div></div>
       <div class="cell"><div class="n">128</div><div class="k">Files &gt;300 lines</div></div></div></section>
 
-<section><h2>Changed since last snapshot</h2><p class="kicker"><b>8</b> env_vars added, <b>29</b> routes added, <b>1</b> routes changed, <b>4</b> tables added since last snapshot.</p><ul class="diff">    <li><code>added</code> <b>routes</b>: /api/admin/trigger-outcome-sweep <span class="sig">New route: POST</span></li>
+<section><h2>Changed since last snapshot</h2><p class="kicker"><b>8</b> env_vars added, <b>30</b> routes added, <b>1</b> routes changed, <b>4</b> tables added since last snapshot.</p><ul class="diff">    <li><code>added</code> <b>routes</b>: /api/admin/trigger-outcome-sweep <span class="sig">New route: POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/agents/invoke <span class="sig">New route: POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/agents/registry <span class="sig">New route: GET, POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/agents/registry/[id] <span class="sig">New route: GET, PATCH</span></li>
@@ -289,6 +289,7 @@ p.kicker b{color:var(--accent-deep)}
     <li><code>added</code> <b>routes</b>: /api/behavior/simulate <span class="sig">New route: POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/behavior/suggestions <span class="sig">New route: GET, POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/evaluations/scorers/preview <span class="sig">New route: POST</span></li>
+    <li><code>added</code> <b>routes</b>: /api/finops/spend <span class="sig">New route: GET</span></li>
     <li><code>added</code> <b>routes</b>: /api/integrity/jwks <span class="sig">New route: GET</span></li>
     <li><code>added</code> <b>routes</b>: /api/integrity/verify <span class="sig">New route: POST</span></li>
     <li><code>added</code> <b>routes</b>: /api/invite/[token] <span class="sig">New route: GET, POST</span></li>
@@ -425,6 +426,7 @@ p.kicker b{color:var(--accent-deep)}
     <tr data-path="/api/evaluations/scorers/[scorerId]"><td><code>/api/evaluations/scorers/[scorerId]</code></td><td>DELETE, PATCH</td><td class="sig">app/api/evaluations/scorers/[scorerId]/route.js</td></tr>
     <tr data-path="/api/evaluations/scorers/preview"><td><code>/api/evaluations/scorers/preview</code></td><td>POST</td><td class="sig">app/api/evaluations/scorers/preview/route.js</td></tr>
     <tr data-path="/api/evaluations/stats"><td><code>/api/evaluations/stats</code></td><td>GET</td><td class="sig">app/api/evaluations/stats/route.js</td></tr></tbody></table></details>
+<details><summary>/finops/* (1)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/finops/spend"><td><code>/api/finops/spend</code></td><td>GET</td><td class="sig">app/api/finops/spend/route.js</td></tr></tbody></table></details>
 <details><summary>/guard/* (2)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/guard"><td><code>/api/guard</code></td><td>GET, POST</td><td class="sig">app/api/guard/route.js</td></tr>
     <tr data-path="/api/guard/decisions"><td><code>/api/guard/decisions</code></td><td>GET</td><td class="sig">app/api/guard/decisions/route.js</td></tr></tbody></table></details>
 <details><summary>/handoffs/* (4)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/handoffs"><td><code>/api/handoffs</code></td><td>GET, POST</td><td class="sig">app/api/handoffs/route.js</td></tr>
