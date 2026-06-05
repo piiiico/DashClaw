@@ -5,6 +5,7 @@ import { NextResponse } from 'next/server';
 import { getSql } from '../../../../lib/db.js';
 import { getOrgId } from '../../../../lib/org.js';
 import { getProvider, updateProvider, listEndpoints } from '../../../../lib/repositories/x402.repository.js';
+import { apiErrorResponse } from '../../../../lib/apiErrors.js';
 
 /** GET /api/x402/providers/:id — provider detail + its endpoints. */
 export async function GET(request, { params }) {
@@ -17,8 +18,7 @@ export async function GET(request, { params }) {
     const endpoints = await listEndpoints(sql, orgId, id);
     return NextResponse.json({ provider, endpoints });
   } catch (err) {
-    console.error('[X402/PROVIDERS/:id] GET error:', err);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return apiErrorResponse(err, 'X402/PROVIDERS/:id GET');
   }
 }
 
@@ -33,7 +33,6 @@ export async function PATCH(request, { params }) {
     if (!provider) return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
     return NextResponse.json({ provider });
   } catch (err) {
-    console.error('[X402/PROVIDERS/:id] PATCH error:', err);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return apiErrorResponse(err, 'X402/PROVIDERS/:id PATCH');
   }
 }

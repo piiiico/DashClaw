@@ -5,6 +5,7 @@ import { NextResponse } from 'next/server';
 import { getSql } from '../../../lib/db.js';
 import { getOrgId } from '../../../lib/org.js';
 import { createProvider, listProviders } from '../../../lib/repositories/x402.repository.js';
+import { apiErrorResponse } from '../../../lib/apiErrors.js';
 
 /** GET /api/x402/providers — list providers (org-scoped). */
 export async function GET(request) {
@@ -15,8 +16,7 @@ export async function GET(request) {
     const providers = await listProviders(sql, orgId, { status });
     return NextResponse.json({ providers });
   } catch (err) {
-    console.error('[X402/PROVIDERS] GET error:', err);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return apiErrorResponse(err, 'X402/PROVIDERS GET');
   }
 }
 
@@ -30,7 +30,6 @@ export async function POST(request) {
     const provider = await createProvider(sql, orgId, body);
     return NextResponse.json({ provider }, { status: 201 });
   } catch (err) {
-    console.error('[X402/PROVIDERS] POST error:', err);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return apiErrorResponse(err, 'X402/PROVIDERS POST');
   }
 }

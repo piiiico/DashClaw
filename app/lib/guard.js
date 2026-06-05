@@ -244,9 +244,12 @@ export async function evaluateGuard(orgId, context, sql, options = {}) {
     console.warn('[Guard] Predictive risk failed:', e.message);
   }
 
-  // Apply statistical adjustment to risk score
+  // Apply statistical adjustment to risk score. Round to an integer: risk_score
+  // is an integer column in guard_decisions / action_records and an agent-reported
+  // risk_score may be fractional — without rounding, the now-awaited audit INSERT
+  // could push a non-integer into the integer column.
   const predictiveAdjustment = predictiveRisk?.total_adjustment ?? 0;
-  const adjustedRiskScore = Math.max(0, Math.min(effectiveRiskScore + predictiveAdjustment, 100));
+  const adjustedRiskScore = Math.round(Math.max(0, Math.min(effectiveRiskScore + predictiveAdjustment, 100)));
 
   const reasons = [];
   const warnings = [];
@@ -395,33 +398,43 @@ export async function evaluateGuard(orgId, context, sql, options = {}) {
     reasons.unshift(actBlockReason);
   }
 
-  // Fire-and-forget — the response leaves before the audit row commits.
-  // `void` makes the floating-promise intent explicit (matches the
-  // publishOrgEvent pattern below) so static analysis won't flag it.
-  void sql`
-    INSERT INTO guard_decisions (id, org_id, agent_id, agent_name, verification_status, replay_status, jti, act_status, act_hash, decision, reason, matched_policies, context, evidence, risk_score, action_type, created_at)
-    VALUES (
-      ${decisionId},
-      ${orgId},
-      ${context.agent_id || null},
-      ${context.agent_name || null},
-      ${verificationStatus},
-      ${replayStatus},
-      ${jti},
-      ${actStatus},
-      ${actHash},
-      ${highestDecision},
-      ${reasons.join('; ') || null},
-      ${JSON.stringify(matchedPolicies)},
-      ${JSON.stringify(safeContextForLog)},
-      ${evidenceJson},
-      ${adjustedRiskScore},
-      ${context.action_type || null},
-      ${evaluated_at}
-    )
-  `.catch((err) => {
-    console.warn('[Guard] Failed to persist guard_decisions audit row:', err.message);
-  });
+  // SECURITY (R2): the guard_decisions row IS the audit evidence — losing it
+  // means the platform cannot prove what it decided. Previously this was
+  // fire-and-forget (`void sql...catch`), so on a serverless freeze the row
+  // could be dropped after a success response was already flushed. Await it and
+  // fail loudly. This adds no new outage mode: evaluateGuard already hard-depends
+  // on the DB (the guard_policies SELECT above and the learning-context read
+  // below are awaited), so a DB that can read policies but cannot write this row
+  // is a genuine fault the caller must see — not a silently-discarded write.
+  try {
+    await sql`
+      INSERT INTO guard_decisions (id, org_id, agent_id, agent_name, verification_status, replay_status, jti, act_status, act_hash, decision, reason, matched_policies, context, evidence, risk_score, action_type, created_at)
+      VALUES (
+        ${decisionId},
+        ${orgId},
+        ${context.agent_id || null},
+        ${context.agent_name || null},
+        ${verificationStatus},
+        ${replayStatus},
+        ${jti},
+        ${actStatus},
+        ${actHash},
+        ${highestDecision},
+        ${reasons.join('; ') || null},
+        ${JSON.stringify(matchedPolicies)},
+        ${JSON.stringify(safeContextForLog)},
+        ${evidenceJson},
+        ${adjustedRiskScore},
+        ${context.action_type || null},
+        ${evaluated_at}
+      )
+    `;
+  } catch (err) {
+    console.error('[Guard] CRITICAL: failed to persist required guard_decisions audit row:', err?.message || err);
+    const persistError = new Error('Guard decision could not be durably recorded; refusing to return an unaudited decision.');
+    persistError.code = 'GUARD_AUDIT_PERSIST_FAILED';
+    throw persistError;
+  }
 
   void publishOrgEvent(EVENTS.GUARD_DECISION_CREATED, {
     orgId,
@@ -854,12 +867,18 @@ export async function evaluatePolicy(policy, rules, context, sql, orgId, effecti
       const allowed = Array.isArray(rules.allowed_providers) ? rules.allowed_providers : [];
       const blocked = Array.isArray(rules.blocked_providers) ? rules.blocked_providers : [];
       const provider = context.provider || context.vendor || 'unknown';
+      const providerId = context.provider_id || null;
+      // R6: the purchase route resolves and passes BOTH the provider display
+      // name and the registered provider_id, so allow/block lists match whether
+      // the operator keyed them by name or by id (previously only the free-form
+      // name was checked while the stored/aggregated key was provider_id).
+      const inList = (list) => list.includes(provider) || (providerId != null && list.includes(providerId));
       const spend = Number(context.cost_estimate ?? context.cost ?? 0) || 0;
 
-      if (blocked.includes(provider)) {
+      if (inList(blocked)) {
         return { action: 'block', reason: `Provider "${provider}" is blocked by policy` };
       }
-      if (allowed.length > 0 && !allowed.includes(provider)) {
+      if (allowed.length > 0 && !inList(allowed)) {
         return { action: 'block', reason: `Provider "${provider}" not in approved list` };
       }
       if (spend > maxSpend) {

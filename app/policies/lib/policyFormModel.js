@@ -27,6 +27,11 @@ const DEFAULT_FORM_STATE = {
   maxCommitsBehind: 0,
   // protected_path (Behavior Learning)
   protectedPaths: [],
+  // x402_spend_limit (x402 spend governance)
+  maxSpendUsd: '',
+  approvalThreshold: '',
+  allowedProviders: [],
+  blockedProviders: [],
   agentIds: [],
   // optional inline test recipes (A1): [{ name, input, expect: { decision } }]
   tests: [],
@@ -49,6 +54,7 @@ export const POLICY_TYPE_OPTIONS = [
   { value: 'branch_freshness', label: 'Branch Freshness', desc: 'Block actions when the branch is stale/diverged or too many commits behind' },
   { value: 'non_fabrication', label: 'Non-Fabrication', desc: 'Block or route to approval outbound content that states a fact not traceable to its source-of-truth' },
   { value: 'protected_path', label: 'Protected Path', desc: 'Warn or require approval when an action touches sensitive paths (auth, secrets, billing, middleware, …)' },
+  { value: 'x402_spend_limit', label: 'x402 Spend Limit', desc: 'Govern x402 purchases: cap spend, set an approval threshold, and allow/block providers' },
 ];
 
 function cleanString(value) {
@@ -177,6 +183,23 @@ export function compilePolicyPayload(formState) {
         action: form.action === 'block' || form.action === 'warn' ? form.action : 'require_approval',
       };
       break;
+    case 'x402_spend_limit': {
+      const r = {};
+      if (form.maxSpendUsd !== undefined && form.maxSpendUsd !== null && form.maxSpendUsd !== '') {
+        r.max_spend_usd = Number(form.maxSpendUsd);
+      }
+      if (form.approvalThreshold !== undefined && form.approvalThreshold !== null && form.approvalThreshold !== '') {
+        r.approval_threshold = Number(form.approvalThreshold);
+      }
+      if (Array.isArray(form.allowedProviders) && form.allowedProviders.length > 0) {
+        r.allowed_providers = form.allowedProviders.map((p) => cleanString(p)).filter(Boolean);
+      }
+      if (Array.isArray(form.blockedProviders) && form.blockedProviders.length > 0) {
+        r.blocked_providers = form.blockedProviders.map((p) => cleanString(p)).filter(Boolean);
+      }
+      rules = r;
+      break;
+    }
     default:
       rules = {};
       break;
@@ -226,6 +249,10 @@ export function decompilePolicyForm(policy) {
     freshness: Array.isArray(rules.freshness) ? rules.freshness : DEFAULT_FORM_STATE.freshness,
     maxCommitsBehind: rules.max_commits_behind ?? DEFAULT_FORM_STATE.maxCommitsBehind,
     protectedPaths: Array.isArray(rules.paths) ? rules.paths : DEFAULT_FORM_STATE.protectedPaths,
+    maxSpendUsd: rules.max_spend_usd ?? DEFAULT_FORM_STATE.maxSpendUsd,
+    approvalThreshold: rules.approval_threshold ?? DEFAULT_FORM_STATE.approvalThreshold,
+    allowedProviders: Array.isArray(rules.allowed_providers) ? rules.allowed_providers : DEFAULT_FORM_STATE.allowedProviders,
+    blockedProviders: Array.isArray(rules.blocked_providers) ? rules.blocked_providers : DEFAULT_FORM_STATE.blockedProviders,
     tests: Array.isArray(rules.tests) ? rules.tests : [],
     agentIds: parseAgentIds(policy),
   };
@@ -286,6 +313,16 @@ export function buildPolicySummary(formState) {
       const verb = form.action === 'block' ? 'Block' : form.action === 'warn' ? 'Warn on' : 'Require approval for';
       const count = Array.isArray(form.protectedPaths) ? form.protectedPaths.filter(Boolean).length : 0;
       return `${verb} actions that touch ${count > 0 ? `${count} protected path pattern${count === 1 ? '' : 's'}` : 'protected paths'}${scoped}.`;
+    }
+    case 'x402_spend_limit': {
+      const parts = [];
+      if (form.maxSpendUsd !== '' && form.maxSpendUsd != null) parts.push(`block purchases over $${Number(form.maxSpendUsd)}`);
+      if (form.approvalThreshold !== '' && form.approvalThreshold != null) parts.push(`require approval at $${Number(form.approvalThreshold)}`);
+      const allowed = Array.isArray(form.allowedProviders) ? form.allowedProviders.filter(Boolean) : [];
+      const blocked = Array.isArray(form.blockedProviders) ? form.blockedProviders.filter(Boolean) : [];
+      if (allowed.length) parts.push(`only allow ${allowed.length} provider${allowed.length === 1 ? '' : 's'}`);
+      if (blocked.length) parts.push(`block ${blocked.length} provider${blocked.length === 1 ? '' : 's'}`);
+      return `Govern x402 purchases: ${parts.length ? parts.join(', ') : 'record and govern spend'}${scoped}.`;
     }
     default:
       return 'Configure a policy rule.';

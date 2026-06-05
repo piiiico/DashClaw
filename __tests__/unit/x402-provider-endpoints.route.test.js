@@ -1,15 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { mockSql, mockCreateEndpoint, mockListEndpoints } = vi.hoisted(() => ({
+const { mockSql, mockCreateEndpoint, mockListEndpoints, mockGetProvider } = vi.hoisted(() => ({
   mockSql: vi.fn(async () => []),
   mockCreateEndpoint: vi.fn(),
   mockListEndpoints: vi.fn(),
+  mockGetProvider: vi.fn(),
 }));
 vi.mock('@/lib/db.js', () => ({ getSql: () => mockSql }));
 vi.mock('@/lib/org.js', () => ({ getOrgId: () => 'org_1' }));
 vi.mock('@/lib/repositories/x402.repository.js', () => ({
   createEndpoint: mockCreateEndpoint,
   listEndpoints: mockListEndpoints,
+  getProvider: mockGetProvider,
 }));
 
 const { GET, POST } = await import('@/api/x402/providers/[id]/endpoints/route.js');
@@ -20,7 +22,11 @@ function req(method, body) {
   });
 }
 
-beforeEach(() => vi.clearAllMocks());
+beforeEach(() => {
+  vi.clearAllMocks();
+  // Default: the parent provider exists in this org.
+  mockGetProvider.mockResolvedValue({ provider_id: 'prov_x', org_id: 'org_1', name: 'Exa', status: 'active' });
+});
 
 describe('/api/x402/providers/[id]/endpoints', () => {
   it('GET lists endpoints for the provider', async () => {
@@ -43,5 +49,12 @@ describe('/api/x402/providers/[id]/endpoints', () => {
     expect(res.status).toBe(201);
     expect((await res.json()).endpoint.endpoint_id).toBe('pep_1');
     expect(mockCreateEndpoint).toHaveBeenCalledWith(mockSql, 'org_1', 'prov_x', { name: 'Search' });
+  });
+
+  it('POST 404 when the parent provider does not exist in this org (X2)', async () => {
+    mockGetProvider.mockResolvedValue(null);
+    const res = await POST(req('POST', { name: 'Search' }), ctx('prov_missing'));
+    expect(res.status).toBe(404);
+    expect(mockCreateEndpoint).not.toHaveBeenCalled();
   });
 });

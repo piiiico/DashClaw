@@ -264,7 +264,7 @@ const GUARD_INPUT_SCHEMA = {
   write_paths:     { type: 'array', maxItems: 100 },
 };
 
-const POLICY_TYPES = ['risk_threshold', 'require_approval', 'block_action_type', 'rate_limit', 'webhook_check', 'behavioral_anomaly', 'semantic_check', 'permission_escalation', 'green_contract', 'branch_freshness', 'non_fabrication', 'protected_path'];
+const POLICY_TYPES = ['risk_threshold', 'require_approval', 'block_action_type', 'rate_limit', 'webhook_check', 'behavioral_anomaly', 'semantic_check', 'permission_escalation', 'green_contract', 'branch_freshness', 'non_fabrication', 'protected_path', 'x402_spend_limit'];
 const GUARD_ACTIONS = ['allow', 'warn', 'block', 'require_approval'];
 
 const POLICY_SCHEMA = {
@@ -471,9 +471,101 @@ export function validatePolicy(body) {
         result.errors.push('permission_escalation policy rules.enforce must be a boolean when present');
       }
       break;
+    case 'x402_spend_limit':
+      // x402 spend governance. All fields optional (the engine treats absent
+      // max_spend_usd / approval_threshold as Infinity and absent lists as
+      // empty), but when present they must be well-typed. Without this case the
+      // policy could not be authored through the validated /api/policies route
+      // even though the guard engine enforces it (audit B5).
+      if (rules.max_spend_usd !== undefined && (typeof rules.max_spend_usd !== 'number' || !Number.isFinite(rules.max_spend_usd) || rules.max_spend_usd < 0)) {
+        result.valid = false;
+        result.errors.push('x402_spend_limit policy rules.max_spend_usd must be a finite, non-negative number when present');
+      }
+      if (rules.approval_threshold !== undefined && (typeof rules.approval_threshold !== 'number' || !Number.isFinite(rules.approval_threshold) || rules.approval_threshold < 0)) {
+        result.valid = false;
+        result.errors.push('x402_spend_limit policy rules.approval_threshold must be a finite, non-negative number when present');
+      }
+      if (rules.allowed_providers !== undefined && !Array.isArray(rules.allowed_providers)) {
+        result.valid = false;
+        result.errors.push('x402_spend_limit policy rules.allowed_providers must be an array when present');
+      }
+      if (rules.blocked_providers !== undefined && !Array.isArray(rules.blocked_providers)) {
+        result.valid = false;
+        result.errors.push('x402_spend_limit policy rules.blocked_providers must be an array when present');
+      }
+      break;
   }
 
   return result;
+}
+
+// ── x402 purchase validation (R4) ──
+// The x402 purchase route previously did only a presence check on required
+// fields, letting Number(x)||0 admit negative/Infinity spend, arbitrary
+// currency strings, and unbounded free text. This schema rejects those at the
+// boundary so a malformed/hostile purchase never reaches the spend-limit guard
+// or the ledger.
+const X402_MAX_SPEND_USD = 1_000_000;
+const X402_REQUIRED = ['agent_id', 'provider', 'declared_goal', 'purchase_reason', 'context_gap', 'expected_value'];
+const X402_TEXT_LIMITS = {
+  agent_id: 128, agent_name: 256, provider: 256, provider_id: 128, endpoint_id: 128,
+  declared_goal: 2000, purchase_reason: 2000, context_gap: 2000, expected_value: 2000,
+  alternatives_considered: 4000, payment_method: 64, currency: 16,
+  wallet_reference: 512, payment_reference: 512,
+};
+
+export function validateX402Purchase(body) {
+  const src = (body && typeof body === 'object' && !Array.isArray(body)) ? body : {};
+  const errors = [];
+  const data = {};
+
+  const missing = X402_REQUIRED.filter((k) => src[k] == null || src[k] === '');
+  if (missing.length) errors.push(`Missing required fields: ${missing.join(', ')}`);
+
+  for (const [k, max] of Object.entries(X402_TEXT_LIMITS)) {
+    if (src[k] == null) continue;
+    if (typeof src[k] !== 'string') { errors.push(`${k} must be a string`); continue; }
+    if (src[k].length > max) { errors.push(`${k} exceeds max length of ${max}`); continue; }
+    data[k] = src[k];
+  }
+
+  // Spend amount: accept cost_estimate (preferred) or spend_amount; must be a
+  // finite, non-negative number within a sane ceiling. Number(x)||0 is NOT used
+  // because it silently turns Infinity into Infinity and -5 into -5.
+  const rawSpend = src.cost_estimate ?? src.spend_amount;
+  let spend_amount = 0;
+  if (rawSpend != null && rawSpend !== '') {
+    const n = typeof rawSpend === 'number' ? rawSpend : Number(rawSpend);
+    if (!Number.isFinite(n)) errors.push('spend amount (cost_estimate/spend_amount) must be a finite number');
+    else if (n < 0) errors.push('spend amount must be non-negative');
+    else if (n > X402_MAX_SPEND_USD) errors.push(`spend amount exceeds maximum of ${X402_MAX_SPEND_USD}`);
+    else spend_amount = n;
+  }
+  data.spend_amount = spend_amount;
+
+  // Currency: a short alphanumeric code; defaulted downstream when absent.
+  if (src.currency != null && src.currency !== '') {
+    if (typeof src.currency !== 'string' || !/^[A-Za-z0-9]{2,16}$/.test(src.currency)) {
+      errors.push('currency must be a short alphanumeric code (2-16 chars)');
+    } else {
+      data.currency = src.currency.toUpperCase();
+    }
+  }
+
+  // Client risk_score (optional): may only raise the authoritative score later.
+  if (src.risk_score != null) {
+    const r = Number(src.risk_score);
+    if (!Number.isFinite(r) || r < 0 || r > 100) errors.push('risk_score must be a number between 0 and 100');
+    else data.risk_score = r;
+  }
+
+  if (src.confidence_score != null) {
+    const c = Number(src.confidence_score);
+    if (!Number.isFinite(c)) errors.push('confidence_score must be a finite number');
+    else data.confidence_score = c;
+  }
+
+  return { valid: errors.length === 0, data, errors };
 }
 
 // Extract the embedded IPv4 from an IPv4-mapped IPv6 address in either the

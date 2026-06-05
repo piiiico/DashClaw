@@ -8,6 +8,7 @@ import { getOrgId, getOrgRole } from '../../lib/org.js';
 import { checkQuotaFast, getOrgPlan, incrementMeter } from '../../lib/usage.js';
 import { apiErrorResponse } from '../../lib/apiErrors.js';
 import { verifyAgentSignature } from '../../lib/identity.js';
+import { resolveAgentIdentity } from '../../lib/identity-resolution.js';
 import { estimateCost } from '../../lib/billing.js';
 import { EVENTS, publishOrgEvent } from '../../lib/events.js';
 import { generateActionEmbedding, isEmbeddingsEnabled } from '../../lib/embeddings.js';
@@ -101,6 +102,18 @@ export async function POST(request) {
       }
     }
 
+    // SECURITY (R3): shared identity contract. A JWKS-verified JWT's `sub`
+    // overrides the self-asserted body agent_id (cryptographic proof beats
+    // self-assertion); without a verified token the identity stays self-asserted
+    // and is NOT marked verified. Same resolver /api/guard and /api/x402 use, so
+    // identity semantics are consistent across every action-creating route.
+    const identity = await resolveAgentIdentity(request, { agentId: data.agent_id, agentName: data.agent_name });
+    data.agent_id = identity.agent_id;
+    if (identity.agent_name != null) data.agent_name = identity.agent_name;
+    // Record verification status in the guard context so the guard_decisions
+    // audit row agrees with the action's persisted `verified` flag.
+    data.verification_status = identity.verification_status;
+
     // SECURITY: redact likely secrets before storing the action record.
     // Signature verification is performed against the original payload below, not the redacted copy.
     const dlpFindings = [];
@@ -161,7 +174,9 @@ export async function POST(request) {
 
     // Identity Verification
     const signature = body._signature || null;
-    let verified = false;
+    // Seed from the shared resolver: a JWKS-verified JWT already established
+    // verified identity above. The optional RSA signature path can also set it.
+    let verified = identity.verified;
     // Opt-in: set ENFORCE_AGENT_SIGNATURES=true to require signed agent actions.
     // Default OFF — signatures are an advanced feature, not a setup prerequisite.
     // Check DB setting first (runtime-toggleable), fall back to env var
@@ -183,9 +198,11 @@ export async function POST(request) {
     if (signature && data.agent_id) {
       // verify against the exact payload received (minus signature)
       const { _signature: s, ...payload } = body;
-      verified = await verifyAgentSignature(orgId, data.agent_id, payload, signature, sql);
-      
-      if (!verified && enforceSignatures) {
+      const sigVerified = await verifyAgentSignature(orgId, data.agent_id, payload, signature, sql);
+      // Either a verified JWT or a valid signature counts as verified identity.
+      verified = verified || sigVerified;
+
+      if (!sigVerified && enforceSignatures) {
         return NextResponse.json(
           { error: 'Invalid agent signature', code: 'INVALID_AGENT_SIGNATURE' },
           { status: 401 }
@@ -199,6 +216,17 @@ export async function POST(request) {
       agent_id: data.agent_id
     }, sql);
 
+    // SECURITY (R1): persist the SAME authoritative risk the guard decided on, so
+    // action_records is consistent with guard_decisions (plan §3.3). The client's
+    // contribution is already folded in by the engine (effectiveRiskScore =
+    // max(server, client)), so we store guardDecision.risk_score verbatim — never
+    // the forgeable raw `data.risk_score`. Fall back to the clamped client value
+    // only if the guard somehow omitted a score.
+    const clientRisk = Math.max(0, Math.min(Math.round(Number(data.risk_score) || 0), 100));
+    const authoritativeRisk = guardDecision?.risk_score != null
+      ? Math.max(0, Math.min(Math.round(Number(guardDecision.risk_score) || 0), 100))
+      : clientRisk;
+
     if (guardDecision.decision === 'block') {
       // Create a blocked action record for ledger visibility
       // This ensures blocked decisions appear in Decisions Ledger and contribute to agent discovery
@@ -210,6 +238,7 @@ export async function POST(request) {
         signature,
         verified,
         timestamp_start,
+        riskScore: authoritativeRisk,
       });
 
       // Emit real-time event so Mission Control feed shows the blocked decision
@@ -253,6 +282,7 @@ export async function POST(request) {
       signature,
       verified,
       timestamp_start,
+      riskScore: authoritativeRisk,
     });
 
     // Fire-and-forget meter increments and presence update (don't block response)

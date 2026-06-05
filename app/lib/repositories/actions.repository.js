@@ -241,7 +241,17 @@ export async function createActionRecord(sql, payload) {
     signature,
     verified,
     timestamp_start,
+    riskScore,
   } = payload;
+
+  // SECURITY (R1): persist the server-authoritative risk score when the caller
+  // supplies it (guard decisions), so the ledger/alerts/analytics/dashboard
+  // present the value the guard actually decided on — not the forgeable
+  // client-asserted `data.risk_score`. Fall back to the client value only for
+  // legacy callers that don't pass `riskScore`.
+  const persistedRisk = riskScore != null
+    ? Math.max(0, Math.min(Math.round(Number(riskScore) || 0), 100))
+    : (data.risk_score || 0);
 
   const rows = await sql`
     INSERT INTO action_records (
@@ -270,7 +280,7 @@ export async function createActionRecord(sql, payload) {
       ${data.input_summary || null},
       ${actionStatus},
       ${data.reversible !== undefined ? (data.reversible ? 1 : 0) : 1},
-      ${data.risk_score || 0},
+      ${persistedRisk},
       ${data.confidence || 50},
       ${data.recommendation_id || null},
       ${data.recommendation_applied ? 1 : 0},
@@ -311,13 +321,24 @@ export async function createBlockedActionRecord(sql, payload) {
     signature,
     verified,
     timestamp_start,
+    riskScore,
   } = payload;
 
   // Build error message from guard decision
-  const blockedReason = guardDecision?.reason 
-    || guardDecision?.reasons?.join('; ') 
+  const blockedReason = guardDecision?.reason
+    || guardDecision?.reasons?.join('; ')
     || 'Action blocked by policy';
   const matchedPolicies = guardDecision?.matched_policies || [];
+
+  // SECURITY (R1): persist the server-authoritative risk. Prefer the explicit
+  // `riskScore` payload; otherwise the guard decision's own score; only then the
+  // client-asserted value. A blocked record showing risk 0 because the agent
+  // self-reported 0 is exactly the integrity gap this closes.
+  const persistedRisk = riskScore != null
+    ? Math.max(0, Math.min(Math.round(Number(riskScore) || 0), 100))
+    : (guardDecision?.risk_score != null
+        ? Math.max(0, Math.min(Math.round(Number(guardDecision.risk_score) || 0), 100))
+        : (data.risk_score || 0));
 
   const rows = await sql`
     INSERT INTO action_records (
@@ -346,7 +367,7 @@ export async function createBlockedActionRecord(sql, payload) {
       ${data.input_summary || null},
       ${'blocked'},
       ${data.reversible !== undefined ? (data.reversible ? 1 : 0) : 1},
-      ${data.risk_score || 0},
+      ${persistedRisk},
       ${data.confidence || 50},
       ${data.recommendation_id || null},
       ${data.recommendation_applied ? 1 : 0},

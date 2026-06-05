@@ -5,12 +5,18 @@ const {
   mockSql,
   mockGetActionOutcome,
   mockSetActionOutcome,
+  mockGetActionStatus,
+  mockGetPurchase,
+  mockSetPurchaseOutcome,
   mockPublishOrgEvent,
   mockScanSensitiveData,
 } = vi.hoisted(() => ({
   mockSql: Object.assign(vi.fn(async () => []), { query: vi.fn(async () => []) }),
   mockGetActionOutcome: vi.fn(),
   mockSetActionOutcome: vi.fn(),
+  mockGetActionStatus: vi.fn(),
+  mockGetPurchase: vi.fn(),
+  mockSetPurchaseOutcome: vi.fn(),
   mockPublishOrgEvent: vi.fn(),
   mockScanSensitiveData: vi.fn(),
 }));
@@ -25,6 +31,11 @@ vi.mock('@/lib/security.js', () => ({ scanSensitiveData: mockScanSensitiveData }
 vi.mock('@/lib/repositories/actions.repository.js', () => ({
   getActionOutcome: mockGetActionOutcome,
   setActionOutcome: mockSetActionOutcome,
+  getActionStatus: mockGetActionStatus,
+}));
+vi.mock('@/lib/repositories/x402.repository.js', () => ({
+  getPurchase: mockGetPurchase,
+  setPurchaseOutcome: mockSetPurchaseOutcome,
 }));
 
 import { GET, POST } from '@/api/actions/[actionId]/outcome/route.js';
@@ -42,6 +53,10 @@ beforeEach(() => {
   vi.clearAllMocks();
   mockScanSensitiveData.mockReturnValue({ clean: true, redacted: undefined, findings: [] });
   mockPublishOrgEvent.mockResolvedValue(undefined);
+  // Default: a legitimately-running action with no x402 purchase attached.
+  mockGetActionStatus.mockResolvedValue({ status: 'running', agent_id: 'a1' });
+  mockGetPurchase.mockResolvedValue(null);
+  mockSetPurchaseOutcome.mockResolvedValue({});
 });
 
 describe('/api/actions/[actionId]/outcome GET', () => {
@@ -114,6 +129,40 @@ describe('/api/actions/[actionId]/outcome POST', () => {
         orgId: 'org_test',
         action: expect.objectContaining({ action_id: 'act_1', status: 'completed' }),
       }),
+    );
+  });
+
+  it('rejects an outcome on a blocked action (R10)', async () => {
+    mockGetActionStatus.mockResolvedValue({ status: 'blocked', agent_id: 'a1' });
+    const res = await POST(req({ status: 'completed', summary: 'faked' }), routeCtx);
+    expect(res.status).toBe(409);
+    expect(mockSetActionOutcome).not.toHaveBeenCalled();
+  });
+
+  it('rejects an outcome on a not-yet-approved action (R10)', async () => {
+    mockGetActionStatus.mockResolvedValue({ status: 'pending_approval', agent_id: 'a1' });
+    const res = await POST(req({ status: 'completed' }), routeCtx);
+    expect(res.status).toBe(409);
+    expect(mockSetActionOutcome).not.toHaveBeenCalled();
+  });
+
+  it('returns 404 when the action does not exist (lifecycle gate)', async () => {
+    mockGetActionStatus.mockResolvedValue(null);
+    const res = await POST(req({ status: 'completed' }), routeCtx);
+    expect(res.status).toBe(404);
+    expect(mockSetActionOutcome).not.toHaveBeenCalled();
+  });
+
+  it('syncs the x402 purchase execution_status when the action is a governed purchase (R8)', async () => {
+    mockGetActionStatus.mockResolvedValue({ status: 'running', agent_id: 'a1' });
+    mockGetPurchase.mockResolvedValue({ action_id: 'act_1', execution_status: 'approved' });
+    mockSetActionOutcome.mockResolvedValue({ ok: true, outcome: outcomeRow });
+
+    const res = await POST(req({ status: 'completed', summary: 'bought' }), routeCtx);
+    expect(res.status).toBe(200);
+    expect(mockSetPurchaseOutcome).toHaveBeenCalledWith(
+      mockSql, 'org_test', 'act_1',
+      expect.objectContaining({ execution_status: 'succeeded' }),
     );
   });
 

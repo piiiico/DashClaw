@@ -38,4 +38,24 @@ describe('evaluatePolicy: x402_spend_limit', () => {
     const out = await evaluatePolicy(policy, { max_spend_usd: 0 }, { action_type: 'build', cost_estimate: 999 });
     expect(out).toBeNull();
   });
+
+  // R6: allow/block lists must match whether the operator keyed them by the
+  // provider display name OR the provider_id (the route now passes both).
+  it('blocks a provider_id on the blocked list even when the name is not listed', async () => {
+    const rules = { blocked_providers: ['prov_sketchy'], max_spend_usd: 50 };
+    const out = await evaluatePolicy(policy, rules, { action_type: 'x402_purchase', provider: 'Sketchy Co', provider_id: 'prov_sketchy', cost_estimate: 0.1 });
+    expect(out?.action).toBe('block');
+  });
+
+  it('blocks when the provider_id is not in an allowed list keyed by id', async () => {
+    const rules = { allowed_providers: ['prov_exa'], max_spend_usd: 50 };
+    const out = await evaluatePolicy(policy, rules, { action_type: 'x402_purchase', provider: 'Other', provider_id: 'prov_other', cost_estimate: 0.1 });
+    expect(out?.action).toBe('block');
+  });
+
+  it('allows when the provider_id is in an allowed list keyed by id', async () => {
+    const rules = { allowed_providers: ['prov_exa'], approval_threshold: 5, max_spend_usd: 50 };
+    const out = await evaluatePolicy(policy, rules, { action_type: 'x402_purchase', provider: 'Exa', provider_id: 'prov_exa', cost_estimate: 0.1 });
+    expect(out).toBeNull();
+  });
 });

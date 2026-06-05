@@ -22,6 +22,7 @@ const FORMS = {
   branch_freshness: { name: 'Branch', type: 'branch_freshness', actionTypes: ['deploy'], freshness: ['stale', 'diverged'], maxCommitsBehind: 0, action: 'block', agentIds: [] },
   non_fabrication: { name: 'NF', type: 'non_fabrication', actionTypes: ['message'], onViolation: 'block', agentIds: [] },
   protected_path: { name: 'PP', type: 'protected_path', protectedPaths: ['**/auth/**', '**/secrets/**'], action: 'require_approval', agentIds: [] },
+  x402_spend_limit: { name: 'Spend', type: 'x402_spend_limit', maxSpendUsd: 10, approvalThreshold: 5, allowedProviders: ['exa'], blockedProviders: [], agentIds: [] },
 };
 
 describe('policy type coverage (UI ↔ backend contract)', () => {

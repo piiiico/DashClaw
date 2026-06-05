@@ -21,6 +21,7 @@ const {
   mockIsEmbeddingsEnabled,
   mockGenerateActionEmbedding,
   mockEstimateCost,
+  mockResolveAgentIdentity,
 } = vi.hoisted(() => ({
   mockSql: Object.assign(vi.fn(async () => []), { query: vi.fn(async () => []) }),
   mockValidateActionRecord: vi.fn(),
@@ -41,6 +42,7 @@ const {
   mockIsEmbeddingsEnabled: vi.fn(),
   mockGenerateActionEmbedding: vi.fn(),
   mockEstimateCost: vi.fn(),
+  mockResolveAgentIdentity: vi.fn(),
 }));
 
 // next/server's `after()` throws "outside a request scope" in unit tests.
@@ -68,6 +70,7 @@ vi.mock('@/lib/usage.js', () => ({
   incrementMeter: mockIncrementMeter,
 }));
 vi.mock('@/lib/identity.js', () => ({ verifyAgentSignature: mockVerifyAgentSignature }));
+vi.mock('@/lib/identity-resolution.js', () => ({ resolveAgentIdentity: mockResolveAgentIdentity }));
 vi.mock('@/lib/events.js', () => ({
   EVENTS: { ACTION_CREATED: 'action.created', ACTION_UPDATED: 'action.updated' },
   publishOrgEvent: mockPublishOrgEvent,
@@ -119,6 +122,10 @@ beforeEach(() => {
   mockIsEmbeddingsEnabled.mockReturnValue(false);
   mockPublishOrgEvent.mockResolvedValue(undefined);
   mockEstimateCost.mockReturnValue(0);
+  // Default: no bearer token → self-asserted identity echoed back, unverified.
+  mockResolveAgentIdentity.mockImplementation(async (_req, { agentId = null, agentName = null } = {}) => ({
+    agent_id: agentId, agent_name: agentName, verification_status: 'unverified', verified: false, jti: null, verification: null,
+  }));
 });
 
 describe('/api/actions GET', () => {
@@ -199,6 +206,92 @@ describe('/api/actions POST', () => {
     const data = await res.json();
     expect(data.action_id).toBeDefined();
     expect(data.decision.decision).toBe('allow');
+  });
+
+  it('uses the JWKS-verified identity over the body agent_id and stores verified=true (R3)', async () => {
+    mockValidateActionRecord.mockReturnValue({
+      valid: true,
+      data: { ...validBody, agent_id: 'attacker_chosen' },
+      errors: [],
+    });
+    mockResolveAgentIdentity.mockResolvedValue({
+      agent_id: 'verified_sub', agent_name: 'V', verification_status: 'verified', verified: true, jti: 'j1', verification: {},
+    });
+
+    await POST(makeRequest('http://localhost/api/actions', {
+      headers: { 'x-org-id': 'org_1', authorization: 'Bearer tok' },
+      body: { ...validBody, agent_id: 'attacker_chosen' },
+    }));
+
+    expect(mockCreateActionRecord).toHaveBeenCalledWith(
+      mockSql,
+      expect.objectContaining({
+        verified: true,
+        data: expect.objectContaining({ agent_id: 'verified_sub' }),
+      }),
+    );
+  });
+
+  it('persists the authoritative guard risk_score, not the client-asserted value (R1)', async () => {
+    // Agent self-reports risk 5; server-authoritative guard score is 88.
+    mockValidateActionRecord.mockReturnValue({
+      valid: true,
+      data: { ...validBody, risk_score: 5 },
+      errors: [],
+    });
+    mockEvaluateGuard.mockResolvedValue({ ...defaultGuardDecision, risk_score: 88 });
+
+    const res = await POST(makeRequest('http://localhost/api/actions', {
+      headers: { 'x-org-id': 'org_1' },
+      body: { ...validBody, risk_score: 5 },
+    }));
+
+    expect(res.status).toBe(201);
+    expect(mockCreateActionRecord).toHaveBeenCalledWith(
+      mockSql,
+      expect.objectContaining({ riskScore: 88 }),
+    );
+  });
+
+  it('stores the guard authoritative score (consistent with guard_decisions), not the raw client value (R1)', async () => {
+    // The engine already folds the client's report into its score
+    // (effectiveRiskScore = max(server, client)); the route must persist exactly
+    // what the guard decided on so action_records == guard_decisions. Here the
+    // guard's authoritative score is 88 — that is stored, not the client's 95.
+    mockValidateActionRecord.mockReturnValue({
+      valid: true,
+      data: { ...validBody, risk_score: 95 },
+      errors: [],
+    });
+    mockEvaluateGuard.mockResolvedValue({ ...defaultGuardDecision, risk_score: 88 });
+
+    await POST(makeRequest('http://localhost/api/actions', {
+      headers: { 'x-org-id': 'org_1' },
+      body: { ...validBody, risk_score: 95 },
+    }));
+
+    expect(mockCreateActionRecord).toHaveBeenCalledWith(
+      mockSql,
+      expect.objectContaining({ riskScore: 88 }),
+    );
+  });
+
+  it('passes the authoritative risk to the blocked action record (R1)', async () => {
+    mockEvaluateGuard.mockResolvedValue({
+      decision: 'block', reasons: ['Policy violation'], warnings: [], matched_policies: ['gp_1'], risk_score: 91,
+    });
+    mockValidateActionRecord.mockReturnValue({ valid: true, data: { ...validBody, risk_score: 0 }, errors: [] });
+    mockCreateBlockedActionRecord.mockResolvedValue({ action_id: 'act_blocked', status: 'blocked' });
+
+    await POST(makeRequest('http://localhost/api/actions', {
+      headers: { 'x-org-id': 'org_1' },
+      body: { ...validBody, risk_score: 0 },
+    }));
+
+    expect(mockCreateBlockedActionRecord).toHaveBeenCalledWith(
+      mockSql,
+      expect.objectContaining({ riskScore: 91 }),
+    );
   });
 
   it('returns 400 on validation failure', async () => {

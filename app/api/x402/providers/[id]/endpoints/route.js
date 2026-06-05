@@ -4,7 +4,8 @@ export const revalidate = 0;
 import { NextResponse } from 'next/server';
 import { getSql } from '../../../../../lib/db.js';
 import { getOrgId } from '../../../../../lib/org.js';
-import { createEndpoint, listEndpoints } from '../../../../../lib/repositories/x402.repository.js';
+import { createEndpoint, listEndpoints, getProvider } from '../../../../../lib/repositories/x402.repository.js';
+import { apiErrorResponse } from '../../../../../lib/apiErrors.js';
 
 /** GET /api/x402/providers/:id/endpoints — list a provider's endpoints. */
 export async function GET(request, { params }) {
@@ -15,8 +16,7 @@ export async function GET(request, { params }) {
     const endpoints = await listEndpoints(sql, orgId, id);
     return NextResponse.json({ endpoints });
   } catch (err) {
-    console.error('[X402/PROVIDERS/:id/ENDPOINTS] GET error:', err);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return apiErrorResponse(err, 'X402/PROVIDERS/:id/ENDPOINTS GET');
   }
 }
 
@@ -28,10 +28,14 @@ export async function POST(request, { params }) {
     const sql = getSql();
     const body = await request.json().catch(() => ({}));
     if (!body?.name) return NextResponse.json({ error: 'name is required' }, { status: 400 });
+    // Verify the parent provider exists in THIS org before attaching an endpoint,
+    // so an endpoint can't be created under a nonexistent or cross-tenant
+    // provider_id (audit X2).
+    const provider = await getProvider(sql, orgId, id);
+    if (!provider) return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
     const endpoint = await createEndpoint(sql, orgId, id, body);
     return NextResponse.json({ endpoint }, { status: 201 });
   } catch (err) {
-    console.error('[X402/PROVIDERS/:id/ENDPOINTS] POST error:', err);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return apiErrorResponse(err, 'X402/PROVIDERS/:id/ENDPOINTS POST');
   }
 }

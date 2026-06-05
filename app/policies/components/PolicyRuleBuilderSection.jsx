@@ -586,6 +586,69 @@ export default function PolicyRuleBuilderSection({
           </div>
         </div>
       )}
+
+      {form.type === 'x402_spend_limit' && (
+        <div className="space-y-4">
+          <p className="text-[11px] text-tertiary">
+            Governs x402 capability purchases: blocks spend over the hard cap, routes purchases at or
+            above the approval threshold to human review, and enforces provider allow/block lists.
+            Leave a field blank to skip that control. Providers may be listed by display name or by
+            provider id.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs text-secondary mb-1">Max spend (USD) — hard block</label>
+              <input
+                aria-label="Max spend USD"
+                type="number"
+                min="0"
+                step="0.0001"
+                value={form.maxSpendUsd}
+                onChange={(event) => onChange('maxSpendUsd', event.target.value)}
+                placeholder="e.g. 5"
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-secondary mb-1">Approval threshold (USD)</label>
+              <input
+                aria-label="Approval threshold USD"
+                type="number"
+                min="0"
+                step="0.0001"
+                value={form.approvalThreshold}
+                onChange={(event) => onChange('approvalThreshold', event.target.value)}
+                placeholder="e.g. 1"
+                className={inputClass}
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs text-secondary mb-1">Allowed providers (one per line)</label>
+              <textarea
+                aria-label="Allowed providers"
+                value={(form.allowedProviders || []).join('\n')}
+                onChange={(event) => onChange('allowedProviders', event.target.value.split('\n'))}
+                placeholder={'exa\nprov_abc123'}
+                rows={3}
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-secondary mb-1">Blocked providers (one per line)</label>
+              <textarea
+                aria-label="Blocked providers"
+                value={(form.blockedProviders || []).join('\n')}
+                onChange={(event) => onChange('blockedProviders', event.target.value.split('\n'))}
+                placeholder={'sketchy-co'}
+                rows={3}
+                className={inputClass}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

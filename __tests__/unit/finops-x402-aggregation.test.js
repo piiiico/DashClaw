@@ -19,4 +19,16 @@ describe('getX402SpendAggregation', () => {
     const boundValues = sql.mock.calls.flatMap((c) => c.slice(1));
     expect(boundValues).toContain('org_1');
   });
+
+  it('excludes failed purchases from spend totals (no money moved)', async () => {
+    sql.mockResolvedValue([]);
+    await getX402SpendAggregation(sql, 'org_1', { period: '30d' });
+    const allSql = sql.mock.calls.map((c) => c[0].join(' ')).join(' || ');
+    // Every aggregation query must filter out execution_status = 'failed'.
+    expect(allSql).toContain('execution_status');
+    expect(allSql).toContain("'failed'");
+    // The filter must appear in all three queries (total, by_day, by_provider).
+    const failedMatches = allSql.split("'failed'").length - 1;
+    expect(failedMatches).toBeGreaterThanOrEqual(3);
+  });
 });

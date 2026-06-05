@@ -148,20 +148,24 @@ const X402_PERIOD_DAYS = { '7d': 7, '30d': 30, '90d': 90 };
 export async function getX402SpendAggregation(sql, orgId, { period = '30d' } = {}) {
   const days = X402_PERIOD_DAYS[period] ?? 30;
   const since = new Date(Date.now() - days * 86400000).toISOString();
+  // Exclude FAILED purchases from spend: a failed x402 call means no money moved,
+  // so counting it would overstate Fleet/x402 spend. succeeded/partial/approved/
+  // pending are retained (committed or settled intent). Operator decision
+  // 2026-06-05: "exclude failed only".
   const [totals] = await sql`
     SELECT COALESCE(SUM(spend_amount), 0)::real AS total_spend_usd, COUNT(*)::integer AS purchase_count
     FROM x402_purchases
-    WHERE org_id = ${orgId} AND created_at::timestamptz >= ${since}::timestamptz`;
+    WHERE org_id = ${orgId} AND created_at::timestamptz >= ${since}::timestamptz AND execution_status <> 'failed'`;
   const byDay = await sql`
     SELECT DATE(created_at::timestamptz) AS date, COALESCE(SUM(spend_amount), 0)::real AS spend_usd, COUNT(*)::integer AS purchase_count
     FROM x402_purchases
-    WHERE org_id = ${orgId} AND created_at::timestamptz >= ${since}::timestamptz
+    WHERE org_id = ${orgId} AND created_at::timestamptz >= ${since}::timestamptz AND execution_status <> 'failed'
     GROUP BY DATE(created_at::timestamptz)
     ORDER BY date DESC`;
   const byProvider = await sql`
     SELECT provider_id, COALESCE(SUM(spend_amount), 0)::real AS spend_usd, COUNT(*)::integer AS purchase_count
     FROM x402_purchases
-    WHERE org_id = ${orgId} AND created_at::timestamptz >= ${since}::timestamptz
+    WHERE org_id = ${orgId} AND created_at::timestamptz >= ${since}::timestamptz AND execution_status <> 'failed'
     GROUP BY provider_id
     ORDER BY spend_usd DESC`;
   return {
