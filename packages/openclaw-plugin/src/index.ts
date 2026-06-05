@@ -6,6 +6,13 @@
  *      `createAction()` to open a governance record.
  *   2. `after_tool_call`  → `updateOutcome()` to close that record.
  *
+ * x402 capability payments (e.g. an `agentcash fetch`) take a dedicated path:
+ * `before_tool_call` gates them with `action_type:'x402_purchase'` (so an
+ * `x402_spend_limit` policy can block an over-budget payment before it runs),
+ * and `after_tool_call` records the settled spend via `recordPurchase()` +
+ * `recordPurchaseResult()`. The agent still executes the payment itself
+ * (govern-not-do); DashClaw only guards and records it.
+ *
  * Type accuracy notes (verified against `openclaw` plugin SDK types):
  *   - `PluginHookBeforeToolCallResult` uses `blockReason`, not `reason`.
  *   - `PluginKind` is `"memory" | "context-engine"` — neither applies to this
@@ -46,6 +53,12 @@ interface PluginConfig {
   failClosed: boolean;
   riskScoreDefault: number;
   highRiskTools: ReadonlySet<string>;
+  // --- x402 spend governance ---
+  x402Enabled: boolean;
+  x402CommandPatterns: RegExp[];
+  x402ToolNames: ReadonlySet<string>;
+  x402EstimatedCostUsd: number;
+  x402AutoRegisterProviders: boolean;
 }
 
 /**
@@ -94,6 +107,32 @@ function resolveConfig(raw: Record<string, unknown> | undefined): PluginConfig {
     env.DASHCLAW_DEFAULT_MODEL
   );
 
+  const x402Enabled = cfg.x402Enabled !== false; // default true
+  const rawPatterns =
+    Array.isArray(cfg.x402CommandPatterns) && cfg.x402CommandPatterns.length
+      ? cfg.x402CommandPatterns.filter((v): v is string => typeof v === 'string')
+      : ['agentcash[\\s@][\\s\\S]*\\bfetch\\b'];
+  const x402CommandPatterns = rawPatterns
+    .map((p) => {
+      try {
+        return new RegExp(p, 'i');
+      } catch {
+        console.warn(`[dashclaw-governance] invalid x402CommandPattern ignored: ${p}`);
+        return null;
+      }
+    })
+    .filter((r): r is RegExp => r !== null);
+  const x402ToolNames = new Set<string>(
+    Array.isArray(cfg.x402ToolNames)
+      ? cfg.x402ToolNames.filter((v): v is string => typeof v === 'string')
+      : []
+  );
+  const x402EstimatedCostUsd =
+    typeof cfg.x402EstimatedCostUsd === 'number' && cfg.x402EstimatedCostUsd >= 0
+      ? cfg.x402EstimatedCostUsd
+      : 0.01;
+  const x402AutoRegisterProviders = cfg.x402AutoRegisterProviders !== false; // default true
+
   return {
     dashclawUrl,
     dashclawApiKey,
@@ -102,6 +141,11 @@ function resolveConfig(raw: Record<string, unknown> | undefined): PluginConfig {
     failClosed,
     riskScoreDefault,
     highRiskTools,
+    x402Enabled,
+    x402CommandPatterns,
+    x402ToolNames,
+    x402EstimatedCostUsd,
+    x402AutoRegisterProviders,
   };
 }
 
@@ -114,6 +158,20 @@ let cachedClientKey = '';
 
 /** Maps synthetic call key → DashClaw action_id so `after_tool_call` can close it. */
 const pendingActions = new Map<string, string>();
+
+/**
+ * x402 payment calls that passed the pre-payment gate at `before_tool_call` and
+ * are awaiting their settlement receipt at `after_tool_call`. Keyed by call key.
+ */
+interface X402Pending {
+  origin: string;
+  declaredGoal: string;
+  estimate: number;
+}
+const x402PendingByKey = new Map<string, X402Pending>();
+
+/** Cache of x402 provider origin → DashClaw provider_id (best-effort auto-registration). */
+const providerIdByOrigin = new Map<string, string>();
 
 /**
  * Per-run state for LLM token attribution. OpenClaw's `llm_output` event
@@ -264,6 +322,166 @@ function errorMessage(err: unknown): string {
     return typeof m === 'string' ? m : '';
   }
   return '';
+}
+
+// ---------------------------------------------------------------------------
+// x402 spend governance — detect agentcash-style capability payments, gate them
+// before they execute, then record the settled spend after. The agent still
+// performs the payment itself (govern-not-do); DashClaw guards + records it.
+// ---------------------------------------------------------------------------
+
+interface X402Detection {
+  origin: string;   // provider host, e.g. "stableenrich.dev"
+  url: string;
+  estimate: number; // pre-payment USD estimate for the guard
+}
+
+function detectX402(
+  toolName: string,
+  params: Record<string, unknown> | undefined,
+  config: PluginConfig,
+): X402Detection | null {
+  if (!config.x402Enabled) return null;
+
+  const command =
+    toolName === 'bash' || toolName === 'exec'
+      ? String(params?.command ?? '')
+      : '';
+  const matchedByName = config.x402ToolNames.has(toolName);
+  const matchedByCommand =
+    command.length > 0 && config.x402CommandPatterns.some((re) => re.test(command));
+  if (!matchedByName && !matchedByCommand) return null;
+
+  // Resolve the target URL → origin host (the "provider").
+  const urlFromParams = String(
+    params?.url ?? params?.endpoint ?? params?.uri ?? ''
+  );
+  const urlFromCommand = command.match(/https?:\/\/[^\s'"`]+/)?.[0] ?? '';
+  const url = urlFromParams || urlFromCommand;
+  let origin = '';
+  try {
+    origin = url ? new URL(url).host : '';
+  } catch {
+    origin = '';
+  }
+
+  // Pre-payment estimate: the agent's --max-amount ceiling, else an explicit
+  // amount param, else the configured fallback. Conservative on purpose so the
+  // guard evaluates the worst-case spend before the payment runs.
+  let estimate = config.x402EstimatedCostUsd;
+  const maxAmt = command.match(/--max-amount[=\s]+([0-9]*\.?[0-9]+)/);
+  if (maxAmt) {
+    estimate = Number(maxAmt[1]);
+  } else if (typeof params?.maxAmount === 'number') {
+    estimate = params.maxAmount as number;
+  } else if (typeof params?.amount === 'number') {
+    estimate = params.amount as number;
+  }
+  if (!Number.isFinite(estimate) || estimate < 0) estimate = config.x402EstimatedCostUsd;
+
+  return { origin: origin || 'unknown-x402-provider', url, estimate };
+}
+
+interface X402Receipt {
+  spend: number;
+  txHash?: string;
+  requestId?: string;
+}
+
+/**
+ * Parse an agentcash success envelope from a tool result. Returns null when the
+ * result is not a settled paid call (a free `check`, a 402-not-paid, or no
+ * parseable payload), so we only record purchases that actually moved money.
+ */
+function parseX402Receipt(result: unknown): X402Receipt | null {
+  let obj: unknown = result;
+  if (typeof result === 'string') {
+    try {
+      obj = JSON.parse(result);
+    } catch {
+      const block = result.match(/\{[\s\S]*\}/);
+      if (!block) return null;
+      try {
+        obj = JSON.parse(block[0]);
+      } catch {
+        return null;
+      }
+    }
+  }
+  if (!obj || typeof obj !== 'object') return null;
+  const env = obj as Record<string, any>;
+  const data = (env.data ?? env) as Record<string, any>;
+  const metadata = (env.metadata ?? {}) as Record<string, any>;
+
+  let spend = Number(data?.costDollars?.total);
+  if (!Number.isFinite(spend)) {
+    const pm = String(metadata?.price ?? '').match(/([0-9]*\.?[0-9]+)/);
+    spend = pm ? Number(pm[1]) : NaN;
+  }
+  if (!Number.isFinite(spend) || spend <= 0) return null; // not a settled payment
+
+  return {
+    spend,
+    txHash:
+      typeof metadata?.payment?.transactionHash === 'string'
+        ? metadata.payment.transactionHash
+        : undefined,
+    requestId: typeof data?.requestId === 'string' ? data.requestId : undefined,
+  };
+}
+
+/**
+ * Best-effort: resolve (or create) a DashClaw provider_id for an origin so the
+ * Spend → x402 surface can group purchases by provider. Cached per origin;
+ * never throws — on any failure the purchase is recorded with a free-text
+ * provider and a null provider_id.
+ */
+async function resolveProviderId(
+  client: DashClaw,
+  config: PluginConfig,
+  origin: string,
+): Promise<string | undefined> {
+  if (
+    !config.x402AutoRegisterProviders ||
+    !origin ||
+    origin === 'unknown-x402-provider'
+  ) {
+    return undefined;
+  }
+  const cached = providerIdByOrigin.get(origin);
+  if (cached) return cached;
+
+  try {
+    const listed = await client.listProviders();
+    const providers: Array<Record<string, any>> = Array.isArray(listed)
+      ? (listed as Array<Record<string, any>>)
+      : ((listed as { providers?: Array<Record<string, any>> })?.providers ?? []);
+    const match = providers.find(
+      (p) =>
+        p?.name === origin ||
+        (typeof p?.base_url === 'string' && p.base_url.includes(origin))
+    );
+    let id: string | undefined = match?.provider_id ?? match?.id;
+    if (!id) {
+      const created = (await client.createProvider({
+        name: origin,
+        base_url: `https://${origin}`,
+        category: 'research',
+        default_currency: 'USDC',
+        metadata: { source: 'openclaw-x402' },
+      })) as Record<string, any>;
+      id = created?.provider?.provider_id ?? created?.provider_id ?? created?.id;
+    }
+    if (id) {
+      providerIdByOrigin.set(origin, id);
+      return id;
+    }
+  } catch (err) {
+    console.warn(
+      `[dashclaw-governance] x402 provider resolve failed for ${origin}: ${errorMessage(err) || 'unknown'}`
+    );
+  }
+  return undefined;
 }
 
 // ---------------------------------------------------------------------------
@@ -472,6 +690,60 @@ export default definePluginEntry({
             );
           }
         }
+      }
+
+      // x402 spend governance: if this tool call is a capability PAYMENT
+      // (e.g. an agentcash `fetch`), gate it on its own x402 path so
+      // x402_spend_limit policies can block an over-budget purchase BEFORE the
+      // payment runs. On allow, mark it pending so after_tool_call records the
+      // settled spend. This REPLACES the generic governance path for this call
+      // (no duplicate action record).
+      const x402 = detectX402(toolName, params, config);
+      if (x402) {
+        const x402Goal = `x402 purchase: ${x402.origin}`;
+        let x402Decision: GuardDecision;
+        try {
+          x402Decision = await client.guard({
+            action_type: 'x402_purchase',
+            provider: x402.origin,
+            cost_estimate: x402.estimate,
+            risk_score: 40,
+            declared_goal: x402Goal,
+            reversible: false,
+            systems_touched: ['x402', x402.origin],
+          });
+        } catch (err) {
+          const msg = errorMessage(err) || 'unknown error';
+          if (config.failClosed) {
+            return {
+              block: true,
+              blockReason: `DashClaw unreachable — x402 payment to ${x402.origin} blocked (fail-closed): ${msg}`,
+            };
+          }
+          // Fail-open: don't gate, but still record the settled spend after.
+          console.warn(`[dashclaw-governance] x402 guard failed (fail-open): ${msg}`);
+          x402PendingByKey.set(key, { origin: x402.origin, declaredGoal: x402Goal, estimate: x402.estimate });
+          return;
+        }
+
+        if (x402Decision.decision === 'block' || x402Decision.decision === 'require_approval') {
+          const why =
+            x402Decision.decision === 'require_approval'
+              ? 'requires approval — adjust the x402_spend_limit policy threshold to allow it'
+              : x402Decision.reason || 'blocked by x402 spend policy';
+          return {
+            block: true,
+            blockReason: `x402 payment to ${x402.origin} (~$${x402.estimate}) ${why}`,
+          };
+        }
+        if (x402Decision.decision === 'warn') {
+          console.warn(
+            `[dashclaw-governance] WARN x402 ${x402.origin}: ${x402Decision.reason || 'flagged by policy'}`
+          );
+        }
+        // Allowed → record after the payment settles.
+        x402PendingByKey.set(key, { origin: x402.origin, declaredGoal: x402Goal, estimate: x402.estimate });
+        return;
       }
 
       let decision: GuardDecision;
@@ -690,6 +962,76 @@ export default definePluginEntry({
     api.on('after_tool_call', async (event, _ctx) => {
       const { toolName, toolCallId, runId, error } = event;
       const key = callKey(toolName, toolCallId, runId);
+
+      // x402 spend governance: if this call was a gated x402 payment, record the
+      // settled spend (the agent has already paid). This is the sole record for
+      // the call — it does NOT go through the generic outcome path below.
+      const x402pending = x402PendingByKey.get(key);
+      if (x402pending) {
+        x402PendingByKey.delete(key);
+
+        let x402Client: DashClaw;
+        try {
+          x402Client = getClient(config);
+        } catch {
+          return;
+        }
+        if (error) {
+          // The payment tool errored → nothing settled to record.
+          console.warn(
+            `[dashclaw-governance] x402 call to ${x402pending.origin} failed: ${error}`
+          );
+          return;
+        }
+        const receipt = parseX402Receipt(event.result);
+        if (!receipt) {
+          // No settled-payment receipt (free check, 402-not-paid, or the gateway
+          // didn't deliver the tool result to the plugin) — nothing to record.
+          return;
+        }
+        try {
+          const providerId = await resolveProviderId(x402Client, config, x402pending.origin);
+          const res = await x402Client.recordPurchase({
+            agent_id: config.agentId,
+            provider: x402pending.origin,
+            declared_goal: x402pending.declaredGoal,
+            purchase_reason: `Paid x402 capability call to ${x402pending.origin}`,
+            context_gap: `Capability gated behind payment at ${x402pending.origin}`,
+            expected_value: `Paid result from ${x402pending.origin}`,
+            spend_amount: receipt.spend,
+            cost_estimate: receipt.spend,
+            currency: 'USDC',
+            payment_method: 'x402',
+            ...(providerId ? { provider_id: providerId } : {}),
+          });
+          const purchaseActionId =
+            res?.action?.action_id ??
+            (res as { action_id?: string })?.action_id ??
+            res?.action?.id;
+          if (purchaseActionId && (receipt.txHash || receipt.requestId)) {
+            await x402Client
+              .recordPurchaseResult(String(purchaseActionId), {
+                summary: `x402 settled: $${receipt.spend} USDC at ${x402pending.origin}`,
+                data: {
+                  origin: x402pending.origin,
+                  transactionHash: receipt.txHash,
+                  requestId: receipt.requestId,
+                },
+              })
+              .catch((err: unknown) => {
+                console.warn(
+                  `[dashclaw-governance] recordPurchaseResult failed: ${errorMessage(err) || 'unknown'}`
+                );
+              });
+          }
+        } catch (err) {
+          console.warn(
+            `[dashclaw-governance] recordPurchase failed for ${x402pending.origin}: ${errorMessage(err) || 'unknown'}`
+          );
+        }
+        return;
+      }
+
       const actionId = pendingActions.get(key);
       if (!actionId) return;
       pendingActions.delete(key);

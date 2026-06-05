@@ -123,6 +123,11 @@ empty because the wait target didn't exist. Fixed in `1.0.1`.
 | `failClosed` | boolean | `true` | If DashClaw is unreachable, block the tool call. Set `false` to fail open. |
 | `riskScoreDefault` | number | `50` | Fallback risk score for tool calls the classifier doesn't recognize. Recognized commands (git, curl, rm, npm, etc.) compute their own risk score automatically. |
 | `highRiskTools` | string[] | `[]` | Tool names that should always start at risk score 85 before classification. The classifier may raise the score further (e.g. `rm -rf` → 90) but will never lower it below 85 for tools in this list. |
+| `x402Enabled` | boolean | `true` | Govern + record x402 capability payments (see [x402 capability spend](#x402-capability-spend-v130)). Set `false` to treat them as ordinary tool calls. |
+| `x402CommandPatterns` | string[] | `["agentcash[\\s@][\\s\\S]*\\bfetch\\b"]` | Case-insensitive regexes matched against a `bash`/`exec` command to identify an x402 **payment**. The default matches the agentcash `fetch` subcommand; a free `agentcash check` is intentionally not matched. |
+| `x402ToolNames` | string[] | `[]` | Dedicated tool names (e.g. an agentcash MCP tool) that are themselves x402 payments — matched in addition to `x402CommandPatterns`; the URL/amount are read from the tool params. |
+| `x402EstimatedCostUsd` | number | `0.01` | Fallback per-purchase USD estimate for the pre-payment guard when neither `--max-amount` nor an `amount` param is present. |
+| `x402AutoRegisterProviders` | boolean | `true` | Look up or create an x402 provider by endpoint origin (best-effort) so Spend → x402 groups by provider. Falls back to free-text on failure; never blocks recording. |
 
 ## Fail-closed vs fail-open
 
@@ -148,6 +153,17 @@ This classification mirrors what the DashClaw Claude Code hooks do via `dashclaw
 The plugin caches the DashClaw `action_id` from `before_tool_call` in a module-level map keyed by the call id, then resolves it in `after_tool_call` to send `updateOutcome`. If `after_tool_call` doesn't fire (process crash, hook misordering), the action stays in `running` state in DashClaw — you'll see it in the open-loops view and can resolve it manually.
 
 If the outcome update itself fails, the plugin logs a warning but never throws — DashClaw recording is best-effort and must not break your agent's tool execution.
+
+## x402 capability spend (v1.3.0+)
+
+When your agent pays for a capability over x402 — by default, a `bash`/`exec` command running the agentcash `fetch` subcommand — the plugin governs and records it as a DashClaw **x402 purchase**, so it appears on the **Spend → x402** surface instead of being recorded as a generic Bash action.
+
+1. **Gate (before the payment runs).** `before_tool_call` calls `guard()` with `action_type: 'x402_purchase'`, the endpoint origin as `provider`, and a pre-payment estimate (the command's `--max-amount`, an `amount` param, or `x402EstimatedCostUsd`). An `x402_spend_limit` policy can `block` an over-budget purchase **before** the agentcash call executes. A `require_approval` verdict blocks inline with a message to adjust the policy — per-micropayment human approval isn't prompted, since spend-limit policies are the right gate for cents-scale payments.
+2. **Record (after settlement).** `after_tool_call` parses the agentcash success envelope from the tool result — `data.costDollars.total` → spend, `metadata.payment.transactionHash` → receipt, `data.requestId` → request id — and records it via `recordPurchase()` (POST `/api/x402/purchases`) plus `recordPurchaseResult()` for the snapshot. With `x402AutoRegisterProviders` on, the origin is looked up or registered so the spend groups by provider.
+
+Only **settled** payments are recorded: a free `agentcash check`, a 402-not-paid route, or a tool error records nothing. The agent always performs the payment itself; DashClaw guards and records it (govern-not-do — it never holds a wallet). Requires DashClaw with the x402 routes (platform ≥ 4.1.0). Set `x402Enabled: false` to disable.
+
+> **Custom payment tooling?** If your agent pays via a wrapper script or a dedicated MCP tool rather than `npx agentcash fetch`, point `x402CommandPatterns` at your command shape or list your tool under `x402ToolNames`. The plugin reads the spend/receipt from the tool's result envelope; if your tool returns a different shape, the spend won't parse — open an issue with the envelope and we'll widen the parser.
 
 ## Token usage and cost (v1.2.1+)
 
