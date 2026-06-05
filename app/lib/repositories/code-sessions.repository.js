@@ -659,6 +659,15 @@ export async function aggregateCodeSignalsByKind(sql, orgId, sinceIso) {
 // FinOps Claude-Code lens — read-only spend rollup over stored cost_usd.
 // Both Agent Spend and this cost already run through billing.js at ingest,
 // so this is a pure aggregation of stored values (no re-pricing).
+//
+// Time bucketing uses the session's actual run time (started_at), NOT the
+// ingest time (created_at). A backfill ingest stamps created_at "now", which
+// would otherwise pile every session's spend onto the ingest date and make the
+// period window meaningless. SCHEMA NOTE: started_at is TEXT (ISO-8601 string
+// from the JSONL parser) while created_at is TIMESTAMPTZ — so we regex-guard
+// the cast (only cast ISO-shaped values; anything else, incl. NULL, falls back
+// to created_at), which also means a malformed started_at can never 500 here.
+// Verified against the live DB (mocked tests can't catch text-vs-timestamptz).
 // ---------------------------------------------------------------------------
 
 const CODE_SPEND_PERIOD_DAYS = { '7d': 7, '30d': 30, '90d': 90 };
@@ -672,15 +681,17 @@ export async function getCodeSessionSpendAggregation(sql, orgId, { period = '30d
            COALESCE(SUM(cache_savings_usd), 0)::real AS total_cache_savings_usd,
            COUNT(*)::integer AS session_count
     FROM code_sessions
-    WHERE org_id = ${orgId} AND created_at >= ${sinceIso}`;
+    WHERE org_id = ${orgId}
+      AND COALESCE(CASE WHEN started_at ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}T' THEN started_at::timestamptz END, created_at) >= ${sinceIso}`;
 
   const byDay = await sql`
-    SELECT DATE(created_at) AS date,
+    SELECT DATE(COALESCE(CASE WHEN started_at ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}T' THEN started_at::timestamptz END, created_at)) AS date,
            COALESCE(SUM(cost_usd), 0)::real AS cost_usd,
            COUNT(*)::integer AS session_count
     FROM code_sessions
-    WHERE org_id = ${orgId} AND created_at >= ${sinceIso}
-    GROUP BY DATE(created_at)
+    WHERE org_id = ${orgId}
+      AND COALESCE(CASE WHEN started_at ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}T' THEN started_at::timestamptz END, created_at) >= ${sinceIso}
+    GROUP BY DATE(COALESCE(CASE WHEN started_at ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}T' THEN started_at::timestamptz END, created_at))
     ORDER BY date DESC`;
 
   const byProject = await sql`
@@ -689,7 +700,8 @@ export async function getCodeSessionSpendAggregation(sql, orgId, { period = '30d
            COUNT(*)::integer AS session_count
     FROM code_sessions s
     JOIN code_projects p ON p.id = s.project_id
-    WHERE s.org_id = ${orgId} AND s.created_at >= ${sinceIso}
+    WHERE s.org_id = ${orgId}
+      AND COALESCE(CASE WHEN s.started_at ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}T' THEN s.started_at::timestamptz END, s.created_at) >= ${sinceIso}
     GROUP BY p.id, p.slug
     ORDER BY cost_usd DESC`;
 

@@ -25,6 +25,14 @@ describe('getCodeSessionSpendAggregation', () => {
     expect(days).toBeGreaterThan(6.9);
     expect(days).toBeLessThan(7.1);
 
+    // Regression lock: spend must bucket on the session's RUN time (started_at,
+    // a TEXT/ISO column cast to timestamptz), NOT ingest time (created_at) — a
+    // backfill would otherwise pile all spend on the ingest date. The mocked sql
+    // can't catch the live text-vs-timestamptz mismatch, so we assert intent.
+    const totalsSql = sql.mock.calls[0][0].join(' ');
+    expect(totalsSql).toMatch(/started_at/);
+    expect(totalsSql).toMatch(/timestamptz/);
+
     // shape
     expect(out.period).toBe('7d');
     expect(out.total_cost_usd).toBe(12.5);
