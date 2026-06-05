@@ -1013,6 +1013,7 @@ export async function getCostAggregation(sql, orgId, { period = '30d', agentId =
     FROM action_records
     WHERE org_id = ${orgId}
       AND created_at::timestamptz >= ${since}::timestamptz
+      AND action_type <> 'x402_purchase'
       ${agentFilter}
   `;
 
@@ -1024,6 +1025,7 @@ export async function getCostAggregation(sql, orgId, { period = '30d', agentId =
     FROM action_records
     WHERE org_id = ${orgId}
       AND created_at::timestamptz >= ${since}::timestamptz
+      AND action_type <> 'x402_purchase'
       ${agentFilter}
     GROUP BY agent_id
     ORDER BY cost_usd DESC
@@ -1037,6 +1039,7 @@ export async function getCostAggregation(sql, orgId, { period = '30d', agentId =
     FROM action_records
     WHERE org_id = ${orgId}
       AND created_at::timestamptz >= ${since}::timestamptz
+      AND action_type <> 'x402_purchase'
       ${agentFilter}
     GROUP BY DATE(created_at::timestamptz)
     ORDER BY date DESC
