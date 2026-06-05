@@ -787,6 +787,15 @@ if (decision === "allow") {
                   <p className="text-xs text-text-secondary leading-relaxed mb-3">Hero stats with trend comparison, cost-trend and action-volume series, breakdowns by agent, action type, and model. Token usage by tier.</p>
                   <pre className="bg-surface-primary rounded-lg px-3 py-2 text-[10px] sm:text-xs text-text-secondary font-mono overflow-x-auto">GET /api/analytics?days=7</pre>
                 </Link>
+                <Link
+                  href="/spend"
+                  className="group p-5 rounded-xl bg-surface-secondary border border-border hover:border-border-hover transition-colors"
+                >
+                  <div className="text-[10px] uppercase tracking-wider text-text-tertiary mb-2 font-mono">Cost &amp; spend</div>
+                  <h3 className="text-sm font-semibold text-text-primary mb-1.5 group-hover:text-brand transition-colors">Spend (FinOps)</h3>
+                  <p className="text-xs text-text-secondary leading-relaxed mb-3">Fleet spend rollup — agent LLM cost plus x402 capability purchases, with a separate Your-Claude-Code lens. 7/30/90-day trend.</p>
+                  <pre className="bg-surface-primary rounded-lg px-3 py-2 text-[10px] sm:text-xs text-text-secondary font-mono overflow-x-auto">GET /api/finops/spend?lens=fleet</pre>
+                </Link>
               </div>
             </div>
           </div>

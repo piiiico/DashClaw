@@ -25,7 +25,7 @@ Generated inventories remain authoritative for generated facts:
 | SDK parity by domain | `docs/sdk-parity.md` |
 | Durable execution finality spec | `docs/architecture/durable-execution-finality.md` |
 
-As of this verification, generated API inventory reports **284 routes**: **47 stable**, **24 beta**, **213 experimental**.
+As of this verification, generated API inventory reports **289 routes**: **47 stable**, **24 beta**, **218 experimental**.
 
 ## Product boundary
 
@@ -61,6 +61,7 @@ As of this verification, generated API inventory reports **284 routes**: **47 st
 | Policy Builder | `/policies` | Policy management, policy generation, simulation, import/proof surfaces, and guard activity. |
 | Policy Coach | `/policy-coach` | Behavior Learning (v1, observe-only): evidence-backed policy suggestions learned from locally-recorded agent behavior, with simulate-before-adopt and dismiss suppression. See `docs/behavior-learning.md`. |
 | Analytics | `/analytics` | Cost trends, action volume, agent/type breakdowns, policy enforcement stats, and token efficiency. |
+| Spend | `/spend`, `/spend/x402`, `/spend/code` | FinOps rollup over agent LLM cost, x402 capability-purchase spend, and Code Sessions cost (Fleet vs Your-Claude-Code lenses, 7/30/90d trend). Beta. |
 | Workflows | `/workflows` | Workflow template management and governed workflow execution surfaces. |
 | Capabilities | `/capabilities` | Governed HTTP capability registry, health, access rules, testing, and invocation. |
 | Knowledge | `/knowledge` | Knowledge collection metadata, ingestion, chunking, embedding, sync, and search surfaces. |
@@ -109,6 +110,7 @@ These modules consume core runtime data and add operator value without changing 
 | Agent Reputation | `/api/reputation/*` | Per-agent trust vectors (time-decayed Bayesian) computed from governed decisions, with events, Ed25519-signed receipts, verify, and a leaderboard. |
 | Agent Registry | `/api/agents/registry/*`, `/api/agents/invoke` | External, org-owned delegatable providers that group capabilities; invocations route through the existing capability runtime + guard + action ledger. |
 | x402 Spend Governance | `GET/POST /api/x402/providers`, `GET/PATCH /api/x402/providers/[id]`, `GET/POST /api/x402/providers/[id]/endpoints`, `GET/POST /api/x402/purchases` | Agent-side x402 spend governance. Agents execute x402 calls themselves; DashClaw registers providers, governs purchases through the guard loop, and records spend. DashClaw never holds a wallet. |
+| FinOps / Spend | `GET /api/finops/spend` (`?lens=fleet\|claude-code`, `?period=7d\|30d\|90d`) | Aggregation-not-fusion rollup unifying agent LLM cost + x402 capability-purchase spend (fleet lens) and Code Sessions cost (claude-code lens) under one Spend surface. Read-only presentation layer over existing tables via `finops.repository.js` (`getFleetSpend`/`getClaudeCodeSpend`); owns no tables. Experimental. |
 | Knowledge | `/api/knowledge/collections/*` | Collection metadata, item ingestion, embedding, sync, and semantic search. |
 | Model strategies | `/api/model-strategies/*` | Provider/model routing, fallback chains, BYOK credentials, budgets, and completions. |
 | Artifacts | `/api/artifacts/*` | Durable artifacts linked to actions and workflow steps, plus evidence bundles. |
@@ -190,7 +192,7 @@ DashClaw is intentionally multi-surface. Claude Code hooks are one strong integr
 |:---|:---|:---|
 | MCP server | MCP-capable agents, Claude Desktop/Code, managed agents, remote tool access | `@dashclaw/mcp-server`, `POST /api/mcp` |
 | Claude custom connector (OAuth) | The Claude consumer app (web chat / Desktop / Cowork) — paste a URL, no API key in the UI | `POST /api/mcp` + `/api/oauth/*` (DCR + PKCE), `docs/CLAUDE-DESKTOP-PLUGIN.md` |
-| Node SDK | JavaScript/TypeScript agents and apps | `sdk/dashclaw.js`, npm package `dashclaw` version `2.13.1` |
+| Node SDK | JavaScript/TypeScript agents and apps | `sdk/dashclaw.js`, npm package `dashclaw` (version in `sdk/package.json`) |
 | Python SDK | Python agents and backend workflows | `sdk-python/dashclaw/client.py` |
 | Claude Code hooks | Coding-agent tool governance (incl. sub-agent spawns and delegated work — see `hooks/README.md` "Sub-agent governance & tracking") without per-call SDK code | `hooks/`, `npm run hooks:install`, `plugins/dashclaw/.claude-plugin/` |
 | Codex plugin | Codex coding-agent governance via field-compatible hook schema | `cli/lib/codex/`, `dashclaw install codex`, `plugins/dashclaw/.codex-plugin/` |

@@ -1,6 +1,6 @@
 # DashClaw API Surface
 
-**259 active routes** (verified 2026-05-15 against `docs/api-inventory.json`). Node SDK uses camelCase, Python SDK uses snake_case.
+**289 active routes** (verified 2026-06-05 against `docs/api-inventory.json`). Node SDK uses camelCase, Python SDK uses snake_case.
 
 > ⚠️ **Authoritative source:** `SKILL.md` (regenerated from the livingcode shape) and `docs/api-inventory.md`. This file is a curated narrative for the most commonly consumed surfaces plus anything new that doesn't yet have an SDK mapping. Some sections below describe legacy v1 endpoints that may not exist in the current build (e.g. `/api/context/*`, `/api/snippets/*`, `/api/decisions`, `/api/feedback/*`) — cross-check against `docs/api-inventory.md` before integrating.
 
@@ -18,6 +18,8 @@
 - [Guard Decisions Audit Log](#guard-decisions-audit-log)
 - [Policies](#policies)
 - [Capabilities](#capabilities)
+- [x402 Governed Capability Spend](#x402-governed-capability-spend)
+- [FinOps / Spend](#finops--spend)
 - [Workflows](#workflows)
 - [Context Manager](#context-manager)
 - [Agent Messaging](#agent-messaging)
@@ -116,6 +118,34 @@ Tool route mapping lives in `mcp-server/lib/routes-inventory.generated.json` —
 | `/api/capabilities/[capabilityId]/invoke` | POST | Full guard → execute → record loop |
 | `/api/capabilities/[capabilityId]/test` | POST | Dry-run test invocation |
 | `/api/capabilities/health` | GET | Registry-wide health |
+
+## x402 Governed Capability Spend
+
+**Maturity:** Beta
+
+x402 micropayments are treated as **governed capability spend**: DashClaw governs the purchase intent and records the spend, but never holds a wallet — the wallet and payment adapters stay agent-side (govern-not-do).
+
+| Endpoint | Methods | Purpose |
+|---|---|---|
+| `/api/x402/providers` | GET, POST | List / register paid-API providers (governed provider registry) |
+| `/api/x402/providers/[id]` | GET, PATCH | Read / edit a provider |
+| `/api/x402/providers/[id]/endpoints` | GET, POST | List / register priced endpoints for a provider |
+| `/api/x402/purchases` | GET, POST | Record a purchase intent and its recorded spend |
+
+Purchases are evaluated against the `x402_spend_limit` guard policy type (per-purchase / daily ceiling) before they are recorded. See [Guard Policy Types](#guard-policy-types).
+
+## FinOps / Spend
+
+**Maturity:** Beta
+
+A read-only aggregation/presentation layer that unifies spend across surfaces. FinOps owns no tables — it aggregates existing records rather than fusing them.
+
+| Endpoint | Methods | Purpose |
+|---|---|---|
+| `/api/finops/spend?lens=fleet` | GET | Fleet spend: agent LLM cost + x402 capability spend (`getFleetSpend`). Returns `{ lens, period, agent, x402, fleet_total_usd }` |
+| `/api/finops/spend?lens=claude-code` | GET | Your Claude Code spend, advisory (`getClaudeCodeSpend`). Returns `{ lens, period, code_sessions, code_total_usd }` |
+
+`period` accepts `7d`, `30d`, or `90d`. Backed by `app/lib/repositories/finops.repository.js`. UI pages: `/spend` (Overview), `/spend/x402` (Purchases), `/spend/code` (Your Claude Code).
 
 ## Workflows
 
@@ -517,6 +547,7 @@ Guard policies use a `policy_type` field. All types are evaluated server-side wi
 | `permission_escalation` | Block when an agent requests a higher permission level than allowed |
 | `green_contract` | Require green (passing) test status before certain actions proceed |
 | `branch_freshness` | Block actions when the working branch is stale (N+ commits behind) |
+| `x402_spend_limit` | Cap x402 micropayment spend (per-purchase / daily USDC ceiling) |
 
 The three new types (`permission_escalation`, `green_contract`, `branch_freshness`) integrate with session lifecycle data. The guard evaluator reads `green_level`, `branch_freshness`, and `commits_behind` from the active session when evaluating these policies.
 

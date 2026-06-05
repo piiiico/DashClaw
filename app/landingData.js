@@ -4,7 +4,7 @@ import {
   Brain, ScanSearch, HeartPulse, Newspaper, Package, UsersRound,
   Webhook, Clock, Compass, Building2, Terminal, BarChart3,
   Scale, Network, FileCheck, Download, SlidersHorizontal, Radio,
-  Shield,
+  Shield, DollarSign,
 } from 'lucide-react';
 import DashClawLogo from './components/DashClawLogo';
 
@@ -56,6 +56,7 @@ export const platformFeatures = [
   { icon: FolderKanban, title: 'Execution Studio', description: 'Workflow templates, capability registry, knowledge collections, and model strategies. Chain governed actions into multi-step pipelines with conditional execution and resume-from-checkpoint.' },
   { icon: BarChart3, title: 'Agent Reputation', description: 'A per-agent trust vector computed from your own governed decisions: reliability, completion, policy violations, approval adherence, quality, and risk. Time-decayed and Bayesian-smoothed, with Ed25519-signed receipts that re-verify against the instance keys.' },
   { icon: UsersRound, title: 'Agent Registry', description: 'Register external, owned providers that group capabilities and are delegated to through governance. Every registry invocation routes through the same guard, action ledger, and SSRF-defended runtime as direct capabilities, with risk derived from the existing scale.' },
+  { icon: DollarSign, title: 'Governed Capability Spend', description: 'Govern what agents pay for. Register x402 capability providers and gate each purchase through the same guard loop and action ledger — DashClaw governs purchase intent and records spend, it never holds a wallet. The Spend surface rolls up agent LLM cost and x402 capability purchases into one fleet view.' },
 ];
 
 export const corePrimitives = [

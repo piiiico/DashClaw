@@ -171,6 +171,7 @@ const navItems = [
   { href: '#agent-reputation', label: 'Agent Reputation' },
   { href: '#agent-registry', label: 'Agent Registry' },
   { href: '#x402-spend-governance', label: 'x402 Spend Governance' },
+  { href: '#finops-spend', label: 'FinOps Spend' },
   { href: '#code-sessions', label: 'Code Sessions' },
   { href: '#code-sessions-ingest', label: 'Ingest transcripts', indent: true },
   { href: '#code-sessions-optimal-files', label: 'Optimal Files', indent: true },
@@ -2420,6 +2421,38 @@ if (action.status === 'pending_approval') {
   data: { count: 14, citations: ['...'] },
   url: 'https://api.research.example.com/results/...',
 });`}
+                  </CodeBlock>
+                }
+              />
+            </div>
+          </section>
+
+          <section id="finops-spend" className="scroll-mt-20 pt-12 border-t border-border">
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold text-text-primary mb-2 font-mono">FinOps Spend</h3>
+              <p className="text-xs text-text-tertiary mb-4">A read-only operator aggregation over already-stored cost. It reconciles spend across surfaces — agent LLM cost, governed x402 purchases, and Claude Code sessions — without doing any new pricing. There is no SDK wrapper; this is a dashboard endpoint that powers the /spend, /spend/x402, and /spend/code UI surfaces.</p>
+              <MethodEntry
+                id="finopsSpend"
+                signature="GET /api/finops/spend"
+                description="Aggregate spend for the org under one lens. Sums cost already recorded by the governance runtime; it owns no tables and introduces no new pricing."
+                params={[
+                  { name: 'lens', type: 'string', required: false, desc: "fleet | claude-code. Default fleet. fleet covers agent LLM cost + x402; claude-code covers Code Sessions cost." },
+                  { name: 'period', type: 'string', required: false, desc: '7d | 30d | 90d. Default 30d.' },
+                ]}
+                returns="fleet: { lens, period, agent, x402, fleet_total_usd }; claude-code: { lens, period, code_sessions, code_total_usd }"
+                example={
+                  <CodeBlock title="Aggregate fleet spend">
+{`// Operator dashboard endpoint — no SDK wrapper
+const res = await fetch('/api/finops/spend?lens=fleet&period=30d', {
+  headers: { 'x-api-key': process.env.DASHCLAW_API_KEY },
+});
+const { lens, period, agent, x402, fleet_total_usd } = await res.json();
+
+// Your Claude Code spend (advisory)
+const code = await fetch('/api/finops/spend?lens=claude-code&period=7d', {
+  headers: { 'x-api-key': process.env.DASHCLAW_API_KEY },
+}).then((r) => r.json());
+// code.code_sessions, code.code_total_usd`}
                   </CodeBlock>
                 }
               />

@@ -38,11 +38,11 @@ Both modes serve the same landing page. `/demo` sets a cookie and redirects to `
 - Next.js 16 (App Router), JavaScript, Tailwind CSS 3
 - Postgres (TCP via `postgres`, serverless via `@neondatabase/serverless`)
 - Auth: NextAuth v4 for UI (GitHub, Google, or OIDC), `x-api-key` header for agents/tools
-- **Version:** the platform and both SDKs share one version — currently **4.0.1** (Node + Python; see `CHANGELOG.md`).
+- **Version:** the platform and both SDKs share one version — currently **4.1.1** (Node + Python; see `CHANGELOG.md`).
 - SDKs:
-  - **Node v2 — governance runtime** (`sdk/dashclaw.js`, 104 methods across Core Governance, Scoring, Execution Studio, Messaging, Sessions, and Capability Runtime). This is the SDK that ships as the `dashclaw` package.
+  - **Node v2 — governance runtime** (`sdk/dashclaw.js`, 125 methods across Core Governance, Scoring, Execution Studio, Messaging, Sessions, and Capability Runtime). This is the SDK that ships as the `dashclaw` package.
   - **Node v1 — full platform legacy** (`sdk/legacy/dashclaw-v1.js`, 187 methods), re-exported as `dashclaw/legacy` for older integrations (see `docs/sdk-parity.md`).
-  - **Python — full platform** (`sdk-python/dashclaw/client.py`, 203 methods).
+  - **Python — full platform** (`sdk-python/dashclaw/client.py`, 223 methods).
 - Node SDK naming: camelCase. Python SDK naming: snake_case.
 
 ## Auth Chain
@@ -177,15 +177,19 @@ Client request hits middleware.js
 | `/webhooks` | Outbound webhook configuration and delivery history |
 | `/identities` | Agent identity binding with approval confirmation and permission levels |
 | `/api-keys` | API key management |
+| `/spend` | FinOps Spend overview (Fleet lens — agent LLM cost + x402 capability spend) |
+| `/spend/x402` | x402 purchases — governed capability spend records (provider registry + purchase ledger) |
+| `/spend/code` | Your Claude Code spend (advisory) |
 
 ## Dashboard Navigation
 
-The left sidebar is organized into four groups (`app/components/Sidebar.js`). **Labs** starts collapsed by default to keep the sidebar calm; state persists via `sessionStorage`.
+The left sidebar is organized into five groups (`app/components/Sidebar.js`). **Labs** starts collapsed by default to keep the sidebar calm; state persists via `sessionStorage`.
 
 | Group | Items |
 |---|---|
 | **Govern** | Mission Control, Decisions, Approvals, Policies, Fleet |
 | **Observe** | Security, Analytics, Activity, Compliance |
+| **Spend** | Overview, Purchases, Your Claude Code |
 | **Configure** | API Keys, Integrations, Webhooks, Identities, Settings |
 | **Labs** *(collapsible)* | Assumptions, Sessions, Drift, Learning, Quality, Prompts, Workflows, Model Strategies, Knowledge, Capabilities |
 
