@@ -61,6 +61,7 @@ getCodeSessionSpendAggregation(sql, orgId, { period = '30d' }) ->
 
 - Same `7d`/`30d`/`90d` period map as the x402 aggregator (`X402_PERIOD_DAYS` analog) — do not silently accept other values.
 - Numeric columns cast `::real` / `::integer` (Neon returns `numeric` as a string — the pg-numeric reducer trap).
+- **Bucket on the session's RUN time, not ingest time** (corrected 2026-06-05 against the live DB): filter and `GROUP BY` on `COALESCE(CASE WHEN started_at ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}T' THEN started_at::timestamptz END, created_at)`. SCHEMA GOTCHA: `started_at` is **TEXT** (ISO string from the parser), `created_at` is **TIMESTAMPTZ** — a naive `COALESCE(started_at, created_at)` 500s ("text and timestamp cannot be matched"); the regex-guarded cast also makes a malformed `started_at` non-fatal (falls back to `created_at`). Bucketing on `created_at` (ingest) piles a backfill's whole spend onto the ingest date and makes the period window equal lifetime — the mocked test suite cannot catch this; verify against real Postgres.
 - **Pure read of already-stored cost; no re-pricing.** (Both Agent Spend and Code Sessions cost already use `billing.js`, so there is nothing to reconcile at read time.)
 
 ### 3.2 FinOps composition (`finops.repository.js`)

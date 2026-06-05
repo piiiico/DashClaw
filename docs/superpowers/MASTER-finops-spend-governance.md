@@ -64,6 +64,8 @@ Gates green: lint, `route-sql:check` (83→83), full `npx vitest run` (**2797 pa
 
 **Design gotcha worth remembering:** recharts renders `stroke`/`fill`/`stopColor` as SVG **presentation attributes**, where CSS `var()` is NOT reliably honored (would silently render black while the build passes green). The page resolves tokens via `getComputedStyle(document.documentElement)` with token-valued fallbacks — token-driven AND guaranteed to paint. (Every other recharts chart in the repo hardcodes hex for this reason.)
 
+**Data gotcha (fixed `20a3a29f` after live testing):** the lens first bucketed spend by `created_at` (ingest time), so a backfill ingest piled all 836 sessions' cost onto two ingest dates (May 13 + May 31) and the "30d" window equalled lifetime ($3521.94). Fixed to bucket on the session's run time: `COALESCE(CASE WHEN started_at ~ ISO THEN started_at::timestamptz END, created_at)`. SCHEMA GOTCHA: **`started_at` is TEXT (ISO string), `created_at` is TIMESTAMPTZ** — a naive `COALESCE` 500s ("text and timestamp cannot be matched"); the regex-guarded cast also makes a malformed `started_at` non-fatal. Corrected 30d = $2628.05 / 498 sessions across 16 real work-day buckets. Caught only by querying the real DB — the mocked test suite can't see SQL type errors. **Lesson reaffirmed: verify DB-shape fixes against live Postgres, not just green unit tests.**
+
 ## Artifacts (paths + tracked status)
 
 - `docs/superpowers/specs/2026-06-04-x402-spend-governance-design.md` — x402 spec. **UNTRACKED** (operator chose "write spec, no commit").
