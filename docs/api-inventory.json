@@ -47,10 +47,10 @@
     ]
   },
   "summary": {
-    "total_routes": 289,
+    "total_routes": 290,
     "stable_routes": 47,
     "beta_routes": 24,
-    "experimental_routes": 218
+    "experimental_routes": 219
   },
   "routes": [
     {
@@ -2096,6 +2096,15 @@
       "maturity": "stable",
       "matched_prefix": "/api/policies",
       "file": "app/api/policies/test/route.ts"
+    },
+    {
+      "path": "/api/posture",
+      "methods": [
+        "GET"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/posture/route.ts"
     },
     {
       "path": "/api/prompts/agent-connect/raw",
