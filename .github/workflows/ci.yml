@@ -39,6 +39,8 @@ jobs:
       - name: Check API inventory maturity drift
         run: npm run api:inventory:check
 
+      - name: Check doc count + freshness-date drift
+        run: node scripts/check-doc-counts.mjs --strict
 
       - name: Check route-level SQL guardrail
         run: npm run route-sql:check

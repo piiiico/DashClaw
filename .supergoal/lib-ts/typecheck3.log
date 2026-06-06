@@ -1,0 +1,1 @@
+app/lib/workflow-executor.ts(92,154): error TS2559: Type 'WorkflowContext' has no properties in common with type '{ strategyConfig?: unknown; }'.
