@@ -12,7 +12,7 @@ function stableKey(parts: string[]): string {
     h ^= s.charCodeAt(i);
     h = Math.imul(h, 0x01000193) >>> 0;
   }
-  return (h >>> 0).toString(16).padStart(8, '0');
+  return h.toString(16).padStart(8, '0');
 }
 
 const SEVERITY_RANK: Record<Severity, number> = { critical: 0, high: 1, medium: 2, low: 3 };
@@ -49,6 +49,7 @@ function severityForDelta(scoreDelta: number): Severity {
  * review_incident findings for active leaks. Richer fix types (bind_identity,
  * enable_setting, adopt_coach_suggestion) are layered on in signals enrichment,
  * where the extra context (agent ids, suggestion ids, deep links) exists.
+ * Note: scoreDelta may be 0 for negligible-weight coverage gaps.
  */
 export function deriveFindings(
   units: GovernableUnit[],
@@ -82,12 +83,17 @@ export function deriveFindings(
   // sort above ordinary coverage gaps under the scoreDelta-first ordering.
   if (adj.incidents.length > 0) {
     const capped = computeScore(units, coverageByKey, adj);
+    // Strip incidents to get the uncapped baseline; computeScore only reads adj arrays.
     const uncapped = computeScore(units, coverageByKey, { ...adj, incidents: [] });
-    const reliefEach = Math.round(Math.max(0, uncapped.score - capped.score) / adj.incidents.length);
+    // Floor at 1 so an active leak always surfaces above zero-delta coverage gaps,
+    // even when per-incident relief rounds down (or a non-cap-triggering incident
+    // yields zero relief). inc.unitKey may be an action type not present in `units`.
+    const reliefEach = Math.max(1, Math.round(Math.max(0, uncapped.score - capped.score) / adj.incidents.length));
     for (const inc of adj.incidents) {
       const fix: PostureFix = {
         type: 'review_incident',
         actionIds: [inc.actionId],
+        // /decisions/:id is the canonical decision-replay route (stable path).
         deepLink: `/decisions/${inc.actionId}`,
       };
       findings.push({

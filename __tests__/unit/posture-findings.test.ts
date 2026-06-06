@@ -60,6 +60,7 @@ describe('deriveFindings', () => {
     const incident = f.find((y) => y.fix.type === 'review_incident')!;
     expect(incident.severity).toBe('critical');
     expect(incident.fix).toMatchObject({ type: 'review_incident', actionIds: ['act_1'] });
+    expect(incident.scoreDelta).toBeGreaterThan(0); // cap-relief gives it real weight
     expect(f[0]).toBe(incident);
   });
 });
