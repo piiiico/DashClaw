@@ -130,7 +130,7 @@ export async function PATCH(request: Request) {
       if (existing.length === 0) {
         return NextResponse.json({ error: 'Policy not found' }, { status: 404 });
       }
-      const policyType = body.policy_type || existing[0].policy_type;
+      const policyType = body.policy_type || existing[0]?.policy_type;
       const rulesStr = typeof body.rules === 'string' ? body.rules : JSON.stringify(body.rules);
       const { valid, errors } = validatePolicy({ name: body.name || 'temp', policy_type: policyType, rules: rulesStr });
       if (!valid) {

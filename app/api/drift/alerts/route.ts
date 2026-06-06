@@ -10,8 +10,8 @@ export async function GET(request: Request) {
       severity: searchParams.get('severity') || undefined,
       acknowledged: searchParams.get('acknowledged') || undefined,
       metric: searchParams.get('metric') || undefined,
-      limit: searchParams.get('limit'),
-      offset: searchParams.get('offset'),
+      limit: searchParams.get('limit') ?? undefined,
+      offset: searchParams.get('offset') ?? undefined,
     });
     return NextResponse.json({ alerts, total: alerts.length });
   } catch (err) {

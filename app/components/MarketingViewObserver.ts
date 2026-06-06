@@ -34,7 +34,9 @@ export default function MarketingViewObserver({ targetId, event, threshold = 0.4
         for (const entry of entries) {
           if (entry.isIntersecting && !fired) {
             fired = true;
-            trackMarketingEvent(event);
+            // event is effectively required for this observer to be useful; mirror
+            // the existing `targetId as string` cast (callers always pass it).
+            trackMarketingEvent(event as string);
             observer.disconnect();
             break;
           }

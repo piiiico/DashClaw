@@ -31,6 +31,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ web
     }
 
     const wh = rows[0];
+    if (!wh) {
+      return NextResponse.json({ error: 'Webhook not found' }, { status: 404 });
+    }
     const testPayload = {
       event: 'test',
       org_id: orgId,
@@ -45,10 +48,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ web
     };
 
     const result = await deliverWebhook({
-      webhookId: wh.id,
+      webhookId: wh.id as string,
       orgId,
-      url: wh.url,
-      secret: wh.secret,
+      url: wh.url as string,
+      secret: wh.secret as string,
       eventType: 'test',
       payload: testPayload,
       sql,

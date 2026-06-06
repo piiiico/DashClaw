@@ -33,7 +33,20 @@ async function loadConsumerSources(rootDir, consumers = {}) {
   const sources = {};
 
   await Promise.all(entries.map(async ([name, relativePath]) => {
-    const source = await readFile(path.join(rootDir, relativePath), 'utf8');
+    const full = path.join(rootDir, relativePath);
+    let source;
+    try {
+      source = await readFile(full, 'utf8');
+    } catch (err) {
+      // TypeScript migration: a consumer source listed with a .js path may now
+      // be .ts. Node's readFile has no extensionAlias (unlike webpack/tsc), so
+      // fall back to the .ts file before failing.
+      if (err?.code === 'ENOENT' && full.endsWith('.js')) {
+        source = await readFile(full.replace(/\.js$/, '.ts'), 'utf8');
+      } else {
+        throw err;
+      }
+    }
     sources[name] = source;
   }));
 

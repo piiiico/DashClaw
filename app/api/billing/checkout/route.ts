@@ -42,7 +42,7 @@ export async function POST(request: Request) {
     }
 
     const orgs = await sql`SELECT stripe_customer_id FROM organizations WHERE id = ${orgId} LIMIT 1`;
-    let customerId = orgs.length > 0 ? orgs[0].stripe_customer_id : null;
+    let customerId: string | null = orgs.length > 0 ? (orgs[0]?.stripe_customer_id as string | null ?? null) : null;
 
     if (!customerId) {
       const customer = await stripe.customers.create({

@@ -21,8 +21,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No active version found for this template' }, { status: 404 });
     }
 
-    const rendered = renderPrompt(version.content, variables || {});
-    const params = extractParameters(version.content);
+    const rendered = renderPrompt(version.content as string, variables || {});
+    const params = extractParameters(version.content as string);
 
     const result: Record<string, unknown> = {
       rendered,
@@ -35,8 +35,8 @@ export async function POST(request: Request) {
     // Optionally record this render as a prompt run
     if (record) {
       const run = await recordPromptRun(request, {
-        template_id: version.template_id,
-        version_id: version.id,
+        template_id: version.template_id as string,
+        version_id: version.id as string,
         action_id,
         agent_id,
         input_vars: variables,

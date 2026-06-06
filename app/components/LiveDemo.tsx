@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { trackMarketingEvent } from '../lib/marketingTrack';
 import { HOMEPAGE_PRESETS, writeHomepageResolution } from '../lib/homepageDemoActions';
+import type { HomepageResolution } from '../lib/homepageDemoActions';
 
 /*
  * Live, interactive governance demo for the marketing home page.
@@ -146,7 +147,7 @@ export default function LiveDemo() {
     setPhase(PHASE.RESOLVED);
     // Persist so the /decisions ledger reflects the visitor's choice on
     // their next page view.
-    writeHomepageResolution(value);
+    writeHomepageResolution(value as HomepageResolution);
   }
 
   function handleReset() {

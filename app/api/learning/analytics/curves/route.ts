@@ -7,7 +7,7 @@ export async function GET(request: Request) {
     const data = await getCurveData(request, {
       agent_id: searchParams.get('agent_id') || undefined,
       action_type: searchParams.get('action_type') || undefined,
-      limit: searchParams.get('limit'),
+      limit: searchParams.get('limit') ?? undefined,
     });
     return NextResponse.json({ curves: data });
   } catch (err) {

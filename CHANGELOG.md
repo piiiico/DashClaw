@@ -13,6 +13,15 @@ Through 3.x the platform and the SDKs versioned independently, which is why olde
 
 ## [Unreleased]
 
+## [4.2.2] — 2026-06-06
+
+> Internal: completes the TypeScript migration by converting the remaining 167 `app/lib/*.js` modules to strict `.ts` (behavior-preserving), closing the `allowJs` island so internal callers get real types. No public API, route, or SDK-surface change (Node 126 / Python 224 unchanged); both SDK packages republish at 4.2.2 per the unified-version model.
+
+### Changed
+
+- **Internal `app/lib` modules migrated to strict TypeScript** (167 files: claude-code analytics, behavior, compliance, integrity, hosted, routing, demo fixtures, and singletons). Crypto/security invariants (encryption, integrity signing, URL/SSRF guards, timing-safe compares) preserved byte-for-byte. `app/lib/validate.js` remains JavaScript by design (authoritative runtime validator). An adversarial-review-class fix unified the canonical `SqlTag` so `getSql()` returns it.
+- **Added `tsx` (devDependency)** and wired the `app/lib`-importing operational scripts (`setup`, `doctor`, `init:self-host-env`, backfills, seeds, the `_run-with-env` runner) to run under it — Node has no `.js`→`.ts` extensionAlias, so these scripts now resolve the migrated modules. The Vercel deploy is unaffected (its `auto-migrate` step talks to Postgres directly).
+
 ## [4.2.1] — 2026-06-06
 
 > Internal: the Next.js platform is migrated from JavaScript/JSX to strict TypeScript/TSX (587 `.ts`/`.tsx` files; incremental and behavior-preserving). No public API, route, or SDK-surface change (Node 126 / Python 224 unchanged); both SDK packages republish at 4.2.1 per the unified-version model. One user-visible fix ships alongside: the Fleet spend total.

@@ -61,21 +61,21 @@ export async function GET(request: Request) {
 
     const breakdownMap: Record<string, { count: number; cost_usd: number }> = {};
     for (const row of breakdown) {
-      breakdownMap[row.action_type] = {
-        count: row.count,
-        cost_usd: Math.round(row.cost_usd * 1000) / 1000,
+      breakdownMap[row.action_type as string] = {
+        count: row.count as number,
+        cost_usd: Math.round(Number(row.cost_usd) * 1000) / 1000,
       };
     }
 
     return NextResponse.json({
       period,
-      total_cost_usd: Math.round((totals[0]?.total_cost_usd || 0) * 1000) / 1000,
+      total_cost_usd: Math.round(Number(totals[0]?.total_cost_usd || 0) * 1000) / 1000,
       total_actions: totals[0]?.total_actions || 0,
       breakdown: breakdownMap,
-      daily: daily.map((d: { date: string; actions: number; cost_usd: number }) => ({
-        date: d.date,
-        actions: d.actions,
-        cost_usd: Math.round(d.cost_usd * 1000) / 1000,
+      daily: daily.map((d) => ({
+        date: d.date as string,
+        actions: d.actions as number,
+        cost_usd: Math.round(Number(d.cost_usd) * 1000) / 1000,
       })),
     });
   } catch (error) {

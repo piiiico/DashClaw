@@ -50,7 +50,7 @@ export async function GET(request: Request) {
         summary.actions_considered += candidates.length;
 
         for (const row of candidates) {
-          const scored = await scoreAndStoreActionEpisode(sql, org.id, row.action_id);
+          const scored = await scoreAndStoreActionEpisode(sql, org.id, row.action_id as string | null | undefined);
           if (scored) summary.episodes_scored++;
         }
       } catch (orgError) {

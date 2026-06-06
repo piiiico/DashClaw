@@ -30,7 +30,7 @@ export async function GET(request: Request) {
 
     for (const org of orgs) {
       try {
-        const result = await runMemoryMaintenance(org.id, sql);
+        const result = await runMemoryMaintenance(org.id as string, sql);
 
         if (result.status === 'processed') {
           const r = result as Record<string, any>;
@@ -38,7 +38,7 @@ export async function GET(request: Request) {
           summary.messages_sent += r.messages_sent;
 
           logActivity({
-            orgId: org.id, actorId: 'cron', actorType: 'cron',
+            orgId: org.id as string, actorId: 'cron', actorType: 'cron',
             action: 'memory.maintenance_run', resourceType: 'agent',
             details: { notified: r.agents_notified, messages: r.messages_sent },
           }, sql);

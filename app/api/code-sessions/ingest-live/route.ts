@@ -82,17 +82,20 @@ async function runFinalize(sql: any, orgId: string, sessionUuid: string, project
     payload: { name: r.name, count: r.count, evidence: r.evidence, targets: r.targets },
   }));
   const allSignals = [...findings, ...repeatedRunSignals];
-  await replaceSignalsForSession(sql, fresh.id, allSignals);
+  // Signal objects (optimizer findings + repeated-run signals) are stored
+  // generically; the repo takes Record<string, unknown>[].
+  await replaceSignalsForSession(sql, fresh.id, allSignals as Record<string, unknown>[]);
 
   const allProjects = await listProjects(sql, orgId);
   const projectsWithRecentSessions = allProjects.filter((p: any) => Number(p.session_count) > 0).length;
   const alerts = detectForSession({
-    session: { session_uuid: session.session_uuid, cost_usd: sessionForRules.cost_usd },
+    session: { session_uuid: session.session_uuid as string, cost_usd: sessionForRules.cost_usd },
     priorSessions: priorSessions as never[],
     stuckLoopCount: stuckLoops.length,
     projectSessionCount: projectsWithRecentSessions,
   });
-  const alertsInserted = await insertAlerts(sql, orgId, alerts, {
+  // detectForSession returns Alert[]; insertAlerts persists them generically.
+  const alertsInserted = await insertAlerts(sql, orgId, alerts as unknown as Record<string, unknown>[], {
     project_id: projectId,
     session_id: fresh.id,
   });

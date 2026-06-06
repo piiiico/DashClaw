@@ -28,7 +28,7 @@ export async function GET(request: Request) {
       WHERE period <> ${period}
         AND period <> 'current'
         AND resource IN ('governed_actions', 'capability_invocations', 'workflow_executions', 'actions_per_month')
-    `;
+    ` as Record<string, unknown>[] & { count?: number };
 
     console.log(`[Cron] Meter reset: purged ${reset.count || 0} rows from prior periods (current=${period})`);
 

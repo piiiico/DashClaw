@@ -144,7 +144,7 @@ export async function DELETE(request: Request) {
     if (existing.length === 0) {
       return NextResponse.json({ error: 'API key not found' }, { status: 404 });
     }
-    if (existing[0].revoked_at) {
+    if (existing[0]?.revoked_at) {
       return NextResponse.json({ error: 'API key is already revoked' }, { status: 409 });
     }
 

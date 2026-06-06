@@ -6,7 +6,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const data = await getVelocityData(request, {
       agent_id: searchParams.get('agent_id') || undefined,
-      limit: searchParams.get('limit'),
+      limit: searchParams.get('limit') ?? undefined,
     });
     return NextResponse.json({ velocity: data });
   } catch (err) {

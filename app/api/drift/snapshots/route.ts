@@ -7,7 +7,7 @@ export async function GET(request: Request) {
     const snapshots = await getSnapshots(request, {
       agent_id: searchParams.get('agent_id') || undefined,
       metric: searchParams.get('metric') || undefined,
-      limit: searchParams.get('limit'),
+      limit: searchParams.get('limit') ?? undefined,
     });
     return NextResponse.json({ snapshots });
   } catch (err) {

@@ -5,7 +5,7 @@ description: DashClaw platform expert for integration, troubleshooting, and gove
 
 # DashClaw Platform Intelligence
 
-**Shape snapshot:** `sha1:3b8ae5405a007e8233c9530034ccbfecb444e989`
+**Shape snapshot:** `sha1:5c49ce66cefd639c8cf1ee9cc67a81230e7756ed`
 **This file is auto-generated.** Do not edit by hand — regenerate with:
 
 ```bash
@@ -717,28 +717,6 @@ All 89 tables defined in `schema/schema.js` (Drizzle ORM):
 - `webhook_deliveries`
 - `webhooks`
 - `workflows`
-
-## Realtime & Webhook Events
-
-Every mutation that Mission Control reflects and every webhook delivery is keyed on these event strings. Subscribe via `GET /api/events` (SSE) or register a webhook with the matching `events: [...]` array.
-
-| Constant | Event |
-| --- | --- |
-| `ACTION_COST_EXCEEDED` | `action.cost_exceeded` |
-| `ACTION_CREATED` | `action.created` |
-| `ACTION_UPDATED` | `action.updated` |
-| `DECISION_CREATED` | `decision.created` |
-| `GOAL_CREATED` | `goal.created` |
-| `GOAL_UPDATED` | `goal.updated` |
-| `GUARD_DECISION_CREATED` | `guard.decision.created` |
-| `LOOP_CREATED` | `loop.created` |
-| `LOOP_UPDATED` | `loop.updated` |
-| `MESSAGE_CREATED` | `message.created` |
-| `POLICY_UPDATED` | `policy.updated` |
-| `SIGNAL_DETECTED` | `signal.detected` |
-| `TASK_ASSIGNED` | `task.assigned` |
-| `TASK_COMPLETED` | `task.completed` |
-| `TOKEN_USAGE` | `token.usage` |
 
 ## Signal Types
 

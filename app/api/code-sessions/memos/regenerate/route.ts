@@ -27,7 +27,7 @@ export async function POST(request: Request) {
   const sessions = all.filter((s: any) => s.started_at && s.started_at >= sevenDaysAgo);
   const priorSessions = all.filter((s: any) => s.started_at && s.started_at >= fourteenDaysAgo && s.started_at < sevenDaysAgo);
   const memo = generateMemo({
-    project: { id: project.id, slug: project.slug },
+    project: { id: project.id, slug: project.slug as string | null | undefined },
     sessions,
     priorSessions,
     findings: [],

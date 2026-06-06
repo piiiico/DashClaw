@@ -34,8 +34,11 @@ export async function GET(request: Request) {
     }
 
     const policies = await getActivePolicies(sql, orgId);
-    const policyDoc = convertPolicies(policies, `org-${orgId}`);
-    const complianceMap = mapPolicies(policyDoc, framework);
+    // getActivePolicies returns Record<string,unknown>[] rows that match the
+    // DashClawPolicy shape at runtime; convertPolicies returns a GuardrailDocument
+    // which is structurally a PolicyDoc for the mapper.
+    const policyDoc = convertPolicies(policies as Parameters<typeof convertPolicies>[0], `org-${orgId}`);
+    const complianceMap = mapPolicies(policyDoc as unknown as Parameters<typeof mapPolicies>[0], framework);
     const gapAnalysis = analyzeGaps(complianceMap);
 
     return NextResponse.json(gapAnalysis);

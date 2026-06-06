@@ -189,7 +189,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ tem
           agentId,
           persistStepResult: resumePersist,
           resumeContext: resumeCtx,
-        },
+        } as unknown as Parameters<typeof executeWorkflow>[5],
       );
     } catch (executeError) {
       try {

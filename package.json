@@ -1,6 +1,6 @@
 {
   "name": "dashclaw-platform",
-  "version": "4.2.1",
+  "version": "4.2.2",
   "description": "Decision infrastructure for AI agents — governance runtime with policy enforcement, decision recording, and human-in-the-loop approval.",
   "private": true,
   "license": "MIT",
@@ -20,7 +20,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "docs:check": "node scripts/validate-docs.mjs",
-    "doctor": "node scripts/doctor.mjs",
+    "doctor": "node --import tsx scripts/doctor.mjs",
     "db:migrate": "node scripts/auto-migrate.mjs",
     "hosted:check-ready": "node scripts/check-hosted-ready.mjs",
     "hosted:smoke": "node scripts/smoke-hosted.mjs",
@@ -54,8 +54,8 @@
     "reliability:evidence": "node scripts/collect-platform-convergence-evidence.mjs",
     "reliability:ws1:check": "node scripts/check-convergence-ws1-latency.mjs",
     "scripts:check-syntax": "node scripts/check-scripts-syntax.mjs",
-    "setup": "node scripts/setup.mjs",
-    "init:self-host-env": "node scripts/init-self-host-env.mjs",
+    "setup": "node --import tsx scripts/setup.mjs",
+    "init:self-host-env": "node --import tsx scripts/init-self-host-env.mjs",
     "seed:branch-finish": "node scripts/_run-with-env.mjs scripts/seed-branch-finish-loop.mjs",
     "branch-finish": "node scripts/_run-with-env.mjs scripts/branch-finish.mjs",
     "test": "vitest",
@@ -69,7 +69,7 @@
     "migrate:learning-loop": "node scripts/_run-with-env.mjs scripts/migrate-learning-loop-mvp.mjs",
     "backfill:learning-episodes": "node scripts/_run-with-env.mjs scripts/backfill-learning-episodes.mjs",
     "rebuild:learning-recommendations": "node scripts/_run-with-env.mjs scripts/rebuild-learning-recommendations.mjs",
-    "backfill:embeddings": "node scripts/backfill-embeddings.mjs",
+    "backfill:embeddings": "node --import tsx scripts/backfill-embeddings.mjs",
     "release:sdks": "node scripts/release-sdks.mjs",
     "traffic:poll": "node scripts/_run-with-env.mjs scripts/poll-github-traffic.mjs",
     "pre-commit": "node scripts/run-pre-commit-checks.mjs"
@@ -133,6 +133,7 @@
     "jsdom": "^29.1.1",
     "postcss": "^8.5.10",
     "tailwindcss": "^3.3.0",
+    "tsx": "^4.22.4",
     "typescript": "^5.9.3",
     "vitest": "^4.1.0"
   }

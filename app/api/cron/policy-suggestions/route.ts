@@ -25,7 +25,7 @@ export async function GET(request: Request) {
 
     for (const org of orgs) {
       try {
-        const suggestions = await generatePolicySuggestions(sql, org.id);
+        const suggestions = await generatePolicySuggestions(sql, org.id as string);
         results.push({ org_id: org.id, suggestion_count: suggestions.length });
       } catch (orgError) {
         console.error(`[CRON] policy-suggestions org ${org.id} failed:`, (orgError as Error).message);

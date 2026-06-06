@@ -4,7 +4,7 @@ import { createExportRecord, listExports, generateExport } from '../../../lib/co
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const exports = await listExports(request, { limit: searchParams.get('limit') });
+    const exports = await listExports(request, { limit: searchParams.get('limit') ?? undefined });
     return NextResponse.json({ exports });
   } catch (err) {
     console.error('[compliance/exports] GET error:', err);

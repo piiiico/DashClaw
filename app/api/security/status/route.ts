@@ -68,7 +68,7 @@ export async function GET(request: Request) {
           AND key NOT IN ('TELEGRAM_CHAT_ID', 'DISCORD_CLIENT_ID', 'DISCORD_GUILD_ID', 'VERCEL_PROJECT_ID', 'CLOUDFLARE_ACCOUNT_ID', 'AIRTABLE_BASE_ID', 'ELEVENLABS_VOICE_ID', 'OPENAI_ORG_ID')
         `;
 
-        const count = parseInt(unencryptedCount[0]?.count || '0', 10);
+        const count = parseInt((unencryptedCount[0]?.count as string) || '0', 10);
         if (count > 0) {
           report.checks.push({
             id: 'unencrypted_settings',

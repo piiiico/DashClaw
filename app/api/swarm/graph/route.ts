@@ -20,20 +20,20 @@ export async function GET(request: Request) {
     const swarmId = searchParams.get('swarm_id');
 
     // 1. Fetch all agents in the org (broad discovery via repository)
-    let agents;
+    let agents: Array<{ agent_id: string; name?: string }>;
     if (swarmId) {
       // Swarm-scoped: start with action_records for the swarm, then merge broader discovery
-      const swarmAgents = await sql`SELECT DISTINCT agent_id, MAX(agent_name) as name FROM action_records WHERE org_id = ${orgId} AND swarm_id = ${swarmId} GROUP BY agent_id`;
+      const swarmAgents = await sql`SELECT DISTINCT agent_id, MAX(agent_name) as name FROM action_records WHERE org_id = ${orgId} AND swarm_id = ${swarmId} GROUP BY agent_id` as Array<{ agent_id: string; name?: string }>;
       const allAgents = await listAgentsForOrg(sql, orgId);
-      const swarmIds = new Set(swarmAgents.map((a: { agent_id: string }) => a.agent_id));
+      const swarmIds = new Set(swarmAgents.map((a) => a.agent_id));
       // Merge any agents not already found via swarm action_records
       agents = [
         ...swarmAgents,
-        ...allAgents.filter((a: { agent_id: string }) => !swarmIds.has(a.agent_id)).map((a: { agent_id: string; agent_name?: string }) => ({ agent_id: a.agent_id, name: a.agent_name }))
+        ...allAgents.filter((a) => !swarmIds.has(a.agent_id)).map((a) => ({ agent_id: a.agent_id, name: a.agent_name }))
       ];
     } else {
       const allAgents = await listAgentsForOrg(sql, orgId);
-      agents = allAgents.map((a: { agent_id: string; agent_name?: string }) => ({ agent_id: a.agent_id, name: a.agent_name }));
+      agents = allAgents.map((a) => ({ agent_id: a.agent_id, name: a.agent_name }));
     }
 
     // 2. Fetch communication links (messages between agents)
@@ -47,7 +47,7 @@ export async function GET(request: Request) {
       GROUP BY from_agent_id, to_agent_id
     `;
 
-    const rawLinks = await linksQuery;
+    const rawLinks = await linksQuery as Array<{ source: string; target: string; weight: string }>;
 
     // 3. Fetch handoff links (another form of connection)
     const handoffLinksQuery = sql`
@@ -70,11 +70,11 @@ export async function GET(request: Request) {
       WHERE org_id = ${orgId}
       GROUP BY agent_id
     `;
-    const agentStats = await statsQuery;
-    const statsMap: Record<string, { action_count?: number; avg_risk?: number; total_cost?: number }> = Object.fromEntries(agentStats.map((s: { agent_id: string }) => [s.agent_id, s]));
+    const agentStats = await statsQuery as Array<{ agent_id: string; action_count?: number; avg_risk?: number; total_cost?: number }>;
+    const statsMap: Record<string, { action_count?: number; avg_risk?: number; total_cost?: number }> = Object.fromEntries(agentStats.map((s) => [s.agent_id, s]));
 
     // Format for graph visualization (Nodes & Links)
-    const nodes = agents.map((a: { agent_id: string; name?: string }) => ({
+    const nodes = agents.map((a) => ({
       id: a.agent_id,
       name: a.name || a.agent_id,
       actions: statsMap[a.agent_id]?.action_count || 0,

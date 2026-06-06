@@ -92,7 +92,7 @@ jobs:
             ---
 
             If you adopt these rates, consider running
-            `node scripts/backfill-code-session-cache-cost.mjs --apply`
+            `node --import tsx scripts/backfill-code-session-cache-cost.mjs --apply`
             against prod to recompute historical `cost_usd` values that
             were stored under the old rates.
 

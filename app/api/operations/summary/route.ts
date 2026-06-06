@@ -11,8 +11,8 @@ export async function GET(request: Request) {
     const orgId = getOrgId(request);
 
     // Each query is individually resilient — a single failing query won't break the whole card
-    const safe = (promise: Promise<Record<string, number>[]>): Promise<Record<string, number>[]> =>
-      promise.catch(() => [{} as Record<string, number>]);
+    const safe = (promise: Promise<Record<string, unknown>[]>): Promise<Record<string, unknown>[]> =>
+      promise.catch(() => [{} as Record<string, unknown>]);
 
     const [throughput, latency, approvalBacklog, workflowHealth, capHealth] = await Promise.all([
       // Decision throughput

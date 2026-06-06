@@ -38,7 +38,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ orgI
 
     return NextResponse.json({
       organization: orgs[0],
-      active_keys: parseInt(keyCount[0]?.total || '0', 10)
+      active_keys: parseInt((keyCount[0]?.total as string) || '0', 10)
     });
   } catch (error) {
     console.error('Org detail GET error:', error);

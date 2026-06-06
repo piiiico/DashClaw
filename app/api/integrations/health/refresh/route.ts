@@ -44,7 +44,9 @@ export async function POST(request: Request) {
 
     let alerts = 0;
     if (transitions.length > 0) {
-      const res = await fireHealthChangeAlerts(sql, orgId, transitions);
+      // prev_status is `string | null` off the upsert; fireHealthChangeAlerts
+      // reads it as a string label (a fresh row simply has no prior transition).
+      const res = await fireHealthChangeAlerts(sql, orgId, transitions as Parameters<typeof fireHealthChangeAlerts>[2]);
       alerts = res.fired;
     }
 

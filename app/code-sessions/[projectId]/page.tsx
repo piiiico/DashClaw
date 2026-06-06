@@ -8,6 +8,7 @@ import {
   listMemos,
 } from '../../lib/repositories/code-sessions.repository.js';
 import { computeRoiFromRows } from '../../lib/claude-code/subagent-roi.js';
+import type { AttributionRow } from '../../lib/claude-code/subagent-roi.js';
 import PageLayout from '../../components/PageLayout';
 import { Card, CardContent } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
@@ -81,7 +82,9 @@ export default async function ProjectSessionsPage({ params }: { params: Promise<
     listSubagentToolUseAttribution(sql, orgId, { projectId }).catch(() => []),
     listMemos(sql, orgId, projectId).catch(() => []),
   ]);
-  const roi = computeRoiFromRows(roiRows);
+  // roiRows are listSubagentToolUseAttribution Rows ({ name, cost_usd, duration_ms, success });
+  // they match AttributionRow at runtime (the .catch fallback is an empty array).
+  const roi = computeRoiFromRows(roiRows as unknown as AttributionRow[]);
   // listMemos returns rows ordered iso_week_tag DESC, so [0] is the latest.
   const latestMemo = memos[0] || null;
   const projectLabel = shortProjectId(projectId);

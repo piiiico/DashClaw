@@ -19,7 +19,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ capa
       return NextResponse.json({ error: 'Capability not found' }, { status: 404 });
     }
 
-    const health = await getCapabilityWithHealth(sql, orgId, capability);
+    // getCapability returns a Record<string,unknown> DB row that matches the
+    // Capability shape at runtime.
+    const health = await getCapabilityWithHealth(sql, orgId, capability as Parameters<typeof getCapabilityWithHealth>[2]);
     return NextResponse.json(health);
   } catch (error) {
     return apiErrorResponse(error, 'CAPABILITY_HEALTH');

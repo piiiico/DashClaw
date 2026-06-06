@@ -20,7 +20,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ capa
       return NextResponse.json({ error: 'Capability not found' }, { status: 404 });
     }
 
-    const history = await getCapabilityHistory(sql, orgId, capability, {
+    // DB row matches the CapabilityRef shape at runtime; bridge the loose
+    // Record<string, unknown> via unknown (values are typed unknown, not string).
+    const capabilityRef = capability as unknown as { capability_id: string; name: string; slug: string };
+    const history = await getCapabilityHistory(sql, orgId, capabilityRef, {
       action_type: searchParams.get('action_type') || undefined,
       status: searchParams.get('status') || undefined,
       limit: searchParams.get('limit') || 20,

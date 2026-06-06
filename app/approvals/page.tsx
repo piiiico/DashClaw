@@ -134,7 +134,7 @@ export default function ApprovalsPage() {
         ) : (
           <div className="space-y-4">
             {pendingActions.map((action) => {
-              const systems = safeJsonArray(action.systems_touched);
+              const systems = safeJsonArray(action.systems_touched) as string[];
               const isProcessing = processingId === action.action_id;
               const riskColor = action.risk_score >= 70 ? 'text-error' : 'text-warning';
               return (

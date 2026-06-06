@@ -159,7 +159,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ cap
       });
 
       // Notify operators (Telegram/Discord/webhook) like POST /api/actions does.
-      fireApprovalSurfaces(createdAction as object, sql, orgId, guardDecision);
+      fireApprovalSurfaces(createdAction as Record<string, unknown>, sql, orgId, guardDecision);
 
       return NextResponse.json(
         {
@@ -192,7 +192,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ cap
     }
 
     // Circuit breaker check
-    const circuitStatus = await checkCircuitBreaker(sql, orgId, capability);
+    // `capability` is the runtime CapabilityRow; checkCircuitBreaker wants its
+    // own structurally-compatible Capability shape (slug etc. present at runtime).
+    const circuitStatus = await checkCircuitBreaker(sql, orgId, capability as unknown as Parameters<typeof checkCircuitBreaker>[2]);
     if (circuitStatus.open) {
       return NextResponse.json(
         {
@@ -231,7 +233,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ cap
       });
 
       // Notify operators (Telegram/Discord/webhook) like POST /api/actions does.
-      fireApprovalSurfaces(createdAction as object, sql, orgId, guardDecision);
+      fireApprovalSurfaces(createdAction as Record<string, unknown>, sql, orgId, guardDecision);
 
       return NextResponse.json(
         {

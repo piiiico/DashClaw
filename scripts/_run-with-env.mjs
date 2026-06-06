@@ -7,4 +7,6 @@ if (!script) {
   process.exit(1);
 }
 const extraArgs = process.argv.slice(3);
-execFileSync('node', [script, ...extraArgs], { stdio: 'inherit', env: process.env });
+// Run under tsx so scripts importing app/lib modules resolve `.js` specifiers
+// to the migrated `.ts` files (Node has no extensionAlias; webpack/tsc/vitest do).
+execFileSync('node', ['--import', 'tsx', script, ...extraArgs], { stdio: 'inherit', env: process.env });

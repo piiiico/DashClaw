@@ -1,0 +1,286 @@
+/**
+ * Capability invocation engine.
+ * Handles auth resolution, HTTP calls with timeout, retry with backoff,
+ * and request/response mapping.
+ */
+
+import { mapRequest, mapResponse } from './mapping.js';
+import { safeUrlWithIps, buildPinnedDispatcher } from './webhooks.js';
+
+export const RISK_SCORE_MAP: Record<string, number> = {
+  low: 20,
+  medium: 50,
+  high: 75,
+  critical: 95,
+};
+
+const DEFAULT_RETRYABLE_STATUS_CODES = new Set([429, 500, 502, 503, 504]);
+
+interface AuthConfig {
+  type?: string;
+  token_setting?: string;
+}
+
+export function resolveAuth(auth: AuthConfig | null | undefined, settings: Record<string, string | undefined>): Record<string, string> {
+  if (!auth || auth.type === 'none') return {};
+
+  const tokenKey = auth.token_setting;
+  if (!tokenKey) return {};
+
+  const token = settings[tokenKey];
+  if (!token) {
+    const err = new Error(`auth_not_configured: setting '${tokenKey}' not configured for this capability`) as Error & { code?: string };
+    err.code = 'auth_not_configured';
+    throw err;
+  }
+
+  if (auth.type === 'bearer') {
+    return { Authorization: `Bearer ${token}` };
+  }
+  if (auth.type === 'api_key') {
+    return { 'x-api-key': token };
+  }
+  return {};
+}
+
+export function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export function calculateBackoffDelay(attempt: number, backoff: string | null | undefined, baseDelayMs: number, maxDelayMs: number): number {
+  if (!backoff || backoff === 'none') return 0;
+  if (backoff === 'fixed') return baseDelayMs;
+  // exponential: base * 2^attempt with jitter, capped at max
+  const delay = baseDelayMs * Math.pow(2, attempt);
+  const jitter = Math.random() * delay * 0.1;
+  return Math.min(Math.floor(delay + jitter), maxDelayMs);
+}
+
+interface AttemptResult {
+  success: boolean;
+  error?: string;
+  status?: number;
+  message?: string;
+  data?: unknown;
+  raw?: unknown;
+  elapsed_ms: number;
+  retry_metadata?: {
+    total_attempts: number;
+    retried: boolean;
+    attempts: AttemptLogEntry[];
+  };
+}
+
+interface AttemptLogEntry {
+  attempt: number;
+  success?: boolean;
+  error?: string;
+  status?: number;
+  elapsed_ms: number;
+}
+
+interface RetryPolicy {
+  max_retries?: number;
+  backoff?: string;
+  base_delay_ms?: number;
+  max_delay_ms?: number;
+  retryable_status_codes?: number[];
+}
+
+interface SingleAttemptParams {
+  endpoint: string;
+  method?: string;
+  authHeaders?: Record<string, string>;
+  body?: unknown;
+  requestMapping?: unknown;
+  responseMapping?: unknown;
+  timeoutMs?: number;
+}
+
+interface InvokeCapabilityParams extends SingleAttemptParams {
+  retryPolicy?: RetryPolicy | null;
+}
+
+export function isRetryableResult(result: AttemptResult, retryableStatusCodes: Set<number>): boolean {
+  if (result.success) return false;
+  if (result.error === 'capability_timeout') return true;
+  if (result.error === 'capability_network_error') return true;
+  if (result.error === 'capability_error' && result.status !== undefined && retryableStatusCodes.has(result.status)) return true;
+  return false;
+}
+
+async function singleAttempt({
+  endpoint,
+  method,
+  authHeaders,
+  body,
+  requestMapping,
+  responseMapping,
+  timeoutMs,
+}: SingleAttemptParams): Promise<AttemptResult> {
+  // body is the capability payload object at runtime; mapRequest passes it
+  // through unchanged when there's no mapping.
+  const mappedBody = mapRequest(body as Record<string, unknown>, requestMapping);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs || 60000);
+  const start = Date.now();
+
+  // GET and HEAD cannot carry a request body per the fetch/undici spec.
+  // Attaching one causes an immediate "Request with GET/HEAD method cannot
+  // have body" TypeError before the request ever leaves the process.
+  const normalizedMethod = (method || 'POST').toUpperCase();
+  const bodylessMethod = normalizedMethod === 'GET' || normalizedMethod === 'HEAD';
+
+  try {
+    // SSRF defense: capability endpoints come from operator-configured DB rows
+    // (admins can PATCH them). Validate https://, reject private/loopback IPs,
+    // and pin DNS resolution to a public IP so a rebinding attacker cannot swap
+    // the address mid-flight. Mirrors the pattern used in webhooks.js.
+    const validatedIps = await safeUrlWithIps(endpoint);
+    const dispatcher = buildPinnedDispatcher(validatedIps);
+
+    const response = await fetch(endpoint, {
+      method: normalizedMethod,
+      redirect: 'manual', // SECURITY: prevent SSRF via redirect chain
+      headers: {
+        ...(bodylessMethod ? {} : { 'Content-Type': 'application/json' }),
+        ...authHeaders,
+      },
+      ...(bodylessMethod ? {} : { body: JSON.stringify(mappedBody) }),
+      signal: controller.signal,
+      dispatcher,
+    } as RequestInit);
+
+    clearTimeout(timer);
+    const elapsedMs = Date.now() - start;
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => 'Unknown error');
+      return {
+        success: false,
+        error: 'capability_error',
+        status: response.status,
+        message: errorText.slice(0, 500),
+        elapsed_ms: elapsedMs,
+      };
+    }
+
+    const rawData = await response.json().catch(() => null);
+    if (rawData === null) {
+      return {
+        success: false,
+        error: 'capability_response_invalid',
+        message: 'Capability returned a non-JSON response',
+        elapsed_ms: elapsedMs,
+      };
+    }
+    const data = mapResponse(rawData, responseMapping);
+
+    return {
+      success: true,
+      data,
+      raw: rawData,
+      elapsed_ms: elapsedMs,
+    };
+  } catch (err) {
+    clearTimeout(timer);
+    const elapsedMs = Date.now() - start;
+
+    if ((err as Error)?.name === 'AbortError') {
+      return {
+        success: false,
+        error: 'capability_timeout',
+        message: `Capability timed out after ${timeoutMs || 60000}ms`,
+        elapsed_ms: elapsedMs,
+      };
+    }
+
+    // undici raises a bare "fetch failed" TypeError for any connection-layer
+    // failure and puts the actionable detail on err.cause (ENOTFOUND /
+    // ECONNREFUSED / ETIMEDOUT / UND_ERR_* / TLS cert errors). Surface it so
+    // the operator sees WHY (DNS, egress, TLS) instead of an opaque message.
+    const cause = (err as { cause?: { code?: string; message?: string } })?.cause;
+    const detail = cause?.code || cause?.message;
+    const message = detail ? `${(err as Error).message} (${detail})` : (err as Error).message;
+    return {
+      success: false,
+      error: 'capability_network_error',
+      message,
+      elapsed_ms: elapsedMs,
+    };
+  }
+}
+
+export async function invokeCapability({
+  endpoint,
+  method,
+  authHeaders,
+  body,
+  requestMapping,
+  responseMapping,
+  timeoutMs,
+  retryPolicy,
+}: InvokeCapabilityParams): Promise<AttemptResult | undefined> {
+  const maxRetries = retryPolicy?.max_retries || 0;
+
+  // Fast path: no retries configured — identical to previous behavior
+  if (maxRetries === 0) {
+    return singleAttempt({ endpoint, method, authHeaders, body, requestMapping, responseMapping, timeoutMs });
+  }
+
+  const backoff = retryPolicy!.backoff || 'none';
+  const baseDelayMs = retryPolicy!.base_delay_ms || 1000;
+  const maxDelayMs = retryPolicy!.max_delay_ms || 30000;
+  const retryableStatusCodes = retryPolicy!.retryable_status_codes
+    ? new Set(retryPolicy!.retryable_status_codes)
+    : DEFAULT_RETRYABLE_STATUS_CODES;
+
+  const attempts: AttemptLogEntry[] = [];
+  const totalStart = Date.now();
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    const result = await singleAttempt({
+      endpoint, method, authHeaders, body, requestMapping, responseMapping, timeoutMs,
+    });
+
+    attempts.push({
+      attempt: attempt + 1,
+      ...(result.success ? { success: true } : { error: result.error, status: result.status }),
+      elapsed_ms: result.elapsed_ms,
+    });
+
+    if (result.success) {
+      return {
+        ...result,
+        elapsed_ms: Date.now() - totalStart,
+        retry_metadata: {
+          total_attempts: attempt + 1,
+          retried: attempt > 0,
+          attempts,
+        },
+      };
+    }
+
+    // Last attempt or non-retryable — return failure
+    if (attempt === maxRetries || !isRetryableResult(result, retryableStatusCodes)) {
+      return {
+        ...result,
+        elapsed_ms: Date.now() - totalStart,
+        retry_metadata: {
+          total_attempts: attempt + 1,
+          retried: attempt > 0,
+          attempts,
+        },
+      };
+    }
+
+    // Wait before next attempt
+    const delay = calculateBackoffDelay(attempt, backoff, baseDelayMs, maxDelayMs);
+    if (delay > 0) {
+      await sleep(delay);
+    }
+  }
+  // Unreachable (the loop always returns on the final attempt); explicit for
+  // noImplicitReturns. Matches the prior JS implicit-undefined return.
+  return undefined;
+}

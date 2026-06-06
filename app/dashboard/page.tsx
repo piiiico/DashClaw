@@ -31,7 +31,7 @@ export default function Dashboard() {
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setNamedLayouts(loadNamedLayouts());
+    setNamedLayouts(loadNamedLayouts() as NamedLayouts);
   }, []);
 
   useEffect(() => {
@@ -56,16 +56,16 @@ export default function Dashboard() {
     const current = loadLayouts();
     if (current) {
       saveNamedLayout(saveName.trim(), current);
-      setNamedLayouts(loadNamedLayouts());
+      setNamedLayouts(loadNamedLayouts() as NamedLayouts);
     }
     setSaveName('');
     setShowSaveInput(false);
   };
 
   const handleLoadNamedLayout = (name: string) => {
-    const all = loadNamedLayouts();
+    const all = loadNamedLayouts() as NamedLayouts;
     if (all[name]?.layouts) {
-      saveLayouts(all[name].layouts);
+      saveLayouts(all[name]!.layouts);
       setActivePreset(null);
       setResetKey((k) => k + 1);
     }
@@ -75,7 +75,7 @@ export default function Dashboard() {
   const handleDeleteNamedLayout = (name: string, e: React.MouseEvent) => {
     e.stopPropagation();
     deleteNamedLayout(name);
-    setNamedLayouts(loadNamedLayouts());
+    setNamedLayouts(loadNamedLayouts() as NamedLayouts);
   };
 
   const handleSelectPreset = (presetName: string) => {

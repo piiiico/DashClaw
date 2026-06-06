@@ -43,13 +43,14 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ us
     if (targetUser.length === 0) {
       return NextResponse.json({ error: 'User not found in this workspace' }, { status: 404 });
     }
+    const targetRow = targetUser[0]!;
 
     // Guard: cannot leave org with zero admins
-    if (targetUser[0].role === 'admin' && newRole === 'member') {
+    if (targetRow.role === 'admin' && newRole === 'member') {
       const adminCount = await sql`
         SELECT COUNT(*) as count FROM users WHERE org_id = ${orgId} AND role = 'admin'
       `;
-      if (parseInt(adminCount[0].count) <= 1) {
+      if (parseInt(String(adminCount[0]?.count ?? '0')) <= 1) {
         return NextResponse.json(
           { error: 'Cannot demote the last admin. Promote another member to admin first.' },
           { status: 409 }
@@ -64,7 +65,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ us
     logActivity({
       orgId, actorId: callerId, action: 'role.changed',
       resourceType: 'member', resourceId: userId,
-      details: { old_role: targetUser[0].role, new_role: newRole }, request,
+      details: { old_role: targetRow.role, new_role: newRole }, request,
     }, sql);
 
     return NextResponse.json({ success: true, userId, role: newRole });

@@ -7,6 +7,8 @@ import { getSql } from '../../../lib/db.js';
 import { getOrgId } from '../../../lib/org.js';
 import { convertPolicies } from '../../../lib/guardrails/converter.js';
 import { mapPolicies, loadFramework, listFrameworks } from '../../../lib/compliance/mapper.js';
+import type { DashClawPolicy } from '../../../lib/guardrails/converter.js';
+import type { PolicyDoc } from '../../../lib/compliance/mapper.js';
 import { generateMarkdownReport, generateJsonReport } from '../../../lib/compliance/reporter.js';
 import { getActivePolicies } from '../../../lib/repositories/guardrails.repository.js';
 import { createSnapshot } from '../../../lib/repositories/compliance.repository.js';
@@ -38,8 +40,10 @@ export async function GET(request: Request) {
     }
 
     const policies = await getActivePolicies(sql, orgId);
-    const policyDoc = convertPolicies(policies, `org-${orgId}`);
-    const complianceMap = mapPolicies(policyDoc, framework) as Record<string, any>;
+    // DB rows match DashClawPolicy at runtime; GuardrailDocument↔PolicyDoc differ
+    // structurally (ConvertedPolicy[] vs Policy[]) so bridge via unknown.
+    const policyDoc = convertPolicies(policies as unknown as DashClawPolicy[], `org-${orgId}`) as unknown as PolicyDoc;
+    const complianceMap = mapPolicies(policyDoc, framework);
 
     let report: any;
     if (format === 'json') {
@@ -49,7 +53,7 @@ export async function GET(request: Request) {
     }
 
     // Save snapshot
-    const gapAnalysis = analyzeGaps(complianceMap) as Record<string, any>;
+    const gapAnalysis = analyzeGaps(complianceMap);
     const snapshotId = `cs_${randomUUID().replace(/-/g, '').slice(0, 24)}`;
     await createSnapshot(sql, orgId, {
       id: snapshotId,

@@ -136,7 +136,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ tem
         timestamp_start,
       });
 
-      fireApprovalSurfaces(createdAction as object, sql, orgId, guardDecision);
+      fireApprovalSurfaces(createdAction as unknown as Parameters<typeof fireApprovalSurfaces>[0], sql, orgId, guardDecision);
 
       return NextResponse.json(
         {
@@ -236,7 +236,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ tem
         action_id,
         steps,
         variables,
-        { strategyConfig, agentId, persistStepResult },
+        { strategyConfig, agentId, persistStepResult } as unknown as Parameters<typeof executeWorkflow>[5],
       );
     } catch (executeError) {
       const failTs = new Date().toISOString();

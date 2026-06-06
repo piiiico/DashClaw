@@ -1,14 +1,14 @@
 {
   "node": {
-    "current_version": "4.2.1",
+    "current_version": "4.2.2",
     "next_bump": "none",
-    "reason": "4.2.1 — patch. Platform JavaScript→strict-TypeScript migration (behavior-preserving) plus a Fleet-spend coercion fix (::real aggregates were returned as driver strings, concatenating the server-side Agent+x402 total to NaN). No SDK API change — Node surface stays 126. Both SDKs republish at 4.2.1 per the unified-version model. Self-dep stays ^4.0.0.",
-    "domains": ["finops", "platform"]
+    "reason": "4.2.2 — patch. Internal-lib TypeScript milestone: the remaining 167 app/lib/*.js modules converted to strict .ts (behavior-preserving), closing the allowJs island; validate.js stays JS by design. Added tsx (devDep) so app/lib-importing ops scripts resolve .js→.ts under node. No SDK API change — Node surface stays 126. Both SDKs republish at 4.2.2 per the unified-version model. Self-dep stays ^4.0.0.",
+    "domains": ["platform"]
   },
   "python": {
-    "current_version": "4.2.1",
+    "current_version": "4.2.2",
     "next_bump": "none",
-    "reason": "4.2.1 — patch. Platform-only TypeScript migration + Fleet-spend coercion fix. No Python SDK API change — surface stays 224. Republishes at 4.2.1 per the unified-version model.",
-    "domains": ["finops", "platform"]
+    "reason": "4.2.2 — patch. Platform-only internal-lib TypeScript conversion. No Python SDK API change — surface stays 224. Republishes at 4.2.2 per the unified-version model.",
+    "domains": ["platform"]
   }
 }

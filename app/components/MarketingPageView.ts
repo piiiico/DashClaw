@@ -21,7 +21,7 @@ export default function MarketingPageView({ event, properties }: MarketingPageVi
   useEffect(() => {
     if (fired.current) return;
     fired.current = true;
-    trackMarketingEvent(event, properties);
+    trackMarketingEvent(event as string, properties);
   }, [event, properties]);
   return null;
 }

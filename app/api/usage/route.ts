@@ -14,7 +14,7 @@ export async function GET(request: Request) {
 
     const sql = getSql();
 
-    let rows;
+    let rows: Record<string, unknown>[];
     try {
       rows = await sql`
         SELECT plan, stripe_customer_id, stripe_subscription_id,
@@ -39,8 +39,8 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
     }
 
-    const org = rows[0];
-    const plan = org.plan || 'free';
+    const org = rows[0] as Record<string, unknown>;
+    const plan = (org.plan as string | null | undefined) || 'free';
     const limits = getPlanLimits(plan);
     const usage = await getUsage(orgId, sql);
 

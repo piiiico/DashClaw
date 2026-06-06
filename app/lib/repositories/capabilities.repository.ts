@@ -333,7 +333,7 @@ export async function updateCapability(
 
   if ('invocation_schema' in patch || 'source_type' in patch) {
     validateInvocationSchema(
-      patch.source_type ?? existing.source_type,
+      (patch.source_type ?? existing.source_type) as string,
       patch.invocation_schema ?? existing.invocation_schema,
     );
   }

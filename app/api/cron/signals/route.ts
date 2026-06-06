@@ -68,21 +68,25 @@ export async function GET(request: Request) {
     `;
 
     for (const org of orgs) {
+      // orgs rows come from a SqlTag query (Record<string, unknown>); these
+      // columns are non-null per the SELECT. Narrow once for the loop body.
+      const orgId = org.id as string;
+      const orgName = org.name as string;
       try {
-        const signals = await computeSignals(org.id, null, sql);
+        const signals = await computeSignals(orgId, null, sql);
         if (signals.length === 0) {
           summary.orgs_processed++;
           continue;
         }
 
         // Hash each signal
-        const currentHashes = signals.map((s: Record<string, unknown>) => ({ ...s, _hash: hashSignal(s as Parameters<typeof hashSignal>[0]) } as Record<string, any>));
+        const currentHashes = signals.map((s) => ({ ...s, _hash: hashSignal(s as Parameters<typeof hashSignal>[0]) } as Record<string, any>));
 
         // Load existing snapshots for this org
         const existingSnapshots = await sql`
           SELECT signal_hash FROM signal_snapshots WHERE org_id = ${org.id}
         `;
-        const existingSet = new Set(existingSnapshots.map((s: { signal_hash: string }) => s.signal_hash));
+        const existingSet = new Set(existingSnapshots.map((s) => s.signal_hash as string));
 
         // Find NEW signals (hash not in snapshot)
         const newSignals = currentHashes.filter((s: Record<string, any>) => !existingSet.has(s._hash));
@@ -111,19 +115,19 @@ export async function GET(request: Request) {
 
         // Log signal detection
         logActivity({
-          orgId: org.id, actorId: 'cron', actorType: 'cron',
+          orgId, actorId: 'cron', actorType: 'cron',
           action: 'signal.detected', resourceType: 'signal',
           details: { count: cleanSignals.length, types: [...new Set(cleanSignals.map((s: Record<string, any>) => s.type))] },
         }, sql);
 
         // Fire webhooks
-        const whResults = await fireWebhooksForOrg(org.id, cleanSignals, sql);
+        const whResults = await fireWebhooksForOrg(orgId, cleanSignals, sql);
         const whFired = whResults.filter((r) => r.success).length;
         summary.webhooks_fired += whFired;
 
         if (whFired > 0) {
           logActivity({
-            orgId: org.id, actorId: 'system', actorType: 'system',
+            orgId, actorId: 'system', actorType: 'system',
             action: 'webhook.fired', resourceType: 'webhook',
             details: { count: whFired, signal_count: cleanSignals.length },
           }, sql);
@@ -133,26 +137,26 @@ export async function GET(request: Request) {
         try {
           const { deliverNativeNotifications } = await import('../../../lib/notification-adapters/index.js');
           const { getSettings } = await import('../../../lib/repositories/settings.repository.js');
-          const settings = await getSettings(sql, org.id, { category: 'integration' });
-          const nativeResults = await deliverNativeNotifications(org.id, cleanSignals as Parameters<typeof deliverNativeNotifications>[1], settings as unknown as Parameters<typeof deliverNativeNotifications>[2], sql);
+          const settings = await getSettings(sql, orgId, { category: 'integration' });
+          const nativeResults = await deliverNativeNotifications(orgId, cleanSignals as Parameters<typeof deliverNativeNotifications>[1], settings as unknown as Parameters<typeof deliverNativeNotifications>[2], sql);
           for (const r of nativeResults) {
             if (r.success) {
               summary.native_notifications++;
               logActivity({
-                orgId: org.id, actorId: 'system', actorType: 'system',
+                orgId, actorId: 'system', actorType: 'system',
                 action: `notification.${r.provider}.sent`, resourceType: 'notification',
                 details: { provider: r.provider, signals: cleanSignals.length, message: r.message },
               }, sql);
             }
           }
         } catch (nativeErr) {
-          console.error(`[CRON] Native notification error for ${org.id}:`, (nativeErr as Error).message);
+          console.error(`[CRON] Native notification error for ${orgId}:`, (nativeErr as Error).message);
         }
 
         // Publish SSE events for realtime UI updates
         for (const signal of cleanSignals) {
           void publishOrgEvent(EVENTS.SIGNAL_DETECTED, {
-            orgId: org.id,
+            orgId,
             signal,
           });
         }
@@ -171,7 +175,7 @@ export async function GET(request: Request) {
         for (const pref of prefs) {
           let subscribedTypes;
           try {
-            subscribedTypes = JSON.parse(pref.signal_types);
+            subscribedTypes = JSON.parse(pref.signal_types as string);
           } catch {
             subscribedTypes = ['all'];
           }
@@ -182,11 +186,11 @@ export async function GET(request: Request) {
 
           if (relevantSignals.length === 0) continue;
 
-          const sent = await sendSignalAlertEmail(pref.email, org.name, relevantSignals as Parameters<typeof sendSignalAlertEmail>[2]);
+          const sent = await sendSignalAlertEmail(pref.email as string, orgName, relevantSignals as Parameters<typeof sendSignalAlertEmail>[2]);
           if (sent) {
             summary.emails_sent++;
             logActivity({
-              orgId: org.id, actorId: 'system', actorType: 'system',
+              orgId, actorId: 'system', actorType: 'system',
               action: 'alert.email_sent', resourceType: 'signal',
               details: { to: pref.email, signal_count: relevantSignals.length },
             }, sql);

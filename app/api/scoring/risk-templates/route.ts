@@ -12,7 +12,8 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     const action_type = url.searchParams.get('action_type');
 
-    const templates = await listRiskTemplates(sql, orgId, { action_type });
+    // null↔undefined harmless: callee treats both as "no filter" (if (action_type)).
+    const templates = await listRiskTemplates(sql, orgId, { action_type: action_type ?? undefined });
     return Response.json({ templates });
   } catch (err) {
     console.error('[scoring/risk-templates] GET error:', (err as Error).message);

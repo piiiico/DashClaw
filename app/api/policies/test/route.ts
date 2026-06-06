@@ -119,7 +119,9 @@ async function runLegacyMode(sql: ReturnType<typeof getSql>, orgId: string) {
     });
   }
 
-  const policyDoc = convertPolicies(policies, `org-${orgId}`) as { policies: any[] };
+  // getActivePolicies returns Record<string,unknown>[] rows that match the
+  // DashClawPolicy shape at runtime.
+  const policyDoc = convertPolicies(policies as Parameters<typeof convertPolicies>[0], `org-${orgId}`) as { policies: any[] };
 
   const details = [];
   let totalTests = 0;

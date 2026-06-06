@@ -20,7 +20,7 @@ export async function GET(request: Request) {
     const orgId = getOrgId(request);
 
     const orgs = await sql`SELECT stripe_customer_id FROM organizations WHERE id = ${orgId} LIMIT 1`;
-    const customerId = orgs.length > 0 ? orgs[0].stripe_customer_id : null;
+    const customerId = (orgs[0]?.stripe_customer_id as string | null | undefined) ?? null;
 
     if (!customerId) {
       return NextResponse.json(

@@ -5,7 +5,9 @@ import { NextResponse } from 'next/server';
 import { getSql } from '../../../lib/db.js';
 import { getOrgId } from '../../../lib/org.js';
 import { convertPolicies } from '../../../lib/guardrails/converter.js';
+import type { DashClawPolicy } from '../../../lib/guardrails/converter.js';
 import { generateMarkdownReport, generateJsonReport } from '../../../lib/guardrails/report.js';
+import type { PolicyDoc } from '../../../lib/guardrails/report.js';
 import { getActivePolicies } from '../../../lib/repositories/guardrails.repository.js';
 
 /**
@@ -19,13 +21,16 @@ export async function GET(request: Request) {
     const format = searchParams.get('format') || 'md';
 
     const policies = await getActivePolicies(sql, orgId);
-    const policyDoc = convertPolicies(policies, `org-${orgId}`);
+    // DB rows (Record<string, unknown>[]) match the DashClawPolicy shape at runtime.
+    const policyDoc = convertPolicies(policies as unknown as DashClawPolicy[], `org-${orgId}`);
 
     let report;
     if (format === 'json') {
-      report = generateJsonReport(policyDoc);
+      // GuardrailDocument is structurally compatible with PolicyDoc (project + policies);
+      // ConvertedPolicy.rule is a superset of PolicyRule, so cast at the boundary.
+      report = generateJsonReport(policyDoc as unknown as PolicyDoc);
     } else {
-      report = generateMarkdownReport(policyDoc);
+      report = generateMarkdownReport(policyDoc as unknown as PolicyDoc);
     }
 
     return NextResponse.json({

@@ -93,7 +93,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ lo
       if (existing.length === 0) {
         return NextResponse.json({ error: 'Open loop not found' }, { status: 404 });
       }
-      return NextResponse.json({ error: 'Loop is already ' + existing[0].status }, { status: 409 });
+      return NextResponse.json({ error: 'Loop is already ' + existing[0]?.status }, { status: 409 });
     }
 
     const loop = result[0];

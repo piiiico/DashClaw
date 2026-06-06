@@ -40,7 +40,7 @@ export async function GET(request: Request) {
 
     for (const org of orgs) {
       try {
-        const rebuilt = await rebuildLearningRecommendations(sql, org.id, {
+        const rebuilt = await rebuildLearningRecommendations(sql, org.id as string, {
           lookbackDays,
           minSamples,
           episodeLimit,

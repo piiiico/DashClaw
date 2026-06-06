@@ -167,7 +167,7 @@ export async function POST(request: Request) {
     source_host: sourceHost,
   })) as { id: string; slug: string };
 
-  const upsert = await upsertSessionWithChildren(sql, orgId, parsed, {
+  const upsert = await upsertSessionWithChildren(sql, orgId, parsed as unknown as Parameters<typeof upsertSessionWithChildren>[2], {
     projectId: projectRow.id,
     toolUseActionMap: body?.tool_use_action_map && typeof body.tool_use_action_map === 'object'
       ? body.tool_use_action_map
@@ -214,7 +214,7 @@ export async function POST(request: Request) {
         payload: { name: r.name, count: r.count, evidence: r.evidence, targets: r.targets },
       }));
       const allSignals = [...findings, ...repeatedRunSignals];
-      await replaceSignalsForSession(sql, upsert.sessionId, allSignals);
+      await replaceSignalsForSession(sql, upsert.sessionId, allSignals as unknown as Array<Record<string, unknown>>);
       signalsInserted = allSignals.length;
 
       const allProjects = await listProjects(sql, orgId);
@@ -225,7 +225,7 @@ export async function POST(request: Request) {
         stuckLoopCount: stuckLoops.length,
         projectSessionCount: projectsWithRecentSessions,
       });
-      alertsInserted = await insertAlerts(sql, orgId, alerts, {
+      alertsInserted = await insertAlerts(sql, orgId, alerts as unknown as Array<Record<string, unknown>>, {
         project_id: projectRow.id,
         session_id: upsert.sessionId,
       });

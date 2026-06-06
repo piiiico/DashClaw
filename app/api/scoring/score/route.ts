@@ -22,7 +22,13 @@ export async function GET(request: Request) {
       return Response.json(stats);
     }
 
-    const scores = await listProfileScores(sql, orgId, { profile_id, agent_id, action_id, limit, offset });
+    const scores = await listProfileScores(sql, orgId, {
+      profile_id: profile_id ?? undefined,
+      agent_id: agent_id ?? undefined,
+      action_id: action_id ?? undefined,
+      limit,
+      offset,
+    });
     return Response.json({ scores });
   } catch (err) {
     console.error('[scoring/score] GET error:', (err as Error).message);

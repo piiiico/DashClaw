@@ -16,6 +16,7 @@ import { evaluateRecoveryRecipes } from './recovery.js';
 import { getActBindingMode } from './act-binding.js';
 import { matchesProtectedPath } from './behavior/path-match.js';
 import { verify } from './integrity/verify.js';
+import type { SourceOfTruth } from './integrity/verify.js';
 import { issueReceipt } from './integrity/receipt.js';
 import { getServerSigningKey } from './integrity/server-key.js';
 
@@ -638,9 +639,13 @@ export async function evaluatePolicy(
         try {
           const key = await getServerSigningKey(sql);
           return issueReceipt(
-            verifyResult,
+            // verifyResult's violations carry { code, label } at runtime — the loose
+            // `unknown[]` on the local lambda type is wider than ReceiptViolation[].
+            verifyResult as Parameters<typeof issueReceipt>[0],
             String(content),
-            source as object,
+            // issue() is only ever called after sourceValid confirms source has
+            // requiredFacts[]/allowedFacts[] (the SourceOfTruthLike shape).
+            source as Parameters<typeof issueReceipt>[2],
             { kid: key.kid, privateKeyJwk: key.privateKeyJwk },
             new Date().toISOString(),
           );
@@ -677,7 +682,9 @@ export async function evaluatePolicy(
         };
       }
 
-      const verifyResult = verify(content, source as Record<string, unknown>);
+      // `sourceValid` (checked above) guarantees source has the SourceOfTruth shape
+      // (object with allowedFacts[] + requiredFacts[]) before we reach this point.
+      const verifyResult = verify(content, source as unknown as SourceOfTruth);
       const receipt = await issue(verifyResult, source);
 
       if (verifyResult.verdict === 'pass') {
@@ -729,7 +736,9 @@ export async function evaluatePolicy(
       }
       if (historyCount < minHistory) return null;
 
-      const embedding = await generateActionEmbedding(context);
+      // GuardEvalContext's loosely-typed fields (systems_touched: unknown) are
+      // read defensively inside generateActionEmbedding; runtime shape is compatible.
+      const embedding = await generateActionEmbedding(context as Parameters<typeof generateActionEmbedding>[0]);
       if (!embedding) return null;
 
       const similarityQuery = `
@@ -779,7 +788,8 @@ export async function evaluatePolicy(
         return { action: 'require_approval', reason: 'Semantic check unavailable (no LLM key configured) — human review required' };
       }
 
-      const result = await checkSemanticGuardrail(context, instruction, model);
+      // checkSemanticGuardrail returns the parsed LLM JSON ({ allowed, reason }) or null.
+      const result = (await checkSemanticGuardrail(context, instruction, model)) as { allowed?: boolean; reason?: string } | null;
 
       if (!result) {
         if (fallback === 'block') {

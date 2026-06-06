@@ -39,7 +39,17 @@ function normalizeConstraints(items = []) {
 async function loadConsumerSources(rootDir, consumers = {}) {
   const sources = {};
   await Promise.all(Object.entries(consumers).map(async ([name, relativePath]) => {
-    sources[name] = await readFile(path.join(rootDir, relativePath), 'utf8');
+    const full = path.join(rootDir, relativePath);
+    try {
+      sources[name] = await readFile(full, 'utf8');
+    } catch (err) {
+      // TS migration: a .js consumer source may now be .ts (no Node extensionAlias).
+      if (err?.code === 'ENOENT' && full.endsWith('.js')) {
+        sources[name] = await readFile(full.replace(/\.js$/, '.ts'), 'utf8');
+      } else {
+        throw err;
+      }
+    }
   }));
   return sources;
 }

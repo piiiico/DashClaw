@@ -7,6 +7,7 @@
 
 import crypto from 'node:crypto';
 import { computeVector, buildReputationReceipt, hashVector } from '../reputation.js';
+import type { ReputationVector as CanonicalReputationVector } from '../reputation.js';
 import { getServerSigningKey } from '../integrity/server-key.js';
 
 type SqlClient = {
@@ -94,7 +95,9 @@ export async function upsertReputationSnapshot(
   vector: ReputationVector
 ): Promise<Record<string, unknown> | null> {
   const id = genId('ars');
-  const vectorHash = hashVector(vector);
+  // The local ReputationVector models nullable DB-snapshot columns; the canonical
+  // hashVector takes the non-null computed vector. Same shape at runtime.
+  const vectorHash = hashVector(vector as unknown as CanonicalReputationVector);
   const rows = await sql`
     INSERT INTO agent_reputation_snapshots
       (id, org_id, agent_id, reliability_score, completion_rate, policy_violation_rate, approval_adherence,
@@ -289,13 +292,16 @@ export async function recomputeReputation(
   await persistEvents(sql, orgId, agentId, events);
 
   const vector = computeVector(agentId, events, { now });
-  await upsertReputationSnapshot(sql, orgId, agentId, vector);
+  // computeVector returns the canonical (non-null) ReputationVector; the local
+  // interface that the repo's CRUD/return signatures use is the nullable
+  // DB-snapshot variant. Same fields at runtime — bridge at these boundaries.
+  await upsertReputationSnapshot(sql, orgId, agentId, vector as unknown as ReputationVector);
 
   const key = await getServerSigningKey(sql);
   const receipt = buildReputationReceipt(vector, { kid: key.kid, privateKeyJwk: key.privateKeyJwk }, vector.computed_at);
-  await insertReputationReceipt(sql, orgId, agentId, { receipt, kid: key.kid, issuedAt: vector.computed_at });
+  await insertReputationReceipt(sql, orgId, agentId, { receipt: receipt as unknown as ReputationReceiptInput['receipt'], kid: key.kid, issuedAt: vector.computed_at });
 
-  return { vector, receipt };
+  return { vector: vector as unknown as ReputationVector, receipt };
 }
 
 /**
@@ -310,7 +316,9 @@ export async function computeReputationVector(
   { now = new Date().toISOString(), sinceDays = DEFAULT_LOOKBACK_DAYS }: RecomputeOpts = {}
 ): Promise<ReputationVector> {
   const events = await gatherEvidenceEvents(sql, orgId, agentId, { sinceDays });
-  return computeVector(agentId, events, { now });
+  // computeVector yields the canonical (non-null) variant; this fn's signature
+  // declares the local nullable DB-snapshot variant — same fields at runtime.
+  return computeVector(agentId, events, { now }) as unknown as ReputationVector;
 }
 
 /**
@@ -325,7 +333,9 @@ export async function buildCurrentReceipt(
 ): Promise<unknown> {
   const vector = await computeReputationVector(sql, orgId, agentId, opts);
   const key = await getServerSigningKey(sql);
-  return buildReputationReceipt(vector, { kid: key.kid, privateKeyJwk: key.privateKeyJwk }, vector.computed_at);
+  // vector is the local nullable variant; buildReputationReceipt takes the
+  // canonical non-null one — same shape at runtime.
+  return buildReputationReceipt(vector as unknown as CanonicalReputationVector, { kid: key.kid, privateKeyJwk: key.privateKeyJwk }, vector.computed_at);
 }
 
 /**

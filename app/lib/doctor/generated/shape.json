@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:3b8ae5405a007e8233c9530034ccbfecb444e989",
+  "timestamp": "sha1:5c49ce66cefd639c8cf1ee9cc67a81230e7756ed",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -2958,7 +2958,7 @@
       "name": "AGENT_PRIVATE_KEY_JWK",
       "required": false,
       "files": [
-        "app/lib/connectGuide.js"
+        "app/lib/connectGuide.ts"
       ],
       "in_env_example": false
     },
@@ -2982,7 +2982,7 @@
       "name": "ANTHROPIC_API_KEY",
       "required": false,
       "files": [
-        "app/lib/llm.js",
+        "app/lib/llm.ts",
         "examples/claude-code-review-agent/index.js",
         "examples/governed-chat-harness/index.js",
         "scripts/upload-skill.mjs"
@@ -3135,7 +3135,7 @@
       "name": "DASHCLAW_AGENT_ID",
       "required": false,
       "files": [
-        "app/lib/connectPrompt.js",
+        "app/lib/connectPrompt.ts",
         "app/self-host/SetupTabs.tsx",
         "examples/first-governed-action.js",
         "examples/governed-chat-harness/index.js",
@@ -3186,12 +3186,12 @@
         "app/docs/page.tsx",
         "app/guides/openai-agents-sdk/page.tsx",
         "app/landingData.js",
-        "app/lib/connectPrompt.js",
-        "app/lib/demo/fixtures/journey-agents.js",
-        "app/lib/demo/fixtures/persona-agents.js",
-        "app/lib/demo/fixtures/tutorial-threads.js",
-        "app/lib/setup/auth-gate.js",
-        "app/lib/starterSnippet.js",
+        "app/lib/connectPrompt.ts",
+        "app/lib/demo/fixtures/journey-agents.ts",
+        "app/lib/demo/fixtures/persona-agents.ts",
+        "app/lib/demo/fixtures/tutorial-threads.ts",
+        "app/lib/setup/auth-gate.ts",
+        "app/lib/starterSnippet.ts",
         "app/self-host/SetupTabs.tsx",
         "examples/agent-chat-complete.js",
         "examples/anthropic-governed-agent/index.js",
@@ -3255,9 +3255,9 @@
         "app/docs/page.tsx",
         "app/guides/openai-agents-sdk/page.tsx",
         "app/landingData.js",
-        "app/lib/demo/fixtures/journey-agents.js",
-        "app/lib/demo/fixtures/persona-agents.js",
-        "app/lib/starterSnippet.js",
+        "app/lib/demo/fixtures/journey-agents.ts",
+        "app/lib/demo/fixtures/persona-agents.ts",
+        "app/lib/starterSnippet.ts",
         "app/self-host/SetupTabs.tsx",
         "examples/agent-chat-complete.js",
         "examples/anthropic-governed-agent/index.js",
@@ -3292,7 +3292,7 @@
       "name": "DASHCLAW_BEHAVIOR_SAMPLES_DIR",
       "required": false,
       "files": [
-        "app/lib/behavior/sample-store.js"
+        "app/lib/behavior/sample-store.ts"
       ],
       "in_env_example": false
     },
@@ -3300,7 +3300,7 @@
       "name": "DASHCLAW_BEHAVIOR_SAMPLES_ENABLED",
       "required": false,
       "files": [
-        "app/lib/behavior/sample-store.js"
+        "app/lib/behavior/sample-store.ts"
       ],
       "in_env_example": false
     },
@@ -3317,7 +3317,7 @@
       "name": "DASHCLAW_DB_DRIVER",
       "required": false,
       "files": [
-        "app/lib/db.js",
+        "app/lib/db.ts",
         "middleware.js",
         "scripts/_db.mjs"
       ],
@@ -3327,7 +3327,7 @@
       "name": "DASHCLAW_DB_POOL_MAX",
       "required": false,
       "files": [
-        "app/lib/db.js",
+        "app/lib/db.ts",
         "scripts/_db.mjs"
       ],
       "in_env_example": false
@@ -3366,8 +3366,8 @@
         "__tests__/unit/hosted/publicConfig.test.js",
         "__tests__/unit/hosted/workspace-admin.test.js",
         "__tests__/unit/hosted/workspace-provision.test.js",
-        "app/lib/hosted/flag.js",
-        "app/lib/hosted/publicConfig.js"
+        "app/lib/hosted/flag.ts",
+        "app/lib/hosted/publicConfig.ts"
       ],
       "in_env_example": false
     },
@@ -3424,7 +3424,7 @@
         "__tests__/unit/health.route.test.js",
         "app/api/health/route.ts",
         "app/api/setup/ping/route.ts",
-        "app/lib/selfHost.js",
+        "app/lib/selfHost.ts",
         "app/settings/page.tsx",
         "middleware.js"
       ],
@@ -3469,7 +3469,7 @@
       "required": false,
       "files": [
         "__tests__/unit/reputation.repository.test.js",
-        "app/lib/integrity/server-key.js"
+        "app/lib/integrity/server-key.ts"
       ],
       "in_env_example": false
     },
@@ -3546,9 +3546,9 @@
         "__tests__/unit/webhooks.route.test.js",
         "app/api/security/status/route.ts",
         "app/api/setup/migrate/route.ts",
-        "app/lib/auth.js",
-        "app/lib/db.js",
-        "app/lib/validateEnv.js",
+        "app/lib/auth.ts",
+        "app/lib/db.ts",
+        "app/lib/validateEnv.ts",
         "drizzle.config.js",
         "middleware.js",
         "scripts/_db.mjs",
@@ -3597,7 +3597,7 @@
       "required": false,
       "files": [
         "app/lib/guard.ts",
-        "app/lib/validateEnv.js"
+        "app/lib/validateEnv.ts"
       ],
       "in_env_example": false
     },
@@ -3648,7 +3648,7 @@
         "__tests__/unit/security-status.route.test.js",
         "app/api/security/status/route.ts",
         "app/api/settings/route.ts",
-        "app/lib/encryption.js"
+        "app/lib/encryption.ts"
       ],
       "in_env_example": true
     },
@@ -3665,7 +3665,7 @@
       "name": "GITHUB_CLIENT_ID",
       "required": false,
       "files": [
-        "app/lib/auth.js"
+        "app/lib/auth.ts"
       ],
       "in_env_example": false
     },
@@ -3673,7 +3673,7 @@
       "name": "GITHUB_CLIENT_SECRET",
       "required": false,
       "files": [
-        "app/lib/auth.js"
+        "app/lib/auth.ts"
       ],
       "in_env_example": false
     },
@@ -3681,7 +3681,7 @@
       "name": "GITHUB_ID",
       "required": false,
       "files": [
-        "app/lib/auth.js"
+        "app/lib/auth.ts"
       ],
       "in_env_example": false
     },
@@ -3705,7 +3705,7 @@
       "name": "GITHUB_SECRET",
       "required": false,
       "files": [
-        "app/lib/auth.js"
+        "app/lib/auth.ts"
       ],
       "in_env_example": false
     },
@@ -3721,7 +3721,7 @@
       "name": "GOOGLE_AI_API_KEY",
       "required": false,
       "files": [
-        "app/lib/llm.js"
+        "app/lib/llm.ts"
       ],
       "in_env_example": false
     },
@@ -3729,7 +3729,7 @@
       "name": "GOOGLE_CLIENT_ID",
       "required": false,
       "files": [
-        "app/lib/auth.js"
+        "app/lib/auth.ts"
       ],
       "in_env_example": false
     },
@@ -3737,7 +3737,7 @@
       "name": "GOOGLE_CLIENT_SECRET",
       "required": false,
       "files": [
-        "app/lib/auth.js"
+        "app/lib/auth.ts"
       ],
       "in_env_example": false
     },
@@ -3745,7 +3745,7 @@
       "name": "GOOGLE_ID",
       "required": false,
       "files": [
-        "app/lib/auth.js"
+        "app/lib/auth.ts"
       ],
       "in_env_example": false
     },
@@ -3753,7 +3753,7 @@
       "name": "GOOGLE_SECRET",
       "required": false,
       "files": [
-        "app/lib/auth.js"
+        "app/lib/auth.ts"
       ],
       "in_env_example": false
     },
@@ -3761,7 +3761,7 @@
       "name": "GUARD_LLM_BASE_URL",
       "required": false,
       "files": [
-        "app/lib/llm.js"
+        "app/lib/llm.ts"
       ],
       "in_env_example": false
     },
@@ -3770,10 +3770,10 @@
       "required": false,
       "files": [
         "__tests__/unit/guard-engine.test.js",
-        "app/lib/embeddings.js",
+        "app/lib/embeddings.ts",
         "app/lib/guard.ts",
-        "app/lib/knowledge-ingest.js",
-        "app/lib/llm.js",
+        "app/lib/knowledge-ingest.ts",
+        "app/lib/llm.ts",
         "scripts/test-semantic-guard.mjs"
       ],
       "in_env_example": false
@@ -3782,7 +3782,7 @@
       "name": "GUARD_LLM_MODEL",
       "required": false,
       "files": [
-        "app/lib/llm.js"
+        "app/lib/llm.ts"
       ],
       "in_env_example": false
     },
@@ -3810,7 +3810,7 @@
       "files": [
         "__tests__/unit/hosted/flag.test.js",
         "__tests__/unit/hosted/workspace-provision.test.js",
-        "app/lib/hosted/flag.js"
+        "app/lib/hosted/flag.ts"
       ],
       "in_env_example": false
     },
@@ -3827,7 +3827,7 @@
       "required": false,
       "files": [
         "__tests__/unit/hosted/flag.test.js",
-        "app/lib/hosted/flag.js"
+        "app/lib/hosted/flag.ts"
       ],
       "in_env_example": false
     },
@@ -3836,7 +3836,7 @@
       "required": false,
       "files": [
         "__tests__/unit/hosted/flag.test.js",
-        "app/lib/hosted/flag.js"
+        "app/lib/hosted/flag.ts"
       ],
       "in_env_example": false
     },
@@ -3908,7 +3908,7 @@
         "__tests__/unit/health.route.test.js",
         "app/api/health/route.ts",
         "app/components/UserMenu.tsx",
-        "app/lib/isDemoMode.js"
+        "app/lib/isDemoMode.ts"
       ],
       "in_env_example": false
     },
@@ -3960,7 +3960,7 @@
       "required": false,
       "files": [
         "__tests__/unit/hosted/publicConfig.test.js",
-        "app/lib/hosted/publicConfig.js"
+        "app/lib/hosted/publicConfig.ts"
       ],
       "in_env_example": false
     },
@@ -3975,14 +3975,14 @@
         "app/api/health/route.ts",
         "app/api/oauth/register/route.ts",
         "app/api/settings/route.ts",
-        "app/lib/auth.js",
-        "app/lib/db.js",
-        "app/lib/events.js",
-        "app/lib/hosted/turnstile.js",
+        "app/lib/auth.ts",
+        "app/lib/db.ts",
+        "app/lib/events.ts",
+        "app/lib/hosted/turnstile.ts",
         "app/lib/next-config-headers.cjs",
         "app/lib/readiness/workflow.mjs",
-        "app/lib/security-headers.js",
-        "app/lib/validateEnv.js",
+        "app/lib/security-headers.ts",
+        "app/lib/validateEnv.ts",
         "middleware.js"
       ],
       "in_env_example": false
@@ -3991,8 +3991,8 @@
       "name": "OIDC_AUTHORIZATION_URL",
       "required": false,
       "files": [
-        "app/lib/auth.js",
-        "app/lib/validateEnv.js"
+        "app/lib/auth.ts",
+        "app/lib/validateEnv.ts"
       ],
       "in_env_example": false
     },
@@ -4000,8 +4000,8 @@
       "name": "OIDC_CLIENT_ID",
       "required": false,
       "files": [
-        "app/lib/auth.js",
-        "app/lib/validateEnv.js"
+        "app/lib/auth.ts",
+        "app/lib/validateEnv.ts"
       ],
       "in_env_example": false
     },
@@ -4009,8 +4009,8 @@
       "name": "OIDC_CLIENT_SECRET",
       "required": false,
       "files": [
-        "app/lib/auth.js",
-        "app/lib/validateEnv.js"
+        "app/lib/auth.ts",
+        "app/lib/validateEnv.ts"
       ],
       "in_env_example": false
     },
@@ -4018,7 +4018,7 @@
       "name": "OIDC_DISPLAY_NAME",
       "required": false,
       "files": [
-        "app/lib/auth.js"
+        "app/lib/auth.ts"
       ],
       "in_env_example": false
     },
@@ -4026,8 +4026,8 @@
       "name": "OIDC_ISSUER_URL",
       "required": false,
       "files": [
-        "app/lib/auth.js",
-        "app/lib/validateEnv.js"
+        "app/lib/auth.ts",
+        "app/lib/validateEnv.ts"
       ],
       "in_env_example": false
     },
@@ -4035,8 +4035,8 @@
       "name": "OIDC_TOKEN_URL",
       "required": false,
       "files": [
-        "app/lib/auth.js",
-        "app/lib/validateEnv.js"
+        "app/lib/auth.ts",
+        "app/lib/validateEnv.ts"
       ],
       "in_env_example": false
     },
@@ -4044,8 +4044,8 @@
       "name": "OIDC_USERINFO_URL",
       "required": false,
       "files": [
-        "app/lib/auth.js",
-        "app/lib/validateEnv.js"
+        "app/lib/auth.ts",
+        "app/lib/validateEnv.ts"
       ],
       "in_env_example": false
     },
@@ -4053,10 +4053,10 @@
       "name": "OPENAI_API_KEY",
       "required": false,
       "files": [
-        "app/lib/embeddings.js",
+        "app/lib/embeddings.ts",
         "app/lib/guard.ts",
-        "app/lib/knowledge-ingest.js",
-        "app/lib/llm.js",
+        "app/lib/knowledge-ingest.ts",
+        "app/lib/llm.ts",
         "examples/openai-deploy-pipeline/index.js",
         "examples/openai-governed-agent/index.js"
       ],
@@ -4119,7 +4119,7 @@
       "name": "REALTIME_BACKEND",
       "required": false,
       "files": [
-        "app/lib/events.js"
+        "app/lib/events.ts"
       ],
       "in_env_example": false
     },
@@ -4127,7 +4127,7 @@
       "name": "REALTIME_ENFORCE_REDIS",
       "required": false,
       "files": [
-        "app/lib/events.js"
+        "app/lib/events.ts"
       ],
       "in_env_example": false
     },
@@ -4135,7 +4135,7 @@
       "name": "REALTIME_MAX_LISTENERS",
       "required": false,
       "files": [
-        "app/lib/events.js"
+        "app/lib/events.ts"
       ],
       "in_env_example": false
     },
@@ -4143,7 +4143,7 @@
       "name": "REALTIME_MEMORY_MAX_LISTENERS",
       "required": false,
       "files": [
-        "app/lib/events.js"
+        "app/lib/events.ts"
       ],
       "in_env_example": false
     },
@@ -4151,8 +4151,8 @@
       "name": "REALTIME_REDIS_URL",
       "required": false,
       "files": [
-        "app/lib/events.js",
-        "app/lib/marketingEvents.js",
+        "app/lib/events.ts",
+        "app/lib/marketingEvents.ts",
         "scripts/export-marketing-events.mjs"
       ],
       "in_env_example": false
@@ -4161,7 +4161,7 @@
       "name": "REALTIME_REPLAY_MAX_EVENTS",
       "required": false,
       "files": [
-        "app/lib/events.js"
+        "app/lib/events.ts"
       ],
       "in_env_example": false
     },
@@ -4169,7 +4169,7 @@
       "name": "REALTIME_REPLAY_WINDOW_SECONDS",
       "required": false,
       "files": [
-        "app/lib/events.js"
+        "app/lib/events.ts"
       ],
       "in_env_example": false
     },
@@ -4177,8 +4177,8 @@
       "name": "REDIS_URL",
       "required": false,
       "files": [
-        "app/lib/events.js",
-        "app/lib/marketingEvents.js",
+        "app/lib/events.ts",
+        "app/lib/marketingEvents.ts",
         "scripts/export-marketing-events.mjs"
       ],
       "in_env_example": false
@@ -4363,7 +4363,7 @@
         "__tests__/unit/hosted/publicConfig.test.js",
         "__tests__/unit/hosted/turnstile.test.js",
         "__tests__/unit/hosted/workspace-provision.test.js",
-        "app/lib/hosted/turnstile.js"
+        "app/lib/hosted/turnstile.ts"
       ],
       "in_env_example": false
     },
@@ -4878,68 +4878,7 @@
     }
   ],
   "setting_keys": [],
-  "events": [
-    {
-      "constant": "ACTION_CREATED",
-      "event": "action.created"
-    },
-    {
-      "constant": "ACTION_UPDATED",
-      "event": "action.updated"
-    },
-    {
-      "constant": "ACTION_COST_EXCEEDED",
-      "event": "action.cost_exceeded"
-    },
-    {
-      "constant": "SIGNAL_DETECTED",
-      "event": "signal.detected"
-    },
-    {
-      "constant": "TOKEN_USAGE",
-      "event": "token.usage"
-    },
-    {
-      "constant": "MESSAGE_CREATED",
-      "event": "message.created"
-    },
-    {
-      "constant": "POLICY_UPDATED",
-      "event": "policy.updated"
-    },
-    {
-      "constant": "TASK_ASSIGNED",
-      "event": "task.assigned"
-    },
-    {
-      "constant": "TASK_COMPLETED",
-      "event": "task.completed"
-    },
-    {
-      "constant": "DECISION_CREATED",
-      "event": "decision.created"
-    },
-    {
-      "constant": "GUARD_DECISION_CREATED",
-      "event": "guard.decision.created"
-    },
-    {
-      "constant": "LOOP_CREATED",
-      "event": "loop.created"
-    },
-    {
-      "constant": "LOOP_UPDATED",
-      "event": "loop.updated"
-    },
-    {
-      "constant": "GOAL_CREATED",
-      "event": "goal.created"
-    },
-    {
-      "constant": "GOAL_UPDATED",
-      "event": "goal.updated"
-    }
-  ],
+  "events": [],
   "adapters": [],
   "signal_types": [
     "autonomy_spike",

@@ -100,7 +100,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       loops,
-      total: parseInt(countResult[0]?.total || '0', 10),
+      total: parseInt((countResult[0]?.total as string | undefined) || '0', 10),
       stats: stats[0] || {},
       lastUpdated: new Date().toISOString()
     });
@@ -137,7 +137,8 @@ export async function POST(request: Request) {
       FROM action_records
       WHERE action_id = ${data.action_id} AND org_id = ${orgId}
     `;
-    if (action.length === 0) {
+    const parentAction = action[0];
+    if (!parentAction) {
       return NextResponse.json({ error: 'Parent action not found' }, { status: 404 });
     }
 
@@ -166,10 +167,10 @@ export async function POST(request: Request) {
     // We attach parent action details to help frontend avoid an extra fetch
     const eventPayload = {
       ...loop,
-      agent_id: action[0].agent_id,
-      agent_name: action[0].agent_name || action[0].agent_id,
-      declared_goal: action[0].declared_goal,
-      action_type: action[0].action_type,
+      agent_id: parentAction.agent_id,
+      agent_name: parentAction.agent_name || parentAction.agent_id,
+      declared_goal: parentAction.declared_goal,
+      action_type: parentAction.action_type,
     };
 
     await publishOrgEvent(EVENTS.LOOP_CREATED, {

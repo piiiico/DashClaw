@@ -9,6 +9,7 @@ import {
   listSignalsForSession,
 } from '../../../../../lib/repositories/code-sessions.repository.js';
 import { detectRepeatedRuns } from '../../../../../lib/claude-code/repeated-runs.js';
+import type { ToolEvent } from '../../../../../lib/claude-code/repeated-runs.js';
 
 export async function GET(request: Request, { params }: { params: Promise<{ sessionId: string }> }) {
   const { sessionId } = await params;
@@ -18,7 +19,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ sess
   if (!insights) {
     return NextResponse.json({ error: 'not_found' }, { status: 404 });
   }
-  const repeatedRuns = detectRepeatedRuns(insights.toolEvents);
+  // getSessionInsights types toolEvent fields as `unknown` (DB-origin); they
+  // match ToolEvent (name/requestId/target) at runtime.
+  const repeatedRuns = detectRepeatedRuns(insights.toolEvents as ToolEvent[]);
   const signals = await listSignalsForSession(sql, orgId, sessionId);
   return NextResponse.json({
     session_id: sessionId,

@@ -15,7 +15,7 @@ export async function GET(request: Request) {
     const limit = parseInt(url.searchParams.get('limit') || '50');
     const offset = parseInt(url.searchParams.get('offset') || '0');
 
-    const profiles = await listProfiles(sql, orgId, { action_type, status, limit, offset });
+    const profiles = await listProfiles(sql, orgId, { action_type: action_type ?? undefined, status, limit, offset });
     return Response.json({ profiles });
   } catch (err) {
     console.error('[scoring/profiles] GET error:', (err as Error).message);
@@ -40,7 +40,9 @@ export async function POST(request: Request) {
       const { addDimension } = await import('../../../lib/scoringProfiles.js');
       const dims = [];
       for (let i = 0; i < body.dimensions.length; i++) {
-        const dim = await addDimension(sql, orgId, profile.id, {
+        // createProfile always returns a profile with a generated id (Profile.id is
+        // optional only on the input shape); assert non-null for addDimension's string param.
+        const dim = await addDimension(sql, orgId, profile.id!, {
           ...body.dimensions[i],
           sort_order: body.dimensions[i].sort_order ?? i,
         });
