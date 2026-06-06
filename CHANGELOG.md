@@ -13,6 +13,14 @@ Through 3.x the platform and the SDKs versioned independently, which is why olde
 
 ## [Unreleased]
 
+## [4.2.3] — 2026-06-06
+
+> Docs-accuracy sweep. No code or public-surface change; the SDK is byte-identical to 4.2.2 (republishing at 4.2.3 is optional).
+
+### Changed
+
+- **`PROJECT_DETAILS.md` now references the migrated source files by their real `.ts` paths.** After the TypeScript migration, the canonical architecture doc still named modules by stale `.js` paths (`app/lib/db.js`, `guard.js`, `signals.js`, `integrity/sign.js`, the `app/api/**/route.js` glob, etc.) — 23 references corrected to `.ts`. (`docs:check` only validates markdown links, so these inline-code references weren't caught automatically.)
+
 ## [4.2.2] — 2026-06-06
 
 > Internal: completes the TypeScript migration by converting the remaining 167 `app/lib/*.js` modules to strict `.ts` (behavior-preserving), closing the `allowJs` island so internal callers get real types. No public API, route, or SDK-surface change (Node 126 / Python 224 unchanged); both SDK packages republish at 4.2.2 per the unified-version model.

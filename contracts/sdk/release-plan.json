@@ -1,14 +1,14 @@
 {
   "node": {
-    "current_version": "4.2.2",
+    "current_version": "4.2.3",
     "next_bump": "none",
-    "reason": "4.2.2 — patch. Internal-lib TypeScript milestone: the remaining 167 app/lib/*.js modules converted to strict .ts (behavior-preserving), closing the allowJs island; validate.js stays JS by design. Added tsx (devDep) so app/lib-importing ops scripts resolve .js→.ts under node. No SDK API change — Node surface stays 126. Both SDKs republish at 4.2.2 per the unified-version model. Self-dep stays ^4.0.0.",
-    "domains": ["platform"]
+    "reason": "4.2.3 — patch. Docs-accuracy sweep: PROJECT_DETAILS.md now references the migrated source files by their real .ts paths (23 stale app/lib/*.js + app/api/**/route.js references corrected to .ts after the TypeScript migration). No code, public-surface, or SDK change — Node surface stays 126; the SDK is byte-identical to 4.2.2, so republishing at 4.2.3 is optional. Self-dep stays ^4.0.0.",
+    "domains": ["docs"]
   },
   "python": {
-    "current_version": "4.2.2",
+    "current_version": "4.2.3",
     "next_bump": "none",
-    "reason": "4.2.2 — patch. Platform-only internal-lib TypeScript conversion. No Python SDK API change — surface stays 224. Republishes at 4.2.2 per the unified-version model.",
-    "domains": ["platform"]
+    "reason": "4.2.3 — patch. Docs-accuracy sweep only (PROJECT_DETAILS.md .js→.ts source paths). No Python SDK change — surface stays 224; byte-identical to 4.2.2, republish optional.",
+    "domains": ["docs"]
   }
 }
