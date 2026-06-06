@@ -330,7 +330,7 @@ claw = DashClaw(
 const decision = await claw.guard({
   action_type: 'deploy',
   risk_score: 85,
-  declared_goal: 'Update auth service to v2.1.1'
+  declared_goal: 'Update the auth service'
 });
 
 if (decision.decision === 'block') {
@@ -341,7 +341,7 @@ if (decision.decision === 'block') {
 //    authoritative source for HITL gating.
 const { action, action_id } = await claw.createAction({
   action_type: 'deploy',
-  declared_goal: 'Update auth service to v2.1.1'
+  declared_goal: 'Update the auth service'
 });
 
 // 3. If the server flagged this, wait for a human operator.
@@ -368,7 +368,7 @@ try {
 decision = claw.guard({
     "action_type": "deploy",
     "risk_score": 85,
-    "declared_goal": "Update auth service to v2.1.1"
+    "declared_goal": "Update the auth service"
 })
 
 if decision["decision"] == "block":
@@ -377,7 +377,7 @@ if decision["decision"] == "block":
 # 2. Log intent
 created = claw.create_action(
     action_type="deploy",
-    declared_goal="Update auth service to v2.1.1"
+    declared_goal="Update the auth service"
 )
 action_id = created["action_id"]
 
@@ -966,8 +966,8 @@ if created.get("action", {}).get("status") == "pending_approval":
               example={
                 <CodeBlock title="Node.js">
 {`const { decision } = await claw.recordDecision({
-  decision: 'Rolled back to v2.1.0',
-  context: 'Deploy of v2.1.1 raised error rate',
+  decision: 'Rolled back the auth-service deploy',
+  context: 'The new deploy raised the error rate',
   reasoning: 'Faster recovery than a forward fix',
   outcome: 'Error rate returned to baseline',
   confidence: 0.9

@@ -71,7 +71,7 @@ export default function GuardSimulation() {
                 </button>
               )}
               <div className="px-2 py-0.5 rounded bg-secondary border border-zinc-800 text-[9px] font-mono text-tertiary">
-                v2.1.0-stable
+                stable
               </div>
             </div>
           </div>
