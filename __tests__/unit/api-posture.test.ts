@@ -16,11 +16,13 @@ import type { PostureScore, PostureFinding } from '../../app/lib/posture/types';
 const m = vi.hoisted(() => ({
   sql: vi.fn(async () => []),
   computePosturePayload: vi.fn(),
+  listSnapshots: vi.fn(async (): Promise<Array<{ score: number; createdAt: string | null }>> => []),
 }));
 
 vi.mock('@/lib/db.js', () => ({ getSql: () => m.sql }));
 vi.mock('@/lib/org.js', () => ({ getOrgId: () => 'org_test' }));
 vi.mock('@/lib/posture/signals.js', () => ({ computePosturePayload: m.computePosturePayload }));
+vi.mock('@/lib/repositories/posture.repository.js', () => ({ listPostureSnapshots: m.listSnapshots }));
 
 const { GET } = await import('@/api/posture/route.js');
 
@@ -93,10 +95,22 @@ describe('GET /api/posture', () => {
     expect(body).toHaveProperty('snapshotTs');
   });
 
-  it('snapshotTs is null (Task 8 not yet implemented)', async () => {
+  it('snapshotTs is null when no snapshots exist yet', async () => {
     const res = await GET(getReq());
     const body = await res.json() as Record<string, unknown>;
     expect(body.snapshotTs).toBeNull();
+    expect(body.snapshots).toEqual([]);
+  });
+
+  it('surfaces the snapshot trend (newest first) and the latest snapshotTs', async () => {
+    m.listSnapshots.mockResolvedValueOnce([
+      { score: 72, createdAt: '2026-06-06T02:00:00Z' },
+      { score: 65, createdAt: '2026-06-05T02:00:00Z' },
+    ]);
+    const res = await GET(getReq());
+    const body = await res.json() as { snapshots: Array<{ score: number }>; snapshotTs: string };
+    expect(body.snapshots.map((s) => s.score)).toEqual([72, 65]);
+    expect(body.snapshotTs).toBe('2026-06-06T02:00:00Z');
   });
 
   it('score and status come from computePosturePayload', async () => {

@@ -6,29 +6,33 @@ import { getSql } from '../../lib/db.js';
 import { getOrgId } from '../../lib/org.js';
 import { apiErrorResponse } from '../../lib/apiErrors.js';
 import { computePosturePayload } from '../../lib/posture/signals.js';
+import { listPostureSnapshots } from '../../lib/repositories/posture.repository.js';
 
 /**
  * GET /api/posture
  *
  * Returns the org's current governance posture score, per-dimension breakdown,
- * prioritized remediation findings, and a summary counts object.
- *
- * snapshotTs is null until Task 8 adds posture_snapshots persistence.
+ * prioritized remediation findings, a summary counts object, and the recent
+ * snapshot trend (newest first) for the on-page sparkline. snapshotTs is the
+ * timestamp of the latest persisted scan, or null if none exists yet.
  */
 export async function GET(request: Request) {
   try {
     const sql = getSql();
     const orgId = getOrgId(request);
 
-    const { score, findings, unitCount } = await computePosturePayload(sql, orgId);
+    const [{ score, findings, unitCount }, snapshots] = await Promise.all([
+      computePosturePayload(sql, orgId),
+      listPostureSnapshots(sql, orgId, 30),
+    ]);
 
-    const coveredUnits = findings.filter((f) => f.scoreDelta === 0).length;
     const openFindings = findings.filter((f) => f.status === 'open').length;
     const pointsRecoverable = findings.reduce((s, f) => s + f.scoreDelta, 0);
 
     return NextResponse.json({
       score: score.score,
       status: score.status,
+      cappedBy: score.cappedBy,
       dimensions: score.dimensions,
       findings,
       summary: {
@@ -37,7 +41,9 @@ export async function GET(request: Request) {
         pointsRecoverable,
         openFindings,
       },
-      snapshotTs: null,
+      // Trend for the sparkline — newest first; oldest-first is the UI's concern.
+      snapshots: snapshots.map((s) => ({ score: s.score, createdAt: s.createdAt })),
+      snapshotTs: snapshots[0]?.createdAt ?? null,
     });
   } catch (error) {
     return apiErrorResponse(error, 'POSTURE GET');
