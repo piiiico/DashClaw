@@ -40,7 +40,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v6
         with:
-          images: ghcr.io/ucsandman/dashclaw-demo
+          images: ghcr.io/${{ github.repository_owner }}/dashclaw-demo
           tags: |
             type=sha,prefix=sha-
             type=raw,value=latest,enable={{is_default_branch}}
