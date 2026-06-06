@@ -18,14 +18,20 @@ const { createToolHandlers, TOOL_DEFINITIONS } = await import('../../mcp-server/
 import { DashClawClient } from '../../mcp-server/lib/client.js';
 
 describe('Tool Definitions', () => {
-  it('exports exactly 26 tool definitions', () => {
-    expect(TOOL_DEFINITIONS).toHaveLength(26);
+  it('exports exactly 28 tool definitions', () => {
+    expect(TOOL_DEFINITIONS).toHaveLength(28);
   });
 
   it('includes the inbox read tools', () => {
     const names = TOOL_DEFINITIONS.map((d) => d.name);
     expect(names).toContain('dashclaw_inbox_list');
     expect(names).toContain('dashclaw_messages_mark_read');
+  });
+
+  it('includes the read-only posture tools', () => {
+    const names = TOOL_DEFINITIONS.map((d) => d.name);
+    expect(names).toContain('dashclaw_posture');
+    expect(names).toContain('dashclaw_posture_next');
   });
 
   it('every definition has name, description, and inputSchema', () => {
@@ -377,6 +383,42 @@ describe('Tool Handlers', () => {
         agent_id: 'default-agent',
       }, { timeout: 10000 });
       expect(result).toContain('"updated":2');
+    });
+  });
+
+  describe('dashclaw_posture', () => {
+    it('GETs /api/posture + /api/posture/findings and merges the read-only payload', async () => {
+      mockGet.mockImplementation(async (path) => {
+        if (path === '/api/posture') return { score: 72, status: 'needs_attention', cappedBy: null, dimensions: [{ dimension: 'spend', score: 45, weight: 8 }], summary: { openFindings: 2 } };
+        if (path === '/api/posture/findings') return { findings: [{ key: 'f1', scoreDelta: 6 }], counts: { open: 2 } };
+        return {};
+      });
+
+      const result = await handlers.dashclaw_posture({ dimension: 'spend' });
+
+      expect(mockGet).toHaveBeenCalledWith('/api/posture', {}, { timeout: 15000 });
+      expect(mockGet).toHaveBeenCalledWith('/api/posture/findings', { dimension: 'spend' }, { timeout: 15000 });
+      const parsed = JSON.parse(result);
+      expect(parsed.score).toBe(72);
+      expect(parsed.findings[0].key).toBe('f1');
+      // Read-only: never POSTs/PATCHes (no enforcement mutation from MCP).
+      expect(mockPost).not.toHaveBeenCalled();
+      expect(mockPatch).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('dashclaw_posture_next', () => {
+    it('returns the single top open finding', async () => {
+      mockGet.mockResolvedValue({ findings: [{ key: 'top', scoreDelta: 9 }, { key: 'second' }] });
+      const result = await handlers.dashclaw_posture_next({});
+      expect(mockGet).toHaveBeenCalledWith('/api/posture/findings', {}, { timeout: 15000 });
+      expect(JSON.parse(result).next.key).toBe('top');
+    });
+
+    it('returns next:null when the queue is clear', async () => {
+      mockGet.mockResolvedValue({ findings: [] });
+      const result = await handlers.dashclaw_posture_next({});
+      expect(JSON.parse(result).next).toBeNull();
     });
   });
 });
