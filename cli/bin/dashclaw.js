@@ -102,11 +102,11 @@ ${bold('Usage:')}
   dashclaw inbox archive <id> [<id> ...] Archive messages
   dashclaw behavior status               Behavior Learning sample status (local recorder)
   dashclaw behavior suggestions          Evidence-backed policy suggestions per agent
+    --agent-id <id>                      Filter to one agent
   dashclaw posture                       Governance posture score + remediation queue
   dashclaw posture resolve <key>         Draft a fix (inactive) | --snooze | --accept-risk
     --note "..."                         Attach a note to the resolution
   dashclaw next                          The single top open governance gap + its fix
-    --agent-id <id>                      Filter to one agent
   dashclaw logout                        Remove saved config (~/.dashclaw/config.json)
   dashclaw help                          Show this help
 
@@ -986,13 +986,14 @@ const POSTURE_DIM_LABEL = {
 };
 
 function printFinding(f, indent = '   ') {
-  console.log(`${indent}${bold('+' + f.scoreDelta)}  ${dim('[' + f.severity + ']')}  ${f.title}`);
+  console.log(`${indent}${bold('+' + (f.scoreDelta ?? 0))}  ${dim('[' + f.severity + ']')}  ${f.title}`);
   console.log(dim(`${indent}    ${f.key}`));
 }
 
 async function cmdPostureShow() {
   try {
-    const [data, queue] = await Promise.all([fetchPosture(postureClient()), fetchFindings(postureClient())]);
+    const client = postureClient();
+    const [data, queue] = await Promise.all([fetchPosture(client), fetchFindings(client)]);
     const status = data.status === 'healthy' ? green(data.status)
       : data.status === 'at_risk' ? red(data.status) : data.status;
     console.log();
