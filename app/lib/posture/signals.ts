@@ -81,16 +81,24 @@ export function buildUnits(
 
   // Observed-action units: if a capability with the same key already exists
   // (unlikely — different key spaces), merge; otherwise add as action_type unit.
-  // Also set spend exposure from x402 provider slugs.
   for (const u of actionUnits) {
     const existing = byKey.get(u.key);
     if (existing) {
       // Same key: bump observedCount on the existing capability entry.
       byKey.set(u.key, { ...existing, observedCount: existing.observedCount + u.observedCount });
     } else {
-      // Check if this action_type maps to a known x402 surface.
-      const hasX402 = x402Slugs.size > 0 && u.hasSpendExposure;
-      byKey.set(u.key, { ...u, hasSpendExposure: u.hasSpendExposure || hasX402 });
+      byKey.set(u.key, u);
+    }
+  }
+
+  // x402 spend surfaces: any unit whose key matches an active x402 provider slug
+  // is spend-exposed. Capability units key on their slug, so x402-backed
+  // capabilities light up here.
+  if (x402Slugs.size > 0) {
+    for (const [key, u] of byKey) {
+      if (!u.hasSpendExposure && x402Slugs.has(key)) {
+        byKey.set(key, { ...u, hasSpendExposure: true });
+      }
     }
   }
 

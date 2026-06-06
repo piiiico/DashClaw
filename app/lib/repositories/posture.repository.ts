@@ -145,7 +145,7 @@ export async function getObservedActionUnits(
       action_type,
       AVG(risk_score)::real             AS risk_score_avg,
       COUNT(*)::int                     AS observed_count,
-      MAX(CASE WHEN reversible = false OR reversible = 0 THEN 1 ELSE 0 END)::int AS reversible_any,
+      MAX(CASE WHEN reversible = 0 THEN 1 ELSE 0 END)::int AS reversible_any,
       MAX(systems_touched)              AS systems_touched_sample,
       MAX(CASE WHEN cost_estimate > 0 THEN 1 ELSE 0 END)::int AS has_cost
     FROM action_records
