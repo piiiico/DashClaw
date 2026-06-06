@@ -31,3 +31,23 @@ export interface PostureScore {
   dimensions: DimensionScore[];
   cappedBy: 'incident' | null;
 }
+
+export type Severity = 'critical' | 'high' | 'medium' | 'low';
+
+export type PostureFix =
+  | { type: 'create_policy_draft'; policyType: string; rules: unknown }
+  | { type: 'bind_identity'; agentId: string }
+  | { type: 'enable_setting'; setting: 'redaction' | 'approval_channel'; deepLink: string }
+  | { type: 'adopt_coach_suggestion'; suggestionId: string; deepLink: string }
+  | { type: 'review_incident'; actionIds: string[]; deepLink: string };
+
+export interface PostureFinding {
+  key: string;
+  dimension: Dimension;
+  severity: Severity;
+  title: string;
+  evidence: { observedCount: number; exampleActionIds: string[]; exampleEventIds?: string[] };
+  scoreDelta: number;
+  fix: PostureFix;
+  status: 'open' | 'drafted' | 'resolved' | 'snoozed' | 'accepted_risk';
+}
