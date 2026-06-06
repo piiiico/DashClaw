@@ -53,10 +53,9 @@ interface X402ProviderPostureRow {
 }
 
 interface DecisionRow {
-  action_id: unknown;
+  id: unknown;            // guard_decisions.id (the decision id, e.g. act_gd_*)
   risk_score: unknown;
   action_type: unknown;
-  outcome_status: unknown;
   created_at: unknown;
   [k: string]: unknown;
 }
@@ -187,8 +186,11 @@ export async function getRecentDecisions(
   orgId: string,
   sinceTs: string,
 ): Promise<DecisionRow[]> {
+  // guard_decisions has no action_id/outcome_status column — its own `id`
+  // (act_gd_*) identifies the decision. Selecting non-existent columns 500s
+  // the whole /api/posture route, so this stays pinned to real columns.
   const rows = await sql`
-    SELECT action_id, risk_score, action_type, outcome_status, created_at
+    SELECT id, risk_score, action_type, created_at
     FROM guard_decisions
     WHERE org_id = ${orgId}
       AND decision = 'allow'

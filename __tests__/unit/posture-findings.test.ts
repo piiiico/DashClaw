@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { deriveFindings } from '../../app/lib/posture/findings';
-import type { GovernableUnit, Adjustments } from '../../app/lib/posture/types';
+import type { GovernableUnit, Adjustments, Dimension } from '../../app/lib/posture/types';
+import { validatePolicy } from '../../app/lib/validate.js';
 
 const unit = (over: Partial<GovernableUnit> = {}): GovernableUnit => ({
   key: 'cap:deploy', surfaceType: 'capability', riskLevel: 'high', reversible: false,
@@ -62,5 +63,26 @@ describe('deriveFindings', () => {
     expect(incident.fix).toMatchObject({ type: 'review_incident', actionIds: ['act_1'] });
     expect(incident.scoreDelta).toBeGreaterThan(0); // cap-relief gives it real weight
     expect(f[0]).toBe(incident);
+  });
+
+  // Guards the cross-task contract: every create_policy_draft fix MUST be a
+  // policy that validatePolicy accepts, or the Task 11 resolve route 400s when
+  // it tries to insert the draft. (Previously protected_path/require_approval
+  // drafts shipped empty paths/action_types and failed validation.)
+  it('every dimension produces a create_policy_draft fix that passes validatePolicy', () => {
+    const dimensions: Dimension[] = ['identity', 'enforcement', 'spend', 'auditability', 'approval', 'data_protection'];
+    for (const dimension of dimensions) {
+      const f = deriveFindings([unit({ key: `u-${dimension}`, dimension })], { [`u-${dimension}`]: 0 }, noAdj);
+      const fix = f[0]!.fix;
+      expect(fix.type).toBe('create_policy_draft');
+      if (fix.type !== 'create_policy_draft') continue;
+      const result = validatePolicy({
+        name: `Posture draft: ${dimension}`,
+        policy_type: fix.policyType,
+        rules: JSON.stringify(fix.rules),
+        active: 0,
+      }) as { valid: boolean; errors: string[] };
+      expect(result.valid, `${dimension} draft (${fix.policyType}) invalid: ${result.errors?.join('; ')}`).toBe(true);
+    }
   });
 });

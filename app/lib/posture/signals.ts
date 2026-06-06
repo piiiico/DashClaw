@@ -243,7 +243,7 @@ async function buildReplayMap(
  *   yet read here; Task 8 will wire this).
  */
 function buildAdjustments(
-  decisionRows: { action_id: unknown; risk_score: unknown; action_type: unknown; created_at: unknown }[],
+  decisionRows: { id: unknown; risk_score: unknown; action_type: unknown; created_at: unknown }[],
 ): Adjustments {
   const incidents: Incident[] = decisionRows
     .filter((r) => {
@@ -252,7 +252,9 @@ function buildAdjustments(
     })
     .map((r): Incident => ({
       unitKey: r.action_type ? `action_type:${String(r.action_type)}` : 'action_type:unknown',
-      actionId: String(r.action_id || ''),
+      // guard_decisions.id (act_gd_*) is the decision identifier — the surfaced
+      // evidence id for the leak (guard_decisions carries no action_records FK).
+      actionId: String(r.id || ''),
       riskLevel: bucketRiskScore(Number(r.risk_score) || 0),
       ts: String(r.created_at || new Date().toISOString()),
     }));

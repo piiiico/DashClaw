@@ -47,10 +47,10 @@
     ]
   },
   "summary": {
-    "total_routes": 290,
+    "total_routes": 293,
     "stable_routes": 47,
     "beta_routes": 24,
-    "experimental_routes": 219
+    "experimental_routes": 222
   },
   "routes": [
     {
@@ -2105,6 +2105,33 @@
       "maturity": "experimental",
       "matched_prefix": "(default)",
       "file": "app/api/posture/route.ts"
+    },
+    {
+      "path": "/api/posture/findings",
+      "methods": [
+        "GET"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/posture/findings/route.ts"
+    },
+    {
+      "path": "/api/posture/findings/{key}/resolve",
+      "methods": [
+        "POST"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/posture/findings/[key]/resolve/route.ts"
+    },
+    {
+      "path": "/api/posture/scan",
+      "methods": [
+        "POST"
+      ],
+      "maturity": "experimental",
+      "matched_prefix": "(default)",
+      "file": "app/api/posture/scan/route.ts"
     },
     {
       "path": "/api/prompts/agent-connect/raw",

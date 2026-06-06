@@ -180,18 +180,24 @@ describe('getObservedActionUnits', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('getRecentDecisions', () => {
-  it('returns decision rows as-is', async () => {
+  it('returns decision rows keyed by the real guard_decisions columns (id, not action_id)', async () => {
     const row = {
-      action_id: 'act_abc',
+      id: 'act_gd_abc',
       risk_score: 75,
       action_type: 'deploy',
-      outcome_status: 'completed',
       created_at: '2026-06-01T00:00:00Z',
     };
     const sql = makeSqlMock([[row]]);
     const rows = await getRecentDecisions(sql, 'org_1', '2026-05-25T00:00:00Z');
     expect(rows).toHaveLength(1);
-    expect(rows[0]!.action_id).toBe('act_abc');
+    expect(rows[0]!.id).toBe('act_gd_abc');
+    // Guard against the prod-500 regression: the query must not reference
+    // non-existent columns. Assert the SELECT names the real `id` column.
+    const mock = sql as unknown as { calls: { strings: TemplateStringsArray }[] };
+    const queryText = mock.calls[0]!.strings.join('?');
+    expect(queryText).toMatch(/SELECT\s+id,\s*risk_score,\s*action_type,\s*created_at/);
+    expect(queryText).not.toContain('action_id');
+    expect(queryText).not.toContain('outcome_status');
   });
 
   it('passes orgId and sinceTs as interpolated values', async () => {

@@ -48,9 +48,9 @@ p.kicker{background:var(--accent-bg);border:1px solid var(--accent-border);borde
 p.kicker b{color:var(--accent-deep)}
 </style></head><body>
 <h1>DashClaw Livingcode Dashboard</h1>
-<div class="sig" id="sig">Shape signature: sha1:ea5bb940cc369e7417592d879b2765787bcf1493 · signature-stable</div>
+<div class="sig" id="sig">Shape signature: sha1:ce16c721a3e7eee7a8e1a9fc6d60d4a6614ae49c · signature-stable</div>
 <div class="grid">
-      <div class="cell"><div class="n">243</div><div class="k">Active routes</div></div>
+      <div class="cell"><div class="n">246</div><div class="k">Active routes</div></div>
       <div class="cell"><div class="n">48</div><div class="k">Archived routes</div></div>
       <div class="cell"><div class="n">4</div><div class="k">Required env vars</div></div>
       <div class="cell"><div class="n">137</div><div class="k">Optional env vars</div></div>
@@ -332,7 +332,10 @@ p.kicker b{color:var(--accent-deep)}
     <tr data-path="/api/policies/simulate"><td><code>/api/policies/simulate</code></td><td>POST</td><td class="sig">app/api/policies/simulate/route.ts</td></tr>
     <tr data-path="/api/policies/templates"><td><code>/api/policies/templates</code></td><td>GET</td><td class="sig">app/api/policies/templates/route.ts</td></tr>
     <tr data-path="/api/policies/test"><td><code>/api/policies/test</code></td><td>POST</td><td class="sig">app/api/policies/test/route.ts</td></tr></tbody></table></details>
-<details><summary>/posture/* (1)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/posture"><td><code>/api/posture</code></td><td>GET</td><td class="sig">app/api/posture/route.ts</td></tr></tbody></table></details>
+<details><summary>/posture/* (4)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/posture"><td><code>/api/posture</code></td><td>GET</td><td class="sig">app/api/posture/route.ts</td></tr>
+    <tr data-path="/api/posture/findings"><td><code>/api/posture/findings</code></td><td>GET</td><td class="sig">app/api/posture/findings/route.ts</td></tr>
+    <tr data-path="/api/posture/findings/[key]/resolve"><td><code>/api/posture/findings/[key]/resolve</code></td><td>POST</td><td class="sig">app/api/posture/findings/[key]/resolve/route.ts</td></tr>
+    <tr data-path="/api/posture/scan"><td><code>/api/posture/scan</code></td><td>POST</td><td class="sig">app/api/posture/scan/route.ts</td></tr></tbody></table></details>
 <details><summary>/prompts/* (10)</summary><table><thead><tr><th>Path</th><th>Methods</th><th>File</th></tr></thead><tbody>    <tr data-path="/api/prompts/agent-connect/raw"><td><code>/api/prompts/agent-connect/raw</code></td><td>GET</td><td class="sig">app/api/prompts/agent-connect/raw/route.ts</td></tr>
     <tr data-path="/api/prompts/render"><td><code>/api/prompts/render</code></td><td>POST</td><td class="sig">app/api/prompts/render/route.ts</td></tr>
     <tr data-path="/api/prompts/runs"><td><code>/api/prompts/runs</code></td><td>GET</td><td class="sig">app/api/prompts/runs/route.ts</td></tr>

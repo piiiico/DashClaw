@@ -13,10 +13,10 @@ doc-type: architecture
 
 ## Summary
 
-- Total routes: `290`
+- Total routes: `293`
 - Stable routes: `47`
 - Beta routes: `24`
-- Experimental routes: `219`
+- Experimental routes: `222`
 
 ## Routes
 
@@ -239,6 +239,9 @@ doc-type: architecture
 | `/api/policies/templates` | `GET` | `stable` | `/api/policies` | `app/api/policies/templates/route.ts` |
 | `/api/policies/test` | `POST` | `stable` | `/api/policies` | `app/api/policies/test/route.ts` |
 | `/api/posture` | `GET` | `experimental` | `(default)` | `app/api/posture/route.ts` |
+| `/api/posture/findings` | `GET` | `experimental` | `(default)` | `app/api/posture/findings/route.ts` |
+| `/api/posture/findings/{key}/resolve` | `POST` | `experimental` | `(default)` | `app/api/posture/findings/[key]/resolve/route.ts` |
+| `/api/posture/scan` | `POST` | `experimental` | `(default)` | `app/api/posture/scan/route.ts` |
 | `/api/prompts/agent-connect/raw` | `GET` | `experimental` | `(default)` | `app/api/prompts/agent-connect/raw/route.ts` |
 | `/api/prompts/render` | `POST` | `experimental` | `(default)` | `app/api/prompts/render/route.ts` |
 | `/api/prompts/runs` | `GET` | `experimental` | `(default)` | `app/api/prompts/runs/route.ts` |

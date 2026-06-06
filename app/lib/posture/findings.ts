@@ -18,21 +18,30 @@ function stableKey(parts: string[]): string {
 const SEVERITY_RANK: Record<Severity, number> = { critical: 0, high: 1, medium: 2, low: 3 };
 
 // Which guard policy type a draft for each dimension should prefill.
+//
+// Every draft must be VALID per validatePolicy (app/lib/validate.js) so the
+// resolve route can insert it as an inactive guard_policies row and the UI can
+// simulate it. That rules out policy types whose rules can't be generically
+// pre-filled from a coverage gap: `protected_path` needs a concrete non-empty
+// `paths` list and `require_approval`/`block_action_type` need a non-empty
+// `action_types` list — neither is knowable from an arbitrary unit. So spend
+// gaps draft an `x402_spend_limit` cap (no required rule fields) and every other
+// dimension drafts a `risk_threshold` gate, which fires on the risk score that
+// every replay context carries. The human refines + activates at /policies.
 const DIMENSION_POLICY: Record<Dimension, string> = {
   enforcement: 'risk_threshold',
   spend: 'x402_spend_limit',
-  data_protection: 'protected_path',
-  identity: 'require_approval',
-  approval: 'require_approval',
-  auditability: 'require_approval',
+  data_protection: 'risk_threshold',
+  identity: 'risk_threshold',
+  approval: 'risk_threshold',
+  auditability: 'risk_threshold',
 };
 
 function draftRules(policyType: string): unknown {
   switch (policyType) {
-    case 'risk_threshold': return { threshold: 50, action: 'require_approval' };
     case 'x402_spend_limit': return { max_spend_usd: 0, approval_threshold: 0 };
-    case 'protected_path': return { paths: [], action: 'require_approval' };
-    default: return { action: 'require_approval' };
+    case 'risk_threshold':
+    default: return { threshold: 50, action: 'require_approval' };
   }
 }
 
@@ -93,8 +102,10 @@ export function deriveFindings(
       const fix: PostureFix = {
         type: 'review_incident',
         actionIds: [inc.actionId],
-        // /decisions/:id is the canonical decision-replay route (stable path).
-        deepLink: `/decisions/${inc.actionId}`,
+        // The incident id is a guard_decisions id (act_gd_*), which the
+        // /decisions/[actionId] detail route (it fetches /api/actions/:id) can't
+        // resolve. Link to the decisions ledger; the id is carried in actionIds.
+        deepLink: '/decisions',
       };
       findings.push({
         key: stableKey(['enforcement', 'incident', inc.unitKey, inc.actionId]),
