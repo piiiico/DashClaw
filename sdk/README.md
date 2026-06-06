@@ -618,7 +618,7 @@ If your agent supports Model Context Protocol (Claude Code, Claude Desktop, Mana
 
 **Streamable HTTP transport** (same surface, served by your DashClaw instance at `POST /api/mcp`).
 
-**26 tools** in 9 groups:
+**28 tools** in 10 groups:
 
 - **Core governance (8):** `dashclaw_guard`, `dashclaw_record`, `dashclaw_invoke`, `dashclaw_capabilities_list`, `dashclaw_policies_list`, `dashclaw_wait_for_approval`, `dashclaw_session_start`, `dashclaw_session_end`.
 - **Optimal files (2):** `dashclaw_optimal_files_preview`, `dashclaw_optimal_files_manifest` — Code Sessions optimizer output (root CLAUDE.md, path-scoped rules, hooks, skill packs).
@@ -629,6 +629,7 @@ If your agent supports Model Context Protocol (Claude Code, Claude Desktop, Mana
 - **Learning + retrospection (3):** `dashclaw_learning_log`, `dashclaw_learning_query`, `dashclaw_decisions_recent` — log + query non-obvious decisions; recent governed-action ledger.
 - **Agent inbox (2):** `dashclaw_inbox_list`, `dashclaw_messages_mark_read`
 - **Behavior learning (1):** `dashclaw_behavior_suggestions`
+- **Governance posture (2, read-only):** `dashclaw_posture`, `dashclaw_posture_next` — org governance posture score (6 dimensions + findings) and the next prioritized finding; read-only, drafting/remediation stays human-gated.
 
 **6 resources:** `dashclaw://policies`, `dashclaw://capabilities`, `dashclaw://agent/{agent_id}/history`, `dashclaw://status`, `dashclaw://code-sessions/projects`, `dashclaw://code-sessions/sessions/{session_id}`.
 
@@ -641,6 +642,7 @@ DashClaw 2.17 (platform) added three route families that are **agent-runtime inf
 | Session handoffs | `POST/GET /api/handoffs`, `GET /api/handoffs/latest`, `GET /api/handoffs/{id}`, `POST /api/handoffs/{id}/consume` | Hermes `on_session_end` / `on_session_start` / `pre_llm_call` hooks; MCP `dashclaw_handoff_*` tools |
 | Operator-tracked secrets | `GET/POST /api/secrets`, `PATCH/DELETE /api/secrets/{id}`, `GET /api/secrets/rotation-due` | MCP `dashclaw_secret_*` tools; operator UI |
 | Skill safety scan | `POST /api/skills/scan`, `GET /api/skills/scans/{id}` | MCP `dashclaw_skill_scan` tool; agents before loading an untrusted skill |
+| Governance posture | `GET /api/posture`, `GET /api/posture/findings`, `POST /api/posture/findings/[key]/resolve`, `POST /api/posture/scan` | MCP `dashclaw_posture` / `dashclaw_posture_next` tools (read-only); operator `/posture` UI. Experimental; remediation is human-gated (draft-only) |
 
 If you're building a custom integration that needs these without MCP, call them as plain HTTP — see `docs/api-inventory.md` and the OpenAPI spec at `docs/openapi/critical-stable.openapi.json`.
 

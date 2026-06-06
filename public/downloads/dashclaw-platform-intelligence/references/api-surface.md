@@ -1,6 +1,6 @@
 # DashClaw API Surface
 
-**289 active routes** (verified 2026-06-05 against `docs/api-inventory.json`). Node SDK uses camelCase, Python SDK uses snake_case.
+**293 active routes** (verified 2026-06-06 against `docs/api-inventory.json`): 47 stable, 24 beta, 222 experimental. Node SDK uses camelCase, Python SDK uses snake_case.
 
 > ⚠️ **Authoritative source:** `SKILL.md` (regenerated from the livingcode shape) and `docs/api-inventory.md`. This file is a curated narrative for the most commonly consumed surfaces plus anything new that doesn't yet have an SDK mapping. Some sections below describe legacy v1 endpoints that may not exist in the current build (e.g. `/api/context/*`, `/api/snippets/*`, `/api/decisions`, `/api/feedback/*`) — cross-check against `docs/api-inventory.md` before integrating.
 
@@ -20,6 +20,7 @@
 - [Capabilities](#capabilities)
 - [x402 Governed Capability Spend](#x402-governed-capability-spend)
 - [FinOps / Spend](#finops--spend)
+- [Governance Posture](#governance-posture)
 - [Workflows](#workflows)
 - [Context Manager](#context-manager)
 - [Agent Messaging](#agent-messaging)
@@ -64,9 +65,9 @@ The CLI (`dashclaw doctor`) invokes these endpoints. Local mode (`npm run doctor
 
 | Endpoint | Methods | Purpose |
 |---|---|---|
-| `/api/mcp` | POST | Model Context Protocol Streamable HTTP transport. Same 26 tools / 6 resources exposed by the stdio binary (`@dashclaw/mcp-server`). |
+| `/api/mcp` | POST | Model Context Protocol Streamable HTTP transport. Same 28 tools / 6 resources exposed by the stdio binary (`@dashclaw/mcp-server`). |
 
-**26 tools across 9 groups.** Core governance (8): `dashclaw_guard`, `dashclaw_record`, `dashclaw_invoke`, `dashclaw_capabilities_list`, `dashclaw_policies_list`, `dashclaw_wait_for_approval`, `dashclaw_session_start`, `dashclaw_session_end`. Optimal files (2): `dashclaw_optimal_files_preview`, `dashclaw_optimal_files_manifest`. Session continuity (3): `dashclaw_handoff_create`, `dashclaw_handoff_latest`, `dashclaw_handoff_consume`. Credential hygiene (3): `dashclaw_secret_list`, `dashclaw_secret_due`, `dashclaw_secret_mark_rotated`. Skill safety (1): `dashclaw_skill_scan`. Open loops (3): `dashclaw_loop_add`, `dashclaw_loop_list`, `dashclaw_loop_close`. Learning + retrospection (3): `dashclaw_learning_log`, `dashclaw_learning_query`, `dashclaw_decisions_recent`. Agent inbox (2): `dashclaw_inbox_list`, `dashclaw_messages_mark_read`. Behavior learning (1): `dashclaw_behavior_suggestions`.
+**28 tools across 10 groups.** Core governance (8): `dashclaw_guard`, `dashclaw_record`, `dashclaw_invoke`, `dashclaw_capabilities_list`, `dashclaw_policies_list`, `dashclaw_wait_for_approval`, `dashclaw_session_start`, `dashclaw_session_end`. Optimal files (2): `dashclaw_optimal_files_preview`, `dashclaw_optimal_files_manifest`. Session continuity (3): `dashclaw_handoff_create`, `dashclaw_handoff_latest`, `dashclaw_handoff_consume`. Credential hygiene (3): `dashclaw_secret_list`, `dashclaw_secret_due`, `dashclaw_secret_mark_rotated`. Skill safety (1): `dashclaw_skill_scan`. Open loops (3): `dashclaw_loop_add`, `dashclaw_loop_list`, `dashclaw_loop_close`. Learning + retrospection (3): `dashclaw_learning_log`, `dashclaw_learning_query`, `dashclaw_decisions_recent`. Agent inbox (2): `dashclaw_inbox_list`, `dashclaw_messages_mark_read`. Behavior learning (1): `dashclaw_behavior_suggestions`. Governance posture (2, read-only): `dashclaw_posture`, `dashclaw_posture_next`.
 
 **Resources:** `dashclaw://policies`, `dashclaw://capabilities`, `dashclaw://agent/{agent_id}/history`, `dashclaw://status`, `dashclaw://code-sessions/projects`, `dashclaw://code-sessions/sessions/{session_id}`.
 
@@ -146,6 +147,21 @@ A read-only aggregation/presentation layer that unifies spend across surfaces. F
 | `/api/finops/spend?lens=claude-code` | GET | Your Claude Code spend, advisory (`getClaudeCodeSpend`). Returns `{ lens, period, code_sessions, code_total_usd }` |
 
 `period` accepts `7d`, `30d`, or `90d`. Backed by `app/lib/repositories/finops.repository.js`. UI pages: `/spend` (Overview), `/spend/x402` (Purchases), `/spend/code` (Your Claude Code).
+
+## Governance Posture
+
+**Maturity:** Experimental
+
+Govern-the-governance: a gaming-resistant org governance posture score over 6 dimensions measuring what the fleet CAN do vs what it actually GOVERNS. The score is gaming-resistant — it only rises from ACTIVE, proven-to-fire policies; drafting a fix never raises it. Remediation is human-gated and DRAFT-ONLY (`resolve` does `create_draft | snooze | accept_risk` — it never auto-activates a policy).
+
+| Endpoint | Methods | Purpose |
+|---|---|---|
+| `/api/posture` | GET | Org governance posture score + 6 dimensions + findings + summary + snapshot trend |
+| `/api/posture/findings` | GET | Prioritized remediation queue (`?status=`, `?dimension=`) |
+| `/api/posture/findings/[key]/resolve` | POST | Human-gated finding resolution: `create_draft` \| `snooze` \| `accept_risk` (DRAFT-ONLY — never auto-applies) |
+| `/api/posture/scan` | POST | Recompute the score and persist a trend snapshot |
+
+UI: `/posture`. MCP (read-only): `dashclaw_posture`, `dashclaw_posture_next`. CLI: `dashclaw posture`, `dashclaw next`, `dashclaw posture resolve <key>`. Tables: `posture_findings_state`, `posture_snapshots`.
 
 ## Workflows
 

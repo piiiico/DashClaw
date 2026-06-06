@@ -690,7 +690,7 @@ if (decision === "allow") {
                   {
                     label: 'Zero code',
                     title: 'MCP server',
-                    desc: 'Any MCP-compatible client (Claude Code, Claude Desktop, Managed Agents) gets governance via 26 tools and 6 resources. No SDK, no hooks. In chat clients the model invokes governance cooperatively (records + approval gates), not a hard kernel block — pair with the governance skill so the agent consults guard before acting.',
+                    desc: 'Any MCP-compatible client (Claude Code, Claude Desktop, Managed Agents) gets governance via 28 tools and 6 resources. No SDK, no hooks. In chat clients the model invokes governance cooperatively (records + approval gates), not a hard kernel block — pair with the governance skill so the agent consults guard before acting.',
                     example: 'npx @dashclaw/mcp-server --url ... --key ...',
                     href: '/docs#mcp-server',
                   },
@@ -795,6 +795,15 @@ if (decision === "allow") {
                   <h3 className="text-sm font-semibold text-text-primary mb-1.5 group-hover:text-brand transition-colors">Spend (FinOps)</h3>
                   <p className="text-xs text-text-secondary leading-relaxed mb-3">Fleet spend rollup — agent LLM cost plus x402 capability purchases, with a separate Your-Claude-Code lens. 7/30/90-day trend.</p>
                   <pre className="bg-surface-primary rounded-lg px-3 py-2 text-[10px] sm:text-xs text-text-secondary font-mono overflow-x-auto">GET /api/finops/spend?lens=fleet</pre>
+                </Link>
+                <Link
+                  href="/posture"
+                  className="group p-5 rounded-xl bg-surface-secondary border border-border hover:border-border-hover transition-colors"
+                >
+                  <div className="text-[10px] uppercase tracking-wider text-text-tertiary mb-2 font-mono">Governance health</div>
+                  <h3 className="text-sm font-semibold text-text-primary mb-1.5 group-hover:text-brand transition-colors">Posture score</h3>
+                  <p className="text-xs text-text-secondary leading-relaxed mb-3">A gaming-resistant score across six governance dimensions — what the fleet actually governs versus what it could. It rises only from policies proven to fire, never from drafts. Each gap becomes a prioritized finding you resolve as a draft, snooze, or accept.</p>
+                  <pre className="bg-surface-primary rounded-lg px-3 py-2 text-[10px] sm:text-xs text-text-secondary font-mono overflow-x-auto">GET /api/posture</pre>
                 </Link>
               </div>
             </div>

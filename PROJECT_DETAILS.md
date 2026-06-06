@@ -25,7 +25,7 @@ Generated inventories remain authoritative for generated facts:
 | SDK parity by domain | `docs/sdk-parity.md` |
 | Durable execution finality spec | `docs/architecture/durable-execution-finality.md` |
 
-As of this verification, generated API inventory reports **289 routes**: **47 stable**, **24 beta**, **218 experimental**.
+As of this verification, generated API inventory reports **293 routes**: **47 stable**, **24 beta**, **222 experimental**.
 
 ## Product boundary
 
@@ -60,6 +60,7 @@ As of this verification, generated API inventory reports **289 routes**: **47 st
 | Agent Profiles | `/agents/[agentId]` | Governance-focused agent profile with trust posture, decision history, assumptions, signals, and policies. |
 | Policy Builder | `/policies` | Policy management, policy generation, simulation, import/proof surfaces, and guard activity. |
 | Policy Coach | `/policy-coach` | Behavior Learning (v1, observe-only): evidence-backed policy suggestions learned from locally-recorded agent behavior, with simulate-before-adopt and dismiss suppression. See `docs/behavior-learning.md`. |
+| Governance Posture | `/posture` | Gaming-resistant org governance posture score: score hero + 6 dimension cards (what the fleet CAN do vs what it actually GOVERNS), prioritized remediation queue, draft-only resolve modal, and a risk-accepted ledger. The score rises only from ACTIVE, proven-to-fire policies; drafting never raises it. Backed by `GET /api/posture`. Experimental. |
 | Analytics | `/analytics` | Cost trends, action volume, agent/type breakdowns, policy enforcement stats, and token efficiency. |
 | Spend | `/spend`, `/spend/x402`, `/spend/code` | FinOps rollup over agent LLM cost, x402 capability-purchase spend, and Code Sessions cost (Fleet vs Your-Claude-Code lenses, 7/30/90d trend). Beta. |
 | Workflows | `/workflows` | Workflow template management and governed workflow execution surfaces. |
@@ -127,6 +128,7 @@ These modules consume core runtime data and add operator value without changing 
 | Session handoffs | `POST/GET /api/handoffs`, `GET /api/handoffs/latest`, `GET /api/handoffs/{id}`, `POST /api/handoffs/{id}/consume` | Bridges agent sessions of the same agent: prior session writes a `{summary, open_loops, decisions_made, state_snapshot}` bundle on `on_session_end`; next session reads it via `on_session_start` and injects on first `pre_llm_call`. Hermes hooks wire this automatically; agents on Claude Code / Codex pick up via MCP (`dashclaw_handoff_create/latest/consume`). Table: `code_session_handoffs`. |
 | Operator-tracked secrets | `GET/POST /api/secrets`, `PATCH/DELETE /api/secrets/{id}`, `GET /api/secrets/rotation-due` | Operator-owned credential rotation tracker. Stores metadata only — no values. Agents call `dashclaw_secret_due` before acting on credentials and `dashclaw_secret_mark_rotated` only when an operator confirms a rotation. Table: `governed_secrets`. |
 | Skill safety scan | `POST /api/skills/scan`, `GET /api/skills/scans/{id}` | Static safety detector (11 rules across credential exfil, command injection, multi-line exfil, dangerous evals; false-positive avoidance via `(?<![.\w])` lookbehind). Agents call `dashclaw_skill_scan` before loading an untrusted skill; identical-content scans are deduped by hash. Table: `skill_scan_results`. |
+| Governance Posture | `GET /api/posture`, `GET /api/posture/findings`, `POST /api/posture/findings/[key]/resolve`, `POST /api/posture/scan` | Govern-the-governance meta layer: a gaming-resistant org governance score over 6 dimensions measuring what the fleet CAN do vs what it actually GOVERNS, with a prioritized findings queue and a human-gated, DRAFT-ONLY remediation loop (`resolve` does `create_draft \| snooze \| accept_risk` — never auto-activates a policy). The score rises only from ACTIVE, proven-to-fire policies; drafting never raises it. `scan` recomputes and persists a trend snapshot. Tables: `posture_findings_state`, `posture_snapshots`. UI: `/posture`. MCP (read-only): `dashclaw_posture`, `dashclaw_posture_next`. CLI: `dashclaw posture`, `dashclaw next`, `dashclaw posture resolve <key>`. Experimental. |
 
 ### Tier 3: Archived platform-era routes
 

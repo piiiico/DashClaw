@@ -38,7 +38,7 @@ Both modes serve the same landing page. `/demo` sets a cookie and redirects to `
 - Next.js 16 (App Router), JavaScript, Tailwind CSS 3
 - Postgres (TCP via `postgres`, serverless via `@neondatabase/serverless`)
 - Auth: NextAuth v4 for UI (GitHub, Google, or OIDC), `x-api-key` header for agents/tools
-- **Version:** the platform and both SDKs share one version — currently **4.2.0** (Node + Python; see `CHANGELOG.md`).
+- **Version:** the platform and both SDKs share one version — currently **4.3.0** (Node + Python; see `CHANGELOG.md`).
 - SDKs:
   - **Node v2 — governance runtime** (`sdk/dashclaw.js`, 126 methods across Core Governance, Scoring, Execution Studio, Messaging, Sessions, and Capability Runtime). This is the SDK that ships as the `dashclaw` package.
   - **Node v1 — full platform legacy** (`sdk/legacy/dashclaw-v1.js`, 187 methods), re-exported as `dashclaw/legacy` for older integrations (see `docs/sdk-parity.md`).
@@ -161,6 +161,7 @@ Client request hits middleware.js
 | `/policies` | Shields-first policy builder (ActivityTab + CustomTab, AI generator inline, agent-scope picker, risk explainer) |
 | `/policies/generate` | AI policy generator standalone page |
 | `/security` | Security dashboard (signals, guard decisions, findings) |
+| `/posture` | Governance posture score (score hero + 6 dimension cards + remediation queue + resolve modal + risk-accepted ledger). Gaming-resistant: score only rises from active, proven-to-fire policies; drafting never raises it. |
 | `/analytics` | Cost + action analytics (hero stats, cost trend, action volume, breakdowns, token usage) |
 | `/activity` | Raw activity log |
 | `/compliance` | Compliance mapping (framework controls, gap analysis, evidence, reports) |
@@ -187,7 +188,7 @@ The left sidebar is organized into five groups (`app/components/Sidebar.js`). **
 
 | Group | Items |
 |---|---|
-| **Govern** | Mission Control, Decisions, Approvals, Policies, Fleet |
+| **Govern** | Mission Control, Decisions, Approvals, Policies, Posture, Fleet |
 | **Observe** | Security, Analytics, Activity, Compliance |
 | **Spend** | Overview, Purchases, Your Claude Code |
 | **Configure** | API Keys, Integrations, Webhooks, Identities, Settings |
@@ -225,7 +226,7 @@ These are optional packages published alongside the core runtime.
 - **stdio binary** — `npx @dashclaw/mcp-server --url ... --key ...` (Claude Desktop, Claude Code, MCP Inspector)
 - **Streamable HTTP** — `POST /api/mcp` on the DashClaw instance itself
 
-**26 tools across 9 groups:**
+**28 tools across 10 groups:**
 - *Core governance (8):* `dashclaw_guard`, `dashclaw_record`, `dashclaw_invoke`, `dashclaw_capabilities_list`, `dashclaw_policies_list`, `dashclaw_wait_for_approval`, `dashclaw_session_start`, `dashclaw_session_end`.
 - *Optimal files (2):* `dashclaw_optimal_files_preview`, `dashclaw_optimal_files_manifest`.
 - *Session continuity (3):* `dashclaw_handoff_create`, `dashclaw_handoff_latest`, `dashclaw_handoff_consume`.
@@ -235,6 +236,7 @@ These are optional packages published alongside the core runtime.
 - *Learning + retrospection (3):* `dashclaw_learning_log`, `dashclaw_learning_query`, `dashclaw_decisions_recent`.
 - *Agent inbox (2):* `dashclaw_inbox_list`, `dashclaw_messages_mark_read`.
 - *Behavior learning (1):* `dashclaw_behavior_suggestions` — observe-only Policy Coach suggestions from recorded behavior.
+- *Governance posture (2, read-only):* `dashclaw_posture`, `dashclaw_posture_next` — org governance posture score + 6 dimensions + prioritized findings; read-only (remediation is human-gated).
 
 **6 resources:** `dashclaw://policies`, `dashclaw://capabilities`, `dashclaw://agent/{agent_id}/history`, `dashclaw://status`, `dashclaw://code-sessions/projects`, `dashclaw://code-sessions/sessions/{session_id}`.
 

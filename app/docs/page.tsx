@@ -122,7 +122,7 @@ function SectionNav({ items }: SectionNavProps) {
 const navItems = [
   { href: '#quick-start', label: 'Quick Start' },
   { href: '#mcp-server', label: 'MCP Server' },
-  { href: '#mcp-tools', label: 'Tools (26)', indent: true },
+  { href: '#mcp-tools', label: 'Tools (28)', indent: true },
   { href: '#mcp-resources', label: 'Resources (6)', indent: true },
   { href: '#mcp-config', label: 'Configuration', indent: true },
   { href: '#cli-and-doctor', label: 'CLI & Doctor' },
@@ -202,6 +202,11 @@ const navItems = [
   { href: '#agent-registry', label: 'Agent Registry' },
   { href: '#x402-spend-governance', label: 'x402 Spend Governance' },
   { href: '#finops-spend', label: 'FinOps Spend' },
+  { href: '#governance-posture', label: 'Governance Posture' },
+  { href: '#posture-score', label: 'GET /api/posture', indent: true },
+  { href: '#posture-findings', label: 'Findings queue', indent: true },
+  { href: '#posture-resolve', label: 'Resolve a finding', indent: true },
+  { href: '#posture-scan', label: 'Scan (snapshot)', indent: true },
   { href: '#code-sessions', label: 'Code Sessions' },
   { href: '#code-sessions-ingest', label: 'Ingest transcripts', indent: true },
   { href: '#code-sessions-optimal-files', label: 'Optimal Files', indent: true },
@@ -413,12 +418,12 @@ except Exception as e:
               <h2 className="text-2xl font-bold tracking-tight">MCP Server</h2>
             </div>
             <p className="mt-2 mb-8 text-sm text-text-secondary leading-relaxed">
-              <code className="font-mono text-text-secondary">@dashclaw/mcp-server</code> exposes DashClaw governance over Model Context Protocol. Any MCP-compatible client gets 26 governance tools across 9 groups (core governance, optimal files, session continuity, credential hygiene, skill safety, open loops, learning + retrospection, agent inbox, behavior learning) plus 6 read-only resources.
+              <code className="font-mono text-text-secondary">@dashclaw/mcp-server</code> exposes DashClaw governance over Model Context Protocol. Any MCP-compatible client gets 28 governance tools across 10 groups (core governance, optimal files, session continuity, credential hygiene, skill safety, open loops, learning + retrospection, agent inbox, behavior learning, governance posture) plus 6 read-only resources.
             </p>
 
             {/* Tools */}
             <div id="mcp-tools" className="scroll-mt-20 mb-10">
-              <h3 className="text-lg font-semibold text-text-primary mb-4">Tools (26)</h3>
+              <h3 className="text-lg font-semibold text-text-primary mb-4">Tools (28)</h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
@@ -456,6 +461,8 @@ except Exception as e:
                       { group: 'Agent inbox', tool: 'dashclaw_inbox_list', desc: 'List inbox messages + unread count', inputs: 'agent_id, direction, unread, type, limit' },
                       { tool: 'dashclaw_messages_mark_read', desc: 'Mark inbox messages as read', inputs: 'message_ids, agent_id' },
                       { group: 'Behavior learning', tool: 'dashclaw_behavior_suggestions', desc: 'Observe-only Policy Coach suggestions from recorded behavior', inputs: 'agent_id' },
+                      { group: 'Governance posture', tool: 'dashclaw_posture', desc: 'Read the org governance posture score + 6 dimensions + findings queue (read-only)', inputs: 'dimension' },
+                      { tool: 'dashclaw_posture_next', desc: 'The next prioritized remediation finding from the posture queue (read-only)', inputs: '(none)' },
                     ] as Array<{ group?: string; tool: string; desc: string; inputs: string }>).map((row) => (
                       <tr key={row.tool} className="border-b border-border">
                         <td className="py-2 pr-4 font-mono text-xs text-brand">
@@ -2514,6 +2521,80 @@ const code = await fetch('/api/finops/spend?lens=claude-code&period=7d', {
                   </CodeBlock>
                 }
               />
+            </div>
+          </section>
+
+          <section id="governance-posture" className="scroll-mt-20 pt-12 border-t border-border">
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold text-text-primary mb-2 font-mono">Governance Posture</h3>
+              <p className="text-xs text-text-tertiary mb-4">A gaming-resistant, read-only governance posture score for the org: it measures what the fleet actually GOVERNS versus what it COULD, across six dimensions, and drives a human-gated remediation loop. The score only rises from ACTIVE, proven-to-fire policies — drafting a fix never raises it. Operator surface only; no SDK wrapper. Powers the /posture page. All routes experimental.</p>
+              <MethodEntry
+                id="posture-score"
+                signature="GET /api/posture"
+                description="Compute the current posture score with its six dimension breakdowns, the prioritized findings queue, a summary, and the recent snapshot trend."
+                returns="{ score, status, cappedBy, dimensions, findings, summary, snapshots, snapshotTs }"
+                example={
+                  <CodeBlock title="Read the org posture">
+{`const res = await fetch('/api/posture', {
+  headers: { 'x-api-key': process.env.DASHCLAW_API_KEY },
+});
+const { score, status, dimensions, findings, summary, snapshots } = await res.json();`}
+                  </CodeBlock>
+                }
+              />
+              <MethodEntry
+                id="posture-findings"
+                signature="GET /api/posture/findings"
+                description="The prioritized remediation queue, plus the risk-accepted ledger and per-status counts. Filter by status or dimension."
+                params={[
+                  { name: 'status', type: 'string', required: false, desc: 'open | drafted | resolved | snoozed | accepted_risk' },
+                  { name: 'dimension', type: 'string', required: false, desc: 'Filter to one of the six posture dimensions' },
+                ]}
+                returns="{ findings, riskAccepted, counts }"
+                example={
+                  <CodeBlock title="List the open queue">
+{`const res = await fetch('/api/posture/findings?status=open', {
+  headers: { 'x-api-key': apiKey },
+});
+const { findings, riskAccepted, counts } = await res.json();`}
+                  </CodeBlock>
+                }
+              />
+              <MethodEntry
+                id="posture-resolve"
+                signature="POST /api/posture/findings/:key/resolve"
+                description="Human-gated resolution. action='create_draft' inserts an INACTIVE policy draft (never auto-activates, never raises the score); 'snooze' defers it; 'accept_risk' records an explicit acceptance in the ledger. Draft-only by design — a human still activates any policy at /policies."
+                params={[
+                  { name: 'action', type: 'string', required: true, desc: 'create_draft | snooze | accept_risk' },
+                  { name: 'note', type: 'string', required: false, desc: 'Operator note (e.g. a risk-acceptance justification)' },
+                ]}
+                returns="{ resolved, action, status, policy?, state, finding? }"
+                example={
+                  <CodeBlock title="Draft a remediation (a human activates it later)">
+{`const res = await fetch('/api/posture/findings/' + key + '/resolve', {
+  method: 'POST',
+  headers: { 'x-api-key': apiKey, 'content-type': 'application/json' },
+  body: JSON.stringify({ action: 'create_draft' }),
+});`}
+                  </CodeBlock>
+                }
+              />
+              <MethodEntry
+                id="posture-scan"
+                signature="POST /api/posture/scan"
+                description="Recompute the posture score and persist a trend snapshot for history."
+                returns="{ score, status, dimensions, snapshot, summary }"
+                example={
+                  <CodeBlock title="Recompute and record a snapshot">
+{`const res = await fetch('/api/posture/scan', {
+  method: 'POST',
+  headers: { 'x-api-key': apiKey },
+});
+const { score, snapshot } = await res.json();`}
+                  </CodeBlock>
+                }
+              />
+              <p className="text-sm text-text-secondary mb-2 leading-relaxed">Also exposed read-only over MCP — tools <code className="text-brand">dashclaw_posture</code> + <code className="text-brand">dashclaw_posture_next</code> — and as CLI commands <code className="text-brand">dashclaw posture</code> / <code className="text-brand">dashclaw next</code> / <code className="text-brand">dashclaw posture resolve &lt;key&gt;</code> (draft-only). The dashboard view is at <code className="text-brand">/posture</code>.</p>
             </div>
           </section>
 

@@ -1,14 +1,14 @@
 {
   "node": {
-    "current_version": "4.2.3",
+    "current_version": "4.3.0",
     "next_bump": "none",
-    "reason": "4.2.3 — patch. Docs-accuracy sweep: PROJECT_DETAILS.md now references the migrated source files by their real .ts paths (23 stale app/lib/*.js + app/api/**/route.js references corrected to .ts after the TypeScript migration). No code, public-surface, or SDK change — Node surface stays 126; the SDK is byte-identical to 4.2.2, so republishing at 4.2.3 is optional. Self-dep stays ^4.0.0.",
-    "domains": ["docs"]
+    "reason": "4.3.0 — minor. Governance Posture Score subsystem (additive): 4 experimental routes (GET /api/posture, GET /api/posture/findings, POST /api/posture/findings/[key]/resolve, POST /api/posture/scan), 2 tables (posture_findings_state, posture_snapshots), the /posture operator page, 2 read-only MCP tools (dashclaw_posture, dashclaw_posture_next → 28 tools total), and 3 CLI commands (posture/next/resolve, draft-only). No new SDK methods — Node surface stays 126; the SDK is byte-identical to 4.2.3 but republishes at 4.3.0 per the unified-version model. Self-dep stays ^4.0.0 (minor within the major).",
+    "domains": ["platform", "mcp", "cli", "docs"]
   },
   "python": {
-    "current_version": "4.2.3",
+    "current_version": "4.3.0",
     "next_bump": "none",
-    "reason": "4.2.3 — patch. Docs-accuracy sweep only (PROJECT_DETAILS.md .js→.ts source paths). No Python SDK change — surface stays 224; byte-identical to 4.2.2, republish optional.",
-    "domains": ["docs"]
+    "reason": "4.3.0 — minor. Governance Posture Score subsystem shipped on the platform/MCP/CLI side. No Python SDK change — surface stays 224; byte-identical to 4.2.3, republishes at 4.3.0 per the unified-version model.",
+    "domains": ["platform", "mcp", "cli", "docs"]
   }
 }

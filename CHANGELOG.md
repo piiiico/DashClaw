@@ -13,6 +13,19 @@ Through 3.x the platform and the SDKs versioned independently, which is why olde
 
 ## [Unreleased]
 
+## [4.3.0] — 2026-06-06
+
+> Governance Posture Score + remediation loop — a new govern-the-governance subsystem. Minor bump (additive routes/tools/CLI/page); no SDK method change (Node 126 / Python 224 unchanged), both SDKs republish at 4.3.0 per the unified-version model.
+
+### Added
+
+- **Governance Posture Score + human-gated remediation loop.** A gaming-resistant, org-wide governance posture score (0–100) across six dimensions (identity, enforcement, spend, auditability, approval, data protection) that measures what the fleet *can* do versus what it actually *governs*, with a prioritized remediation queue. Surfaced as: the `/posture` operator page (score hero + dimension cards + queue + draft-only resolve modal + risk-accepted ledger); four experimental routes (`GET /api/posture`, `GET /api/posture/findings`, `POST /api/posture/findings/[key]/resolve`, `POST /api/posture/scan`); two **read-only** MCP tools (`dashclaw_posture`, `dashclaw_posture_next` — taking the MCP surface to **28 tools in 10 groups**); and three CLI commands (`dashclaw posture` / `dashclaw next` / `dashclaw posture resolve <key>`, draft-only). New tables `posture_findings_state` + `posture_snapshots` (migration `0022`). No new SDK methods.
+- **The core trust property is enforced end-to-end:** the score rises *only* from active, proven-to-fire policies. Resolving a finding via `create_draft` inserts an **inactive** policy draft (or `snooze` / `accept_risk` records state) — it never activates enforcement and never raises the score. A human activates the policy at `/policies`, and a later `scan` that proves it fires is what moves the number. Verified at the engine, route, UI, and live dev-DB level.
+
+### Fixed
+
+- **`GET /api/posture` would have 500'd in production.** The incident-signal query referenced `guard_decisions.action_id` and `outcome_status` — columns that do not exist (the table's identifier is `act_gd_*`). Pinned to the real columns (`id`, `risk_score`, `action_type`, `created_at`); the incident deep-link now points at the `/decisions` ledger. Caught by a live end-to-end honesty smoke against the dev database (the mocked test suite passed regardless).
+
 ## [4.2.3] — 2026-06-06
 
 > Docs-accuracy sweep. No code or public-surface change; the SDK is byte-identical to 4.2.2 (republishing at 4.2.3 is optional).
