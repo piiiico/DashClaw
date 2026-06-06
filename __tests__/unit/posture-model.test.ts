@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { riskFactor, bucketRiskScore, unitWeight, gradeCoverage, computeScore } from '../../app/lib/posture/model';
+import { riskFactor, bucketRiskScore, unitWeight, gradeCoverage, computeScore, frequencyFactor } from '../../app/lib/posture/model';
 import type { GovernableUnit, Adjustments } from '../../app/lib/posture/types';
 
 const unit = (over: Partial<GovernableUnit> = {}): GovernableUnit => ({
@@ -31,6 +31,12 @@ describe('risk weighting', () => {
     expect(unitWeight(unit({ reversible: true }))).toBeLessThan(unitWeight(unit({ reversible: false })));
     expect(unitWeight(unit({ hasSpendExposure: false }))).toBeLessThan(unitWeight(unit({ hasSpendExposure: true })));
   });
+  it('frequencyFactor: zero/negative count → baseline 1; counts are log-dampened', () => {
+    expect(frequencyFactor(0)).toBe(1);
+    expect(frequencyFactor(-5)).toBe(1);
+    expect(frequencyFactor(9)).toBeCloseTo(2);
+    expect(frequencyFactor(99)).toBeCloseTo(3);
+  });
 });
 
 describe('coverage grading', () => {
@@ -48,6 +54,11 @@ describe('coverage grading', () => {
   });
   it('missing required infra caps grade even when a policy fires', () => {
     expect(gradeCoverage(u, () => 'block', () => false).grade).toBe(0);
+  });
+  it('hasFiringPolicy is true even when infra is missing (grade 0)', () => {
+    const r = gradeCoverage(u, () => 'block', () => false);
+    expect(r.grade).toBe(0);
+    expect(r.hasFiringPolicy).toBe(true);
   });
 });
 
@@ -73,6 +84,19 @@ describe('score aggregation', () => {
   });
   it('is deterministic', () => {
     expect(computeScore(units, { a: 0.5, b: 1 }, noAdj)).toEqual(computeScore(units, { a: 0.5, b: 1 }, noAdj));
+  });
+  it('empty unit set → 100/healthy (nothing to govern)', () => {
+    const r = computeScore([], {}, noAdj);
+    expect(r.score).toBe(100);
+    expect(r.status).toBe('healthy');
+  });
+  it('approval follow-through reduces only the approval dimension (spec §4.3)', () => {
+    const appUnit = unit({ key: 'ap', dimension: 'approval', riskLevel: 'high' });
+    const adj: Adjustments = { incidents: [], approvalFollowThrough: 0.5, coachOpenGapUnitKeys: [] };
+    const r = computeScore([appUnit], { ap: 1 }, adj);
+    const approval = r.dimensions.find((d) => d.dimension === 'approval')!;
+    expect(approval.score).toBe(50);
+    expect(r.score).toBe(50);
   });
 });
 

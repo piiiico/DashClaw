@@ -50,7 +50,9 @@ export function applyIncidentCap(score: number, adj: Adjustments): { score: numb
 
 export function computeScore(
   units: GovernableUnit[],
-  coverageByKey: Record<string, number>, // unitKey -> grade 0..1 (per-unit, deduped by construction)
+  // unitKey -> coverage grade in [0, 1]. May be a gradeCoverage result (0/0.5/1)
+  // or a pre-computed float; values are clamped to [0,1] below.
+  coverageByKey: Record<string, number>,
   adj: Adjustments,
 ): PostureScore {
   const byDim = new Map<Dimension, { covered: number; total: number }>();
@@ -65,6 +67,12 @@ export function computeScore(
     bucket.covered += grade * w;
   }
 
+  // spec §4.3: approval follow-through feeds the approval dimension specifically
+  // (resolved-vs-abandoned ratio), not the overall score. It naturally flows into
+  // the global roll-up weighted by the approval dimension's risk mass.
+  const approvalBucket = byDim.get('approval')!;
+  approvalBucket.covered *= clamp01(adj.approvalFollowThrough);
+
   const dimensions: DimensionScore[] = DIMENSIONS.map((d) => {
     const { covered, total } = byDim.get(d)!;
     return { dimension: d, score: total === 0 ? 100 : Math.round((covered / total) * 100), weight: total };
@@ -72,10 +80,8 @@ export function computeScore(
 
   const totalWeight = dimensions.reduce((s, d) => s + d.weight, 0);
   const rawCovered = DIMENSIONS.reduce((s, d) => s + byDim.get(d)!.covered, 0);
-  let score = totalWeight === 0 ? 100 : Math.round((rawCovered / totalWeight) * 100);
-
-  // approval follow-through nudges the overall contribution slightly
-  score = Math.round(score * (0.9 + 0.1 * clamp01(adj.approvalFollowThrough)));
+  // No observable units means nothing to govern; treat as fully covered rather than penalizing.
+  const score = totalWeight === 0 ? 100 : Math.round((rawCovered / totalWeight) * 100);
 
   const capped = applyIncidentCap(score, adj);
   const status: PostureScore['status'] =

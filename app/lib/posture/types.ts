@@ -1,7 +1,6 @@
 export type Dimension =
   | 'identity' | 'enforcement' | 'spend' | 'auditability' | 'approval' | 'data_protection';
 export type RiskLevel = 'low' | 'medium' | 'high' | 'critical';
-export type Severity = 'critical' | 'high' | 'medium' | 'low';
 export type Decision = 'allow' | 'warn' | 'require_approval' | 'block';
 
 export interface GovernableUnit {
