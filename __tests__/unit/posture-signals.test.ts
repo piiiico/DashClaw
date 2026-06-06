@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { buildUnits } from '../../app/lib/posture/signals';
-import type { GovernableUnit } from '../../app/lib/posture/types';
+import { buildUnits, applyFindingStates } from '../../app/lib/posture/signals';
+import type { GovernableUnit, PostureFinding } from '../../app/lib/posture/types';
 
 const cap = (over: Partial<GovernableUnit> = {}): GovernableUnit => ({
   key: 'stripe-pay', surfaceType: 'capability', riskLevel: 'high', reversible: false,
@@ -37,5 +37,45 @@ describe('buildUnits', () => {
     expect(units).toHaveLength(1);
     expect(units[0]!.observedCount).toBe(7);
     expect(units[0]!.surfaceType).toBe('capability'); // capability stays authoritative
+  });
+});
+
+const finding = (over: Partial<PostureFinding> = {}): PostureFinding => ({
+  key: 'enforcement:action_type:deploy:create_policy_draft',
+  dimension: 'enforcement',
+  severity: 'high',
+  title: 'Destructive deploy actions reach allow ungoverned',
+  evidence: { observedCount: 38, exampleActionIds: ['act_1'] },
+  scoreDelta: 5,
+  fix: { type: 'create_policy_draft', policyType: 'risk_threshold', rules: {} },
+  status: 'open',
+  ...over,
+});
+
+describe('applyFindingStates', () => {
+  it('carries a stored snooze forward so the finding is no longer open', () => {
+    const states = new Map([[finding().key, 'snoozed']]);
+    const merged = applyFindingStates([finding()], states);
+    expect(merged[0]!.status).toBe('snoozed');
+  });
+
+  it('leaves findings with no stored state as open (identity when map is empty)', () => {
+    const input = [finding()];
+    const merged = applyFindingStates(input, new Map());
+    expect(merged).toBe(input); // short-circuits — same reference, no copy
+    expect(merged[0]!.status).toBe('open');
+  });
+
+  it('only restamps the matching key', () => {
+    const a = finding({ key: 'a', status: 'open' });
+    const b = finding({ key: 'b', status: 'open' });
+    const merged = applyFindingStates([a, b], new Map([['a', 'resolved']]));
+    expect(merged.find((f) => f.key === 'a')!.status).toBe('resolved');
+    expect(merged.find((f) => f.key === 'b')!.status).toBe('open');
+  });
+
+  it('ignores an unknown/garbage stored status (fails closed to the derived status)', () => {
+    const merged = applyFindingStates([finding()], new Map([[finding().key, 'bogus_status']]));
+    expect(merged[0]!.status).toBe('open');
   });
 });

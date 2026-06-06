@@ -1,14 +1,20 @@
 /**
- * Posture repository — READ-ONLY queries that feed the governance posture
- * score engine. No writes; no new tables (Task 7 scope). Snapshots are Task 8+.
+ * Posture repository — data access for the governance posture score.
+ *
+ * Two responsibilities:
+ *   1. Read queries that feed the score engine (capabilities, observed actions,
+ *      recent decisions, identity-bound agents, x402 spend surfaces).
+ *   2. Read/write of the posture loop state: posture_findings_state (per-finding
+ *      resolution) and posture_snapshots (the trend line).
  *
  * All functions take `sql: SqlTag` as the first argument (tagged-template client)
  * and `orgId: string` as the second, matching the house repository pattern.
  */
 
+import { randomUUID } from 'node:crypto';
 import type { SqlTag } from '../types/db';
 import { bucketRiskScore } from '../posture/model';
-import type { GovernableUnit, RiskLevel, Dimension } from '../posture/types';
+import type { GovernableUnit, RiskLevel, Dimension, DimensionScore } from '../posture/types';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Row types (untrusted DB rows; shaped before use)
@@ -231,4 +237,172 @@ export async function getX402SpendSurfaces(
     ORDER BY created_at DESC
   `;
   return rows as X402ProviderPostureRow[];
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Finding state (posture_findings_state) — read/write. A resolved/snoozed/
+// risk-accepted finding stops re-surfacing in the open queue. `drafted` records
+// that an INACTIVE policy draft exists (it does NOT count as coverage).
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Valid finding-state statuses (the deterministic finding queue lifecycle). */
+export const FINDING_STATUSES = ['open', 'drafted', 'resolved', 'snoozed', 'accepted_risk'] as const;
+export type FindingStatus = (typeof FINDING_STATUSES)[number];
+
+interface FindingStateRow {
+  finding_key: unknown;
+  status: unknown;
+  note: unknown;
+  actor: unknown;
+  created_at: unknown;
+  updated_at: unknown;
+  [k: string]: unknown;
+}
+
+export interface FindingState {
+  findingKey: string;
+  status: string;
+  note: string | null;
+  actor: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+}
+
+function shapeFindingState(row: FindingStateRow): FindingState {
+  return {
+    findingKey: String(row.finding_key ?? ''),
+    status: String(row.status ?? ''),
+    note: row.note == null ? null : String(row.note),
+    actor: row.actor == null ? null : String(row.actor),
+    createdAt: row.created_at == null ? null : String(row.created_at),
+    updatedAt: row.updated_at == null ? null : String(row.updated_at),
+  };
+}
+
+/** Returns the stored state for one finding key, or null if never actioned. */
+export async function getFindingState(
+  sql: SqlTag,
+  orgId: string,
+  findingKey: string,
+): Promise<FindingState | null> {
+  const rows = await sql`
+    SELECT finding_key, status, note, actor, created_at, updated_at
+    FROM posture_findings_state
+    WHERE org_id = ${orgId} AND finding_key = ${findingKey}
+    LIMIT 1
+  `;
+  const row = (rows as FindingStateRow[])[0];
+  return row ? shapeFindingState(row) : null;
+}
+
+/** Returns every stored finding state for the org (for the signals merge). */
+export async function listFindingStates(
+  sql: SqlTag,
+  orgId: string,
+): Promise<FindingState[]> {
+  const rows = await sql`
+    SELECT finding_key, status, note, actor, created_at, updated_at
+    FROM posture_findings_state
+    WHERE org_id = ${orgId}
+  `;
+  return (rows as FindingStateRow[]).map(shapeFindingState);
+}
+
+/**
+ * Upsert a finding's resolution state (keyed by the deterministic finding_key).
+ * created_at is preserved on conflict; only status/note/actor/updated_at change.
+ */
+export async function setFindingState(
+  sql: SqlTag,
+  orgId: string,
+  findingKey: string,
+  status: FindingStatus,
+  actor: string | null,
+  note: string | null,
+): Promise<FindingState | null> {
+  const now = new Date().toISOString();
+  const rows = await sql`
+    INSERT INTO posture_findings_state (org_id, finding_key, status, note, actor, created_at, updated_at)
+    VALUES (${orgId}, ${findingKey}, ${status}, ${note ?? null}, ${actor ?? null}, ${now}, ${now})
+    ON CONFLICT (org_id, finding_key)
+    DO UPDATE SET
+      status = EXCLUDED.status,
+      note = EXCLUDED.note,
+      actor = EXCLUDED.actor,
+      updated_at = EXCLUDED.updated_at
+    RETURNING finding_key, status, note, actor, created_at, updated_at
+  `;
+  const row = (rows as FindingStateRow[])[0];
+  return row ? shapeFindingState(row) : null;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Snapshots (posture_snapshots) — trend line, written on explicit scan.
+// score is NUMERIC → Neon returns it as a string; coerce Number() on read.
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface SnapshotRow {
+  id: unknown;
+  score: unknown;
+  dimensions: unknown;
+  created_at: unknown;
+  [k: string]: unknown;
+}
+
+export interface PostureSnapshot {
+  id: string;
+  score: number;
+  dimensions: DimensionScore[];
+  createdAt: string | null;
+}
+
+function parseDimensions(v: unknown): DimensionScore[] {
+  let value = v;
+  if (typeof value === 'string') {
+    try { value = JSON.parse(value); } catch { return []; }
+  }
+  return Array.isArray(value) ? (value as DimensionScore[]) : [];
+}
+
+function shapeSnapshot(row: SnapshotRow): PostureSnapshot {
+  return {
+    id: String(row.id ?? ''),
+    score: Number(row.score) || 0, // numeric-as-string coercion (Neon HTTP driver)
+    dimensions: parseDimensions(row.dimensions),
+    createdAt: row.created_at == null ? null : String(row.created_at),
+  };
+}
+
+/** Persist a trend snapshot. id is generated (`psnap_` prefix). */
+export async function insertPostureSnapshot(
+  sql: SqlTag,
+  orgId: string,
+  score: number,
+  dimensions: DimensionScore[],
+): Promise<PostureSnapshot | null> {
+  const id = `psnap_${randomUUID().replace(/-/g, '').slice(0, 24)}`;
+  const now = new Date().toISOString();
+  const rows = await sql`
+    INSERT INTO posture_snapshots (id, org_id, score, dimensions, created_at)
+    VALUES (${id}, ${orgId}, ${score}, ${JSON.stringify(dimensions)}, ${now})
+    RETURNING id, score, dimensions, created_at
+  `;
+  const row = (rows as SnapshotRow[])[0];
+  return row ? shapeSnapshot(row) : null;
+}
+
+/** Returns the most recent snapshots (newest first) for the trend sparkline. */
+export async function listPostureSnapshots(
+  sql: SqlTag,
+  orgId: string,
+  limit = 30,
+): Promise<PostureSnapshot[]> {
+  const rows = await sql`
+    SELECT id, score, dimensions, created_at
+    FROM posture_snapshots
+    WHERE org_id = ${orgId}
+    ORDER BY created_at DESC
+    LIMIT ${limit}
+  `;
+  return (rows as SnapshotRow[]).map(shapeSnapshot);
 }

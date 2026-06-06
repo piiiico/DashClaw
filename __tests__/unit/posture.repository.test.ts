@@ -5,6 +5,11 @@ import {
   getRecentDecisions,
   getIdentityBoundAgents,
   getX402SpendSurfaces,
+  getFindingState,
+  listFindingStates,
+  setFindingState,
+  insertPostureSnapshot,
+  listPostureSnapshots,
 } from '../../app/lib/repositories/posture.repository';
 import type { SqlTag } from '../../app/lib/types/db';
 
@@ -237,5 +242,92 @@ describe('getX402SpendSurfaces', () => {
     const sql = makeSqlMock([[]]);
     const rows = await getX402SpendSurfaces(sql, 'org_1');
     expect(rows).toHaveLength(0);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Finding state (read/write)
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('getFindingState', () => {
+  it('shapes a stored row', async () => {
+    const sql = makeSqlMock([[{
+      finding_key: 'enforcement:action_type:deploy:create_policy_draft',
+      status: 'snoozed', note: 'later', actor: 'usr_1',
+      created_at: '2026-06-06T00:00:00Z', updated_at: '2026-06-06T01:00:00Z',
+    }]]);
+    const state = await getFindingState(sql, 'org_1', 'enforcement:action_type:deploy:create_policy_draft');
+    expect(state!.status).toBe('snoozed');
+    expect(state!.note).toBe('later');
+    expect(state!.actor).toBe('usr_1');
+  });
+
+  it('returns null when the finding has never been actioned', async () => {
+    const sql = makeSqlMock([[]]);
+    expect(await getFindingState(sql, 'org_1', 'nope')).toBeNull();
+  });
+});
+
+describe('listFindingStates', () => {
+  it('shapes every stored state', async () => {
+    const sql = makeSqlMock([[
+      { finding_key: 'a', status: 'resolved', note: null, actor: null, created_at: 't', updated_at: 't' },
+      { finding_key: 'b', status: 'drafted', note: null, actor: null, created_at: 't', updated_at: 't' },
+    ]]);
+    const states = await listFindingStates(sql, 'org_1');
+    expect(states.map((s) => `${s.findingKey}:${s.status}`)).toEqual(['a:resolved', 'b:drafted']);
+  });
+});
+
+describe('setFindingState', () => {
+  it('upserts and returns the shaped row', async () => {
+    const sql = makeSqlMock([[{
+      finding_key: 'k', status: 'accepted_risk', note: 'known tradeoff', actor: 'usr_9',
+      created_at: 't0', updated_at: 't1',
+    }]]);
+    const state = await setFindingState(sql, 'org_1', 'k', 'accepted_risk', 'usr_9', 'known tradeoff');
+    expect(state!.status).toBe('accepted_risk');
+    expect(state!.actor).toBe('usr_9');
+    // Verify the upsert targets the composite PK via column inference (not a constraint name).
+    const call = (sql as unknown as { calls: { strings: TemplateStringsArray }[] }).calls[0]!;
+    expect(call.strings.join('?')).toMatch(/ON CONFLICT \(org_id, finding_key\)/);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Snapshots (numeric-as-string coercion)
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('insertPostureSnapshot', () => {
+  it('coerces the NUMERIC score string back to a number on the returned row', async () => {
+    const sql = makeSqlMock([[{ id: 'psnap_x', score: '72', dimensions: [{ dimension: 'spend', score: 45, weight: 10 }], created_at: 't' }]]);
+    const snap = await insertPostureSnapshot(sql, 'org_1', 72, [{ dimension: 'spend', score: 45, weight: 10 }]);
+    expect(snap!.score).toBe(72);
+    expect(typeof snap!.score).toBe('number');
+    expect(snap!.dimensions[0]!.dimension).toBe('spend');
+  });
+
+  it('parses a jsonb dimensions column delivered as a string', async () => {
+    const sql = makeSqlMock([[{ id: 'psnap_y', score: '10', dimensions: '[{"dimension":"identity","score":88,"weight":3}]', created_at: 't' }]]);
+    const snap = await insertPostureSnapshot(sql, 'org_1', 10, []);
+    expect(snap!.dimensions[0]!.score).toBe(88);
+  });
+
+  it('falls back to [] when dimensions arrives as a non-array object', async () => {
+    const sql = makeSqlMock([[{ id: 'psnap_z', score: '0', dimensions: {}, created_at: 't' }]]);
+    const snap = await insertPostureSnapshot(sql, 'org_1', 0, []);
+    expect(snap!.dimensions).toEqual([]);
+  });
+});
+
+describe('listPostureSnapshots', () => {
+  it('coerces score on every row (Neon returns numeric as string)', async () => {
+    const sql = makeSqlMock([[
+      { id: 'p1', score: '80', dimensions: [], created_at: 't2' },
+      { id: 'p2', score: '60', dimensions: [], created_at: 't1' },
+    ]]);
+    const snaps = await listPostureSnapshots(sql, 'org_1', 30);
+    expect(snaps.map((s) => s.score)).toEqual([80, 60]);
+    expect(snaps.every((s) => typeof s.score === 'number')).toBe(true);
   });
 });

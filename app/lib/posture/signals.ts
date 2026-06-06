@@ -13,6 +13,7 @@ import {
   getRecentDecisions,
   getIdentityBoundAgents,
   getX402SpendSurfaces,
+  listFindingStates,
 } from '../repositories/posture.repository';
 import { getActivePolicies } from '../repositories/guardrails.repository';
 import { evaluatePolicy } from '../guard';
@@ -264,6 +265,37 @@ function buildAdjustments(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Step 4 — merge stored finding state onto the derived (open) findings
+// ─────────────────────────────────────────────────────────────────────────────
+
+const VALID_FINDING_STATUSES = new Set<PostureFinding['status']>([
+  'open', 'drafted', 'resolved', 'snoozed', 'accepted_risk',
+]);
+
+/**
+ * Apply stored resolution state onto freshly-derived findings. A finding the
+ * operator has resolved/snoozed/accepted/drafted carries that status forward so
+ * the queue and ledger consumers can filter it. Findings with no stored state
+ * stay `open`. This is pure (the I/O happens in computePosturePayload) so the
+ * merge invariant is unit-testable.
+ *
+ * Note: finding STATE never changes the SCORE — the score is coverage-derived.
+ * Snoozing or accepting a finding hides it from the queue but cannot raise the
+ * number (the honesty property holds at the engine boundary).
+ */
+export function applyFindingStates(
+  findings: PostureFinding[],
+  states: Map<string, string>,
+): PostureFinding[] {
+  if (states.size === 0) return findings;
+  return findings.map((f) => {
+    const stored = states.get(f.key);
+    if (!stored || !VALID_FINDING_STATUSES.has(stored as PostureFinding['status'])) return f;
+    return { ...f, status: stored as PostureFinding['status'] };
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Public API
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -292,15 +324,17 @@ export async function computePosturePayload(
   const sinceTs = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
   // 1. Parallel data fetch.
-  const [capUnits, actionUnits, activePolicies, decisionRows, x402Rows] = await Promise.all([
+  const [capUnits, actionUnits, activePolicies, decisionRows, x402Rows, findingStates] = await Promise.all([
     getCapabilityUnits(sql, orgId),
     getObservedActionUnits(sql, orgId),
     getActivePolicies(sql, orgId),
     getRecentDecisions(sql, orgId, sinceTs),
     getX402SpendSurfaces(sql, orgId),
+    listFindingStates(sql, orgId),
   ]);
 
   const x402Slugs = new Set(x402Rows.map((r) => String(r.slug || '')));
+  const stateByKey = new Map(findingStates.map((s) => [s.findingKey, s.status]));
 
   // 2. Build unit list.
   const units = buildUnits(capUnits, actionUnits, x402Slugs);
@@ -325,9 +359,10 @@ export async function computePosturePayload(
     coverageByKey[unit.key] = grade;
   }
 
-  // 6. Run the pure engine.
+  // 6. Run the pure engine, then merge stored finding state onto the queue.
   const score = computeScore(units, coverageByKey, adjustments);
-  const findings = deriveFindings(units, coverageByKey, adjustments);
+  const derived = deriveFindings(units, coverageByKey, adjustments);
+  const findings = applyFindingStates(derived, stateByKey);
 
   return { score, findings, unitCount: units.length };
 }
