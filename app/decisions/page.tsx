@@ -1,0 +1,780 @@
+'use client';
+
+import { useState, useEffect, useCallback, useRef } from 'react';
+import Link from 'next/link';
+import PageLayout from '../components/PageLayout';
+import { Card, CardContent } from '../components/ui/Card';
+import { Badge } from '../components/ui/Badge';
+import { EmptyState } from '../components/ui/EmptyState';
+import { Skeleton } from '../components/ui/Skeleton';
+import { getAgentColor } from '../lib/colors';
+import { isDemoMode } from '../lib/isDemoMode';
+import {
+  getHomepageDemoActions,
+  readHomepageResolution,
+} from '../lib/homepageDemoActions';
+import { formatCost, formatTokens } from '../lib/formatCost';
+import { useAgentFilter } from '../lib/AgentFilterContext';
+import { useEffectiveRole } from '../hooks/useEffectiveRole';
+import { useRealtime } from '../hooks/useRealtime';
+import MessageTrail from '../components/MessageTrail';
+import { OutcomeBadge } from '../components/OutcomeBadge';
+import { parseJsonArray } from '../lib/parseJson';
+import {
+  Zap, Hammer, Rocket, FileText, Briefcase, Shield, MessageSquare,
+  Link as LinkIcon, Calendar, Search, Eye, Wrench, RefreshCw, FlaskConical,
+  Settings, Radio, AlertTriangle, Trash2, Package, Inbox,
+  CheckCircle2, XCircle, Clock, Loader2, Ban,
+  ChevronUp, ChevronDown, ChevronLeft, ChevronRight, RotateCw,
+  ShieldCheck, ShieldAlert, ExternalLink, Info,
+  Square, CheckSquare,
+} from 'lucide-react';
+
+const typeIconMap: Record<string, React.ElementType> = {
+  build: Hammer, deploy: Rocket, post: FileText, apply: Briefcase, security: Shield,
+  message: MessageSquare, api: LinkIcon, calendar: Calendar, research: Search, review: Eye,
+  fix: Wrench, refactor: RefreshCw, test: FlaskConical, config: Settings, monitor: Radio,
+  alert: AlertTriangle, cleanup: Trash2, sync: RefreshCw, migrate: Package,
+};
+
+const statusIconMap: Record<string, React.ElementType> = {
+  completed: CheckCircle2, failed: XCircle, pending: Clock, running: Loader2, cancelled: Ban, blocked: Ban,
+};
+
+const statusDotMap: Record<string, string> = {
+  completed: 'bg-status-success',
+  running: 'bg-status-warning',
+  pending: 'bg-status-info',
+  failed: 'bg-status-error',
+  blocked: 'bg-status-error',
+  cancelled: 'bg-zinc-500',
+};
+
+const statusTextMap: Record<string, string> = {
+  completed: 'text-success',
+  running: 'text-warning',
+  pending: 'text-info',
+  failed: 'text-error',
+  blocked: 'text-error',
+  cancelled: 'text-tertiary',
+};
+
+export default function DecisionsLedger() {
+  const { agentId: globalAgentId } = useAgentFilter();
+  const { isAdmin } = useEffectiveRole();
+
+  const [actions, setActions] = useState<any[]>([]);
+  const [stats, setStats] = useState<any>({});
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState('');
+  const [expandedId, setExpandedId] = useState<any>(null);
+  const [expandedData, setExpandedData] = useState<Record<string, any>>({});
+  const [clearing, setClearing] = useState(false);
+  const [sweeping, setSweeping] = useState(false);
+  const [deletingId, setDeletingId] = useState<any>(null);
+  const [selectedActions, setSelectedActions] = useState<Set<any>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+
+  const [filterAgent, setFilterAgent] = useState('');
+  const [filterType, setFilterType] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [filterOutcome, setFilterOutcome] = useState('');
+  const [filterSwarm, setFilterSwarm] = useState('');
+  const [knownSwarms, setKnownSwarms] = useState<any[]>([]); // accumulates swarm_ids seen, so the dropdown stays stable when filtered
+  const [filterRiskMin, setFilterRiskMin] = useState('1');
+  const [hideRoutine, setHideRoutine] = useState(true);
+  const [page, setPage] = useState(0);
+  const pageSize = 25;
+
+  // Sync global agent filter → local filter
+  useEffect(() => {
+    setFilterAgent(globalAgentId || '');
+    setPage(0);
+  }, [globalAgentId]);
+
+  const fetchActions = useCallback(async () => {
+    try {
+      const params = new URLSearchParams();
+      if (filterAgent) params.set('agent_id', filterAgent);
+      if (filterType) params.set('action_type', filterType);
+      if (filterStatus) params.set('status', filterStatus);
+      if (filterOutcome) params.set('outcome_status', filterOutcome);
+      if (filterSwarm) params.set('swarm_id', filterSwarm);
+      if (hideRoutine && !filterStatus) params.set('exclude_status', 'running');
+      if (filterRiskMin) params.set('risk_min', filterRiskMin);
+      params.set('limit', pageSize.toString());
+      params.set('offset', (page * pageSize).toString());
+
+      const res = await fetch(`/api/actions?${params}`);
+      if (!res.ok) throw new Error('Failed to fetch');
+      const data = await res.json();
+      const actionsList = data.actions || [];
+
+      // In demo mode (dashclaw.io), prepend the three homepage demo
+      // scenarios so visitors see the exact actions they evaluated on
+      // the home page as the first entries. The Deploy to production
+      // entry reflects the visitor's local Approve / Deny click.
+      let displayed = actionsList;
+      let displayedTotal = data.total || 0;
+      if (isDemoMode() && page === 0) {
+        const resolution = readHomepageResolution();
+        const homepageActions = getHomepageDemoActions(resolution);
+        const existingIds = new Set(actionsList.map((a: any) => a.action_id));
+        const fresh = homepageActions.filter((a: any) => !existingIds.has(a.action_id));
+        displayed = [...homepageActions, ...actionsList.filter((a: any) => !homepageActions.some((h: any) => h.action_id === a.action_id))];
+        displayedTotal = displayedTotal + fresh.length;
+      }
+
+      setActions(displayed);
+      setStats(data.stats || {});
+      setTotal(displayedTotal);
+      setLastUpdated(new Date().toLocaleTimeString());
+      const seen = displayed.map((a: any) => a.swarm_id).filter(Boolean);
+      if (seen.length) setKnownSwarms((prev) => Array.from(new Set([...prev, ...seen])));
+    } catch (error) {
+      console.error('Failed to fetch actions:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [filterAgent, filterType, filterStatus, filterOutcome, filterSwarm, filterRiskMin, hideRoutine, page]);
+
+  useEffect(() => {
+    setLoading(true);
+    setSelectedActions(new Set());
+    fetchActions();
+  }, [fetchActions]);
+
+  // Live updates — the SSE stream (/api/stream) already emits action.created /
+  // action.updated for every governed decision (same source the Activity stream
+  // uses). Debounced-refetch when one arrives so the ledger stays live without a
+  // manual Refresh. We only refetch on page 0 (so paging through history isn't
+  // disrupted) and honor the current agent filter. useRealtime no-ops in demo.
+  const liveTimer = useRef<any>(null);
+  useRealtime(useCallback((event: string, payload: any) => {
+    if (event !== 'action.created' && event !== 'action.updated') return;
+    const a = payload?.action || payload;
+    if (filterAgent && a?.agent_id && a.agent_id !== filterAgent) return;
+    if (page !== 0) return;
+    if (liveTimer.current) return; // coalesce bursts into one refetch
+    liveTimer.current = setTimeout(() => {
+      liveTimer.current = null;
+      fetchActions();
+    }, 800);
+  }, [filterAgent, page, fetchActions]));
+
+  useEffect(() => () => { if (liveTimer.current) clearTimeout(liveTimer.current); }, []);
+
+  const handleClearActions = async () => {
+    const agentLabel = filterAgent || 'all agents';
+    const statusLabel = filterStatus || 'all statuses';
+    const msg = `Delete actions for ${agentLabel} (${statusLabel})? This cannot be undone.`;
+    if (!confirm(msg)) return;
+
+    setClearing(true);
+    try {
+      const params = new URLSearchParams();
+      if (filterAgent) params.set('agent_id', filterAgent);
+      if (filterStatus) params.set('status', filterStatus);
+      // If no filters set, require at least a status to prevent accidental full wipe
+      if (!filterAgent && !filterStatus) {
+        params.set('status', 'completed');
+      }
+      const res = await fetch(`/api/actions?${params}`, { method: 'DELETE' });
+      if (res.ok) {
+        const data = await res.json();
+        alert(`Deleted ${data.deleted} action(s).`);
+        setPage(0);
+        fetchActions();
+      } else {
+        const err = await res.json();
+        alert(err.error || 'Failed to delete actions');
+      }
+    } catch {
+      alert('Failed to delete actions');
+    } finally {
+      setClearing(false);
+    }
+  };
+
+  const handleRunSweep = async () => {
+    setSweeping(true);
+    try {
+      const res = await fetch('/api/admin/trigger-outcome-sweep', { method: 'POST' });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        alert(`Swept ${data.rows_swept} timed-out action(s).`);
+        fetchActions();
+      } else {
+        alert(data.error || 'Sweep failed');
+      }
+    } catch {
+      alert('Sweep failed');
+    } finally {
+      setSweeping(false);
+    }
+  };
+
+  const handleDeleteAction = async (actionId: any, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm('Delete this action? This cannot be undone.')) return;
+    setDeletingId(actionId);
+    try {
+      const res = await fetch(`/api/actions?action_id=${actionId}`, { method: 'DELETE' });
+      if (res.ok) {
+        setActions(prev => prev.filter(a => a.action_id !== actionId));
+        if (expandedId === actionId) setExpandedId(null);
+        setTotal(prev => Math.max(0, prev - 1));
+      } else {
+        const err = await res.json();
+        alert(err.error || 'Failed to delete action');
+      }
+    } catch {
+      alert('Failed to delete action');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleBulkDeleteSelected = async () => {
+    if (selectedActions.size === 0) return;
+    const msg = `Delete ${selectedActions.size} selected ${selectedActions.size === 1 ? 'decision' : 'decisions'}? This cannot be undone.`;
+    if (!confirm(msg)) return;
+    setBulkDeleting(true);
+    try {
+      const ids = Array.from(selectedActions).join(',');
+      const res = await fetch(`/api/actions?action_ids=${ids}`, { method: 'DELETE' });
+      if (res.ok) {
+        const data = await res.json();
+        setActions(prev => prev.filter(a => !selectedActions.has(a.action_id)));
+        setTotal(prev => Math.max(0, prev - (data.deleted || 0)));
+        setSelectedActions(new Set());
+        if (expandedId && selectedActions.has(expandedId)) setExpandedId(null);
+      } else {
+        const err = await res.json();
+        alert(err.error || 'Failed to delete actions');
+      }
+    } catch {
+      alert('Failed to delete actions');
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
+  const toggleSelectAction = (actionId: any, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedActions(prev => {
+      const next = new Set(prev);
+      if (next.has(actionId)) next.delete(actionId); else next.add(actionId);
+      return next;
+    });
+  };
+
+  const toggleSelectAllActions = () => {
+    if (selectedActions.size === actions.length) {
+      setSelectedActions(new Set());
+    } else {
+      setSelectedActions(new Set(actions.map(a => a.action_id)));
+    }
+  };
+
+  const toggleExpand = async (actionId: any) => {
+    if (expandedId === actionId) {
+      setExpandedId(null);
+      return;
+    }
+    setExpandedId(actionId);
+    if (!expandedData[actionId]) {
+      try {
+        const res = await fetch(`/api/actions/${actionId}`);
+        if (res.ok) {
+          const data = await res.json();
+          setExpandedData(prev => ({ ...prev, [actionId]: data }));
+        }
+      } catch (error) {
+        console.error('Failed to fetch action detail:', error);
+      }
+    }
+  };
+
+  const getTypeIcon = (type: string) => {
+    const Icon = typeIconMap[type] || Zap;
+    return <Icon size={16} className="text-secondary" />;
+  };
+
+  const getStatusIcon = (status: string) => {
+    const Icon = statusIconMap[status] || Clock;
+    return <Icon size={14} className={statusTextMap[status] || 'text-secondary'} />;
+  };
+
+  const getRiskColor = (score: any) => {
+    const s = parseInt(score, 10);
+    if (s >= 70) return 'text-error';
+    if (s >= 40) return 'text-warning';
+    return 'text-success';
+  };
+
+  const formatTime = (ts: any) => {
+    if (!ts) return '--';
+    try {
+      return new Date(ts).toLocaleString('en-US', {
+        month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false
+      });
+    } catch { return ts; }
+  };
+
+  const successRate = parseInt(stats.total, 10) > 0
+    ? Math.round((parseInt(stats.completed, 10) / parseInt(stats.total, 10)) * 100)
+    : 0;
+
+  const totalPages = Math.ceil(total / pageSize);
+
+  const selectClass = 'px-3 py-2 bg-surface-tertiary border border-border rounded-lg text-white text-sm focus:outline-none focus:border-brand transition-colors duration-150';
+
+  return (
+    <PageLayout
+      title="Decisions Ledger"
+      subtitle={`Global stream of governed agent actions${lastUpdated ? ` · Updated ${lastUpdated}` : ''}`}
+      breadcrumbs={['Governance', 'Decisions']}
+      maturity="stable"
+      actions={
+        <div className="flex items-center gap-2">
+          {isAdmin && selectedActions.size > 0 && (
+            <button
+              onClick={handleBulkDeleteSelected}
+              disabled={bulkDeleting}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-error/20 bg-error-subtle px-3 py-1.5 text-sm font-medium text-error transition-colors hover:border-error/40 hover:bg-error-subtle disabled:opacity-50"
+            >
+              <Trash2 size={14} />
+              {bulkDeleting ? 'Deleting…' : `Delete ${selectedActions.size} selected`}
+            </button>
+          )}
+          {isAdmin && (
+            <button
+              onClick={handleRunSweep}
+              disabled={sweeping}
+              title="Finalize actions that passed their outcome timeout without an agent report"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface-tertiary px-3 py-1.5 text-sm font-medium text-secondary transition-colors hover:border-border-hover hover:text-white disabled:opacity-50"
+            >
+              <Clock size={14} className={sweeping ? 'animate-spin' : ''} />
+              {sweeping ? 'Sweeping…' : 'Run sweep now'}
+            </button>
+          )}
+          {isAdmin && (
+            <button
+              onClick={handleClearActions}
+              disabled={clearing}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface-tertiary px-3 py-1.5 text-sm font-medium text-error transition-colors hover:border-error/30 hover:text-error disabled:opacity-50"
+            >
+              <Trash2 size={14} />
+              {clearing ? 'Clearing…' : 'Clear actions'}
+            </button>
+          )}
+          <button
+            onClick={() => { setLoading(true); fetchActions(); }}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface-tertiary px-3 py-1.5 text-sm font-medium text-secondary transition-colors hover:border-border-hover hover:text-white"
+          >
+            <RotateCw size={14} />
+            Refresh
+          </button>
+        </div>
+      }
+    >
+      {/* Stats rail — instrument strip, not a grid of identical cards */}
+      <div className="mb-6 overflow-hidden rounded-xl border border-border bg-surface-tertiary">
+        <div className="grid grid-cols-2 divide-x divide-border md:grid-cols-5">
+          {[
+            { label: 'Total', value: stats.total || 0, color: 'text-white' },
+            { label: 'Success', value: `${successRate}%`, color: 'text-success' },
+            { label: 'Running', value: stats.running || 0, color: 'text-warning' },
+            {
+              label: 'High Risk',
+              value: stats.high_risk || 0,
+              color: parseInt(stats.high_risk, 10) > 0 ? 'text-error' : 'text-success',
+            },
+            {
+              label: 'Spend',
+              value: `$${parseFloat(stats.total_cost || 0).toFixed(2)}`,
+              color: 'text-white',
+            },
+          ].map((stat, i) => (
+            <div
+              key={stat.label}
+              className={`px-5 py-4 ${i >= 2 ? 'border-t border-border md:border-t-0' : ''}`}
+            >
+              <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">
+                {stat.label}
+              </div>
+              <div className={`mt-1 text-3xl font-semibold tabular-nums ${stat.color}`}>{stat.value}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Filters */}
+      <Card hover={false} className="mb-6">
+        <div className="p-4">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center">
+            <select value={filterType} onChange={(e) => { setFilterType(e.target.value); setPage(0); }} className={`${selectClass} md:flex-1`}>
+              <option value="">All types</option>
+              {['build','deploy','post','apply','security','message','api','calendar','research','review','fix','refactor','test','config','monitor','alert','cleanup','sync','migrate','other'].map(t => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+            <select value={filterStatus} onChange={(e) => { setFilterStatus(e.target.value); setPage(0); }} className={`${selectClass} md:flex-1`}>
+              <option value="">All statuses</option>
+              {['running','pending','pending_approval','blocked','completed','failed','cancelled'].map(s => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}
+            </select>
+            <select value={filterOutcome} onChange={(e) => { setFilterOutcome(e.target.value); setPage(0); }} className={`${selectClass} md:flex-1`}>
+              <option value="">All outcomes</option>
+              <option value="pending">Pending outcome</option>
+              <option value="completed">Completed</option>
+              <option value="partial">Partial</option>
+              <option value="failed">Failed</option>
+              <option value="lost_confirmation">Lost confirmation</option>
+            </select>
+            {(knownSwarms.length > 0 || filterSwarm) && (
+              <select value={filterSwarm} onChange={(e) => { setFilterSwarm(e.target.value); setPage(0); }} className={`${selectClass} md:flex-1`} aria-label="Filter by swarm">
+                <option value="">All swarms</option>
+                {Array.from(new Set([...knownSwarms, filterSwarm].filter(Boolean))).map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            )}
+            <select value={filterRiskMin} onChange={(e) => { setFilterRiskMin(e.target.value); setPage(0); }} className={`${selectClass} md:flex-1`}>
+              <option value="">Any risk</option>
+              <option value="1">Governed (1+)</option>
+              <option value="40">Medium+ (40+)</option>
+              <option value="70">High (70+)</option>
+              <option value="90">Critical (90+)</option>
+            </select>
+            <button
+              onClick={() => { setHideRoutine(!hideRoutine); setPage(0); }}
+              className={`shrink-0 rounded-lg border px-3 py-2 text-xs font-medium transition-colors ${
+                hideRoutine
+                  ? 'border-brand/30 bg-brand/10 text-brand hover:border-brand/40'
+                  : 'border-border bg-white/5 text-secondary hover:border-border-hover hover:text-white'
+              }`}
+            >
+              {hideRoutine ? 'Hiding routine' : 'Showing all'}
+            </button>
+          </div>
+        </div>
+      </Card>
+
+      {/* Actions List */}
+      <Card hover={false}>
+        <div className="flex items-center justify-between px-5 pt-5 pb-3">
+          <div className="flex items-baseline gap-2">
+            <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">
+              Decisions
+            </h2>
+            <span className="text-[11px] tabular-nums text-tertiary">· {total}</span>
+          </div>
+          {totalPages > 1 && (
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setPage(p => Math.max(0, p - 1))}
+                disabled={page === 0}
+                className="rounded-md p-1 text-secondary transition-colors hover:bg-white/5 disabled:opacity-30"
+                aria-label="Previous page"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <span className="px-1 text-[11px] tabular-nums text-tertiary">
+                {page + 1} / {totalPages}
+              </span>
+              <button
+                onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                disabled={page >= totalPages - 1}
+                className="rounded-md p-1 text-secondary transition-colors hover:bg-white/5 disabled:opacity-30"
+                aria-label="Next page"
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          )}
+        </div>
+
+        <CardContent>
+          {loading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-16 w-full rounded-lg" />
+              ))}
+            </div>
+          ) : actions.length === 0 ? (
+            <EmptyState icon={Inbox} title="No actions found" description="Adjust filters or wait for agent activity" />
+          ) : (
+            <div className="space-y-2">
+              {/* Select all row */}
+              {isAdmin && actions.length > 1 && (
+                <div className="flex items-center gap-2 px-2 py-1">
+                  <button onClick={toggleSelectAllActions} className="text-tertiary hover:text-white transition-colors p-0.5">
+                    {selectedActions.size === actions.length
+                      ? <CheckSquare size={16} className="text-brand" />
+                      : <Square size={16} />}
+                  </button>
+                  <span className="text-xs text-tertiary">
+                    {selectedActions.size === actions.length ? 'Deselect all' : `Select all (${actions.length})`}
+                  </span>
+                </div>
+              )}
+              {actions.map((action) => {
+                const isExpanded = expandedId === action.action_id;
+                const detail = expandedData[action.action_id];
+                const systems = parseJsonArray(action.systems_touched);
+                const sideEffects = parseJsonArray(action.side_effects);
+                const artifacts = parseJsonArray(action.artifacts_created);
+
+                return (
+                  <div key={action.action_id} className="overflow-hidden rounded-lg border border-border bg-surface-tertiary transition-colors hover:border-border-hover">
+                    <div
+                      onClick={() => toggleExpand(action.action_id)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') toggleExpand(action.action_id); }}
+                      className="w-full cursor-pointer p-4 text-left transition-colors hover:bg-white/[0.02] focus:bg-white/[0.02] focus:outline-none"
+                    >
+                      <div className="flex flex-col gap-4 md:flex-row md:items-center">
+                        {/* Checkbox for multi-select */}
+                        {isAdmin && (
+                          <button
+                            onClick={(e) => toggleSelectAction(action.action_id, e)}
+                            className="hidden flex-shrink-0 p-0.5 text-tertiary transition-colors hover:text-white md:block"
+                            aria-label="Select decision"
+                          >
+                            {selectedActions.has(action.action_id)
+                              ? <CheckSquare size={16} className="text-brand" />
+                              : <Square size={16} />}
+                          </button>
+                        )}
+
+                        {/* 1. Agent & Intent */}
+                        <div className="min-w-0 flex-1">
+                          <div className="mb-1.5 flex items-center gap-2">
+                            <span className={`h-1.5 w-1.5 rounded-full ${statusDotMap[action.status] || 'bg-zinc-500'}`} />
+                            <span className={`rounded border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] ${getAgentColor(action.agent_id)}`}>
+                              {action.agent_name || action.agent_id}
+                            </span>
+                            {action.model && (
+                              <span className="rounded border border-white/10 px-1.5 py-0.5 text-[10px] font-medium text-tertiary" title="Model">{action.model}</span>
+                            )}
+                            <span className="font-mono text-[11px] tabular-nums text-tertiary">{formatTime(action.timestamp_start)}</span>
+                          </div>
+                          <div className="truncate border-l border-white/5 pl-3.5 text-sm font-medium text-white">
+                            {action.declared_goal}
+                          </div>
+                        </div>
+
+                        {/* 2. Governance — risk score */}
+                        <div className="flex items-center gap-3 rounded-lg border border-border bg-white/[0.02] px-3 py-2 md:min-w-[140px]">
+                          <Shield size={14} className={action.risk_score >= 70 ? 'text-error' : 'text-success'} />
+                          <div>
+                            <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Governance</div>
+                            <div className={`text-xs font-semibold tabular-nums ${getRiskColor(action.risk_score)}`}>
+                              Risk {action.risk_score || 0}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* 3. Outcome */}
+                        <div className="flex items-center justify-between gap-4 md:min-w-[200px]">
+                          <div className="mr-2 flex flex-col items-end gap-1">
+                            {action.verified ? (
+                              <div className="inline-flex items-center gap-1 rounded border border-success/20 bg-success-subtle px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-success" title="Cryptographically signed by agent">
+                                <ShieldCheck size={10} /> Verified
+                              </div>
+                            ) : action.signature ? (
+                              <div className="inline-flex items-center gap-1 rounded border border-error/20 bg-error-subtle px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-error" title="Signature invalid or tampered">
+                                <ShieldAlert size={10} /> Invalid
+                              </div>
+                            ) : (
+                              <div className="inline-flex items-center gap-1 rounded border border-border bg-white/5 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-tertiary" title="No cryptographic signature provided">
+                                <Info size={10} /> Unsigned
+                              </div>
+                            )}
+                            <div className="flex items-center gap-1.5">
+                              {getStatusIcon(action.status)}
+                              <span className={`text-[11px] font-semibold uppercase tracking-[0.12em] ${statusTextMap[action.status] || 'text-secondary'}`}>
+                                {action.status}
+                              </span>
+                            </div>
+                            {action.outcome_status && action.outcome_status !== 'pending' && (
+                              <OutcomeBadge status={action.outcome_status} />
+                            )}
+                            {action.cost_estimate > 0 && (
+                              <div className="flex flex-col items-end">
+                                <span className="font-mono text-[11px] tabular-nums text-secondary">
+                                  {formatCost(action.cost_estimate)}
+                                </span>
+                                {(action.tokens_in > 0 || action.tokens_out > 0) && (
+                                  <span className="font-mono text-[10px] tabular-nums text-tertiary">
+                                    {formatTokens(action.tokens_in)} in · {formatTokens(action.tokens_out)} out
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-1">
+                            {isAdmin && (
+                              <button
+                                onClick={(e) => handleDeleteAction(action.action_id, e)}
+                                disabled={deletingId === action.action_id}
+                                className="rounded-md p-1 text-tertiary transition-colors hover:bg-error-subtle hover:text-error disabled:opacity-50"
+                                aria-label="Delete decision"
+                                title="Delete decision"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            )}
+                            {isExpanded
+                              ? <ChevronUp size={14} className="text-tertiary" />
+                              : <ChevronDown size={14} className="text-tertiary" />}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {isExpanded && (
+                      <div className="space-y-5 border-t border-border bg-surface-secondary p-5">
+                        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                          <div>
+                            <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Decision Rationale</div>
+                            <div className="text-sm text-secondary">{action.reasoning || 'Not specified'}</div>
+                          </div>
+                          <div>
+                            <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Authorization</div>
+                            <div className="text-sm text-secondary">{action.authorization_scope || 'Not specified'}</div>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm md:grid-cols-4">
+                          <div className="flex items-baseline justify-between gap-2">
+                            <span className="text-[11px] uppercase tracking-[0.14em] text-tertiary">Confidence</span>
+                            <span className="tabular-nums text-white">{action.confidence || 50}%</span>
+                          </div>
+                          <div className="flex items-baseline justify-between gap-2">
+                            <span className="text-[11px] uppercase tracking-[0.14em] text-tertiary">Reversible</span>
+                            <span className={action.reversible ? 'text-success' : 'text-error'}>{action.reversible ? 'Yes' : 'No'}</span>
+                          </div>
+                          <div className="flex items-baseline justify-between gap-2">
+                            <span className="text-[11px] uppercase tracking-[0.14em] text-tertiary">Duration</span>
+                            <span className="tabular-nums text-white">{action.duration_ms ? `${(action.duration_ms / 1000).toFixed(1)}s` : '--'}</span>
+                          </div>
+                          <div className="flex items-baseline justify-between gap-2">
+                            <span className="text-[11px] uppercase tracking-[0.14em] text-tertiary">Cost</span>
+                            <span className="font-mono tabular-nums text-white">${parseFloat(action.cost_estimate || 0).toFixed(4)}</span>
+                          </div>
+                        </div>
+
+                        {action.output_summary && (
+                          <div>
+                            <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Output</div>
+                            <div className="rounded-md border border-border bg-surface-primary p-3 font-mono text-xs text-secondary">{action.output_summary}</div>
+                          </div>
+                        )}
+
+                        {action.error_message && (
+                          <div>
+                            <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Error</div>
+                            <div className="rounded-md border border-error/20 bg-error-subtle p-3 font-mono text-xs text-error">{action.error_message}</div>
+                          </div>
+                        )}
+
+                        {sideEffects.length > 0 && (
+                          <div>
+                            <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Side Effects · {sideEffects.length}</div>
+                            <div className="flex flex-wrap gap-1">
+                              {sideEffects.map((se: any, i: number) => <Badge key={i} variant="warning" size="xs">{se}</Badge>)}
+                            </div>
+                          </div>
+                        )}
+
+                        {artifacts.length > 0 && (
+                          <div>
+                            <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Artifacts · {artifacts.length}</div>
+                            <div className="flex flex-wrap gap-1">
+                              {artifacts.map((a: any, i: number) => <Badge key={i} variant="info" size="xs">{a}</Badge>)}
+                            </div>
+                          </div>
+                        )}
+
+                        {detail && (
+                          <>
+                            {detail.open_loops?.length > 0 && (
+                              <div>
+                                <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Open Loops · {detail.open_loops.length}</div>
+                                <div className="space-y-1">
+                                  {detail.open_loops.map((loop: any) => (
+                                    <div key={loop.loop_id} className="flex items-center gap-2 text-sm">
+                                      <span className={`h-1.5 w-1.5 flex-shrink-0 rounded-full ${loop.status === 'open' ? 'bg-status-warning' : 'bg-status-success'}`} />
+                                      <span className="text-secondary">{loop.description}</span>
+                                      <span className="text-[11px] text-tertiary">({loop.loop_type} · {loop.priority})</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {detail.assumptions?.length > 0 && (
+                              <div>
+                                <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Assumptions · {detail.assumptions.length}</div>
+                                <div className="space-y-1">
+                                  {detail.assumptions.map((asm: any) => (
+                                    <div key={asm.assumption_id} className="flex items-center gap-2 text-sm">
+                                      {asm.validated
+                                        ? <CheckCircle2 size={14} className="shrink-0 text-success" />
+                                        : asm.invalidated
+                                          ? <XCircle size={14} className="shrink-0 text-error" />
+                                          : <Clock size={14} className="shrink-0 text-tertiary" />}
+                                      <span className="text-secondary">{asm.assumption}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {detail.message_summary && (
+                              <MessageTrail
+                                actionId={action.action_id}
+                                summary={detail.message_summary}
+                                compact={true}
+                              />
+                            )}
+                          </>
+                        )}
+
+                        <div className="flex items-center gap-4 border-t border-border pt-4">
+                          <Link
+                            href={`/decisions/${action.action_id}`}
+                            className="text-sm font-medium text-brand transition-colors hover:text-brand-hover"
+                          >
+                            View full decision record →
+                          </Link>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const url = `${window.location.origin}/replay/${action.action_id}`;
+                              navigator.clipboard.writeText(url);
+                              alert('Replay link copied to clipboard.');
+                            }}
+                            className="inline-flex items-center gap-1.5 text-xs text-tertiary transition-colors hover:text-secondary"
+                          >
+                            <ExternalLink size={12} />
+                            Share replay
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </PageLayout>
+  );
+}

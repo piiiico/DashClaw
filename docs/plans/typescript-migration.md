@@ -1,8 +1,8 @@
 # DashClaw TypeScript Migration Plan
 
 > **Repository:** `ucsandman/DashClaw`  
-> **Verified baseline:** `main` at `2bd56f2a` on June 5, 2026  
-> **Application version:** `4.1.1`  
+> **Verified baseline:** `main` at `e8709bbc` on June 5, 2026 (the originally-cited `2bd56f2a` is an ancestor of HEAD; the FinOps Phase B and x402 foundation it references are present, plus the 4.2.0 `recordX402Purchase` self-report)  
+> **Application version:** `4.2.0`  
 > **Migration style:** Incremental, strict, behavior preserving, test gated  
 > **Execution model:** Claude Code Goal plus Ultracode dynamic workflows
 
@@ -112,6 +112,7 @@ This migration must not:
 9. Delete historical migrations.
 10. Introduce broad product features merely because the migration touches related files.
 11. Commit, push, publish, release, deploy, or modify production infrastructure without explicit approval.
+12. Convert, refactor, or extend `app/api/_archive/**` (legacy archived routes, ~48 files) — explicitly out of scope and retained as a documented JavaScript exception.
 
 ## 4. Hard Architectural Invariants
 
@@ -164,6 +165,8 @@ Because USDC and micropayments may require fractional precision, do not convert 
 If JavaScript numbers remain at an external boundary, introduce explicit validated amount types and document precision limitations.
 
 A switch to decimal strings, database numeric wrappers, or minor units requires explicit approval and migration guidance.
+
+> **Migration-team note (2026-06-05):** In the live schema, `action_records.cost_estimate` is `real` (float4) and `code_sessions.cost_usd` / `cache_savings_usd` / `naive_cost_usd` are `numeric` (returned as strings by the Neon HTTP driver). Neither database type changes in this migration. Typed row mappers must model `real`→`number` and `numeric`→`Number()`-coerced-`number` without altering stored precision, rounding, or units.
 
 ### 4.8 Cost accounting
 
@@ -379,6 +382,8 @@ A narrow suppression is allowed only when:
 4. It does not cross a security, tenancy, pricing, or payment boundary.
 
 The repository must still build after the TypeScript foundation is introduced.
+
+> **Migration-team note (2026-06-05) — route-discovery generators (CRITICAL):** `scripts/generate-openapi.mjs`, `scripts/generate-api-inventory.mjs`, and the route-sql baseline discover API routes by the literal `route.js` filename (`generated_from: 'app/api/**/route.js'`). They MUST be taught to match `route.{js,ts,tsx}` and be re-baselined as part of this foundation phase, BEFORE any route file is converted (§15). Otherwise `openapi:check`, `api:inventory:check`, and `route-sql:check` will silently skip TypeScript routes, under-reporting coverage and breaking the contract gates.
 
 ## 9. Phase 3: Domain Type Architecture
 
@@ -635,6 +640,8 @@ The migration must:
 * Preserve unknown model behavior.
 * Preserve generated rate refresh behavior.
 * Document the new source of truth.
+
+> **Migration-team note (2026-06-05) — pricing refresh coupling (CRITICAL):** `scripts/refresh-model-pricing.mjs` rewrites the `MODEL_PRICING_GENERATED:BILLING:START/END` and `:PRICING:START/END` marker blocks via hardcoded paths `path.join(REPO_ROOT,'app','lib','billing.js')` and `…'claude-code','pricing.js'` (string `indexOf` on the markers, `fs.writeFileSync`). Converting those modules to `.ts` MUST update the script's target paths in lockstep and preserve the exact marker comment strings; verify with a `node scripts/refresh-model-pricing.mjs` dry-run (no `--apply`) reporting markers found in both `.ts` files before deleting the `.js` predecessors.
 
 ### 11.4 FinOps contracts
 
@@ -904,6 +911,8 @@ Preserve:
 * Existing response compatibility
 
 Do not convert Python to TypeScript.
+
+> **Migration-team note (2026-06-05) — Node SDK CJS bridge:** `sdk/index.cjs` provides a lazy `Symbol.hasInstance` error-class bridge and a deferred proxy for nested namespace access (e.g. `client.execution.capabilities.list()`). Converting the SDK internals to TypeScript can break `instanceof` checks and nested access. Convert SDK internals ONLY behind a passing `instanceof` + nested-namespace contract test; otherwise keep `sdk/dashclaw.js` as a documented JavaScript exception. Public method counts and response shapes must stay stable (`version:sync:check`, `sdk:integration`).
 
 ### 17.3 Scripts
 
@@ -1202,6 +1211,8 @@ npm run sdk:integration:python
 npm run scripts:check-syntax
 npm run startup:smoke
 ```
+
+> **Migration-team note (2026-06-05) — host caveat:** On Windows + Node 24, `npm run startup:smoke` fails with `spawn EINVAL` (it spawns `npm.cmd` without `shell:true`; the CVE-2024-27980 hardening blocks `.cmd` spawns) and `npm run test:api` requires a running dev server at `localhost:3000`. Both are preexisting and environmental — not migration regressions. Run them on Linux/CI or against a started server, and treat them as preexisting in the final audit rather than migration gates.
 
 Run Playwright smoke tests when the environment supports them.
 

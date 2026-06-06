@@ -13,6 +13,18 @@ Through 3.x the platform and the SDKs versioned independently, which is why olde
 
 ## [Unreleased]
 
+## [4.2.1] — 2026-06-06
+
+> Internal: the Next.js platform is migrated from JavaScript/JSX to strict TypeScript/TSX (587 `.ts`/`.tsx` files; incremental and behavior-preserving). No public API, route, or SDK-surface change (Node 126 / Python 224 unchanged); both SDK packages republish at 4.2.1 per the unified-version model. One user-visible fix ships alongside: the Fleet spend total.
+
+### Fixed
+
+- **Fleet spend total (the `/spend` headline KPI) could render `$0.00` when an org had both agent LLM cost and x402 purchases.** The x402 / code-sessions spend aggregations returned their `::real` SUM as a database-driver string, so the server-side `Agent + x402` sum concatenated (`"5.51.25"`) → NaN. `getX402SpendAggregation` / `getCodeSessionSpendAggregation` now coerce stored aggregates with `Number()` (matching the agent-cost path), with a defense-in-depth guard at the Fleet-total site. The breakdown tiles and the trend chart were already correct (the UI re-coerces). Caught by the migration's adversarial review.
+
+### Changed
+
+- **Platform migrated to strict TypeScript** (JS/JSX → TS/TSX, dependency-ordered and behavior-preserving). The build now uses webpack (`next build --webpack`) with a `next.config.js` `extensionAlias` so existing `.js` import specifiers resolve to the converted `.ts`/`.tsx` files with zero import-site churn. The Node SDK internals (the `index.cjs` bridge) and ~150 internal `app/lib` utility modules remain JavaScript as documented exceptions. No runtime behavior change beyond the Fleet fix above.
+
 ## [4.2.0] — 2026-06-05
 
 > Adds a one-call x402 self-report path to both SDKs and fixes server-side provider attribution for name-only purchases, so spend an agent makes OUTSIDE an OpenClaw hook (a Codex native shell, a wrapper script) still lands correctly on Spend → x402. The SDK surface grows by one method each (Node 125 → 126, Python 223 → 224); additive, no breaking changes. `@dashclaw/openclaw-plugin` 1.3.2 documents the same fallback.

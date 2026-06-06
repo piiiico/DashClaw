@@ -29,7 +29,7 @@ async function walkRouteFiles(dir) {
       files.push(...(await walkRouteFiles(full)));
       continue;
     }
-    if (entry.isFile() && entry.name === 'route.js') {
+    if (entry.isFile() && /^route\.(js|ts|tsx)$/.test(entry.name)) {
       files.push(full);
     }
   }

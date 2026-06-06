@@ -66,6 +66,25 @@ const nextConfig = {
       },
     ];
   },
+  // Incremental TypeScript migration: resolve `.js` import specifiers to
+  // converted `.ts`/`.tsx` files. tsc (bundler resolution) and vitest already
+  // do this; the webpack production build does not by default, so converting a
+  // module while its importers keep their `.js` specifiers would 404 the build.
+  // Tries TS first, then falls back to the real JS/JSX file (existing imports
+  // keep working). Turbopack (dev) prefers TS via resolveExtensions order.
+  turbopack: {
+    resolveExtensions: ['.ts', '.tsx', '.mts', '.js', '.jsx', '.mjs', '.cjs', '.json'],
+  },
+  webpack(config) {
+    config.resolve.extensionAlias = {
+      ...(config.resolve.extensionAlias ?? {}),
+      '.js': ['.ts', '.tsx', '.js', '.jsx'],
+      '.jsx': ['.tsx', '.jsx'],
+      '.mjs': ['.mts', '.mjs'],
+      '.cjs': ['.cts', '.cjs'],
+    };
+    return config;
+  },
 }
 
 module.exports = nextConfig

@@ -3,6 +3,14 @@ import path from 'node:path';
 
 const HTTP_METHODS = ['GET', 'POST', 'PATCH', 'DELETE', 'PUT', 'OPTIONS'];
 
+// Route files may be route.js, route.ts, or route.tsx (TypeScript migration).
+// The contract pins the route PATH + methods, not the source extension, so
+// discovery and matching are extension-agnostic.
+const ROUTE_FILE_RE = /^route\.(js|ts|tsx)$/;
+function normalizeRouteFile(file) {
+  return file.replace(/route\.(?:js|ts|tsx)$/, 'route');
+}
+
 async function walkRouteFiles(rootDir, routeRoot) {
   const fullRoot = path.join(rootDir, routeRoot);
   const discovered = [];
@@ -15,7 +23,7 @@ async function walkRouteFiles(rootDir, routeRoot) {
         await walk(fullPath);
         continue;
       }
-      if (entry.isFile() && entry.name === 'route.js') {
+      if (entry.isFile() && ROUTE_FILE_RE.test(entry.name)) {
         const relativePath = path.relative(rootDir, fullPath).replace(/\\/g, '/');
         const raw = await fs.readFile(fullPath, 'utf8');
         const methods = HTTP_METHODS.filter((method) => (
@@ -55,10 +63,10 @@ export async function checkApiSurface(contracts, discoveredSurface = null) {
   for (const [key, domainContract] of Object.entries(contracts.api || {})) {
     const declaredRoutes = domainContract.routes || [];
     const discoveredRoutes = discovered[key] || [];
-    const declaredByFile = new Map(declaredRoutes.map((route) => [route.file, route]));
+    const declaredByFile = new Map(declaredRoutes.map((route) => [normalizeRouteFile(route.file), route]));
 
     for (const route of discoveredRoutes) {
-      const declared = declaredByFile.get(route.file);
+      const declared = declaredByFile.get(normalizeRouteFile(route.file));
       if (!declared) {
         findings.push({
           code: 'undeclared_api_route',
@@ -76,7 +84,9 @@ export async function checkApiSurface(contracts, discoveredSurface = null) {
     }
 
     for (const route of declaredRoutes) {
-      const discoveredRoute = discoveredRoutes.find((candidate) => candidate.file === route.file);
+      const discoveredRoute = discoveredRoutes.find(
+        (candidate) => normalizeRouteFile(candidate.file) === normalizeRouteFile(route.file),
+      );
       if (!discoveredRoute) {
         findings.push({
           code: 'missing_api_route_file',

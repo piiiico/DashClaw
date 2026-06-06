@@ -5,7 +5,7 @@ description: DashClaw platform expert for integration, troubleshooting, and gove
 
 # DashClaw Platform Intelligence
 
-**Shape snapshot:** `sha1:9dbea6b71c4a6fea21a90fa3aed09e179c9f5386`
+**Shape snapshot:** `sha1:3b8ae5405a007e8233c9530034ccbfecb444e989`
 **This file is auto-generated.** Do not edit by hand — regenerate with:
 
 ```bash
@@ -718,133 +718,6 @@ All 89 tables defined in `schema/schema.js` (Drizzle ORM):
 - `webhooks`
 - `workflows`
 
-## Configuration Knobs
-
-Per-org settings stored in the `settings` table. Set via `PUT /api/settings/:key` or the web Settings/Integrations UI. Keys marked sensitive are auto-encrypted at rest.
-
-### AI Providers
-
-- `OPENAI_API_KEY`
-- `OPENAI_ORG_ID`
-- `ANTHROPIC_API_KEY`
-- `GROQ_API_KEY`
-- `TOGETHER_API_KEY`
-- `REPLICATE_API_TOKEN`
-- `HUGGINGFACE_API_KEY`
-- `PERPLEXITY_API_KEY`
-- `ELEVENLABS_API_KEY`
-- `ELEVENLABS_VOICE_ID`
-
-### Databases
-
-- `DATABASE_URL`
-- `SUPABASE_URL`
-- `SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_KEY`
-- `PLANETSCALE_URL`
-- `MONGODB_URI`
-- `REDIS_URL`
-- `PINECONE_API_KEY`
-- `PINECONE_ENVIRONMENT`
-
-### Communication
-
-- `TELEGRAM_BOT_TOKEN`
-- `TELEGRAM_ADMIN_CHAT_ID`
-- `DASHCLAW_ALERTS_TELEGRAM`
-- `DISCORD_BOT_TOKEN`
-- `DISCORD_CLIENT_ID`
-- `DISCORD_GUILD_ID`
-- `SLACK_BOT_TOKEN`
-- `SLACK_SIGNING_SECRET`
-- `SLACK_APP_TOKEN`
-- `TWILIO_ACCOUNT_SID`
-- `TWILIO_AUTH_TOKEN`
-- `TWILIO_PHONE_NUMBER`
-- `RESEND_API_KEY`
-- `SENDGRID_API_KEY`
-
-### Productivity
-
-- `GOOGLE_ACCOUNT`
-- `GOOGLE_CREDENTIALS_PATH`
-- `NOTION_API_KEY`
-- `NOTION_PARENT_PAGE_ID`
-- `LINEAR_API_KEY`
-- `AIRTABLE_API_KEY`
-- `AIRTABLE_BASE_ID`
-- `CALENDLY_API_KEY`
-
-### Development
-
-- `GITHUB_TOKEN`
-- `GITHUB_USERNAME`
-- `VERCEL_TOKEN`
-- `VERCEL_PROJECT_ID`
-- `RAILWAY_TOKEN`
-- `CLOUDFLARE_API_TOKEN`
-- `CLOUDFLARE_ACCOUNT_ID`
-- `SENTRY_DSN`
-- `SENTRY_AUTH_TOKEN`
-
-### Social
-
-- `TWITTER_API_KEY`
-- `TWITTER_API_SECRET`
-- `TWITTER_ACCESS_TOKEN`
-- `TWITTER_ACCESS_SECRET`
-- `BRAVE_API_KEY`
-- `MOLTBOOK_API_KEY`
-
-### Payments
-
-- `STRIPE_SECRET_KEY`
-- `STRIPE_PUBLISHABLE_KEY`
-- `STRIPE_WEBHOOK_SECRET`
-- `LEMONSQUEEZY_API_KEY`
-
-### Native governance alert settings
-
-- `DASHCLAW_ALERTS_SLACK`
-- `DASHCLAW_ALERTS_DISCORD`
-- `DASHCLAW_ALERTS_LINEAR`
-- `DASHCLAW_ALERTS_GITHUB`
-- `DASHCLAW_ALERTS_EMAIL`
-- `DASHCLAW_ALERT_EMAIL`
-- `SLACK_CHANNEL_ID`
-- `SLACK_WEBHOOK_URL`
-- `DISCORD_WEBHOOK_URL`
-- `GITHUB_REPO`
-- `SENDGRID_DEFAULT_TO`
-- `SENDGRID_FROM_EMAIL`
-
-### webhooks + native adapters deliver a signal. Empty/unset = disabled.
-
-- `DASHCLAW_ACTION_COST_THRESHOLD`
-
-### System configuration
-
-- `MODEL_PRICING`
-- `ENFORCE_AGENT_SIGNATURES`
-
-### Predictive risk scoring
-
-- `PREDICTIVE_RISK_ENABLED`
-- `PREDICTIVE_RISK_THRESHOLD`
-
-### docs/architecture/durable-execution-finality.md.
-
-- `DASHCLAW_OUTCOME_TIMEOUT_MINUTES`
-
-### DASHCLAW_BEHAVIOR_SAMPLES_ENABLED env var still overrides them.
-
-- `BEHAVIOR_RECORDER_ENABLED`
-- `BEHAVIOR_RECORDER_UNTIL`
-
-### content contains a detected secret/credential. Default (unset) = warn only.
-
-- `DASHCLAW_AUTOSCAN_BLOCK`
-
 ## Realtime & Webhook Events
 
 Every mutation that Mission Control reflects and every webhook delivery is keyed on these event strings. Subscribe via `GET /api/events` (SSE) or register a webhook with the matching `events: [...]` array.
@@ -881,18 +754,6 @@ These are the `type` strings emitted through `fireWebhooksForOrg` and `deliverNa
 - `mcp_degraded`
 - `stale_action`
 - `test`
-
-## Native Notification Adapters
-
-Each adapter delivers `integration_mismatch`, `integration_health_changed`, and `cost_exceeded` signals when at least one of its required credential keys is configured. Per-channel opt-out via `DASHCLAW_ALERTS_<NAME>=false`.
-
-| Adapter | Required credential (any one) |
-| --- | --- |
-| `org_id` | `DISCORD_WEBHOOK_URL` |
-| `email` | `RESEND_API_KEY`, `SENDGRID_API_KEY` |
-| `github` | `GITHUB_TOKEN` |
-| `linear` | `LINEAR_API_KEY` |
-| `slack` | `SLACK_BOT_TOKEN`, `SLACK_WEBHOOK_URL` |
 
 ## Detecting Drift
 

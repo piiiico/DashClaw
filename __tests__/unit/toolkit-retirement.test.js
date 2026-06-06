@@ -38,12 +38,12 @@ describe('agent-toolkit retirement assertions', () => {
   });
 
   it('PublicNavbar has no /toolkit link', () => {
-    const navbar = readFileSync(path.resolve('app/components/PublicNavbar.js'), 'utf8');
+    const navbar = readFileSync(path.resolve('app/components/PublicNavbar.tsx'), 'utf8');
     expect(navbar).not.toMatch(/\/toolkit/);
   });
 
   it('PublicFooter has no /toolkit link', () => {
-    const footer = readFileSync(path.resolve('app/components/PublicFooter.js'), 'utf8');
+    const footer = readFileSync(path.resolve('app/components/PublicFooter.tsx'), 'utf8');
     expect(footer).not.toMatch(/\/toolkit/);
   });
 

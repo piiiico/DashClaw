@@ -85,11 +85,11 @@ Python already exposes:
 
 Relevant route files include:
 
-- [route.js](../../../app/api/knowledge/collections/route.js)
-- [route.js](../../../app/api/knowledge/collections/[collectionId]/route.js)
-- [route.js](../../../app/api/knowledge/collections/[collectionId]/items/route.js)
-- [route.js](../../../app/api/knowledge/collections/[collectionId]/sync/route.js)
-- [route.js](../../../app/api/knowledge/collections/[collectionId]/search/route.js)
+- [route.js](../../../app/api/knowledge/collections/route.ts)
+- [route.js](../../../app/api/knowledge/collections/[collectionId]/route.ts)
+- [route.js](../../../app/api/knowledge/collections/[collectionId]/items/route.ts)
+- [route.js](../../../app/api/knowledge/collections/[collectionId]/sync/route.ts)
+- [route.js](../../../app/api/knowledge/collections/[collectionId]/search/route.ts)
 
 ### Existing contract system
 

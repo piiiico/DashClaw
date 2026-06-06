@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:9dbea6b71c4a6fea21a90fa3aed09e179c9f5386",
+  "timestamp": "sha1:3b8ae5405a007e8233c9530034ccbfecb444e989",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -498,7 +498,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/actions/route.js"
+      "file_path": "app/api/actions/route.ts"
     },
     {
       "path": "/api/actions/[actionId]",
@@ -510,7 +510,7 @@
         "actionId"
       ],
       "archived": false,
-      "file_path": "app/api/actions/[actionId]/route.js"
+      "file_path": "app/api/actions/[actionId]/route.ts"
     },
     {
       "path": "/api/actions/[actionId]/artifacts",
@@ -521,7 +521,7 @@
         "actionId"
       ],
       "archived": false,
-      "file_path": "app/api/actions/[actionId]/artifacts/route.js"
+      "file_path": "app/api/actions/[actionId]/artifacts/route.ts"
     },
     {
       "path": "/api/actions/[actionId]/graph",
@@ -532,7 +532,7 @@
         "actionId"
       ],
       "archived": false,
-      "file_path": "app/api/actions/[actionId]/graph/route.js"
+      "file_path": "app/api/actions/[actionId]/graph/route.ts"
     },
     {
       "path": "/api/actions/[actionId]/messages",
@@ -543,7 +543,7 @@
         "actionId"
       ],
       "archived": false,
-      "file_path": "app/api/actions/[actionId]/messages/route.js"
+      "file_path": "app/api/actions/[actionId]/messages/route.ts"
     },
     {
       "path": "/api/actions/[actionId]/outcome",
@@ -555,7 +555,7 @@
         "actionId"
       ],
       "archived": false,
-      "file_path": "app/api/actions/[actionId]/outcome/route.js"
+      "file_path": "app/api/actions/[actionId]/outcome/route.ts"
     },
     {
       "path": "/api/actions/[actionId]/trace",
@@ -566,7 +566,7 @@
         "actionId"
       ],
       "archived": false,
-      "file_path": "app/api/actions/[actionId]/trace/route.js"
+      "file_path": "app/api/actions/[actionId]/trace/route.ts"
     },
     {
       "path": "/api/actions/costs",
@@ -575,7 +575,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/actions/costs/route.js"
+      "file_path": "app/api/actions/costs/route.ts"
     },
     {
       "path": "/api/actions/loops",
@@ -585,7 +585,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/actions/loops/route.js"
+      "file_path": "app/api/actions/loops/route.ts"
     },
     {
       "path": "/api/actions/loops/[loopId]",
@@ -597,7 +597,7 @@
         "loopId"
       ],
       "archived": false,
-      "file_path": "app/api/actions/loops/[loopId]/route.js"
+      "file_path": "app/api/actions/loops/[loopId]/route.ts"
     },
     {
       "path": "/api/actions/stats",
@@ -606,7 +606,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/actions/stats/route.js"
+      "file_path": "app/api/actions/stats/route.ts"
     },
     {
       "path": "/api/activity",
@@ -615,7 +615,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/activity/route.js"
+      "file_path": "app/api/activity/route.ts"
     },
     {
       "path": "/api/admin/trigger-outcome-sweep",
@@ -624,7 +624,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/admin/trigger-outcome-sweep/route.js"
+      "file_path": "app/api/admin/trigger-outcome-sweep/route.ts"
     },
     {
       "path": "/api/agents",
@@ -633,7 +633,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/agents/route.js"
+      "file_path": "app/api/agents/route.ts"
     },
     {
       "path": "/api/agents/[agentId]",
@@ -644,7 +644,7 @@
         "agentId"
       ],
       "archived": false,
-      "file_path": "app/api/agents/[agentId]/route.js"
+      "file_path": "app/api/agents/[agentId]/route.ts"
     },
     {
       "path": "/api/agents/[agentId]/profile",
@@ -655,7 +655,7 @@
         "agentId"
       ],
       "archived": false,
-      "file_path": "app/api/agents/[agentId]/profile/route.js"
+      "file_path": "app/api/agents/[agentId]/profile/route.ts"
     },
     {
       "path": "/api/agents/connections",
@@ -665,7 +665,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/agents/connections/route.js"
+      "file_path": "app/api/agents/connections/route.ts"
     },
     {
       "path": "/api/agents/heartbeat",
@@ -674,7 +674,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/agents/heartbeat/route.js"
+      "file_path": "app/api/agents/heartbeat/route.ts"
     },
     {
       "path": "/api/agents/invoke",
@@ -683,7 +683,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/agents/invoke/route.js"
+      "file_path": "app/api/agents/invoke/route.ts"
     },
     {
       "path": "/api/agents/registry",
@@ -693,7 +693,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/agents/registry/route.js"
+      "file_path": "app/api/agents/registry/route.ts"
     },
     {
       "path": "/api/agents/registry/[id]",
@@ -705,7 +705,7 @@
         "id"
       ],
       "archived": false,
-      "file_path": "app/api/agents/registry/[id]/route.js"
+      "file_path": "app/api/agents/registry/[id]/route.ts"
     },
     {
       "path": "/api/agents/registry/[id]/capabilities",
@@ -717,7 +717,7 @@
         "id"
       ],
       "archived": false,
-      "file_path": "app/api/agents/registry/[id]/capabilities/route.js"
+      "file_path": "app/api/agents/registry/[id]/capabilities/route.ts"
     },
     {
       "path": "/api/analytics",
@@ -726,7 +726,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/analytics/route.js"
+      "file_path": "app/api/analytics/route.ts"
     },
     {
       "path": "/api/approvals/[actionId]",
@@ -737,7 +737,7 @@
         "actionId"
       ],
       "archived": false,
-      "file_path": "app/api/approvals/[actionId]/route.js"
+      "file_path": "app/api/approvals/[actionId]/route.ts"
     },
     {
       "path": "/api/artifacts",
@@ -747,7 +747,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/artifacts/route.js"
+      "file_path": "app/api/artifacts/route.ts"
     },
     {
       "path": "/api/artifacts/[artifactId]",
@@ -759,7 +759,7 @@
         "artifactId"
       ],
       "archived": false,
-      "file_path": "app/api/artifacts/[artifactId]/route.js"
+      "file_path": "app/api/artifacts/[artifactId]/route.ts"
     },
     {
       "path": "/api/artifacts/evidence-bundle",
@@ -768,7 +768,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/artifacts/evidence-bundle/route.js"
+      "file_path": "app/api/artifacts/evidence-bundle/route.ts"
     },
     {
       "path": "/api/assumptions",
@@ -778,7 +778,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/assumptions/route.js"
+      "file_path": "app/api/assumptions/route.ts"
     },
     {
       "path": "/api/assumptions/[assumptionId]",
@@ -790,7 +790,7 @@
         "assumptionId"
       ],
       "archived": false,
-      "file_path": "app/api/assumptions/[assumptionId]/route.js"
+      "file_path": "app/api/assumptions/[assumptionId]/route.ts"
     },
     {
       "path": "/api/auth/[...nextauth]",
@@ -799,7 +799,7 @@
         "nextauth"
       ],
       "archived": false,
-      "file_path": "app/api/auth/[...nextauth]/route.js"
+      "file_path": "app/api/auth/[...nextauth]/route.ts"
     },
     {
       "path": "/api/auth/config",
@@ -808,7 +808,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/auth/config/route.js"
+      "file_path": "app/api/auth/config/route.ts"
     },
     {
       "path": "/api/auth/local",
@@ -818,7 +818,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/auth/local/route.js"
+      "file_path": "app/api/auth/local/route.ts"
     },
     {
       "path": "/api/behavior/recorder",
@@ -828,7 +828,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/behavior/recorder/route.js"
+      "file_path": "app/api/behavior/recorder/route.ts"
     },
     {
       "path": "/api/behavior/samples",
@@ -837,7 +837,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/behavior/samples/route.js"
+      "file_path": "app/api/behavior/samples/route.ts"
     },
     {
       "path": "/api/behavior/simulate",
@@ -846,7 +846,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/behavior/simulate/route.js"
+      "file_path": "app/api/behavior/simulate/route.ts"
     },
     {
       "path": "/api/behavior/suggestions",
@@ -856,7 +856,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/behavior/suggestions/route.js"
+      "file_path": "app/api/behavior/suggestions/route.ts"
     },
     {
       "path": "/api/billing/checkout",
@@ -865,7 +865,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/billing/checkout/route.js"
+      "file_path": "app/api/billing/checkout/route.ts"
     },
     {
       "path": "/api/billing/portal",
@@ -874,7 +874,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/billing/portal/route.js"
+      "file_path": "app/api/billing/portal/route.ts"
     },
     {
       "path": "/api/capabilities",
@@ -884,7 +884,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/capabilities/route.js"
+      "file_path": "app/api/capabilities/route.ts"
     },
     {
       "path": "/api/capabilities/[capabilityId]",
@@ -897,7 +897,7 @@
         "capabilityId"
       ],
       "archived": false,
-      "file_path": "app/api/capabilities/[capabilityId]/route.js"
+      "file_path": "app/api/capabilities/[capabilityId]/route.ts"
     },
     {
       "path": "/api/capabilities/[capabilityId]/access",
@@ -909,7 +909,7 @@
         "capabilityId"
       ],
       "archived": false,
-      "file_path": "app/api/capabilities/[capabilityId]/access/route.js"
+      "file_path": "app/api/capabilities/[capabilityId]/access/route.ts"
     },
     {
       "path": "/api/capabilities/[capabilityId]/access/[ruleId]",
@@ -921,7 +921,7 @@
         "ruleId"
       ],
       "archived": false,
-      "file_path": "app/api/capabilities/[capabilityId]/access/[ruleId]/route.js"
+      "file_path": "app/api/capabilities/[capabilityId]/access/[ruleId]/route.ts"
     },
     {
       "path": "/api/capabilities/[capabilityId]/access/check",
@@ -932,7 +932,7 @@
         "capabilityId"
       ],
       "archived": false,
-      "file_path": "app/api/capabilities/[capabilityId]/access/check/route.js"
+      "file_path": "app/api/capabilities/[capabilityId]/access/check/route.ts"
     },
     {
       "path": "/api/capabilities/[capabilityId]/health",
@@ -943,7 +943,7 @@
         "capabilityId"
       ],
       "archived": false,
-      "file_path": "app/api/capabilities/[capabilityId]/health/route.js"
+      "file_path": "app/api/capabilities/[capabilityId]/health/route.ts"
     },
     {
       "path": "/api/capabilities/[capabilityId]/history",
@@ -954,7 +954,7 @@
         "capabilityId"
       ],
       "archived": false,
-      "file_path": "app/api/capabilities/[capabilityId]/history/route.js"
+      "file_path": "app/api/capabilities/[capabilityId]/history/route.ts"
     },
     {
       "path": "/api/capabilities/[capabilityId]/invoke",
@@ -965,7 +965,7 @@
         "capabilityId"
       ],
       "archived": false,
-      "file_path": "app/api/capabilities/[capabilityId]/invoke/route.js"
+      "file_path": "app/api/capabilities/[capabilityId]/invoke/route.ts"
     },
     {
       "path": "/api/capabilities/[capabilityId]/test",
@@ -976,7 +976,7 @@
         "capabilityId"
       ],
       "archived": false,
-      "file_path": "app/api/capabilities/[capabilityId]/test/route.js"
+      "file_path": "app/api/capabilities/[capabilityId]/test/route.ts"
     },
     {
       "path": "/api/capabilities/health",
@@ -985,7 +985,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/capabilities/health/route.js"
+      "file_path": "app/api/capabilities/health/route.ts"
     },
     {
       "path": "/api/code-sessions/alerts",
@@ -994,7 +994,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/code-sessions/alerts/route.js"
+      "file_path": "app/api/code-sessions/alerts/route.ts"
     },
     {
       "path": "/api/code-sessions/alerts/read-all",
@@ -1003,7 +1003,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/code-sessions/alerts/read-all/route.js"
+      "file_path": "app/api/code-sessions/alerts/read-all/route.ts"
     },
     {
       "path": "/api/code-sessions/ingest-jsonl",
@@ -1012,7 +1012,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/code-sessions/ingest-jsonl/route.js"
+      "file_path": "app/api/code-sessions/ingest-jsonl/route.ts"
     },
     {
       "path": "/api/code-sessions/ingest-live",
@@ -1021,7 +1021,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/code-sessions/ingest-live/route.js"
+      "file_path": "app/api/code-sessions/ingest-live/route.ts"
     },
     {
       "path": "/api/code-sessions/manifests/[manifestId]",
@@ -1032,7 +1032,7 @@
         "manifestId"
       ],
       "archived": false,
-      "file_path": "app/api/code-sessions/manifests/[manifestId]/route.js"
+      "file_path": "app/api/code-sessions/manifests/[manifestId]/route.ts"
     },
     {
       "path": "/api/code-sessions/memos",
@@ -1041,7 +1041,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/code-sessions/memos/route.js"
+      "file_path": "app/api/code-sessions/memos/route.ts"
     },
     {
       "path": "/api/code-sessions/memos/regenerate",
@@ -1050,7 +1050,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/code-sessions/memos/regenerate/route.js"
+      "file_path": "app/api/code-sessions/memos/regenerate/route.ts"
     },
     {
       "path": "/api/code-sessions/projects",
@@ -1059,7 +1059,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/code-sessions/projects/route.js"
+      "file_path": "app/api/code-sessions/projects/route.ts"
     },
     {
       "path": "/api/code-sessions/projects/[projectId]/sessions",
@@ -1070,7 +1070,7 @@
         "projectId"
       ],
       "archived": false,
-      "file_path": "app/api/code-sessions/projects/[projectId]/sessions/route.js"
+      "file_path": "app/api/code-sessions/projects/[projectId]/sessions/route.ts"
     },
     {
       "path": "/api/code-sessions/sessions/[sessionId]",
@@ -1081,7 +1081,7 @@
         "sessionId"
       ],
       "archived": false,
-      "file_path": "app/api/code-sessions/sessions/[sessionId]/route.js"
+      "file_path": "app/api/code-sessions/sessions/[sessionId]/route.ts"
     },
     {
       "path": "/api/code-sessions/sessions/[sessionId]/autopsy",
@@ -1092,7 +1092,7 @@
         "sessionId"
       ],
       "archived": false,
-      "file_path": "app/api/code-sessions/sessions/[sessionId]/autopsy/route.js"
+      "file_path": "app/api/code-sessions/sessions/[sessionId]/autopsy/route.ts"
     },
     {
       "path": "/api/code-sessions/sessions/[sessionId]/insights",
@@ -1103,7 +1103,7 @@
         "sessionId"
       ],
       "archived": false,
-      "file_path": "app/api/code-sessions/sessions/[sessionId]/insights/route.js"
+      "file_path": "app/api/code-sessions/sessions/[sessionId]/insights/route.ts"
     },
     {
       "path": "/api/code-sessions/sessions/[sessionId]/optimal-files/manifest",
@@ -1114,7 +1114,7 @@
         "sessionId"
       ],
       "archived": false,
-      "file_path": "app/api/code-sessions/sessions/[sessionId]/optimal-files/manifest/route.js"
+      "file_path": "app/api/code-sessions/sessions/[sessionId]/optimal-files/manifest/route.ts"
     },
     {
       "path": "/api/code-sessions/sessions/[sessionId]/optimal-files/merge-preview",
@@ -1125,7 +1125,7 @@
         "sessionId"
       ],
       "archived": false,
-      "file_path": "app/api/code-sessions/sessions/[sessionId]/optimal-files/merge-preview/route.js"
+      "file_path": "app/api/code-sessions/sessions/[sessionId]/optimal-files/merge-preview/route.ts"
     },
     {
       "path": "/api/code-sessions/sessions/[sessionId]/optimal-files/preview",
@@ -1136,7 +1136,7 @@
         "sessionId"
       ],
       "archived": false,
-      "file_path": "app/api/code-sessions/sessions/[sessionId]/optimal-files/preview/route.js"
+      "file_path": "app/api/code-sessions/sessions/[sessionId]/optimal-files/preview/route.ts"
     },
     {
       "path": "/api/code-sessions/subagent-roi",
@@ -1145,7 +1145,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/code-sessions/subagent-roi/route.js"
+      "file_path": "app/api/code-sessions/subagent-roi/route.ts"
     },
     {
       "path": "/api/compliance/evidence",
@@ -1154,7 +1154,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/compliance/evidence/route.js"
+      "file_path": "app/api/compliance/evidence/route.ts"
     },
     {
       "path": "/api/compliance/exports",
@@ -1164,7 +1164,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/compliance/exports/route.js"
+      "file_path": "app/api/compliance/exports/route.ts"
     },
     {
       "path": "/api/compliance/exports/[exportId]",
@@ -1176,7 +1176,7 @@
         "exportId"
       ],
       "archived": false,
-      "file_path": "app/api/compliance/exports/[exportId]/route.js"
+      "file_path": "app/api/compliance/exports/[exportId]/route.ts"
     },
     {
       "path": "/api/compliance/exports/[exportId]/download",
@@ -1187,7 +1187,7 @@
         "exportId"
       ],
       "archived": false,
-      "file_path": "app/api/compliance/exports/[exportId]/download/route.js"
+      "file_path": "app/api/compliance/exports/[exportId]/download/route.ts"
     },
     {
       "path": "/api/compliance/frameworks",
@@ -1196,7 +1196,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/compliance/frameworks/route.js"
+      "file_path": "app/api/compliance/frameworks/route.ts"
     },
     {
       "path": "/api/compliance/gaps",
@@ -1205,7 +1205,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/compliance/gaps/route.js"
+      "file_path": "app/api/compliance/gaps/route.ts"
     },
     {
       "path": "/api/compliance/map",
@@ -1214,7 +1214,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/compliance/map/route.js"
+      "file_path": "app/api/compliance/map/route.ts"
     },
     {
       "path": "/api/compliance/report",
@@ -1223,7 +1223,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/compliance/report/route.js"
+      "file_path": "app/api/compliance/report/route.ts"
     },
     {
       "path": "/api/compliance/schedules",
@@ -1233,7 +1233,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/compliance/schedules/route.js"
+      "file_path": "app/api/compliance/schedules/route.ts"
     },
     {
       "path": "/api/compliance/schedules/[scheduleId]",
@@ -1245,7 +1245,7 @@
         "scheduleId"
       ],
       "archived": false,
-      "file_path": "app/api/compliance/schedules/[scheduleId]/route.js"
+      "file_path": "app/api/compliance/schedules/[scheduleId]/route.ts"
     },
     {
       "path": "/api/compliance/trends",
@@ -1254,7 +1254,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/compliance/trends/route.js"
+      "file_path": "app/api/compliance/trends/route.ts"
     },
     {
       "path": "/api/cron/code-session-cache-crater",
@@ -1263,7 +1263,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/cron/code-session-cache-crater/route.js"
+      "file_path": "app/api/cron/code-session-cache-crater/route.ts"
     },
     {
       "path": "/api/cron/code-session-weekly-memo",
@@ -1272,7 +1272,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/cron/code-session-weekly-memo/route.js"
+      "file_path": "app/api/cron/code-session-weekly-memo/route.ts"
     },
     {
       "path": "/api/cron/integration-health",
@@ -1281,7 +1281,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/cron/integration-health/route.js"
+      "file_path": "app/api/cron/integration-health/route.ts"
     },
     {
       "path": "/api/cron/jti-sweep",
@@ -1290,7 +1290,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/cron/jti-sweep/route.js"
+      "file_path": "app/api/cron/jti-sweep/route.ts"
     },
     {
       "path": "/api/cron/learning-episodes-backfill",
@@ -1299,7 +1299,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/cron/learning-episodes-backfill/route.js"
+      "file_path": "app/api/cron/learning-episodes-backfill/route.ts"
     },
     {
       "path": "/api/cron/learning-recommendations",
@@ -1308,7 +1308,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/cron/learning-recommendations/route.js"
+      "file_path": "app/api/cron/learning-recommendations/route.ts"
     },
     {
       "path": "/api/cron/memory-maintenance",
@@ -1317,7 +1317,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/cron/memory-maintenance/route.js"
+      "file_path": "app/api/cron/memory-maintenance/route.ts"
     },
     {
       "path": "/api/cron/outcome-sweep",
@@ -1326,7 +1326,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/cron/outcome-sweep/route.js"
+      "file_path": "app/api/cron/outcome-sweep/route.ts"
     },
     {
       "path": "/api/cron/policy-suggestions",
@@ -1335,7 +1335,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/cron/policy-suggestions/route.js"
+      "file_path": "app/api/cron/policy-suggestions/route.ts"
     },
     {
       "path": "/api/cron/reset-meters",
@@ -1344,7 +1344,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/cron/reset-meters/route.js"
+      "file_path": "app/api/cron/reset-meters/route.ts"
     },
     {
       "path": "/api/cron/routing-maintenance",
@@ -1353,7 +1353,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/cron/routing-maintenance/route.js"
+      "file_path": "app/api/cron/routing-maintenance/route.ts"
     },
     {
       "path": "/api/cron/signals",
@@ -1362,7 +1362,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/cron/signals/route.js"
+      "file_path": "app/api/cron/signals/route.ts"
     },
     {
       "path": "/api/discord/interactions",
@@ -1371,7 +1371,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/discord/interactions/route.js"
+      "file_path": "app/api/discord/interactions/route.ts"
     },
     {
       "path": "/api/docs/raw",
@@ -1380,7 +1380,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/docs/raw/route.js"
+      "file_path": "app/api/docs/raw/route.ts"
     },
     {
       "path": "/api/doctor",
@@ -1389,7 +1389,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/doctor/route.js"
+      "file_path": "app/api/doctor/route.ts"
     },
     {
       "path": "/api/doctor/fix",
@@ -1398,7 +1398,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/doctor/fix/route.js"
+      "file_path": "app/api/doctor/fix/route.ts"
     },
     {
       "path": "/api/drift/alerts",
@@ -1408,7 +1408,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/drift/alerts/route.js"
+      "file_path": "app/api/drift/alerts/route.ts"
     },
     {
       "path": "/api/drift/alerts/[alertId]",
@@ -1420,7 +1420,7 @@
         "alertId"
       ],
       "archived": false,
-      "file_path": "app/api/drift/alerts/[alertId]/route.js"
+      "file_path": "app/api/drift/alerts/[alertId]/route.ts"
     },
     {
       "path": "/api/drift/metrics",
@@ -1429,7 +1429,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/drift/metrics/route.js"
+      "file_path": "app/api/drift/metrics/route.ts"
     },
     {
       "path": "/api/drift/snapshots",
@@ -1438,7 +1438,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/drift/snapshots/route.js"
+      "file_path": "app/api/drift/snapshots/route.ts"
     },
     {
       "path": "/api/drift/stats",
@@ -1447,7 +1447,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/drift/stats/route.js"
+      "file_path": "app/api/drift/stats/route.ts"
     },
     {
       "path": "/api/evaluations",
@@ -1457,7 +1457,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/evaluations/route.js"
+      "file_path": "app/api/evaluations/route.ts"
     },
     {
       "path": "/api/evaluations/runs",
@@ -1467,7 +1467,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/evaluations/runs/route.js"
+      "file_path": "app/api/evaluations/runs/route.ts"
     },
     {
       "path": "/api/evaluations/runs/[runId]",
@@ -1479,7 +1479,7 @@
         "runId"
       ],
       "archived": false,
-      "file_path": "app/api/evaluations/runs/[runId]/route.js"
+      "file_path": "app/api/evaluations/runs/[runId]/route.ts"
     },
     {
       "path": "/api/evaluations/scorers",
@@ -1489,7 +1489,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/evaluations/scorers/route.js"
+      "file_path": "app/api/evaluations/scorers/route.ts"
     },
     {
       "path": "/api/evaluations/scorers/[scorerId]",
@@ -1501,7 +1501,7 @@
         "scorerId"
       ],
       "archived": false,
-      "file_path": "app/api/evaluations/scorers/[scorerId]/route.js"
+      "file_path": "app/api/evaluations/scorers/[scorerId]/route.ts"
     },
     {
       "path": "/api/evaluations/scorers/preview",
@@ -1510,7 +1510,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/evaluations/scorers/preview/route.js"
+      "file_path": "app/api/evaluations/scorers/preview/route.ts"
     },
     {
       "path": "/api/evaluations/stats",
@@ -1519,7 +1519,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/evaluations/stats/route.js"
+      "file_path": "app/api/evaluations/stats/route.ts"
     },
     {
       "path": "/api/finops/spend",
@@ -1528,7 +1528,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/finops/spend/route.js"
+      "file_path": "app/api/finops/spend/route.ts"
     },
     {
       "path": "/api/guard",
@@ -1538,7 +1538,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/guard/route.js"
+      "file_path": "app/api/guard/route.ts"
     },
     {
       "path": "/api/guard/decisions",
@@ -1547,7 +1547,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/guard/decisions/route.js"
+      "file_path": "app/api/guard/decisions/route.ts"
     },
     {
       "path": "/api/handoffs",
@@ -1557,7 +1557,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/handoffs/route.js"
+      "file_path": "app/api/handoffs/route.ts"
     },
     {
       "path": "/api/handoffs/[id]",
@@ -1568,7 +1568,7 @@
         "id"
       ],
       "archived": false,
-      "file_path": "app/api/handoffs/[id]/route.js"
+      "file_path": "app/api/handoffs/[id]/route.ts"
     },
     {
       "path": "/api/handoffs/[id]/consume",
@@ -1579,7 +1579,7 @@
         "id"
       ],
       "archived": false,
-      "file_path": "app/api/handoffs/[id]/consume/route.js"
+      "file_path": "app/api/handoffs/[id]/consume/route.ts"
     },
     {
       "path": "/api/handoffs/latest",
@@ -1588,7 +1588,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/handoffs/latest/route.js"
+      "file_path": "app/api/handoffs/latest/route.ts"
     },
     {
       "path": "/api/health",
@@ -1597,7 +1597,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/health/route.js"
+      "file_path": "app/api/health/route.ts"
     },
     {
       "path": "/api/hosted/cleanup",
@@ -1606,7 +1606,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/hosted/cleanup/route.js"
+      "file_path": "app/api/hosted/cleanup/route.ts"
     },
     {
       "path": "/api/hosted/workspaces",
@@ -1616,7 +1616,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/hosted/workspaces/route.js"
+      "file_path": "app/api/hosted/workspaces/route.ts"
     },
     {
       "path": "/api/hosted/workspaces/[workspaceId]",
@@ -1628,7 +1628,7 @@
         "workspaceId"
       ],
       "archived": false,
-      "file_path": "app/api/hosted/workspaces/[workspaceId]/route.js"
+      "file_path": "app/api/hosted/workspaces/[workspaceId]/route.ts"
     },
     {
       "path": "/api/identities",
@@ -1638,7 +1638,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/identities/route.js"
+      "file_path": "app/api/identities/route.ts"
     },
     {
       "path": "/api/identities/[agentId]",
@@ -1649,7 +1649,7 @@
         "agentId"
       ],
       "archived": false,
-      "file_path": "app/api/identities/[agentId]/route.js"
+      "file_path": "app/api/identities/[agentId]/route.ts"
     },
     {
       "path": "/api/integrations/health",
@@ -1658,7 +1658,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/integrations/health/route.js"
+      "file_path": "app/api/integrations/health/route.ts"
     },
     {
       "path": "/api/integrations/health/refresh",
@@ -1667,7 +1667,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/integrations/health/refresh/route.js"
+      "file_path": "app/api/integrations/health/refresh/route.ts"
     },
     {
       "path": "/api/integrity/jwks",
@@ -1676,7 +1676,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/integrity/jwks/route.js"
+      "file_path": "app/api/integrity/jwks/route.ts"
     },
     {
       "path": "/api/integrity/verify",
@@ -1685,7 +1685,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/integrity/verify/route.js"
+      "file_path": "app/api/integrity/verify/route.ts"
     },
     {
       "path": "/api/invite/[token]",
@@ -1697,7 +1697,7 @@
         "token"
       ],
       "archived": false,
-      "file_path": "app/api/invite/[token]/route.js"
+      "file_path": "app/api/invite/[token]/route.ts"
     },
     {
       "path": "/api/keys",
@@ -1708,7 +1708,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/keys/route.js"
+      "file_path": "app/api/keys/route.ts"
     },
     {
       "path": "/api/keys/reveal",
@@ -1717,7 +1717,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/keys/reveal/route.js"
+      "file_path": "app/api/keys/reveal/route.ts"
     },
     {
       "path": "/api/knowledge/collections",
@@ -1727,7 +1727,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/knowledge/collections/route.js"
+      "file_path": "app/api/knowledge/collections/route.ts"
     },
     {
       "path": "/api/knowledge/collections/[collectionId]",
@@ -1740,7 +1740,7 @@
         "collectionId"
       ],
       "archived": false,
-      "file_path": "app/api/knowledge/collections/[collectionId]/route.js"
+      "file_path": "app/api/knowledge/collections/[collectionId]/route.ts"
     },
     {
       "path": "/api/knowledge/collections/[collectionId]/items",
@@ -1752,7 +1752,7 @@
         "collectionId"
       ],
       "archived": false,
-      "file_path": "app/api/knowledge/collections/[collectionId]/items/route.js"
+      "file_path": "app/api/knowledge/collections/[collectionId]/items/route.ts"
     },
     {
       "path": "/api/knowledge/collections/[collectionId]/search",
@@ -1763,7 +1763,7 @@
         "collectionId"
       ],
       "archived": false,
-      "file_path": "app/api/knowledge/collections/[collectionId]/search/route.js"
+      "file_path": "app/api/knowledge/collections/[collectionId]/search/route.ts"
     },
     {
       "path": "/api/knowledge/collections/[collectionId]/sync",
@@ -1774,7 +1774,7 @@
         "collectionId"
       ],
       "archived": false,
-      "file_path": "app/api/knowledge/collections/[collectionId]/sync/route.js"
+      "file_path": "app/api/knowledge/collections/[collectionId]/sync/route.ts"
     },
     {
       "path": "/api/learning",
@@ -1784,7 +1784,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/learning/route.js"
+      "file_path": "app/api/learning/route.ts"
     },
     {
       "path": "/api/learning/analytics/curves",
@@ -1794,7 +1794,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/learning/analytics/curves/route.js"
+      "file_path": "app/api/learning/analytics/curves/route.ts"
     },
     {
       "path": "/api/learning/analytics/maturity",
@@ -1803,7 +1803,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/learning/analytics/maturity/route.js"
+      "file_path": "app/api/learning/analytics/maturity/route.ts"
     },
     {
       "path": "/api/learning/analytics/summary",
@@ -1812,7 +1812,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/learning/analytics/summary/route.js"
+      "file_path": "app/api/learning/analytics/summary/route.ts"
     },
     {
       "path": "/api/learning/analytics/velocity",
@@ -1822,7 +1822,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/learning/analytics/velocity/route.js"
+      "file_path": "app/api/learning/analytics/velocity/route.ts"
     },
     {
       "path": "/api/learning/code-signals",
@@ -1831,7 +1831,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/learning/code-signals/route.js"
+      "file_path": "app/api/learning/code-signals/route.ts"
     },
     {
       "path": "/api/learning/lessons",
@@ -1840,7 +1840,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/learning/lessons/route.js"
+      "file_path": "app/api/learning/lessons/route.ts"
     },
     {
       "path": "/api/learning/recommendations",
@@ -1850,7 +1850,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/learning/recommendations/route.js"
+      "file_path": "app/api/learning/recommendations/route.ts"
     },
     {
       "path": "/api/learning/recommendations/[recommendationId]",
@@ -1861,7 +1861,7 @@
         "recommendationId"
       ],
       "archived": false,
-      "file_path": "app/api/learning/recommendations/[recommendationId]/route.js"
+      "file_path": "app/api/learning/recommendations/[recommendationId]/route.ts"
     },
     {
       "path": "/api/learning/recommendations/events",
@@ -1870,7 +1870,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/learning/recommendations/events/route.js"
+      "file_path": "app/api/learning/recommendations/events/route.ts"
     },
     {
       "path": "/api/learning/recommendations/metrics",
@@ -1879,7 +1879,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/learning/recommendations/metrics/route.js"
+      "file_path": "app/api/learning/recommendations/metrics/route.ts"
     },
     {
       "path": "/api/learning/suggestions",
@@ -1889,7 +1889,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/learning/suggestions/route.js"
+      "file_path": "app/api/learning/suggestions/route.ts"
     },
     {
       "path": "/api/marketing/event",
@@ -1898,7 +1898,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/marketing/event/route.js"
+      "file_path": "app/api/marketing/event/route.ts"
     },
     {
       "path": "/api/mcp",
@@ -1907,7 +1907,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/mcp/route.js"
+      "file_path": "app/api/mcp/route.ts"
     },
     {
       "path": "/api/messages",
@@ -1918,7 +1918,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/messages/route.js"
+      "file_path": "app/api/messages/route.ts"
     },
     {
       "path": "/api/messages/attachments",
@@ -1927,7 +1927,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/messages/attachments/route.js"
+      "file_path": "app/api/messages/attachments/route.ts"
     },
     {
       "path": "/api/messages/threads",
@@ -1938,7 +1938,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/messages/threads/route.js"
+      "file_path": "app/api/messages/threads/route.ts"
     },
     {
       "path": "/api/messages/threads/[threadId]",
@@ -1949,7 +1949,7 @@
         "threadId"
       ],
       "archived": false,
-      "file_path": "app/api/messages/threads/[threadId]/route.js"
+      "file_path": "app/api/messages/threads/[threadId]/route.ts"
     },
     {
       "path": "/api/model-strategies",
@@ -1959,7 +1959,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/model-strategies/route.js"
+      "file_path": "app/api/model-strategies/route.ts"
     },
     {
       "path": "/api/model-strategies/[strategyId]",
@@ -1972,7 +1972,7 @@
         "strategyId"
       ],
       "archived": false,
-      "file_path": "app/api/model-strategies/[strategyId]/route.js"
+      "file_path": "app/api/model-strategies/[strategyId]/route.ts"
     },
     {
       "path": "/api/model-strategies/[strategyId]/complete",
@@ -1983,7 +1983,7 @@
         "strategyId"
       ],
       "archived": false,
-      "file_path": "app/api/model-strategies/[strategyId]/complete/route.js"
+      "file_path": "app/api/model-strategies/[strategyId]/complete/route.ts"
     },
     {
       "path": "/api/oauth/authorize",
@@ -1993,7 +1993,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/oauth/authorize/route.js"
+      "file_path": "app/api/oauth/authorize/route.ts"
     },
     {
       "path": "/api/oauth/metadata/authorization-server",
@@ -2002,7 +2002,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/oauth/metadata/authorization-server/route.js"
+      "file_path": "app/api/oauth/metadata/authorization-server/route.ts"
     },
     {
       "path": "/api/oauth/metadata/protected-resource",
@@ -2011,7 +2011,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/oauth/metadata/protected-resource/route.js"
+      "file_path": "app/api/oauth/metadata/protected-resource/route.ts"
     },
     {
       "path": "/api/oauth/register",
@@ -2020,7 +2020,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/oauth/register/route.js"
+      "file_path": "app/api/oauth/register/route.ts"
     },
     {
       "path": "/api/oauth/token",
@@ -2029,7 +2029,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/oauth/token/route.js"
+      "file_path": "app/api/oauth/token/route.ts"
     },
     {
       "path": "/api/operations/feed",
@@ -2038,7 +2038,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/operations/feed/route.js"
+      "file_path": "app/api/operations/feed/route.ts"
     },
     {
       "path": "/api/operations/summary",
@@ -2047,7 +2047,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/operations/summary/route.js"
+      "file_path": "app/api/operations/summary/route.ts"
     },
     {
       "path": "/api/orgs",
@@ -2057,7 +2057,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/orgs/route.js"
+      "file_path": "app/api/orgs/route.ts"
     },
     {
       "path": "/api/orgs/[orgId]",
@@ -2069,7 +2069,7 @@
         "orgId"
       ],
       "archived": false,
-      "file_path": "app/api/orgs/[orgId]/route.js"
+      "file_path": "app/api/orgs/[orgId]/route.ts"
     },
     {
       "path": "/api/orgs/[orgId]/keys",
@@ -2082,7 +2082,7 @@
         "orgId"
       ],
       "archived": false,
-      "file_path": "app/api/orgs/[orgId]/keys/route.js"
+      "file_path": "app/api/orgs/[orgId]/keys/route.ts"
     },
     {
       "path": "/api/pairings",
@@ -2092,7 +2092,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/pairings/route.js"
+      "file_path": "app/api/pairings/route.ts"
     },
     {
       "path": "/api/pairings/[pairingId]",
@@ -2104,7 +2104,7 @@
         "pairingId"
       ],
       "archived": false,
-      "file_path": "app/api/pairings/[pairingId]/route.js"
+      "file_path": "app/api/pairings/[pairingId]/route.ts"
     },
     {
       "path": "/api/pairings/[pairingId]/approve",
@@ -2115,7 +2115,7 @@
         "pairingId"
       ],
       "archived": false,
-      "file_path": "app/api/pairings/[pairingId]/approve/route.js"
+      "file_path": "app/api/pairings/[pairingId]/approve/route.ts"
     },
     {
       "path": "/api/policies",
@@ -2127,7 +2127,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/policies/route.js"
+      "file_path": "app/api/policies/route.ts"
     },
     {
       "path": "/api/policies/generate",
@@ -2136,7 +2136,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/policies/generate/route.js"
+      "file_path": "app/api/policies/generate/route.ts"
     },
     {
       "path": "/api/policies/import",
@@ -2145,7 +2145,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/policies/import/route.js"
+      "file_path": "app/api/policies/import/route.ts"
     },
     {
       "path": "/api/policies/proof",
@@ -2154,7 +2154,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/policies/proof/route.js"
+      "file_path": "app/api/policies/proof/route.ts"
     },
     {
       "path": "/api/policies/simulate",
@@ -2163,7 +2163,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/policies/simulate/route.js"
+      "file_path": "app/api/policies/simulate/route.ts"
     },
     {
       "path": "/api/policies/templates",
@@ -2172,7 +2172,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/policies/templates/route.js"
+      "file_path": "app/api/policies/templates/route.ts"
     },
     {
       "path": "/api/policies/test",
@@ -2181,7 +2181,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/policies/test/route.js"
+      "file_path": "app/api/policies/test/route.ts"
     },
     {
       "path": "/api/prompts/agent-connect/raw",
@@ -2190,7 +2190,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/prompts/agent-connect/raw/route.js"
+      "file_path": "app/api/prompts/agent-connect/raw/route.ts"
     },
     {
       "path": "/api/prompts/render",
@@ -2199,7 +2199,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/prompts/render/route.js"
+      "file_path": "app/api/prompts/render/route.ts"
     },
     {
       "path": "/api/prompts/runs",
@@ -2208,7 +2208,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/prompts/runs/route.js"
+      "file_path": "app/api/prompts/runs/route.ts"
     },
     {
       "path": "/api/prompts/sdk-coverage/raw",
@@ -2217,7 +2217,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/prompts/sdk-coverage/raw/route.js"
+      "file_path": "app/api/prompts/sdk-coverage/raw/route.ts"
     },
     {
       "path": "/api/prompts/server-setup/raw",
@@ -2226,7 +2226,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/prompts/server-setup/raw/route.js"
+      "file_path": "app/api/prompts/server-setup/raw/route.ts"
     },
     {
       "path": "/api/prompts/stats",
@@ -2235,7 +2235,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/prompts/stats/route.js"
+      "file_path": "app/api/prompts/stats/route.ts"
     },
     {
       "path": "/api/prompts/templates",
@@ -2245,7 +2245,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/prompts/templates/route.js"
+      "file_path": "app/api/prompts/templates/route.ts"
     },
     {
       "path": "/api/prompts/templates/[templateId]",
@@ -2258,7 +2258,7 @@
         "templateId"
       ],
       "archived": false,
-      "file_path": "app/api/prompts/templates/[templateId]/route.js"
+      "file_path": "app/api/prompts/templates/[templateId]/route.ts"
     },
     {
       "path": "/api/prompts/templates/[templateId]/versions",
@@ -2270,7 +2270,7 @@
         "templateId"
       ],
       "archived": false,
-      "file_path": "app/api/prompts/templates/[templateId]/versions/route.js"
+      "file_path": "app/api/prompts/templates/[templateId]/versions/route.ts"
     },
     {
       "path": "/api/prompts/templates/[templateId]/versions/[versionId]",
@@ -2283,7 +2283,7 @@
         "versionId"
       ],
       "archived": false,
-      "file_path": "app/api/prompts/templates/[templateId]/versions/[versionId]/route.js"
+      "file_path": "app/api/prompts/templates/[templateId]/versions/[versionId]/route.ts"
     },
     {
       "path": "/api/reputation/agents/[agentId]",
@@ -2294,7 +2294,7 @@
         "agentId"
       ],
       "archived": false,
-      "file_path": "app/api/reputation/agents/[agentId]/route.js"
+      "file_path": "app/api/reputation/agents/[agentId]/route.ts"
     },
     {
       "path": "/api/reputation/agents/[agentId]/events",
@@ -2305,7 +2305,7 @@
         "agentId"
       ],
       "archived": false,
-      "file_path": "app/api/reputation/agents/[agentId]/events/route.js"
+      "file_path": "app/api/reputation/agents/[agentId]/events/route.ts"
     },
     {
       "path": "/api/reputation/agents/[agentId]/receipt",
@@ -2316,7 +2316,7 @@
         "agentId"
       ],
       "archived": false,
-      "file_path": "app/api/reputation/agents/[agentId]/receipt/route.js"
+      "file_path": "app/api/reputation/agents/[agentId]/receipt/route.ts"
     },
     {
       "path": "/api/reputation/agents/[agentId]/recompute",
@@ -2327,7 +2327,7 @@
         "agentId"
       ],
       "archived": false,
-      "file_path": "app/api/reputation/agents/[agentId]/recompute/route.js"
+      "file_path": "app/api/reputation/agents/[agentId]/recompute/route.ts"
     },
     {
       "path": "/api/reputation/agents/[agentId]/summary",
@@ -2338,7 +2338,7 @@
         "agentId"
       ],
       "archived": false,
-      "file_path": "app/api/reputation/agents/[agentId]/summary/route.js"
+      "file_path": "app/api/reputation/agents/[agentId]/summary/route.ts"
     },
     {
       "path": "/api/reputation/leaderboard",
@@ -2347,7 +2347,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/reputation/leaderboard/route.js"
+      "file_path": "app/api/reputation/leaderboard/route.ts"
     },
     {
       "path": "/api/reputation/verify",
@@ -2356,7 +2356,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/reputation/verify/route.js"
+      "file_path": "app/api/reputation/verify/route.ts"
     },
     {
       "path": "/api/scoring/calibrate",
@@ -2365,7 +2365,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/scoring/calibrate/route.js"
+      "file_path": "app/api/scoring/calibrate/route.ts"
     },
     {
       "path": "/api/scoring/profiles",
@@ -2375,7 +2375,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/scoring/profiles/route.js"
+      "file_path": "app/api/scoring/profiles/route.ts"
     },
     {
       "path": "/api/scoring/profiles/[profileId]",
@@ -2388,7 +2388,7 @@
         "profileId"
       ],
       "archived": false,
-      "file_path": "app/api/scoring/profiles/[profileId]/route.js"
+      "file_path": "app/api/scoring/profiles/[profileId]/route.ts"
     },
     {
       "path": "/api/scoring/profiles/[profileId]/dimensions",
@@ -2399,7 +2399,7 @@
         "profileId"
       ],
       "archived": false,
-      "file_path": "app/api/scoring/profiles/[profileId]/dimensions/route.js"
+      "file_path": "app/api/scoring/profiles/[profileId]/dimensions/route.ts"
     },
     {
       "path": "/api/scoring/profiles/[profileId]/dimensions/[dimensionId]",
@@ -2412,7 +2412,7 @@
         "dimensionId"
       ],
       "archived": false,
-      "file_path": "app/api/scoring/profiles/[profileId]/dimensions/[dimensionId]/route.js"
+      "file_path": "app/api/scoring/profiles/[profileId]/dimensions/[dimensionId]/route.ts"
     },
     {
       "path": "/api/scoring/risk-templates",
@@ -2422,7 +2422,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/scoring/risk-templates/route.js"
+      "file_path": "app/api/scoring/risk-templates/route.ts"
     },
     {
       "path": "/api/scoring/risk-templates/[templateId]",
@@ -2434,7 +2434,7 @@
         "templateId"
       ],
       "archived": false,
-      "file_path": "app/api/scoring/risk-templates/[templateId]/route.js"
+      "file_path": "app/api/scoring/risk-templates/[templateId]/route.ts"
     },
     {
       "path": "/api/scoring/score",
@@ -2444,7 +2444,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/scoring/score/route.js"
+      "file_path": "app/api/scoring/score/route.ts"
     },
     {
       "path": "/api/secrets",
@@ -2454,7 +2454,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/secrets/route.js"
+      "file_path": "app/api/secrets/route.ts"
     },
     {
       "path": "/api/secrets/[id]",
@@ -2466,7 +2466,7 @@
         "id"
       ],
       "archived": false,
-      "file_path": "app/api/secrets/[id]/route.js"
+      "file_path": "app/api/secrets/[id]/route.ts"
     },
     {
       "path": "/api/secrets/rotation-due",
@@ -2475,7 +2475,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/secrets/rotation-due/route.js"
+      "file_path": "app/api/secrets/rotation-due/route.ts"
     },
     {
       "path": "/api/security/prompt-injection",
@@ -2485,7 +2485,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/security/prompt-injection/route.js"
+      "file_path": "app/api/security/prompt-injection/route.ts"
     },
     {
       "path": "/api/security/scan",
@@ -2494,7 +2494,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/security/scan/route.js"
+      "file_path": "app/api/security/scan/route.ts"
     },
     {
       "path": "/api/security/status",
@@ -2503,7 +2503,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/security/status/route.js"
+      "file_path": "app/api/security/status/route.ts"
     },
     {
       "path": "/api/session/effective",
@@ -2512,7 +2512,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/session/effective/route.js"
+      "file_path": "app/api/session/effective/route.ts"
     },
     {
       "path": "/api/sessions",
@@ -2522,7 +2522,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/sessions/route.js"
+      "file_path": "app/api/sessions/route.ts"
     },
     {
       "path": "/api/sessions/[sessionId]",
@@ -2534,7 +2534,7 @@
         "sessionId"
       ],
       "archived": false,
-      "file_path": "app/api/sessions/[sessionId]/route.js"
+      "file_path": "app/api/sessions/[sessionId]/route.ts"
     },
     {
       "path": "/api/sessions/[sessionId]/events",
@@ -2545,7 +2545,7 @@
         "sessionId"
       ],
       "archived": false,
-      "file_path": "app/api/sessions/[sessionId]/events/route.js"
+      "file_path": "app/api/sessions/[sessionId]/events/route.ts"
     },
     {
       "path": "/api/settings",
@@ -2556,7 +2556,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/settings/route.js"
+      "file_path": "app/api/settings/route.ts"
     },
     {
       "path": "/api/settings/llm-status",
@@ -2565,7 +2565,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/settings/llm-status/route.js"
+      "file_path": "app/api/settings/llm-status/route.ts"
     },
     {
       "path": "/api/settings/test",
@@ -2574,7 +2574,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/settings/test/route.js"
+      "file_path": "app/api/settings/test/route.ts"
     },
     {
       "path": "/api/setup/live-proof",
@@ -2583,7 +2583,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/setup/live-proof/route.js"
+      "file_path": "app/api/setup/live-proof/route.ts"
     },
     {
       "path": "/api/setup/migrate",
@@ -2592,7 +2592,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/setup/migrate/route.js"
+      "file_path": "app/api/setup/migrate/route.ts"
     },
     {
       "path": "/api/setup/ping",
@@ -2601,7 +2601,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/setup/ping/route.js"
+      "file_path": "app/api/setup/ping/route.ts"
     },
     {
       "path": "/api/setup/proof",
@@ -2610,7 +2610,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/setup/proof/route.js"
+      "file_path": "app/api/setup/proof/route.ts"
     },
     {
       "path": "/api/setup/status",
@@ -2619,7 +2619,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/setup/status/route.js"
+      "file_path": "app/api/setup/status/route.ts"
     },
     {
       "path": "/api/signals",
@@ -2628,7 +2628,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/signals/route.js"
+      "file_path": "app/api/signals/route.ts"
     },
     {
       "path": "/api/skills/scan",
@@ -2637,7 +2637,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/skills/scan/route.js"
+      "file_path": "app/api/skills/scan/route.ts"
     },
     {
       "path": "/api/skills/scans/[id]",
@@ -2648,7 +2648,7 @@
         "id"
       ],
       "archived": false,
-      "file_path": "app/api/skills/scans/[id]/route.js"
+      "file_path": "app/api/skills/scans/[id]/route.ts"
     },
     {
       "path": "/api/stream",
@@ -2657,7 +2657,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/stream/route.js"
+      "file_path": "app/api/stream/route.ts"
     },
     {
       "path": "/api/swarm/graph",
@@ -2666,7 +2666,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/swarm/graph/route.js"
+      "file_path": "app/api/swarm/graph/route.ts"
     },
     {
       "path": "/api/swarm/link",
@@ -2675,7 +2675,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/swarm/link/route.js"
+      "file_path": "app/api/swarm/link/route.ts"
     },
     {
       "path": "/api/team",
@@ -2684,7 +2684,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/team/route.js"
+      "file_path": "app/api/team/route.ts"
     },
     {
       "path": "/api/team/[userId]",
@@ -2696,7 +2696,7 @@
         "userId"
       ],
       "archived": false,
-      "file_path": "app/api/team/[userId]/route.js"
+      "file_path": "app/api/team/[userId]/route.ts"
     },
     {
       "path": "/api/team/invite",
@@ -2707,7 +2707,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/team/invite/route.js"
+      "file_path": "app/api/team/invite/route.ts"
     },
     {
       "path": "/api/telegram/webhook",
@@ -2716,7 +2716,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/telegram/webhook/route.js"
+      "file_path": "app/api/telegram/webhook/route.ts"
     },
     {
       "path": "/api/usage",
@@ -2725,7 +2725,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/usage/route.js"
+      "file_path": "app/api/usage/route.ts"
     },
     {
       "path": "/api/usage/costs",
@@ -2734,7 +2734,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/usage/costs/route.js"
+      "file_path": "app/api/usage/costs/route.ts"
     },
     {
       "path": "/api/webhooks",
@@ -2745,7 +2745,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/webhooks/route.js"
+      "file_path": "app/api/webhooks/route.ts"
     },
     {
       "path": "/api/webhooks/[webhookId]/deliveries",
@@ -2756,7 +2756,7 @@
         "webhookId"
       ],
       "archived": false,
-      "file_path": "app/api/webhooks/[webhookId]/deliveries/route.js"
+      "file_path": "app/api/webhooks/[webhookId]/deliveries/route.ts"
     },
     {
       "path": "/api/webhooks/[webhookId]/test",
@@ -2767,7 +2767,7 @@
         "webhookId"
       ],
       "archived": false,
-      "file_path": "app/api/webhooks/[webhookId]/test/route.js"
+      "file_path": "app/api/webhooks/[webhookId]/test/route.ts"
     },
     {
       "path": "/api/webhooks/stripe",
@@ -2776,7 +2776,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/webhooks/stripe/route.js"
+      "file_path": "app/api/webhooks/stripe/route.ts"
     },
     {
       "path": "/api/workflows/draft",
@@ -2785,7 +2785,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/workflows/draft/route.js"
+      "file_path": "app/api/workflows/draft/route.ts"
     },
     {
       "path": "/api/workflows/templates",
@@ -2795,7 +2795,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/workflows/templates/route.js"
+      "file_path": "app/api/workflows/templates/route.ts"
     },
     {
       "path": "/api/workflows/templates/[templateId]",
@@ -2808,7 +2808,7 @@
         "templateId"
       ],
       "archived": false,
-      "file_path": "app/api/workflows/templates/[templateId]/route.js"
+      "file_path": "app/api/workflows/templates/[templateId]/route.ts"
     },
     {
       "path": "/api/workflows/templates/[templateId]/duplicate",
@@ -2819,7 +2819,7 @@
         "templateId"
       ],
       "archived": false,
-      "file_path": "app/api/workflows/templates/[templateId]/duplicate/route.js"
+      "file_path": "app/api/workflows/templates/[templateId]/duplicate/route.ts"
     },
     {
       "path": "/api/workflows/templates/[templateId]/execute",
@@ -2830,7 +2830,7 @@
         "templateId"
       ],
       "archived": false,
-      "file_path": "app/api/workflows/templates/[templateId]/execute/route.js"
+      "file_path": "app/api/workflows/templates/[templateId]/execute/route.ts"
     },
     {
       "path": "/api/workflows/templates/[templateId]/launch",
@@ -2841,7 +2841,7 @@
         "templateId"
       ],
       "archived": false,
-      "file_path": "app/api/workflows/templates/[templateId]/launch/route.js"
+      "file_path": "app/api/workflows/templates/[templateId]/launch/route.ts"
     },
     {
       "path": "/api/workflows/templates/[templateId]/runs",
@@ -2852,7 +2852,7 @@
         "templateId"
       ],
       "archived": false,
-      "file_path": "app/api/workflows/templates/[templateId]/runs/route.js"
+      "file_path": "app/api/workflows/templates/[templateId]/runs/route.ts"
     },
     {
       "path": "/api/workflows/templates/[templateId]/runs/[runActionId]",
@@ -2864,7 +2864,7 @@
         "runActionId"
       ],
       "archived": false,
-      "file_path": "app/api/workflows/templates/[templateId]/runs/[runActionId]/route.js"
+      "file_path": "app/api/workflows/templates/[templateId]/runs/[runActionId]/route.ts"
     },
     {
       "path": "/api/workflows/templates/[templateId]/runs/[runActionId]/cancel",
@@ -2876,7 +2876,7 @@
         "runActionId"
       ],
       "archived": false,
-      "file_path": "app/api/workflows/templates/[templateId]/runs/[runActionId]/cancel/route.js"
+      "file_path": "app/api/workflows/templates/[templateId]/runs/[runActionId]/cancel/route.ts"
     },
     {
       "path": "/api/workflows/templates/[templateId]/runs/[runActionId]/resume",
@@ -2888,7 +2888,7 @@
         "runActionId"
       ],
       "archived": false,
-      "file_path": "app/api/workflows/templates/[templateId]/runs/[runActionId]/resume/route.js"
+      "file_path": "app/api/workflows/templates/[templateId]/runs/[runActionId]/resume/route.ts"
     },
     {
       "path": "/api/x402/providers",
@@ -2898,7 +2898,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/x402/providers/route.js"
+      "file_path": "app/api/x402/providers/route.ts"
     },
     {
       "path": "/api/x402/providers/[id]",
@@ -2910,7 +2910,7 @@
         "id"
       ],
       "archived": false,
-      "file_path": "app/api/x402/providers/[id]/route.js"
+      "file_path": "app/api/x402/providers/[id]/route.ts"
     },
     {
       "path": "/api/x402/providers/[id]/endpoints",
@@ -2922,7 +2922,7 @@
         "id"
       ],
       "archived": false,
-      "file_path": "app/api/x402/providers/[id]/endpoints/route.js"
+      "file_path": "app/api/x402/providers/[id]/endpoints/route.ts"
     },
     {
       "path": "/api/x402/purchases",
@@ -2932,7 +2932,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/x402/purchases/route.js"
+      "file_path": "app/api/x402/purchases/route.ts"
     }
   ],
   "env_vars": [
@@ -2941,8 +2941,8 @@
       "required": false,
       "files": [
         "__tests__/unit/agents.repository.test.js",
-        "app/api/agents/route.js",
-        "app/lib/repositories/agents.repository.js"
+        "app/api/agents/route.ts",
+        "app/lib/repositories/agents.repository.ts"
       ],
       "in_env_example": false
     },
@@ -2966,7 +2966,7 @@
       "name": "ALERT_FROM_EMAIL",
       "required": false,
       "files": [
-        "app/lib/notifications.js"
+        "app/lib/notifications.ts"
       ],
       "in_env_example": false
     },
@@ -3096,19 +3096,19 @@
         "__tests__/unit/cron-routing-maintenance.route.test.js",
         "__tests__/unit/hosted/check-hosted-ready.test.mjs",
         "__tests__/unit/hosted/workspace-admin.test.js",
-        "app/api/cron/code-session-cache-crater/route.js",
-        "app/api/cron/code-session-weekly-memo/route.js",
-        "app/api/cron/integration-health/route.js",
-        "app/api/cron/jti-sweep/route.js",
-        "app/api/cron/learning-episodes-backfill/route.js",
-        "app/api/cron/learning-recommendations/route.js",
-        "app/api/cron/memory-maintenance/route.js",
-        "app/api/cron/outcome-sweep/route.js",
-        "app/api/cron/policy-suggestions/route.js",
-        "app/api/cron/reset-meters/route.js",
-        "app/api/cron/routing-maintenance/route.js",
-        "app/api/cron/signals/route.js",
-        "app/api/hosted/cleanup/route.js"
+        "app/api/cron/code-session-cache-crater/route.ts",
+        "app/api/cron/code-session-weekly-memo/route.ts",
+        "app/api/cron/integration-health/route.ts",
+        "app/api/cron/jti-sweep/route.ts",
+        "app/api/cron/learning-episodes-backfill/route.ts",
+        "app/api/cron/learning-recommendations/route.ts",
+        "app/api/cron/memory-maintenance/route.ts",
+        "app/api/cron/outcome-sweep/route.ts",
+        "app/api/cron/policy-suggestions/route.ts",
+        "app/api/cron/reset-meters/route.ts",
+        "app/api/cron/routing-maintenance/route.ts",
+        "app/api/cron/signals/route.ts",
+        "app/api/hosted/cleanup/route.ts"
       ],
       "in_env_example": false
     },
@@ -3118,7 +3118,7 @@
       "files": [
         "__tests__/unit/act-binding.test.js",
         "__tests__/unit/guard-engine.test.js",
-        "app/lib/act-binding.js"
+        "app/lib/act-binding.ts"
       ],
       "in_env_example": false
     },
@@ -3127,7 +3127,7 @@
       "required": false,
       "files": [
         "__tests__/unit/act-binding.test.js",
-        "app/lib/act-binding.js"
+        "app/lib/act-binding.ts"
       ],
       "in_env_example": false
     },
@@ -3136,7 +3136,7 @@
       "required": false,
       "files": [
         "app/lib/connectPrompt.js",
-        "app/self-host/SetupTabs.js",
+        "app/self-host/SetupTabs.tsx",
         "examples/first-governed-action.js",
         "examples/governed-chat-harness/index.js",
         "mcp-server/bin/dashclaw-mcp.js",
@@ -3151,7 +3151,7 @@
       "required": false,
       "files": [
         "__tests__/unit/discord-approvals.test.js",
-        "app/lib/discordApprovals.js"
+        "app/lib/discordApprovals.ts"
       ],
       "in_env_example": false
     },
@@ -3160,7 +3160,7 @@
       "required": false,
       "files": [
         "__tests__/unit/telegram-approvals.test.js",
-        "app/lib/telegramApprovals.js"
+        "app/lib/telegramApprovals.ts"
       ],
       "in_env_example": false
     },
@@ -3169,7 +3169,7 @@
       "required": false,
       "files": [
         "__tests__/unit/guard-jwks-verification.test.js",
-        "app/lib/jwks-verifier.js"
+        "app/lib/jwks-verifier.ts"
       ],
       "in_env_example": false
     },
@@ -3180,11 +3180,11 @@
         "__tests__/unit/connect-complete-discord-alert.test.js",
         "__tests__/unit/hosted/check-hosted-ready.test.mjs",
         "__tests__/unit/hosted/middleware-trial-enforcement.test.js",
-        "app/api/keys/reveal/route.js",
-        "app/api/setup/migrate/route.js",
-        "app/api/setup/ping/route.js",
-        "app/docs/page.js",
-        "app/guides/openai-agents-sdk/page.js",
+        "app/api/keys/reveal/route.ts",
+        "app/api/setup/migrate/route.ts",
+        "app/api/setup/ping/route.ts",
+        "app/docs/page.tsx",
+        "app/guides/openai-agents-sdk/page.tsx",
         "app/landingData.js",
         "app/lib/connectPrompt.js",
         "app/lib/demo/fixtures/journey-agents.js",
@@ -3192,7 +3192,7 @@
         "app/lib/demo/fixtures/tutorial-threads.js",
         "app/lib/setup/auth-gate.js",
         "app/lib/starterSnippet.js",
-        "app/self-host/SetupTabs.js",
+        "app/self-host/SetupTabs.tsx",
         "examples/agent-chat-complete.js",
         "examples/anthropic-governed-agent/index.js",
         "examples/approval-flow.js",
@@ -3240,8 +3240,8 @@
       "name": "DASHCLAW_API_KEY_ORG",
       "required": false,
       "files": [
-        "app/api/auth/local/route.js",
-        "app/api/setup/migrate/route.js",
+        "app/api/auth/local/route.ts",
+        "app/api/setup/migrate/route.ts",
         "middleware.js",
         "scripts/auto-migrate.mjs",
         "scripts/migrate-multi-tenant.mjs"
@@ -3252,13 +3252,13 @@
       "name": "DASHCLAW_BASE_URL",
       "required": false,
       "files": [
-        "app/docs/page.js",
-        "app/guides/openai-agents-sdk/page.js",
+        "app/docs/page.tsx",
+        "app/guides/openai-agents-sdk/page.tsx",
         "app/landingData.js",
         "app/lib/demo/fixtures/journey-agents.js",
         "app/lib/demo/fixtures/persona-agents.js",
         "app/lib/starterSnippet.js",
-        "app/self-host/SetupTabs.js",
+        "app/self-host/SetupTabs.tsx",
         "examples/agent-chat-complete.js",
         "examples/anthropic-governed-agent/index.js",
         "examples/approval-flow.js",
@@ -3309,7 +3309,7 @@
       "required": false,
       "files": [
         "__tests__/unit/actions.route.test.js",
-        "app/api/actions/route.js"
+        "app/api/actions/route.ts"
       ],
       "in_env_example": false
     },
@@ -3344,7 +3344,7 @@
       "name": "DASHCLAW_GUARD_FALLBACK",
       "required": false,
       "files": [
-        "app/lib/guard.js"
+        "app/lib/guard.ts"
       ],
       "in_env_example": false
     },
@@ -3375,7 +3375,7 @@
       "name": "DASHCLAW_JTI_MAX_TTL_SECONDS",
       "required": false,
       "files": [
-        "app/lib/jwks-verifier.js"
+        "app/lib/jwks-verifier.ts"
       ],
       "in_env_example": false
     },
@@ -3383,8 +3383,8 @@
       "name": "DASHCLAW_JTI_REPLAY_PROTECTION",
       "required": false,
       "files": [
-        "app/api/guard/route.js",
-        "app/lib/guard.js"
+        "app/api/guard/route.ts",
+        "app/lib/guard.ts"
       ],
       "in_env_example": false
     },
@@ -3393,7 +3393,7 @@
       "required": false,
       "files": [
         "__tests__/unit/guard-jwks-verification.test.js",
-        "app/lib/jwks-verifier.js"
+        "app/lib/jwks-verifier.ts"
       ],
       "in_env_example": false
     },
@@ -3401,8 +3401,8 @@
       "name": "DASHCLAW_LOCAL_ADMIN_PASSWORD",
       "required": false,
       "files": [
-        "app/api/auth/local/route.js",
-        "app/login/page.js"
+        "app/api/auth/local/route.ts",
+        "app/login/page.tsx"
       ],
       "in_env_example": false
     },
@@ -3410,7 +3410,7 @@
       "name": "DASHCLAW_MAX_ORG_ATTACHMENT_BYTES",
       "required": false,
       "files": [
-        "app/api/messages/route.js"
+        "app/api/messages/route.ts"
       ],
       "in_env_example": false
     },
@@ -3422,10 +3422,10 @@
         "__tests__/unit/guard-jwks-verification.test.js",
         "__tests__/unit/guard.route.test.js",
         "__tests__/unit/health.route.test.js",
-        "app/api/health/route.js",
-        "app/api/setup/ping/route.js",
+        "app/api/health/route.ts",
+        "app/api/setup/ping/route.ts",
         "app/lib/selfHost.js",
-        "app/settings/page.js",
+        "app/settings/page.tsx",
         "middleware.js"
       ],
       "in_env_example": false
@@ -3435,8 +3435,8 @@
       "required": false,
       "files": [
         "__tests__/unit/connect-complete-discord-alert.test.js",
-        "app/api/actions/route.js",
-        "app/lib/notification-adapters/discord.js"
+        "app/api/actions/route.ts",
+        "app/lib/notification-adapters/discord.ts"
       ],
       "in_env_example": false
     },
@@ -3444,7 +3444,7 @@
       "name": "DASHCLAW_PAIRING_TTL_MINUTES",
       "required": false,
       "files": [
-        "app/api/pairings/route.js"
+        "app/api/pairings/route.ts"
       ],
       "in_env_example": false
     },
@@ -3477,8 +3477,8 @@
       "name": "DASHCLAW_URL",
       "required": false,
       "files": [
-        "app/api/mcp/route.js",
-        "app/api/oauth/metadata/authorization-server/route.js",
+        "app/api/mcp/route.ts",
+        "app/api/oauth/metadata/authorization-server/route.ts",
         "mcp-server/bin/dashclaw-mcp.js",
         "middleware.js",
         "packages/openclaw-plugin/src/index.ts",
@@ -3544,8 +3544,8 @@
         "__tests__/unit/routing-tasks.route.test.js",
         "__tests__/unit/security-status.route.test.js",
         "__tests__/unit/webhooks.route.test.js",
-        "app/api/security/status/route.js",
-        "app/api/setup/migrate/route.js",
+        "app/api/security/status/route.ts",
+        "app/api/setup/migrate/route.ts",
         "app/lib/auth.js",
         "app/lib/db.js",
         "app/lib/validateEnv.js",
@@ -3596,7 +3596,7 @@
       "name": "DISABLE_PROMPT_INJECTION_SCAN",
       "required": false,
       "files": [
-        "app/lib/guard.js",
+        "app/lib/guard.ts",
         "app/lib/validateEnv.js"
       ],
       "in_env_example": false
@@ -3606,7 +3606,7 @@
       "required": false,
       "files": [
         "__tests__/unit/discord-interactions-route.test.js",
-        "app/api/discord/interactions/route.js"
+        "app/api/discord/interactions/route.ts"
       ],
       "in_env_example": false
     },
@@ -3616,8 +3616,8 @@
       "files": [
         "__tests__/unit/discord-approvals.test.js",
         "__tests__/unit/discord-interactions-route.test.js",
-        "app/api/discord/interactions/route.js",
-        "app/lib/discordApprovals.js"
+        "app/api/discord/interactions/route.ts",
+        "app/lib/discordApprovals.ts"
       ],
       "in_env_example": false
     },
@@ -3628,7 +3628,7 @@
         "__tests__/unit/connect-complete-discord-alert.test.js",
         "__tests__/unit/discord-approvals.test.js",
         "__tests__/unit/discord-interactions-route.test.js",
-        "app/lib/discordApprovals.js"
+        "app/lib/discordApprovals.ts"
       ],
       "in_env_example": false
     },
@@ -3637,7 +3637,7 @@
       "required": false,
       "files": [
         "__tests__/unit/discord-interactions-route.test.js",
-        "app/api/discord/interactions/route.js"
+        "app/api/discord/interactions/route.ts"
       ],
       "in_env_example": false
     },
@@ -3646,8 +3646,8 @@
       "required": true,
       "files": [
         "__tests__/unit/security-status.route.test.js",
-        "app/api/security/status/route.js",
-        "app/api/settings/route.js",
+        "app/api/security/status/route.ts",
+        "app/api/settings/route.ts",
         "app/lib/encryption.js"
       ],
       "in_env_example": true
@@ -3657,7 +3657,7 @@
       "required": false,
       "files": [
         "__tests__/unit/actions.route.test.js",
-        "app/api/actions/route.js"
+        "app/api/actions/route.ts"
       ],
       "in_env_example": false
     },
@@ -3771,7 +3771,7 @@
       "files": [
         "__tests__/unit/guard-engine.test.js",
         "app/lib/embeddings.js",
-        "app/lib/guard.js",
+        "app/lib/guard.ts",
         "app/lib/knowledge-ingest.js",
         "app/lib/llm.js",
         "scripts/test-semantic-guard.mjs"
@@ -3790,7 +3790,7 @@
       "name": "GUARD_WEBHOOK_SECRET",
       "required": false,
       "files": [
-        "app/lib/webhooks.js"
+        "app/lib/webhooks.ts"
       ],
       "in_env_example": false
     },
@@ -3800,7 +3800,7 @@
       "files": [
         "__tests__/unit/hosted/check-hosted-ready.test.mjs",
         "__tests__/unit/hosted/workspace-admin.test.js",
-        "app/api/hosted/cleanup/route.js"
+        "app/api/hosted/cleanup/route.ts"
       ],
       "in_env_example": false
     },
@@ -3862,8 +3862,8 @@
       "files": [
         "__tests__/unit/health-tables.test.js",
         "__tests__/unit/health.route.test.js",
-        "app/api/auth/local/route.js",
-        "app/api/oauth/authorize/route.js",
+        "app/api/auth/local/route.ts",
+        "app/api/oauth/authorize/route.ts",
         "middleware.js"
       ],
       "in_env_example": true
@@ -3873,11 +3873,11 @@
       "required": false,
       "files": [
         "__tests__/unit/webhooks.approval.test.js",
-        "app/api/auth/local/route.js",
-        "app/api/team/invite/route.js",
+        "app/api/auth/local/route.ts",
+        "app/api/team/invite/route.ts",
         "app/lib/next-config-headers.cjs",
-        "app/lib/notifications.js",
-        "app/lib/webhooks.js",
+        "app/lib/notifications.ts",
+        "app/lib/webhooks.ts",
         "scripts/patch-demo-capability-endpoints.mjs",
         "scripts/seed-demo-capabilities.mjs",
         "scripts/test-presence.mjs"
@@ -3896,8 +3896,8 @@
       "name": "NEXT_PUBLIC_APP_URL",
       "required": false,
       "files": [
-        "app/api/billing/checkout/route.js",
-        "app/api/billing/portal/route.js"
+        "app/api/billing/checkout/route.ts",
+        "app/api/billing/portal/route.ts"
       ],
       "in_env_example": false
     },
@@ -3906,8 +3906,8 @@
       "required": false,
       "files": [
         "__tests__/unit/health.route.test.js",
-        "app/api/health/route.js",
-        "app/components/UserMenu.js",
+        "app/api/health/route.ts",
+        "app/components/UserMenu.tsx",
         "app/lib/isDemoMode.js"
       ],
       "in_env_example": false
@@ -3916,8 +3916,8 @@
       "name": "NEXT_PUBLIC_DASHCLAW_VERSION",
       "required": false,
       "files": [
-        "app/components/Sidebar.js",
-        "app/settings/page.js"
+        "app/components/Sidebar.tsx",
+        "app/settings/page.tsx"
       ],
       "in_env_example": false
     },
@@ -3925,7 +3925,7 @@
       "name": "NEXT_PUBLIC_ENABLE_VERCEL_ANALYTICS",
       "required": false,
       "files": [
-        "app/layout.js"
+        "app/layout.tsx"
       ],
       "in_env_example": false
     },
@@ -3933,7 +3933,7 @@
       "name": "NEXT_PUBLIC_PLUGIN_MANIFEST_VERSION",
       "required": false,
       "files": [
-        "app/downloads/page.js"
+        "app/downloads/page.tsx"
       ],
       "in_env_example": false
     },
@@ -3941,8 +3941,8 @@
       "name": "NEXT_PUBLIC_SDK_NODE_VERSION",
       "required": false,
       "files": [
-        "app/docs/page.js",
-        "app/downloads/page.js"
+        "app/docs/page.tsx",
+        "app/downloads/page.tsx"
       ],
       "in_env_example": false
     },
@@ -3950,8 +3950,8 @@
       "name": "NEXT_PUBLIC_SDK_PYTHON_VERSION",
       "required": false,
       "files": [
-        "app/docs/page.js",
-        "app/downloads/page.js"
+        "app/docs/page.tsx",
+        "app/downloads/page.tsx"
       ],
       "in_env_example": false
     },
@@ -3971,10 +3971,10 @@
         "__tests__/unit/actions.route.test.js",
         "__tests__/unit/hosted/turnstile.test.js",
         "__tests__/unit/security-headers.test.js",
-        "app/api/auth/config/route.js",
-        "app/api/health/route.js",
-        "app/api/oauth/register/route.js",
-        "app/api/settings/route.js",
+        "app/api/auth/config/route.ts",
+        "app/api/health/route.ts",
+        "app/api/oauth/register/route.ts",
+        "app/api/settings/route.ts",
         "app/lib/auth.js",
         "app/lib/db.js",
         "app/lib/events.js",
@@ -4054,7 +4054,7 @@
       "required": false,
       "files": [
         "app/lib/embeddings.js",
-        "app/lib/guard.js",
+        "app/lib/guard.ts",
         "app/lib/knowledge-ingest.js",
         "app/lib/llm.js",
         "examples/openai-deploy-pipeline/index.js",
@@ -4205,7 +4205,7 @@
       "name": "RESEND_API_KEY",
       "required": false,
       "files": [
-        "app/lib/notifications.js"
+        "app/lib/notifications.ts"
       ],
       "in_env_example": false
     },
@@ -4253,8 +4253,8 @@
       "name": "STRIPE_PRICE_BUSINESS",
       "required": false,
       "files": [
-        "app/api/billing/checkout/route.js",
-        "app/api/webhooks/stripe/route.js"
+        "app/api/billing/checkout/route.ts",
+        "app/api/webhooks/stripe/route.ts"
       ],
       "in_env_example": false
     },
@@ -4262,8 +4262,8 @@
       "name": "STRIPE_PRICE_PRO",
       "required": false,
       "files": [
-        "app/api/billing/checkout/route.js",
-        "app/api/webhooks/stripe/route.js"
+        "app/api/billing/checkout/route.ts",
+        "app/api/webhooks/stripe/route.ts"
       ],
       "in_env_example": false
     },
@@ -4271,10 +4271,10 @@
       "name": "STRIPE_SECRET_KEY",
       "required": false,
       "files": [
-        "app/api/billing/checkout/route.js",
-        "app/api/billing/portal/route.js",
-        "app/api/usage/route.js",
-        "app/api/webhooks/stripe/route.js"
+        "app/api/billing/checkout/route.ts",
+        "app/api/billing/portal/route.ts",
+        "app/api/usage/route.ts",
+        "app/api/webhooks/stripe/route.ts"
       ],
       "in_env_example": false
     },
@@ -4282,7 +4282,7 @@
       "name": "STRIPE_WEBHOOK_SECRET",
       "required": false,
       "files": [
-        "app/api/webhooks/stripe/route.js"
+        "app/api/webhooks/stripe/route.ts"
       ],
       "in_env_example": false
     },
@@ -4300,8 +4300,8 @@
       "files": [
         "__tests__/unit/telegram-approvals.test.js",
         "__tests__/unit/telegram-webhook-route.test.js",
-        "app/api/telegram/webhook/route.js",
-        "app/lib/telegramApprovals.js"
+        "app/api/telegram/webhook/route.ts",
+        "app/lib/telegramApprovals.ts"
       ],
       "in_env_example": false
     },
@@ -4310,7 +4310,7 @@
       "required": false,
       "files": [
         "__tests__/unit/telegram-webhook-route.test.js",
-        "app/api/telegram/webhook/route.js"
+        "app/api/telegram/webhook/route.ts"
       ],
       "in_env_example": false
     },
@@ -4320,8 +4320,8 @@
       "files": [
         "__tests__/unit/telegram-approvals.test.js",
         "__tests__/unit/telegram-webhook-route.test.js",
-        "app/api/telegram/webhook/route.js",
-        "app/lib/telegramApprovals.js",
+        "app/api/telegram/webhook/route.ts",
+        "app/lib/telegramApprovals.ts",
         "scripts/telegram-register-webhook.mjs"
       ],
       "in_env_example": false
@@ -4331,7 +4331,7 @@
       "required": false,
       "files": [
         "__tests__/unit/telegram-webhook-route.test.js",
-        "app/api/telegram/webhook/route.js",
+        "app/api/telegram/webhook/route.ts",
         "scripts/telegram-register-webhook.mjs"
       ],
       "in_env_example": false
@@ -4349,8 +4349,8 @@
       "required": false,
       "files": [
         "__tests__/unit/hosted/workspace-provision.test.js",
-        "app/api/hosted/workspaces/route.js",
-        "app/api/mcp/route.js",
+        "app/api/hosted/workspaces/route.ts",
+        "app/api/mcp/route.ts",
         "middleware.js"
       ],
       "in_env_example": false
@@ -4387,8 +4387,8 @@
       "name": "VERCEL",
       "required": false,
       "files": [
-        "app/api/hosted/workspaces/route.js",
-        "app/layout.js",
+        "app/api/hosted/workspaces/route.ts",
+        "app/layout.tsx",
         "middleware.js"
       ],
       "in_env_example": false
@@ -4397,7 +4397,7 @@
       "name": "VERCEL_PROJECT_PRODUCTION_URL",
       "required": false,
       "files": [
-        "app/api/mcp/route.js"
+        "app/api/mcp/route.ts"
       ],
       "in_env_example": false
     },
@@ -4406,8 +4406,8 @@
       "required": false,
       "files": [
         "__tests__/unit/webhooks.approval.test.js",
-        "app/api/oauth/metadata/authorization-server/route.js",
-        "app/lib/webhooks.js"
+        "app/api/oauth/metadata/authorization-server/route.ts",
+        "app/lib/webhooks.ts"
       ],
       "in_env_example": false
     },
@@ -4416,7 +4416,7 @@
       "required": false,
       "files": [
         "__tests__/unit/security-status.route.test.js",
-        "app/api/security/status/route.js",
+        "app/api/security/status/route.ts",
         "app/lib/validate.js"
       ],
       "in_env_example": false
@@ -4877,332 +4877,7 @@
       "domain": null
     }
   ],
-  "setting_keys": [
-    {
-      "name": "OPENAI_API_KEY",
-      "section": "AI Providers"
-    },
-    {
-      "name": "OPENAI_ORG_ID",
-      "section": "AI Providers"
-    },
-    {
-      "name": "ANTHROPIC_API_KEY",
-      "section": "AI Providers"
-    },
-    {
-      "name": "GROQ_API_KEY",
-      "section": "AI Providers"
-    },
-    {
-      "name": "TOGETHER_API_KEY",
-      "section": "AI Providers"
-    },
-    {
-      "name": "REPLICATE_API_TOKEN",
-      "section": "AI Providers"
-    },
-    {
-      "name": "HUGGINGFACE_API_KEY",
-      "section": "AI Providers"
-    },
-    {
-      "name": "PERPLEXITY_API_KEY",
-      "section": "AI Providers"
-    },
-    {
-      "name": "ELEVENLABS_API_KEY",
-      "section": "AI Providers"
-    },
-    {
-      "name": "ELEVENLABS_VOICE_ID",
-      "section": "AI Providers"
-    },
-    {
-      "name": "DATABASE_URL",
-      "section": "Databases"
-    },
-    {
-      "name": "SUPABASE_URL",
-      "section": "Databases"
-    },
-    {
-      "name": "SUPABASE_ANON_KEY",
-      "section": "Databases"
-    },
-    {
-      "name": "SUPABASE_SERVICE_KEY",
-      "section": "Databases"
-    },
-    {
-      "name": "PLANETSCALE_URL",
-      "section": "Databases"
-    },
-    {
-      "name": "MONGODB_URI",
-      "section": "Databases"
-    },
-    {
-      "name": "REDIS_URL",
-      "section": "Databases"
-    },
-    {
-      "name": "PINECONE_API_KEY",
-      "section": "Databases"
-    },
-    {
-      "name": "PINECONE_ENVIRONMENT",
-      "section": "Databases"
-    },
-    {
-      "name": "TELEGRAM_BOT_TOKEN",
-      "section": "Communication"
-    },
-    {
-      "name": "TELEGRAM_ADMIN_CHAT_ID",
-      "section": "Communication"
-    },
-    {
-      "name": "DASHCLAW_ALERTS_TELEGRAM",
-      "section": "Communication"
-    },
-    {
-      "name": "DISCORD_BOT_TOKEN",
-      "section": "Communication"
-    },
-    {
-      "name": "DISCORD_CLIENT_ID",
-      "section": "Communication"
-    },
-    {
-      "name": "DISCORD_GUILD_ID",
-      "section": "Communication"
-    },
-    {
-      "name": "SLACK_BOT_TOKEN",
-      "section": "Communication"
-    },
-    {
-      "name": "SLACK_SIGNING_SECRET",
-      "section": "Communication"
-    },
-    {
-      "name": "SLACK_APP_TOKEN",
-      "section": "Communication"
-    },
-    {
-      "name": "TWILIO_ACCOUNT_SID",
-      "section": "Communication"
-    },
-    {
-      "name": "TWILIO_AUTH_TOKEN",
-      "section": "Communication"
-    },
-    {
-      "name": "TWILIO_PHONE_NUMBER",
-      "section": "Communication"
-    },
-    {
-      "name": "RESEND_API_KEY",
-      "section": "Communication"
-    },
-    {
-      "name": "SENDGRID_API_KEY",
-      "section": "Communication"
-    },
-    {
-      "name": "GOOGLE_ACCOUNT",
-      "section": "Productivity"
-    },
-    {
-      "name": "GOOGLE_CREDENTIALS_PATH",
-      "section": "Productivity"
-    },
-    {
-      "name": "NOTION_API_KEY",
-      "section": "Productivity"
-    },
-    {
-      "name": "NOTION_PARENT_PAGE_ID",
-      "section": "Productivity"
-    },
-    {
-      "name": "LINEAR_API_KEY",
-      "section": "Productivity"
-    },
-    {
-      "name": "AIRTABLE_API_KEY",
-      "section": "Productivity"
-    },
-    {
-      "name": "AIRTABLE_BASE_ID",
-      "section": "Productivity"
-    },
-    {
-      "name": "CALENDLY_API_KEY",
-      "section": "Productivity"
-    },
-    {
-      "name": "GITHUB_TOKEN",
-      "section": "Development"
-    },
-    {
-      "name": "GITHUB_USERNAME",
-      "section": "Development"
-    },
-    {
-      "name": "VERCEL_TOKEN",
-      "section": "Development"
-    },
-    {
-      "name": "VERCEL_PROJECT_ID",
-      "section": "Development"
-    },
-    {
-      "name": "RAILWAY_TOKEN",
-      "section": "Development"
-    },
-    {
-      "name": "CLOUDFLARE_API_TOKEN",
-      "section": "Development"
-    },
-    {
-      "name": "CLOUDFLARE_ACCOUNT_ID",
-      "section": "Development"
-    },
-    {
-      "name": "SENTRY_DSN",
-      "section": "Development"
-    },
-    {
-      "name": "SENTRY_AUTH_TOKEN",
-      "section": "Development"
-    },
-    {
-      "name": "TWITTER_API_KEY",
-      "section": "Social"
-    },
-    {
-      "name": "TWITTER_API_SECRET",
-      "section": "Social"
-    },
-    {
-      "name": "TWITTER_ACCESS_TOKEN",
-      "section": "Social"
-    },
-    {
-      "name": "TWITTER_ACCESS_SECRET",
-      "section": "Social"
-    },
-    {
-      "name": "BRAVE_API_KEY",
-      "section": "Social"
-    },
-    {
-      "name": "MOLTBOOK_API_KEY",
-      "section": "Social"
-    },
-    {
-      "name": "STRIPE_SECRET_KEY",
-      "section": "Payments"
-    },
-    {
-      "name": "STRIPE_PUBLISHABLE_KEY",
-      "section": "Payments"
-    },
-    {
-      "name": "STRIPE_WEBHOOK_SECRET",
-      "section": "Payments"
-    },
-    {
-      "name": "LEMONSQUEEZY_API_KEY",
-      "section": "Payments"
-    },
-    {
-      "name": "DASHCLAW_ALERTS_SLACK",
-      "section": "Native governance alert settings"
-    },
-    {
-      "name": "DASHCLAW_ALERTS_DISCORD",
-      "section": "Native governance alert settings"
-    },
-    {
-      "name": "DASHCLAW_ALERTS_LINEAR",
-      "section": "Native governance alert settings"
-    },
-    {
-      "name": "DASHCLAW_ALERTS_GITHUB",
-      "section": "Native governance alert settings"
-    },
-    {
-      "name": "DASHCLAW_ALERTS_EMAIL",
-      "section": "Native governance alert settings"
-    },
-    {
-      "name": "DASHCLAW_ALERT_EMAIL",
-      "section": "Native governance alert settings"
-    },
-    {
-      "name": "SLACK_CHANNEL_ID",
-      "section": "Native governance alert settings"
-    },
-    {
-      "name": "SLACK_WEBHOOK_URL",
-      "section": "Native governance alert settings"
-    },
-    {
-      "name": "DISCORD_WEBHOOK_URL",
-      "section": "Native governance alert settings"
-    },
-    {
-      "name": "GITHUB_REPO",
-      "section": "Native governance alert settings"
-    },
-    {
-      "name": "SENDGRID_DEFAULT_TO",
-      "section": "Native governance alert settings"
-    },
-    {
-      "name": "SENDGRID_FROM_EMAIL",
-      "section": "Native governance alert settings"
-    },
-    {
-      "name": "DASHCLAW_ACTION_COST_THRESHOLD",
-      "section": "webhooks + native adapters deliver a signal. Empty/unset = disabled."
-    },
-    {
-      "name": "MODEL_PRICING",
-      "section": "System configuration"
-    },
-    {
-      "name": "ENFORCE_AGENT_SIGNATURES",
-      "section": "System configuration"
-    },
-    {
-      "name": "PREDICTIVE_RISK_ENABLED",
-      "section": "Predictive risk scoring"
-    },
-    {
-      "name": "PREDICTIVE_RISK_THRESHOLD",
-      "section": "Predictive risk scoring"
-    },
-    {
-      "name": "DASHCLAW_OUTCOME_TIMEOUT_MINUTES",
-      "section": "docs/architecture/durable-execution-finality.md."
-    },
-    {
-      "name": "BEHAVIOR_RECORDER_ENABLED",
-      "section": "DASHCLAW_BEHAVIOR_SAMPLES_ENABLED env var still overrides them."
-    },
-    {
-      "name": "BEHAVIOR_RECORDER_UNTIL",
-      "section": "DASHCLAW_BEHAVIOR_SAMPLES_ENABLED env var still overrides them."
-    },
-    {
-      "name": "DASHCLAW_AUTOSCAN_BLOCK",
-      "section": "content contains a detected secret/credential. Default (unset) = warn only."
-    }
-  ],
+  "setting_keys": [],
   "events": [
     {
       "constant": "ACTION_CREATED",
@@ -5265,40 +4940,7 @@
       "event": "goal.updated"
     }
   ],
-  "adapters": [
-    {
-      "name": "org_id",
-      "required_keys": [
-        "DISCORD_WEBHOOK_URL"
-      ]
-    },
-    {
-      "name": "email",
-      "required_keys": [
-        "RESEND_API_KEY",
-        "SENDGRID_API_KEY"
-      ]
-    },
-    {
-      "name": "github",
-      "required_keys": [
-        "GITHUB_TOKEN"
-      ]
-    },
-    {
-      "name": "linear",
-      "required_keys": [
-        "LINEAR_API_KEY"
-      ]
-    },
-    {
-      "name": "slack",
-      "required_keys": [
-        "SLACK_BOT_TOKEN",
-        "SLACK_WEBHOOK_URL"
-      ]
-    }
-  ],
+  "adapters": [],
   "signal_types": [
     "autonomy_spike",
     "branch_stale",

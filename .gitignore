@@ -126,3 +126,7 @@ secrets/
 
 # Full audit evidence log (untracked working artifact)
 .audit-findings-full.md
+
+# TypeScript migration (Phase 1) — generated, never committed
+next-env.d.ts
+*.tsbuildinfo

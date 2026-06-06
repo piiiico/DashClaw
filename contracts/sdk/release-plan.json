@@ -1,14 +1,14 @@
 {
   "node": {
-    "current_version": "4.2.0",
+    "current_version": "4.2.1",
     "next_bump": "none",
-    "reason": "4.2.0 — minor. Adds recordX402Purchase: a one-call x402 self-report convenience (govern + record purchase + report outcome + attach receipt) for the pay-outside-a-hook pattern. Node surface 125 → 126. The server-side provider auto-resolution fix (resolveProviderByName) for name-only purchases ships alongside. Additive; no breaking changes. Self-dep stays ^4.0.0.",
-    "domains": ["x402"]
+    "reason": "4.2.1 — patch. Platform JavaScript→strict-TypeScript migration (behavior-preserving) plus a Fleet-spend coercion fix (::real aggregates were returned as driver strings, concatenating the server-side Agent+x402 total to NaN). No SDK API change — Node surface stays 126. Both SDKs republish at 4.2.1 per the unified-version model. Self-dep stays ^4.0.0.",
+    "domains": ["finops", "platform"]
   },
   "python": {
-    "current_version": "4.2.0",
+    "current_version": "4.2.1",
     "next_bump": "none",
-    "reason": "4.2.0 — minor. Adds record_x402_purchase (parity with Node recordX402Purchase): a one-call x402 self-report convenience that inlines the receipt artifact (Python has no standalone record_purchase_result). Python surface 223 → 224. Additive; no breaking changes.",
-    "domains": ["x402"]
+    "reason": "4.2.1 — patch. Platform-only TypeScript migration + Fleet-spend coercion fix. No Python SDK API change — surface stays 224. Republishes at 4.2.1 per the unified-version model.",
+    "domains": ["finops", "platform"]
   }
 }

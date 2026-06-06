@@ -9,7 +9,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/actions/route.js"
+      "file_path": "app/api/actions/route.ts"
     },
     {
       "path": "/api/actions/[actionId]",
@@ -19,7 +19,7 @@
       "dynamic_params": [
         "actionId"
       ],
-      "file_path": "app/api/actions/[actionId]/route.js"
+      "file_path": "app/api/actions/[actionId]/route.ts"
     },
     {
       "path": "/api/actions/[actionId]/outcome",
@@ -29,7 +29,7 @@
       "dynamic_params": [
         "actionId"
       ],
-      "file_path": "app/api/actions/[actionId]/outcome/route.js"
+      "file_path": "app/api/actions/[actionId]/outcome/route.ts"
     },
     {
       "path": "/api/actions/loops",
@@ -37,7 +37,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/actions/loops/route.js"
+      "file_path": "app/api/actions/loops/route.ts"
     },
     {
       "path": "/api/actions/loops/[loopId]",
@@ -47,7 +47,7 @@
       "dynamic_params": [
         "loopId"
       ],
-      "file_path": "app/api/actions/loops/[loopId]/route.js"
+      "file_path": "app/api/actions/loops/[loopId]/route.ts"
     },
     {
       "path": "/api/admin/trigger-outcome-sweep",
@@ -55,7 +55,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/admin/trigger-outcome-sweep/route.js"
+      "file_path": "app/api/admin/trigger-outcome-sweep/route.ts"
     },
     {
       "path": "/api/agents/connections",
@@ -63,7 +63,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/agents/connections/route.js"
+      "file_path": "app/api/agents/connections/route.ts"
     },
     {
       "path": "/api/agents/heartbeat",
@@ -71,7 +71,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/agents/heartbeat/route.js"
+      "file_path": "app/api/agents/heartbeat/route.ts"
     },
     {
       "path": "/api/agents/invoke",
@@ -79,7 +79,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/agents/invoke/route.js"
+      "file_path": "app/api/agents/invoke/route.ts"
     },
     {
       "path": "/api/agents/registry",
@@ -87,7 +87,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/agents/registry/route.js"
+      "file_path": "app/api/agents/registry/route.ts"
     },
     {
       "path": "/api/agents/registry/[id]",
@@ -97,7 +97,7 @@
       "dynamic_params": [
         "id"
       ],
-      "file_path": "app/api/agents/registry/[id]/route.js"
+      "file_path": "app/api/agents/registry/[id]/route.ts"
     },
     {
       "path": "/api/agents/registry/[id]/capabilities",
@@ -107,7 +107,7 @@
       "dynamic_params": [
         "id"
       ],
-      "file_path": "app/api/agents/registry/[id]/capabilities/route.js"
+      "file_path": "app/api/agents/registry/[id]/capabilities/route.ts"
     },
     {
       "path": "/api/approvals/[actionId]",
@@ -117,7 +117,7 @@
       "dynamic_params": [
         "actionId"
       ],
-      "file_path": "app/api/approvals/[actionId]/route.js"
+      "file_path": "app/api/approvals/[actionId]/route.ts"
     },
     {
       "path": "/api/artifacts",
@@ -125,7 +125,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/artifacts/route.js"
+      "file_path": "app/api/artifacts/route.ts"
     },
     {
       "path": "/api/artifacts/[artifactId]",
@@ -135,7 +135,7 @@
       "dynamic_params": [
         "artifactId"
       ],
-      "file_path": "app/api/artifacts/[artifactId]/route.js"
+      "file_path": "app/api/artifacts/[artifactId]/route.ts"
     },
     {
       "path": "/api/artifacts/evidence-bundle",
@@ -143,7 +143,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/artifacts/evidence-bundle/route.js"
+      "file_path": "app/api/artifacts/evidence-bundle/route.ts"
     },
     {
       "path": "/api/assumptions",
@@ -151,7 +151,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/assumptions/route.js"
+      "file_path": "app/api/assumptions/route.ts"
     },
     {
       "path": "/api/assumptions/[assumptionId]",
@@ -161,7 +161,7 @@
       "dynamic_params": [
         "assumptionId"
       ],
-      "file_path": "app/api/assumptions/[assumptionId]/route.js"
+      "file_path": "app/api/assumptions/[assumptionId]/route.ts"
     },
     {
       "path": "/api/auth/local",
@@ -170,7 +170,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/auth/local/route.js"
+      "file_path": "app/api/auth/local/route.ts"
     },
     {
       "path": "/api/behavior/recorder",
@@ -178,7 +178,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/behavior/recorder/route.js"
+      "file_path": "app/api/behavior/recorder/route.ts"
     },
     {
       "path": "/api/behavior/simulate",
@@ -186,7 +186,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/behavior/simulate/route.js"
+      "file_path": "app/api/behavior/simulate/route.ts"
     },
     {
       "path": "/api/behavior/suggestions",
@@ -194,7 +194,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/behavior/suggestions/route.js"
+      "file_path": "app/api/behavior/suggestions/route.ts"
     },
     {
       "path": "/api/billing/checkout",
@@ -202,7 +202,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/billing/checkout/route.js"
+      "file_path": "app/api/billing/checkout/route.ts"
     },
     {
       "path": "/api/capabilities",
@@ -210,7 +210,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/capabilities/route.js"
+      "file_path": "app/api/capabilities/route.ts"
     },
     {
       "path": "/api/capabilities/[capabilityId]",
@@ -221,7 +221,7 @@
       "dynamic_params": [
         "capabilityId"
       ],
-      "file_path": "app/api/capabilities/[capabilityId]/route.js"
+      "file_path": "app/api/capabilities/[capabilityId]/route.ts"
     },
     {
       "path": "/api/capabilities/[capabilityId]/access",
@@ -231,7 +231,7 @@
       "dynamic_params": [
         "capabilityId"
       ],
-      "file_path": "app/api/capabilities/[capabilityId]/access/route.js"
+      "file_path": "app/api/capabilities/[capabilityId]/access/route.ts"
     },
     {
       "path": "/api/capabilities/[capabilityId]/access/[ruleId]",
@@ -242,7 +242,7 @@
         "capabilityId",
         "ruleId"
       ],
-      "file_path": "app/api/capabilities/[capabilityId]/access/[ruleId]/route.js"
+      "file_path": "app/api/capabilities/[capabilityId]/access/[ruleId]/route.ts"
     },
     {
       "path": "/api/capabilities/[capabilityId]/invoke",
@@ -252,7 +252,7 @@
       "dynamic_params": [
         "capabilityId"
       ],
-      "file_path": "app/api/capabilities/[capabilityId]/invoke/route.js"
+      "file_path": "app/api/capabilities/[capabilityId]/invoke/route.ts"
     },
     {
       "path": "/api/capabilities/[capabilityId]/test",
@@ -262,7 +262,7 @@
       "dynamic_params": [
         "capabilityId"
       ],
-      "file_path": "app/api/capabilities/[capabilityId]/test/route.js"
+      "file_path": "app/api/capabilities/[capabilityId]/test/route.ts"
     },
     {
       "path": "/api/code-sessions/alerts/read-all",
@@ -270,7 +270,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/code-sessions/alerts/read-all/route.js"
+      "file_path": "app/api/code-sessions/alerts/read-all/route.ts"
     },
     {
       "path": "/api/code-sessions/ingest-jsonl",
@@ -278,7 +278,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/code-sessions/ingest-jsonl/route.js"
+      "file_path": "app/api/code-sessions/ingest-jsonl/route.ts"
     },
     {
       "path": "/api/code-sessions/ingest-live",
@@ -286,7 +286,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/code-sessions/ingest-live/route.js"
+      "file_path": "app/api/code-sessions/ingest-live/route.ts"
     },
     {
       "path": "/api/code-sessions/memos/regenerate",
@@ -294,7 +294,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/code-sessions/memos/regenerate/route.js"
+      "file_path": "app/api/code-sessions/memos/regenerate/route.ts"
     },
     {
       "path": "/api/code-sessions/sessions/[sessionId]/optimal-files/manifest",
@@ -304,7 +304,7 @@
       "dynamic_params": [
         "sessionId"
       ],
-      "file_path": "app/api/code-sessions/sessions/[sessionId]/optimal-files/manifest/route.js"
+      "file_path": "app/api/code-sessions/sessions/[sessionId]/optimal-files/manifest/route.ts"
     },
     {
       "path": "/api/code-sessions/sessions/[sessionId]/optimal-files/merge-preview",
@@ -314,7 +314,7 @@
       "dynamic_params": [
         "sessionId"
       ],
-      "file_path": "app/api/code-sessions/sessions/[sessionId]/optimal-files/merge-preview/route.js"
+      "file_path": "app/api/code-sessions/sessions/[sessionId]/optimal-files/merge-preview/route.ts"
     },
     {
       "path": "/api/code-sessions/sessions/[sessionId]/optimal-files/preview",
@@ -324,7 +324,7 @@
       "dynamic_params": [
         "sessionId"
       ],
-      "file_path": "app/api/code-sessions/sessions/[sessionId]/optimal-files/preview/route.js"
+      "file_path": "app/api/code-sessions/sessions/[sessionId]/optimal-files/preview/route.ts"
     },
     {
       "path": "/api/compliance/exports",
@@ -332,7 +332,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/compliance/exports/route.js"
+      "file_path": "app/api/compliance/exports/route.ts"
     },
     {
       "path": "/api/compliance/exports/[exportId]",
@@ -342,7 +342,7 @@
       "dynamic_params": [
         "exportId"
       ],
-      "file_path": "app/api/compliance/exports/[exportId]/route.js"
+      "file_path": "app/api/compliance/exports/[exportId]/route.ts"
     },
     {
       "path": "/api/compliance/schedules",
@@ -350,7 +350,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/compliance/schedules/route.js"
+      "file_path": "app/api/compliance/schedules/route.ts"
     },
     {
       "path": "/api/compliance/schedules/[scheduleId]",
@@ -361,7 +361,7 @@
       "dynamic_params": [
         "scheduleId"
       ],
-      "file_path": "app/api/compliance/schedules/[scheduleId]/route.js"
+      "file_path": "app/api/compliance/schedules/[scheduleId]/route.ts"
     },
     {
       "path": "/api/cron/routing-maintenance",
@@ -369,7 +369,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/cron/routing-maintenance/route.js"
+      "file_path": "app/api/cron/routing-maintenance/route.ts"
     },
     {
       "path": "/api/discord/interactions",
@@ -377,7 +377,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/discord/interactions/route.js"
+      "file_path": "app/api/discord/interactions/route.ts"
     },
     {
       "path": "/api/doctor/fix",
@@ -385,7 +385,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/doctor/fix/route.js"
+      "file_path": "app/api/doctor/fix/route.ts"
     },
     {
       "path": "/api/drift/alerts",
@@ -393,7 +393,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/drift/alerts/route.js"
+      "file_path": "app/api/drift/alerts/route.ts"
     },
     {
       "path": "/api/drift/alerts/[alertId]",
@@ -404,7 +404,7 @@
       "dynamic_params": [
         "alertId"
       ],
-      "file_path": "app/api/drift/alerts/[alertId]/route.js"
+      "file_path": "app/api/drift/alerts/[alertId]/route.ts"
     },
     {
       "path": "/api/evaluations",
@@ -412,7 +412,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/evaluations/route.js"
+      "file_path": "app/api/evaluations/route.ts"
     },
     {
       "path": "/api/evaluations/runs",
@@ -420,7 +420,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/evaluations/runs/route.js"
+      "file_path": "app/api/evaluations/runs/route.ts"
     },
     {
       "path": "/api/evaluations/runs/[runId]",
@@ -430,7 +430,7 @@
       "dynamic_params": [
         "runId"
       ],
-      "file_path": "app/api/evaluations/runs/[runId]/route.js"
+      "file_path": "app/api/evaluations/runs/[runId]/route.ts"
     },
     {
       "path": "/api/evaluations/scorers",
@@ -438,7 +438,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/evaluations/scorers/route.js"
+      "file_path": "app/api/evaluations/scorers/route.ts"
     },
     {
       "path": "/api/evaluations/scorers/[scorerId]",
@@ -449,7 +449,7 @@
       "dynamic_params": [
         "scorerId"
       ],
-      "file_path": "app/api/evaluations/scorers/[scorerId]/route.js"
+      "file_path": "app/api/evaluations/scorers/[scorerId]/route.ts"
     },
     {
       "path": "/api/evaluations/scorers/preview",
@@ -457,7 +457,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/evaluations/scorers/preview/route.js"
+      "file_path": "app/api/evaluations/scorers/preview/route.ts"
     },
     {
       "path": "/api/guard",
@@ -465,7 +465,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/guard/route.js"
+      "file_path": "app/api/guard/route.ts"
     },
     {
       "path": "/api/handoffs",
@@ -473,7 +473,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/handoffs/route.js"
+      "file_path": "app/api/handoffs/route.ts"
     },
     {
       "path": "/api/handoffs/[id]/consume",
@@ -483,7 +483,7 @@
       "dynamic_params": [
         "id"
       ],
-      "file_path": "app/api/handoffs/[id]/consume/route.js"
+      "file_path": "app/api/handoffs/[id]/consume/route.ts"
     },
     {
       "path": "/api/hosted/cleanup",
@@ -491,7 +491,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/hosted/cleanup/route.js"
+      "file_path": "app/api/hosted/cleanup/route.ts"
     },
     {
       "path": "/api/hosted/workspaces",
@@ -499,7 +499,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/hosted/workspaces/route.js"
+      "file_path": "app/api/hosted/workspaces/route.ts"
     },
     {
       "path": "/api/hosted/workspaces/[workspaceId]",
@@ -509,7 +509,7 @@
       "dynamic_params": [
         "workspaceId"
       ],
-      "file_path": "app/api/hosted/workspaces/[workspaceId]/route.js"
+      "file_path": "app/api/hosted/workspaces/[workspaceId]/route.ts"
     },
     {
       "path": "/api/identities",
@@ -517,7 +517,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/identities/route.js"
+      "file_path": "app/api/identities/route.ts"
     },
     {
       "path": "/api/identities/[agentId]",
@@ -527,7 +527,7 @@
       "dynamic_params": [
         "agentId"
       ],
-      "file_path": "app/api/identities/[agentId]/route.js"
+      "file_path": "app/api/identities/[agentId]/route.ts"
     },
     {
       "path": "/api/integrations/health/refresh",
@@ -535,7 +535,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/integrations/health/refresh/route.js"
+      "file_path": "app/api/integrations/health/refresh/route.ts"
     },
     {
       "path": "/api/integrity/verify",
@@ -543,7 +543,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/integrity/verify/route.js"
+      "file_path": "app/api/integrity/verify/route.ts"
     },
     {
       "path": "/api/invite/[token]",
@@ -553,7 +553,7 @@
       "dynamic_params": [
         "token"
       ],
-      "file_path": "app/api/invite/[token]/route.js"
+      "file_path": "app/api/invite/[token]/route.ts"
     },
     {
       "path": "/api/keys",
@@ -562,7 +562,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/keys/route.js"
+      "file_path": "app/api/keys/route.ts"
     },
     {
       "path": "/api/knowledge/collections",
@@ -570,7 +570,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/knowledge/collections/route.js"
+      "file_path": "app/api/knowledge/collections/route.ts"
     },
     {
       "path": "/api/knowledge/collections/[collectionId]",
@@ -581,7 +581,7 @@
       "dynamic_params": [
         "collectionId"
       ],
-      "file_path": "app/api/knowledge/collections/[collectionId]/route.js"
+      "file_path": "app/api/knowledge/collections/[collectionId]/route.ts"
     },
     {
       "path": "/api/knowledge/collections/[collectionId]/items",
@@ -591,7 +591,7 @@
       "dynamic_params": [
         "collectionId"
       ],
-      "file_path": "app/api/knowledge/collections/[collectionId]/items/route.js"
+      "file_path": "app/api/knowledge/collections/[collectionId]/items/route.ts"
     },
     {
       "path": "/api/knowledge/collections/[collectionId]/search",
@@ -601,7 +601,7 @@
       "dynamic_params": [
         "collectionId"
       ],
-      "file_path": "app/api/knowledge/collections/[collectionId]/search/route.js"
+      "file_path": "app/api/knowledge/collections/[collectionId]/search/route.ts"
     },
     {
       "path": "/api/knowledge/collections/[collectionId]/sync",
@@ -611,7 +611,7 @@
       "dynamic_params": [
         "collectionId"
       ],
-      "file_path": "app/api/knowledge/collections/[collectionId]/sync/route.js"
+      "file_path": "app/api/knowledge/collections/[collectionId]/sync/route.ts"
     },
     {
       "path": "/api/learning",
@@ -619,7 +619,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/learning/route.js"
+      "file_path": "app/api/learning/route.ts"
     },
     {
       "path": "/api/learning/analytics/curves",
@@ -627,7 +627,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/learning/analytics/curves/route.js"
+      "file_path": "app/api/learning/analytics/curves/route.ts"
     },
     {
       "path": "/api/learning/analytics/velocity",
@@ -635,7 +635,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/learning/analytics/velocity/route.js"
+      "file_path": "app/api/learning/analytics/velocity/route.ts"
     },
     {
       "path": "/api/learning/recommendations",
@@ -643,7 +643,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/learning/recommendations/route.js"
+      "file_path": "app/api/learning/recommendations/route.ts"
     },
     {
       "path": "/api/learning/recommendations/[recommendationId]",
@@ -653,7 +653,7 @@
       "dynamic_params": [
         "recommendationId"
       ],
-      "file_path": "app/api/learning/recommendations/[recommendationId]/route.js"
+      "file_path": "app/api/learning/recommendations/[recommendationId]/route.ts"
     },
     {
       "path": "/api/learning/recommendations/events",
@@ -661,7 +661,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/learning/recommendations/events/route.js"
+      "file_path": "app/api/learning/recommendations/events/route.ts"
     },
     {
       "path": "/api/learning/suggestions",
@@ -669,7 +669,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/learning/suggestions/route.js"
+      "file_path": "app/api/learning/suggestions/route.ts"
     },
     {
       "path": "/api/marketing/event",
@@ -677,7 +677,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/marketing/event/route.js"
+      "file_path": "app/api/marketing/event/route.ts"
     },
     {
       "path": "/api/mcp",
@@ -685,7 +685,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/mcp/route.js"
+      "file_path": "app/api/mcp/route.ts"
     },
     {
       "path": "/api/messages",
@@ -694,7 +694,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/messages/route.js"
+      "file_path": "app/api/messages/route.ts"
     },
     {
       "path": "/api/messages/threads",
@@ -703,7 +703,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/messages/threads/route.js"
+      "file_path": "app/api/messages/threads/route.ts"
     },
     {
       "path": "/api/model-strategies",
@@ -711,7 +711,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/model-strategies/route.js"
+      "file_path": "app/api/model-strategies/route.ts"
     },
     {
       "path": "/api/model-strategies/[strategyId]",
@@ -722,7 +722,7 @@
       "dynamic_params": [
         "strategyId"
       ],
-      "file_path": "app/api/model-strategies/[strategyId]/route.js"
+      "file_path": "app/api/model-strategies/[strategyId]/route.ts"
     },
     {
       "path": "/api/model-strategies/[strategyId]/complete",
@@ -732,7 +732,7 @@
       "dynamic_params": [
         "strategyId"
       ],
-      "file_path": "app/api/model-strategies/[strategyId]/complete/route.js"
+      "file_path": "app/api/model-strategies/[strategyId]/complete/route.ts"
     },
     {
       "path": "/api/oauth/authorize",
@@ -740,7 +740,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/oauth/authorize/route.js"
+      "file_path": "app/api/oauth/authorize/route.ts"
     },
     {
       "path": "/api/oauth/register",
@@ -748,7 +748,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/oauth/register/route.js"
+      "file_path": "app/api/oauth/register/route.ts"
     },
     {
       "path": "/api/oauth/token",
@@ -756,7 +756,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/oauth/token/route.js"
+      "file_path": "app/api/oauth/token/route.ts"
     },
     {
       "path": "/api/orgs",
@@ -764,7 +764,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/orgs/route.js"
+      "file_path": "app/api/orgs/route.ts"
     },
     {
       "path": "/api/orgs/[orgId]",
@@ -774,7 +774,7 @@
       "dynamic_params": [
         "orgId"
       ],
-      "file_path": "app/api/orgs/[orgId]/route.js"
+      "file_path": "app/api/orgs/[orgId]/route.ts"
     },
     {
       "path": "/api/orgs/[orgId]/keys",
@@ -785,7 +785,7 @@
       "dynamic_params": [
         "orgId"
       ],
-      "file_path": "app/api/orgs/[orgId]/keys/route.js"
+      "file_path": "app/api/orgs/[orgId]/keys/route.ts"
     },
     {
       "path": "/api/pairings",
@@ -793,7 +793,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/pairings/route.js"
+      "file_path": "app/api/pairings/route.ts"
     },
     {
       "path": "/api/pairings/[pairingId]",
@@ -803,7 +803,7 @@
       "dynamic_params": [
         "pairingId"
       ],
-      "file_path": "app/api/pairings/[pairingId]/route.js"
+      "file_path": "app/api/pairings/[pairingId]/route.ts"
     },
     {
       "path": "/api/pairings/[pairingId]/approve",
@@ -813,7 +813,7 @@
       "dynamic_params": [
         "pairingId"
       ],
-      "file_path": "app/api/pairings/[pairingId]/approve/route.js"
+      "file_path": "app/api/pairings/[pairingId]/approve/route.ts"
     },
     {
       "path": "/api/policies",
@@ -823,7 +823,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/policies/route.js"
+      "file_path": "app/api/policies/route.ts"
     },
     {
       "path": "/api/policies/generate",
@@ -831,7 +831,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/policies/generate/route.js"
+      "file_path": "app/api/policies/generate/route.ts"
     },
     {
       "path": "/api/policies/import",
@@ -839,7 +839,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/policies/import/route.js"
+      "file_path": "app/api/policies/import/route.ts"
     },
     {
       "path": "/api/policies/simulate",
@@ -847,7 +847,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/policies/simulate/route.js"
+      "file_path": "app/api/policies/simulate/route.ts"
     },
     {
       "path": "/api/policies/test",
@@ -855,7 +855,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/policies/test/route.js"
+      "file_path": "app/api/policies/test/route.ts"
     },
     {
       "path": "/api/prompts/render",
@@ -863,7 +863,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/prompts/render/route.js"
+      "file_path": "app/api/prompts/render/route.ts"
     },
     {
       "path": "/api/prompts/templates",
@@ -871,7 +871,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/prompts/templates/route.js"
+      "file_path": "app/api/prompts/templates/route.ts"
     },
     {
       "path": "/api/prompts/templates/[templateId]",
@@ -882,7 +882,7 @@
       "dynamic_params": [
         "templateId"
       ],
-      "file_path": "app/api/prompts/templates/[templateId]/route.js"
+      "file_path": "app/api/prompts/templates/[templateId]/route.ts"
     },
     {
       "path": "/api/prompts/templates/[templateId]/versions",
@@ -892,7 +892,7 @@
       "dynamic_params": [
         "templateId"
       ],
-      "file_path": "app/api/prompts/templates/[templateId]/versions/route.js"
+      "file_path": "app/api/prompts/templates/[templateId]/versions/route.ts"
     },
     {
       "path": "/api/prompts/templates/[templateId]/versions/[versionId]",
@@ -903,7 +903,7 @@
         "templateId",
         "versionId"
       ],
-      "file_path": "app/api/prompts/templates/[templateId]/versions/[versionId]/route.js"
+      "file_path": "app/api/prompts/templates/[templateId]/versions/[versionId]/route.ts"
     },
     {
       "path": "/api/reputation/agents/[agentId]/recompute",
@@ -913,7 +913,7 @@
       "dynamic_params": [
         "agentId"
       ],
-      "file_path": "app/api/reputation/agents/[agentId]/recompute/route.js"
+      "file_path": "app/api/reputation/agents/[agentId]/recompute/route.ts"
     },
     {
       "path": "/api/reputation/verify",
@@ -921,7 +921,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/reputation/verify/route.js"
+      "file_path": "app/api/reputation/verify/route.ts"
     },
     {
       "path": "/api/scoring/calibrate",
@@ -929,7 +929,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/scoring/calibrate/route.js"
+      "file_path": "app/api/scoring/calibrate/route.ts"
     },
     {
       "path": "/api/scoring/profiles",
@@ -937,7 +937,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/scoring/profiles/route.js"
+      "file_path": "app/api/scoring/profiles/route.ts"
     },
     {
       "path": "/api/scoring/profiles/[profileId]",
@@ -948,7 +948,7 @@
       "dynamic_params": [
         "profileId"
       ],
-      "file_path": "app/api/scoring/profiles/[profileId]/route.js"
+      "file_path": "app/api/scoring/profiles/[profileId]/route.ts"
     },
     {
       "path": "/api/scoring/profiles/[profileId]/dimensions",
@@ -958,7 +958,7 @@
       "dynamic_params": [
         "profileId"
       ],
-      "file_path": "app/api/scoring/profiles/[profileId]/dimensions/route.js"
+      "file_path": "app/api/scoring/profiles/[profileId]/dimensions/route.ts"
     },
     {
       "path": "/api/scoring/profiles/[profileId]/dimensions/[dimensionId]",
@@ -970,7 +970,7 @@
         "profileId",
         "dimensionId"
       ],
-      "file_path": "app/api/scoring/profiles/[profileId]/dimensions/[dimensionId]/route.js"
+      "file_path": "app/api/scoring/profiles/[profileId]/dimensions/[dimensionId]/route.ts"
     },
     {
       "path": "/api/scoring/risk-templates",
@@ -978,7 +978,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/scoring/risk-templates/route.js"
+      "file_path": "app/api/scoring/risk-templates/route.ts"
     },
     {
       "path": "/api/scoring/risk-templates/[templateId]",
@@ -989,7 +989,7 @@
       "dynamic_params": [
         "templateId"
       ],
-      "file_path": "app/api/scoring/risk-templates/[templateId]/route.js"
+      "file_path": "app/api/scoring/risk-templates/[templateId]/route.ts"
     },
     {
       "path": "/api/scoring/score",
@@ -997,7 +997,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/scoring/score/route.js"
+      "file_path": "app/api/scoring/score/route.ts"
     },
     {
       "path": "/api/secrets",
@@ -1005,7 +1005,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/secrets/route.js"
+      "file_path": "app/api/secrets/route.ts"
     },
     {
       "path": "/api/secrets/[id]",
@@ -1016,7 +1016,7 @@
       "dynamic_params": [
         "id"
       ],
-      "file_path": "app/api/secrets/[id]/route.js"
+      "file_path": "app/api/secrets/[id]/route.ts"
     },
     {
       "path": "/api/security/prompt-injection",
@@ -1024,7 +1024,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/security/prompt-injection/route.js"
+      "file_path": "app/api/security/prompt-injection/route.ts"
     },
     {
       "path": "/api/security/scan",
@@ -1032,7 +1032,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/security/scan/route.js"
+      "file_path": "app/api/security/scan/route.ts"
     },
     {
       "path": "/api/sessions",
@@ -1040,7 +1040,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/sessions/route.js"
+      "file_path": "app/api/sessions/route.ts"
     },
     {
       "path": "/api/sessions/[sessionId]",
@@ -1050,7 +1050,7 @@
       "dynamic_params": [
         "sessionId"
       ],
-      "file_path": "app/api/sessions/[sessionId]/route.js"
+      "file_path": "app/api/sessions/[sessionId]/route.ts"
     },
     {
       "path": "/api/settings",
@@ -1059,7 +1059,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/settings/route.js"
+      "file_path": "app/api/settings/route.ts"
     },
     {
       "path": "/api/settings/test",
@@ -1067,7 +1067,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/settings/test/route.js"
+      "file_path": "app/api/settings/test/route.ts"
     },
     {
       "path": "/api/setup/live-proof",
@@ -1075,7 +1075,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/setup/live-proof/route.js"
+      "file_path": "app/api/setup/live-proof/route.ts"
     },
     {
       "path": "/api/setup/migrate",
@@ -1083,7 +1083,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/setup/migrate/route.js"
+      "file_path": "app/api/setup/migrate/route.ts"
     },
     {
       "path": "/api/setup/ping",
@@ -1091,7 +1091,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/setup/ping/route.js"
+      "file_path": "app/api/setup/ping/route.ts"
     },
     {
       "path": "/api/skills/scan",
@@ -1099,7 +1099,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/skills/scan/route.js"
+      "file_path": "app/api/skills/scan/route.ts"
     },
     {
       "path": "/api/team/[userId]",
@@ -1110,7 +1110,7 @@
       "dynamic_params": [
         "userId"
       ],
-      "file_path": "app/api/team/[userId]/route.js"
+      "file_path": "app/api/team/[userId]/route.ts"
     },
     {
       "path": "/api/team/invite",
@@ -1119,7 +1119,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/team/invite/route.js"
+      "file_path": "app/api/team/invite/route.ts"
     },
     {
       "path": "/api/telegram/webhook",
@@ -1127,7 +1127,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/telegram/webhook/route.js"
+      "file_path": "app/api/telegram/webhook/route.ts"
     },
     {
       "path": "/api/webhooks",
@@ -1136,7 +1136,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/webhooks/route.js"
+      "file_path": "app/api/webhooks/route.ts"
     },
     {
       "path": "/api/webhooks/[webhookId]/test",
@@ -1146,7 +1146,7 @@
       "dynamic_params": [
         "webhookId"
       ],
-      "file_path": "app/api/webhooks/[webhookId]/test/route.js"
+      "file_path": "app/api/webhooks/[webhookId]/test/route.ts"
     },
     {
       "path": "/api/webhooks/stripe",
@@ -1154,7 +1154,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/webhooks/stripe/route.js"
+      "file_path": "app/api/webhooks/stripe/route.ts"
     },
     {
       "path": "/api/workflows/draft",
@@ -1162,7 +1162,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/workflows/draft/route.js"
+      "file_path": "app/api/workflows/draft/route.ts"
     },
     {
       "path": "/api/workflows/templates",
@@ -1170,7 +1170,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/workflows/templates/route.js"
+      "file_path": "app/api/workflows/templates/route.ts"
     },
     {
       "path": "/api/workflows/templates/[templateId]",
@@ -1181,7 +1181,7 @@
       "dynamic_params": [
         "templateId"
       ],
-      "file_path": "app/api/workflows/templates/[templateId]/route.js"
+      "file_path": "app/api/workflows/templates/[templateId]/route.ts"
     },
     {
       "path": "/api/workflows/templates/[templateId]/duplicate",
@@ -1191,7 +1191,7 @@
       "dynamic_params": [
         "templateId"
       ],
-      "file_path": "app/api/workflows/templates/[templateId]/duplicate/route.js"
+      "file_path": "app/api/workflows/templates/[templateId]/duplicate/route.ts"
     },
     {
       "path": "/api/workflows/templates/[templateId]/execute",
@@ -1201,7 +1201,7 @@
       "dynamic_params": [
         "templateId"
       ],
-      "file_path": "app/api/workflows/templates/[templateId]/execute/route.js"
+      "file_path": "app/api/workflows/templates/[templateId]/execute/route.ts"
     },
     {
       "path": "/api/workflows/templates/[templateId]/launch",
@@ -1211,7 +1211,7 @@
       "dynamic_params": [
         "templateId"
       ],
-      "file_path": "app/api/workflows/templates/[templateId]/launch/route.js"
+      "file_path": "app/api/workflows/templates/[templateId]/launch/route.ts"
     },
     {
       "path": "/api/workflows/templates/[templateId]/runs/[runActionId]/cancel",
@@ -1222,7 +1222,7 @@
         "templateId",
         "runActionId"
       ],
-      "file_path": "app/api/workflows/templates/[templateId]/runs/[runActionId]/cancel/route.js"
+      "file_path": "app/api/workflows/templates/[templateId]/runs/[runActionId]/cancel/route.ts"
     },
     {
       "path": "/api/workflows/templates/[templateId]/runs/[runActionId]/resume",
@@ -1233,7 +1233,7 @@
         "templateId",
         "runActionId"
       ],
-      "file_path": "app/api/workflows/templates/[templateId]/runs/[runActionId]/resume/route.js"
+      "file_path": "app/api/workflows/templates/[templateId]/runs/[runActionId]/resume/route.ts"
     },
     {
       "path": "/api/x402/providers",
@@ -1241,7 +1241,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/x402/providers/route.js"
+      "file_path": "app/api/x402/providers/route.ts"
     },
     {
       "path": "/api/x402/providers/[id]",
@@ -1251,7 +1251,7 @@
       "dynamic_params": [
         "id"
       ],
-      "file_path": "app/api/x402/providers/[id]/route.js"
+      "file_path": "app/api/x402/providers/[id]/route.ts"
     },
     {
       "path": "/api/x402/providers/[id]/endpoints",
@@ -1261,7 +1261,7 @@
       "dynamic_params": [
         "id"
       ],
-      "file_path": "app/api/x402/providers/[id]/endpoints/route.js"
+      "file_path": "app/api/x402/providers/[id]/endpoints/route.ts"
     },
     {
       "path": "/api/x402/purchases",
@@ -1269,7 +1269,7 @@
         "POST"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/x402/purchases/route.js"
+      "file_path": "app/api/x402/purchases/route.ts"
     }
   ],
   "read_routes": [
@@ -1279,7 +1279,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/actions/route.js"
+      "file_path": "app/api/actions/route.ts"
     },
     {
       "path": "/api/actions/[actionId]",
@@ -1289,7 +1289,7 @@
       "dynamic_params": [
         "actionId"
       ],
-      "file_path": "app/api/actions/[actionId]/route.js"
+      "file_path": "app/api/actions/[actionId]/route.ts"
     },
     {
       "path": "/api/actions/[actionId]/artifacts",
@@ -1299,7 +1299,7 @@
       "dynamic_params": [
         "actionId"
       ],
-      "file_path": "app/api/actions/[actionId]/artifacts/route.js"
+      "file_path": "app/api/actions/[actionId]/artifacts/route.ts"
     },
     {
       "path": "/api/actions/[actionId]/graph",
@@ -1309,7 +1309,7 @@
       "dynamic_params": [
         "actionId"
       ],
-      "file_path": "app/api/actions/[actionId]/graph/route.js"
+      "file_path": "app/api/actions/[actionId]/graph/route.ts"
     },
     {
       "path": "/api/actions/[actionId]/messages",
@@ -1319,7 +1319,7 @@
       "dynamic_params": [
         "actionId"
       ],
-      "file_path": "app/api/actions/[actionId]/messages/route.js"
+      "file_path": "app/api/actions/[actionId]/messages/route.ts"
     },
     {
       "path": "/api/actions/[actionId]/outcome",
@@ -1329,7 +1329,7 @@
       "dynamic_params": [
         "actionId"
       ],
-      "file_path": "app/api/actions/[actionId]/outcome/route.js"
+      "file_path": "app/api/actions/[actionId]/outcome/route.ts"
     },
     {
       "path": "/api/actions/[actionId]/trace",
@@ -1339,7 +1339,7 @@
       "dynamic_params": [
         "actionId"
       ],
-      "file_path": "app/api/actions/[actionId]/trace/route.js"
+      "file_path": "app/api/actions/[actionId]/trace/route.ts"
     },
     {
       "path": "/api/actions/costs",
@@ -1347,7 +1347,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/actions/costs/route.js"
+      "file_path": "app/api/actions/costs/route.ts"
     },
     {
       "path": "/api/actions/loops",
@@ -1355,7 +1355,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/actions/loops/route.js"
+      "file_path": "app/api/actions/loops/route.ts"
     },
     {
       "path": "/api/actions/loops/[loopId]",
@@ -1365,7 +1365,7 @@
       "dynamic_params": [
         "loopId"
       ],
-      "file_path": "app/api/actions/loops/[loopId]/route.js"
+      "file_path": "app/api/actions/loops/[loopId]/route.ts"
     },
     {
       "path": "/api/actions/stats",
@@ -1373,7 +1373,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/actions/stats/route.js"
+      "file_path": "app/api/actions/stats/route.ts"
     },
     {
       "path": "/api/activity",
@@ -1381,7 +1381,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/activity/route.js"
+      "file_path": "app/api/activity/route.ts"
     },
     {
       "path": "/api/agents",
@@ -1389,7 +1389,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/agents/route.js"
+      "file_path": "app/api/agents/route.ts"
     },
     {
       "path": "/api/agents/[agentId]",
@@ -1399,7 +1399,7 @@
       "dynamic_params": [
         "agentId"
       ],
-      "file_path": "app/api/agents/[agentId]/route.js"
+      "file_path": "app/api/agents/[agentId]/route.ts"
     },
     {
       "path": "/api/agents/[agentId]/profile",
@@ -1409,7 +1409,7 @@
       "dynamic_params": [
         "agentId"
       ],
-      "file_path": "app/api/agents/[agentId]/profile/route.js"
+      "file_path": "app/api/agents/[agentId]/profile/route.ts"
     },
     {
       "path": "/api/agents/connections",
@@ -1417,7 +1417,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/agents/connections/route.js"
+      "file_path": "app/api/agents/connections/route.ts"
     },
     {
       "path": "/api/agents/registry",
@@ -1425,7 +1425,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/agents/registry/route.js"
+      "file_path": "app/api/agents/registry/route.ts"
     },
     {
       "path": "/api/agents/registry/[id]",
@@ -1435,7 +1435,7 @@
       "dynamic_params": [
         "id"
       ],
-      "file_path": "app/api/agents/registry/[id]/route.js"
+      "file_path": "app/api/agents/registry/[id]/route.ts"
     },
     {
       "path": "/api/agents/registry/[id]/capabilities",
@@ -1445,7 +1445,7 @@
       "dynamic_params": [
         "id"
       ],
-      "file_path": "app/api/agents/registry/[id]/capabilities/route.js"
+      "file_path": "app/api/agents/registry/[id]/capabilities/route.ts"
     },
     {
       "path": "/api/analytics",
@@ -1453,7 +1453,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/analytics/route.js"
+      "file_path": "app/api/analytics/route.ts"
     },
     {
       "path": "/api/artifacts",
@@ -1461,7 +1461,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/artifacts/route.js"
+      "file_path": "app/api/artifacts/route.ts"
     },
     {
       "path": "/api/artifacts/[artifactId]",
@@ -1471,7 +1471,7 @@
       "dynamic_params": [
         "artifactId"
       ],
-      "file_path": "app/api/artifacts/[artifactId]/route.js"
+      "file_path": "app/api/artifacts/[artifactId]/route.ts"
     },
     {
       "path": "/api/assumptions",
@@ -1479,7 +1479,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/assumptions/route.js"
+      "file_path": "app/api/assumptions/route.ts"
     },
     {
       "path": "/api/assumptions/[assumptionId]",
@@ -1489,7 +1489,7 @@
       "dynamic_params": [
         "assumptionId"
       ],
-      "file_path": "app/api/assumptions/[assumptionId]/route.js"
+      "file_path": "app/api/assumptions/[assumptionId]/route.ts"
     },
     {
       "path": "/api/auth/config",
@@ -1497,7 +1497,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/auth/config/route.js"
+      "file_path": "app/api/auth/config/route.ts"
     },
     {
       "path": "/api/behavior/recorder",
@@ -1505,7 +1505,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/behavior/recorder/route.js"
+      "file_path": "app/api/behavior/recorder/route.ts"
     },
     {
       "path": "/api/behavior/samples",
@@ -1513,7 +1513,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/behavior/samples/route.js"
+      "file_path": "app/api/behavior/samples/route.ts"
     },
     {
       "path": "/api/behavior/suggestions",
@@ -1521,7 +1521,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/behavior/suggestions/route.js"
+      "file_path": "app/api/behavior/suggestions/route.ts"
     },
     {
       "path": "/api/billing/portal",
@@ -1529,7 +1529,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/billing/portal/route.js"
+      "file_path": "app/api/billing/portal/route.ts"
     },
     {
       "path": "/api/capabilities",
@@ -1537,7 +1537,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/capabilities/route.js"
+      "file_path": "app/api/capabilities/route.ts"
     },
     {
       "path": "/api/capabilities/[capabilityId]",
@@ -1547,7 +1547,7 @@
       "dynamic_params": [
         "capabilityId"
       ],
-      "file_path": "app/api/capabilities/[capabilityId]/route.js"
+      "file_path": "app/api/capabilities/[capabilityId]/route.ts"
     },
     {
       "path": "/api/capabilities/[capabilityId]/access",
@@ -1557,7 +1557,7 @@
       "dynamic_params": [
         "capabilityId"
       ],
-      "file_path": "app/api/capabilities/[capabilityId]/access/route.js"
+      "file_path": "app/api/capabilities/[capabilityId]/access/route.ts"
     },
     {
       "path": "/api/capabilities/[capabilityId]/access/check",
@@ -1567,7 +1567,7 @@
       "dynamic_params": [
         "capabilityId"
       ],
-      "file_path": "app/api/capabilities/[capabilityId]/access/check/route.js"
+      "file_path": "app/api/capabilities/[capabilityId]/access/check/route.ts"
     },
     {
       "path": "/api/capabilities/[capabilityId]/health",
@@ -1577,7 +1577,7 @@
       "dynamic_params": [
         "capabilityId"
       ],
-      "file_path": "app/api/capabilities/[capabilityId]/health/route.js"
+      "file_path": "app/api/capabilities/[capabilityId]/health/route.ts"
     },
     {
       "path": "/api/capabilities/[capabilityId]/history",
@@ -1587,7 +1587,7 @@
       "dynamic_params": [
         "capabilityId"
       ],
-      "file_path": "app/api/capabilities/[capabilityId]/history/route.js"
+      "file_path": "app/api/capabilities/[capabilityId]/history/route.ts"
     },
     {
       "path": "/api/capabilities/health",
@@ -1595,7 +1595,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/capabilities/health/route.js"
+      "file_path": "app/api/capabilities/health/route.ts"
     },
     {
       "path": "/api/code-sessions/alerts",
@@ -1603,7 +1603,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/code-sessions/alerts/route.js"
+      "file_path": "app/api/code-sessions/alerts/route.ts"
     },
     {
       "path": "/api/code-sessions/manifests/[manifestId]",
@@ -1613,7 +1613,7 @@
       "dynamic_params": [
         "manifestId"
       ],
-      "file_path": "app/api/code-sessions/manifests/[manifestId]/route.js"
+      "file_path": "app/api/code-sessions/manifests/[manifestId]/route.ts"
     },
     {
       "path": "/api/code-sessions/memos",
@@ -1621,7 +1621,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/code-sessions/memos/route.js"
+      "file_path": "app/api/code-sessions/memos/route.ts"
     },
     {
       "path": "/api/code-sessions/projects",
@@ -1629,7 +1629,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/code-sessions/projects/route.js"
+      "file_path": "app/api/code-sessions/projects/route.ts"
     },
     {
       "path": "/api/code-sessions/projects/[projectId]/sessions",
@@ -1639,7 +1639,7 @@
       "dynamic_params": [
         "projectId"
       ],
-      "file_path": "app/api/code-sessions/projects/[projectId]/sessions/route.js"
+      "file_path": "app/api/code-sessions/projects/[projectId]/sessions/route.ts"
     },
     {
       "path": "/api/code-sessions/sessions/[sessionId]",
@@ -1649,7 +1649,7 @@
       "dynamic_params": [
         "sessionId"
       ],
-      "file_path": "app/api/code-sessions/sessions/[sessionId]/route.js"
+      "file_path": "app/api/code-sessions/sessions/[sessionId]/route.ts"
     },
     {
       "path": "/api/code-sessions/sessions/[sessionId]/autopsy",
@@ -1659,7 +1659,7 @@
       "dynamic_params": [
         "sessionId"
       ],
-      "file_path": "app/api/code-sessions/sessions/[sessionId]/autopsy/route.js"
+      "file_path": "app/api/code-sessions/sessions/[sessionId]/autopsy/route.ts"
     },
     {
       "path": "/api/code-sessions/sessions/[sessionId]/insights",
@@ -1669,7 +1669,7 @@
       "dynamic_params": [
         "sessionId"
       ],
-      "file_path": "app/api/code-sessions/sessions/[sessionId]/insights/route.js"
+      "file_path": "app/api/code-sessions/sessions/[sessionId]/insights/route.ts"
     },
     {
       "path": "/api/code-sessions/subagent-roi",
@@ -1677,7 +1677,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/code-sessions/subagent-roi/route.js"
+      "file_path": "app/api/code-sessions/subagent-roi/route.ts"
     },
     {
       "path": "/api/compliance/evidence",
@@ -1685,7 +1685,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/compliance/evidence/route.js"
+      "file_path": "app/api/compliance/evidence/route.ts"
     },
     {
       "path": "/api/compliance/exports",
@@ -1693,7 +1693,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/compliance/exports/route.js"
+      "file_path": "app/api/compliance/exports/route.ts"
     },
     {
       "path": "/api/compliance/exports/[exportId]",
@@ -1703,7 +1703,7 @@
       "dynamic_params": [
         "exportId"
       ],
-      "file_path": "app/api/compliance/exports/[exportId]/route.js"
+      "file_path": "app/api/compliance/exports/[exportId]/route.ts"
     },
     {
       "path": "/api/compliance/exports/[exportId]/download",
@@ -1713,7 +1713,7 @@
       "dynamic_params": [
         "exportId"
       ],
-      "file_path": "app/api/compliance/exports/[exportId]/download/route.js"
+      "file_path": "app/api/compliance/exports/[exportId]/download/route.ts"
     },
     {
       "path": "/api/compliance/frameworks",
@@ -1721,7 +1721,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/compliance/frameworks/route.js"
+      "file_path": "app/api/compliance/frameworks/route.ts"
     },
     {
       "path": "/api/compliance/gaps",
@@ -1729,7 +1729,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/compliance/gaps/route.js"
+      "file_path": "app/api/compliance/gaps/route.ts"
     },
     {
       "path": "/api/compliance/map",
@@ -1737,7 +1737,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/compliance/map/route.js"
+      "file_path": "app/api/compliance/map/route.ts"
     },
     {
       "path": "/api/compliance/report",
@@ -1745,7 +1745,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/compliance/report/route.js"
+      "file_path": "app/api/compliance/report/route.ts"
     },
     {
       "path": "/api/compliance/schedules",
@@ -1753,7 +1753,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/compliance/schedules/route.js"
+      "file_path": "app/api/compliance/schedules/route.ts"
     },
     {
       "path": "/api/compliance/trends",
@@ -1761,7 +1761,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/compliance/trends/route.js"
+      "file_path": "app/api/compliance/trends/route.ts"
     },
     {
       "path": "/api/cron/code-session-cache-crater",
@@ -1769,7 +1769,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/cron/code-session-cache-crater/route.js"
+      "file_path": "app/api/cron/code-session-cache-crater/route.ts"
     },
     {
       "path": "/api/cron/code-session-weekly-memo",
@@ -1777,7 +1777,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/cron/code-session-weekly-memo/route.js"
+      "file_path": "app/api/cron/code-session-weekly-memo/route.ts"
     },
     {
       "path": "/api/cron/integration-health",
@@ -1785,7 +1785,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/cron/integration-health/route.js"
+      "file_path": "app/api/cron/integration-health/route.ts"
     },
     {
       "path": "/api/cron/jti-sweep",
@@ -1793,7 +1793,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/cron/jti-sweep/route.js"
+      "file_path": "app/api/cron/jti-sweep/route.ts"
     },
     {
       "path": "/api/cron/learning-episodes-backfill",
@@ -1801,7 +1801,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/cron/learning-episodes-backfill/route.js"
+      "file_path": "app/api/cron/learning-episodes-backfill/route.ts"
     },
     {
       "path": "/api/cron/learning-recommendations",
@@ -1809,7 +1809,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/cron/learning-recommendations/route.js"
+      "file_path": "app/api/cron/learning-recommendations/route.ts"
     },
     {
       "path": "/api/cron/memory-maintenance",
@@ -1817,7 +1817,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/cron/memory-maintenance/route.js"
+      "file_path": "app/api/cron/memory-maintenance/route.ts"
     },
     {
       "path": "/api/cron/outcome-sweep",
@@ -1825,7 +1825,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/cron/outcome-sweep/route.js"
+      "file_path": "app/api/cron/outcome-sweep/route.ts"
     },
     {
       "path": "/api/cron/policy-suggestions",
@@ -1833,7 +1833,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/cron/policy-suggestions/route.js"
+      "file_path": "app/api/cron/policy-suggestions/route.ts"
     },
     {
       "path": "/api/cron/reset-meters",
@@ -1841,7 +1841,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/cron/reset-meters/route.js"
+      "file_path": "app/api/cron/reset-meters/route.ts"
     },
     {
       "path": "/api/cron/signals",
@@ -1849,7 +1849,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/cron/signals/route.js"
+      "file_path": "app/api/cron/signals/route.ts"
     },
     {
       "path": "/api/docs/raw",
@@ -1857,7 +1857,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/docs/raw/route.js"
+      "file_path": "app/api/docs/raw/route.ts"
     },
     {
       "path": "/api/doctor",
@@ -1865,7 +1865,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/doctor/route.js"
+      "file_path": "app/api/doctor/route.ts"
     },
     {
       "path": "/api/drift/alerts",
@@ -1873,7 +1873,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/drift/alerts/route.js"
+      "file_path": "app/api/drift/alerts/route.ts"
     },
     {
       "path": "/api/drift/metrics",
@@ -1881,7 +1881,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/drift/metrics/route.js"
+      "file_path": "app/api/drift/metrics/route.ts"
     },
     {
       "path": "/api/drift/snapshots",
@@ -1889,7 +1889,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/drift/snapshots/route.js"
+      "file_path": "app/api/drift/snapshots/route.ts"
     },
     {
       "path": "/api/drift/stats",
@@ -1897,7 +1897,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/drift/stats/route.js"
+      "file_path": "app/api/drift/stats/route.ts"
     },
     {
       "path": "/api/evaluations",
@@ -1905,7 +1905,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/evaluations/route.js"
+      "file_path": "app/api/evaluations/route.ts"
     },
     {
       "path": "/api/evaluations/runs",
@@ -1913,7 +1913,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/evaluations/runs/route.js"
+      "file_path": "app/api/evaluations/runs/route.ts"
     },
     {
       "path": "/api/evaluations/runs/[runId]",
@@ -1923,7 +1923,7 @@
       "dynamic_params": [
         "runId"
       ],
-      "file_path": "app/api/evaluations/runs/[runId]/route.js"
+      "file_path": "app/api/evaluations/runs/[runId]/route.ts"
     },
     {
       "path": "/api/evaluations/scorers",
@@ -1931,7 +1931,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/evaluations/scorers/route.js"
+      "file_path": "app/api/evaluations/scorers/route.ts"
     },
     {
       "path": "/api/evaluations/stats",
@@ -1939,7 +1939,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/evaluations/stats/route.js"
+      "file_path": "app/api/evaluations/stats/route.ts"
     },
     {
       "path": "/api/finops/spend",
@@ -1947,7 +1947,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/finops/spend/route.js"
+      "file_path": "app/api/finops/spend/route.ts"
     },
     {
       "path": "/api/guard",
@@ -1955,7 +1955,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/guard/route.js"
+      "file_path": "app/api/guard/route.ts"
     },
     {
       "path": "/api/guard/decisions",
@@ -1963,7 +1963,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/guard/decisions/route.js"
+      "file_path": "app/api/guard/decisions/route.ts"
     },
     {
       "path": "/api/handoffs",
@@ -1971,7 +1971,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/handoffs/route.js"
+      "file_path": "app/api/handoffs/route.ts"
     },
     {
       "path": "/api/handoffs/[id]",
@@ -1981,7 +1981,7 @@
       "dynamic_params": [
         "id"
       ],
-      "file_path": "app/api/handoffs/[id]/route.js"
+      "file_path": "app/api/handoffs/[id]/route.ts"
     },
     {
       "path": "/api/handoffs/latest",
@@ -1989,7 +1989,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/handoffs/latest/route.js"
+      "file_path": "app/api/handoffs/latest/route.ts"
     },
     {
       "path": "/api/health",
@@ -1997,7 +1997,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/health/route.js"
+      "file_path": "app/api/health/route.ts"
     },
     {
       "path": "/api/hosted/workspaces",
@@ -2005,7 +2005,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/hosted/workspaces/route.js"
+      "file_path": "app/api/hosted/workspaces/route.ts"
     },
     {
       "path": "/api/hosted/workspaces/[workspaceId]",
@@ -2015,7 +2015,7 @@
       "dynamic_params": [
         "workspaceId"
       ],
-      "file_path": "app/api/hosted/workspaces/[workspaceId]/route.js"
+      "file_path": "app/api/hosted/workspaces/[workspaceId]/route.ts"
     },
     {
       "path": "/api/identities",
@@ -2023,7 +2023,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/identities/route.js"
+      "file_path": "app/api/identities/route.ts"
     },
     {
       "path": "/api/integrations/health",
@@ -2031,7 +2031,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/integrations/health/route.js"
+      "file_path": "app/api/integrations/health/route.ts"
     },
     {
       "path": "/api/integrity/jwks",
@@ -2039,7 +2039,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/integrity/jwks/route.js"
+      "file_path": "app/api/integrity/jwks/route.ts"
     },
     {
       "path": "/api/invite/[token]",
@@ -2049,7 +2049,7 @@
       "dynamic_params": [
         "token"
       ],
-      "file_path": "app/api/invite/[token]/route.js"
+      "file_path": "app/api/invite/[token]/route.ts"
     },
     {
       "path": "/api/keys",
@@ -2057,7 +2057,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/keys/route.js"
+      "file_path": "app/api/keys/route.ts"
     },
     {
       "path": "/api/keys/reveal",
@@ -2065,7 +2065,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/keys/reveal/route.js"
+      "file_path": "app/api/keys/reveal/route.ts"
     },
     {
       "path": "/api/knowledge/collections",
@@ -2073,7 +2073,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/knowledge/collections/route.js"
+      "file_path": "app/api/knowledge/collections/route.ts"
     },
     {
       "path": "/api/knowledge/collections/[collectionId]",
@@ -2083,7 +2083,7 @@
       "dynamic_params": [
         "collectionId"
       ],
-      "file_path": "app/api/knowledge/collections/[collectionId]/route.js"
+      "file_path": "app/api/knowledge/collections/[collectionId]/route.ts"
     },
     {
       "path": "/api/knowledge/collections/[collectionId]/items",
@@ -2093,7 +2093,7 @@
       "dynamic_params": [
         "collectionId"
       ],
-      "file_path": "app/api/knowledge/collections/[collectionId]/items/route.js"
+      "file_path": "app/api/knowledge/collections/[collectionId]/items/route.ts"
     },
     {
       "path": "/api/learning",
@@ -2101,7 +2101,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/learning/route.js"
+      "file_path": "app/api/learning/route.ts"
     },
     {
       "path": "/api/learning/analytics/curves",
@@ -2109,7 +2109,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/learning/analytics/curves/route.js"
+      "file_path": "app/api/learning/analytics/curves/route.ts"
     },
     {
       "path": "/api/learning/analytics/maturity",
@@ -2117,7 +2117,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/learning/analytics/maturity/route.js"
+      "file_path": "app/api/learning/analytics/maturity/route.ts"
     },
     {
       "path": "/api/learning/analytics/summary",
@@ -2125,7 +2125,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/learning/analytics/summary/route.js"
+      "file_path": "app/api/learning/analytics/summary/route.ts"
     },
     {
       "path": "/api/learning/analytics/velocity",
@@ -2133,7 +2133,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/learning/analytics/velocity/route.js"
+      "file_path": "app/api/learning/analytics/velocity/route.ts"
     },
     {
       "path": "/api/learning/code-signals",
@@ -2141,7 +2141,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/learning/code-signals/route.js"
+      "file_path": "app/api/learning/code-signals/route.ts"
     },
     {
       "path": "/api/learning/lessons",
@@ -2149,7 +2149,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/learning/lessons/route.js"
+      "file_path": "app/api/learning/lessons/route.ts"
     },
     {
       "path": "/api/learning/recommendations",
@@ -2157,7 +2157,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/learning/recommendations/route.js"
+      "file_path": "app/api/learning/recommendations/route.ts"
     },
     {
       "path": "/api/learning/recommendations/metrics",
@@ -2165,7 +2165,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/learning/recommendations/metrics/route.js"
+      "file_path": "app/api/learning/recommendations/metrics/route.ts"
     },
     {
       "path": "/api/learning/suggestions",
@@ -2173,7 +2173,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/learning/suggestions/route.js"
+      "file_path": "app/api/learning/suggestions/route.ts"
     },
     {
       "path": "/api/messages",
@@ -2181,7 +2181,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/messages/route.js"
+      "file_path": "app/api/messages/route.ts"
     },
     {
       "path": "/api/messages/attachments",
@@ -2189,7 +2189,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/messages/attachments/route.js"
+      "file_path": "app/api/messages/attachments/route.ts"
     },
     {
       "path": "/api/messages/threads",
@@ -2197,7 +2197,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/messages/threads/route.js"
+      "file_path": "app/api/messages/threads/route.ts"
     },
     {
       "path": "/api/messages/threads/[threadId]",
@@ -2207,7 +2207,7 @@
       "dynamic_params": [
         "threadId"
       ],
-      "file_path": "app/api/messages/threads/[threadId]/route.js"
+      "file_path": "app/api/messages/threads/[threadId]/route.ts"
     },
     {
       "path": "/api/model-strategies",
@@ -2215,7 +2215,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/model-strategies/route.js"
+      "file_path": "app/api/model-strategies/route.ts"
     },
     {
       "path": "/api/model-strategies/[strategyId]",
@@ -2225,7 +2225,7 @@
       "dynamic_params": [
         "strategyId"
       ],
-      "file_path": "app/api/model-strategies/[strategyId]/route.js"
+      "file_path": "app/api/model-strategies/[strategyId]/route.ts"
     },
     {
       "path": "/api/oauth/authorize",
@@ -2233,7 +2233,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/oauth/authorize/route.js"
+      "file_path": "app/api/oauth/authorize/route.ts"
     },
     {
       "path": "/api/oauth/metadata/authorization-server",
@@ -2241,7 +2241,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/oauth/metadata/authorization-server/route.js"
+      "file_path": "app/api/oauth/metadata/authorization-server/route.ts"
     },
     {
       "path": "/api/oauth/metadata/protected-resource",
@@ -2249,7 +2249,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/oauth/metadata/protected-resource/route.js"
+      "file_path": "app/api/oauth/metadata/protected-resource/route.ts"
     },
     {
       "path": "/api/operations/feed",
@@ -2257,7 +2257,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/operations/feed/route.js"
+      "file_path": "app/api/operations/feed/route.ts"
     },
     {
       "path": "/api/operations/summary",
@@ -2265,7 +2265,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/operations/summary/route.js"
+      "file_path": "app/api/operations/summary/route.ts"
     },
     {
       "path": "/api/orgs",
@@ -2273,7 +2273,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/orgs/route.js"
+      "file_path": "app/api/orgs/route.ts"
     },
     {
       "path": "/api/orgs/[orgId]",
@@ -2283,7 +2283,7 @@
       "dynamic_params": [
         "orgId"
       ],
-      "file_path": "app/api/orgs/[orgId]/route.js"
+      "file_path": "app/api/orgs/[orgId]/route.ts"
     },
     {
       "path": "/api/orgs/[orgId]/keys",
@@ -2293,7 +2293,7 @@
       "dynamic_params": [
         "orgId"
       ],
-      "file_path": "app/api/orgs/[orgId]/keys/route.js"
+      "file_path": "app/api/orgs/[orgId]/keys/route.ts"
     },
     {
       "path": "/api/pairings",
@@ -2301,7 +2301,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/pairings/route.js"
+      "file_path": "app/api/pairings/route.ts"
     },
     {
       "path": "/api/pairings/[pairingId]",
@@ -2311,7 +2311,7 @@
       "dynamic_params": [
         "pairingId"
       ],
-      "file_path": "app/api/pairings/[pairingId]/route.js"
+      "file_path": "app/api/pairings/[pairingId]/route.ts"
     },
     {
       "path": "/api/policies",
@@ -2319,7 +2319,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/policies/route.js"
+      "file_path": "app/api/policies/route.ts"
     },
     {
       "path": "/api/policies/proof",
@@ -2327,7 +2327,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/policies/proof/route.js"
+      "file_path": "app/api/policies/proof/route.ts"
     },
     {
       "path": "/api/policies/templates",
@@ -2335,7 +2335,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/policies/templates/route.js"
+      "file_path": "app/api/policies/templates/route.ts"
     },
     {
       "path": "/api/prompts/agent-connect/raw",
@@ -2343,7 +2343,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/prompts/agent-connect/raw/route.js"
+      "file_path": "app/api/prompts/agent-connect/raw/route.ts"
     },
     {
       "path": "/api/prompts/runs",
@@ -2351,7 +2351,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/prompts/runs/route.js"
+      "file_path": "app/api/prompts/runs/route.ts"
     },
     {
       "path": "/api/prompts/sdk-coverage/raw",
@@ -2359,7 +2359,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/prompts/sdk-coverage/raw/route.js"
+      "file_path": "app/api/prompts/sdk-coverage/raw/route.ts"
     },
     {
       "path": "/api/prompts/server-setup/raw",
@@ -2367,7 +2367,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/prompts/server-setup/raw/route.js"
+      "file_path": "app/api/prompts/server-setup/raw/route.ts"
     },
     {
       "path": "/api/prompts/stats",
@@ -2375,7 +2375,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/prompts/stats/route.js"
+      "file_path": "app/api/prompts/stats/route.ts"
     },
     {
       "path": "/api/prompts/templates",
@@ -2383,7 +2383,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/prompts/templates/route.js"
+      "file_path": "app/api/prompts/templates/route.ts"
     },
     {
       "path": "/api/prompts/templates/[templateId]",
@@ -2393,7 +2393,7 @@
       "dynamic_params": [
         "templateId"
       ],
-      "file_path": "app/api/prompts/templates/[templateId]/route.js"
+      "file_path": "app/api/prompts/templates/[templateId]/route.ts"
     },
     {
       "path": "/api/prompts/templates/[templateId]/versions",
@@ -2403,7 +2403,7 @@
       "dynamic_params": [
         "templateId"
       ],
-      "file_path": "app/api/prompts/templates/[templateId]/versions/route.js"
+      "file_path": "app/api/prompts/templates/[templateId]/versions/route.ts"
     },
     {
       "path": "/api/prompts/templates/[templateId]/versions/[versionId]",
@@ -2414,7 +2414,7 @@
         "templateId",
         "versionId"
       ],
-      "file_path": "app/api/prompts/templates/[templateId]/versions/[versionId]/route.js"
+      "file_path": "app/api/prompts/templates/[templateId]/versions/[versionId]/route.ts"
     },
     {
       "path": "/api/reputation/agents/[agentId]",
@@ -2424,7 +2424,7 @@
       "dynamic_params": [
         "agentId"
       ],
-      "file_path": "app/api/reputation/agents/[agentId]/route.js"
+      "file_path": "app/api/reputation/agents/[agentId]/route.ts"
     },
     {
       "path": "/api/reputation/agents/[agentId]/events",
@@ -2434,7 +2434,7 @@
       "dynamic_params": [
         "agentId"
       ],
-      "file_path": "app/api/reputation/agents/[agentId]/events/route.js"
+      "file_path": "app/api/reputation/agents/[agentId]/events/route.ts"
     },
     {
       "path": "/api/reputation/agents/[agentId]/receipt",
@@ -2444,7 +2444,7 @@
       "dynamic_params": [
         "agentId"
       ],
-      "file_path": "app/api/reputation/agents/[agentId]/receipt/route.js"
+      "file_path": "app/api/reputation/agents/[agentId]/receipt/route.ts"
     },
     {
       "path": "/api/reputation/agents/[agentId]/summary",
@@ -2454,7 +2454,7 @@
       "dynamic_params": [
         "agentId"
       ],
-      "file_path": "app/api/reputation/agents/[agentId]/summary/route.js"
+      "file_path": "app/api/reputation/agents/[agentId]/summary/route.ts"
     },
     {
       "path": "/api/reputation/leaderboard",
@@ -2462,7 +2462,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/reputation/leaderboard/route.js"
+      "file_path": "app/api/reputation/leaderboard/route.ts"
     },
     {
       "path": "/api/scoring/profiles",
@@ -2470,7 +2470,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/scoring/profiles/route.js"
+      "file_path": "app/api/scoring/profiles/route.ts"
     },
     {
       "path": "/api/scoring/profiles/[profileId]",
@@ -2480,7 +2480,7 @@
       "dynamic_params": [
         "profileId"
       ],
-      "file_path": "app/api/scoring/profiles/[profileId]/route.js"
+      "file_path": "app/api/scoring/profiles/[profileId]/route.ts"
     },
     {
       "path": "/api/scoring/risk-templates",
@@ -2488,7 +2488,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/scoring/risk-templates/route.js"
+      "file_path": "app/api/scoring/risk-templates/route.ts"
     },
     {
       "path": "/api/scoring/score",
@@ -2496,7 +2496,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/scoring/score/route.js"
+      "file_path": "app/api/scoring/score/route.ts"
     },
     {
       "path": "/api/secrets",
@@ -2504,7 +2504,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/secrets/route.js"
+      "file_path": "app/api/secrets/route.ts"
     },
     {
       "path": "/api/secrets/rotation-due",
@@ -2512,7 +2512,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/secrets/rotation-due/route.js"
+      "file_path": "app/api/secrets/rotation-due/route.ts"
     },
     {
       "path": "/api/security/prompt-injection",
@@ -2520,7 +2520,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/security/prompt-injection/route.js"
+      "file_path": "app/api/security/prompt-injection/route.ts"
     },
     {
       "path": "/api/security/status",
@@ -2528,7 +2528,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/security/status/route.js"
+      "file_path": "app/api/security/status/route.ts"
     },
     {
       "path": "/api/session/effective",
@@ -2536,7 +2536,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/session/effective/route.js"
+      "file_path": "app/api/session/effective/route.ts"
     },
     {
       "path": "/api/sessions",
@@ -2544,7 +2544,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/sessions/route.js"
+      "file_path": "app/api/sessions/route.ts"
     },
     {
       "path": "/api/sessions/[sessionId]",
@@ -2554,7 +2554,7 @@
       "dynamic_params": [
         "sessionId"
       ],
-      "file_path": "app/api/sessions/[sessionId]/route.js"
+      "file_path": "app/api/sessions/[sessionId]/route.ts"
     },
     {
       "path": "/api/sessions/[sessionId]/events",
@@ -2564,7 +2564,7 @@
       "dynamic_params": [
         "sessionId"
       ],
-      "file_path": "app/api/sessions/[sessionId]/events/route.js"
+      "file_path": "app/api/sessions/[sessionId]/events/route.ts"
     },
     {
       "path": "/api/settings",
@@ -2572,7 +2572,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/settings/route.js"
+      "file_path": "app/api/settings/route.ts"
     },
     {
       "path": "/api/settings/llm-status",
@@ -2580,7 +2580,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/settings/llm-status/route.js"
+      "file_path": "app/api/settings/llm-status/route.ts"
     },
     {
       "path": "/api/setup/proof",
@@ -2588,7 +2588,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/setup/proof/route.js"
+      "file_path": "app/api/setup/proof/route.ts"
     },
     {
       "path": "/api/setup/status",
@@ -2596,7 +2596,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/setup/status/route.js"
+      "file_path": "app/api/setup/status/route.ts"
     },
     {
       "path": "/api/signals",
@@ -2604,7 +2604,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/signals/route.js"
+      "file_path": "app/api/signals/route.ts"
     },
     {
       "path": "/api/skills/scans/[id]",
@@ -2614,7 +2614,7 @@
       "dynamic_params": [
         "id"
       ],
-      "file_path": "app/api/skills/scans/[id]/route.js"
+      "file_path": "app/api/skills/scans/[id]/route.ts"
     },
     {
       "path": "/api/stream",
@@ -2622,7 +2622,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/stream/route.js"
+      "file_path": "app/api/stream/route.ts"
     },
     {
       "path": "/api/swarm/graph",
@@ -2630,7 +2630,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/swarm/graph/route.js"
+      "file_path": "app/api/swarm/graph/route.ts"
     },
     {
       "path": "/api/swarm/link",
@@ -2638,7 +2638,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/swarm/link/route.js"
+      "file_path": "app/api/swarm/link/route.ts"
     },
     {
       "path": "/api/team",
@@ -2646,7 +2646,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/team/route.js"
+      "file_path": "app/api/team/route.ts"
     },
     {
       "path": "/api/team/invite",
@@ -2654,7 +2654,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/team/invite/route.js"
+      "file_path": "app/api/team/invite/route.ts"
     },
     {
       "path": "/api/usage",
@@ -2662,7 +2662,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/usage/route.js"
+      "file_path": "app/api/usage/route.ts"
     },
     {
       "path": "/api/usage/costs",
@@ -2670,7 +2670,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/usage/costs/route.js"
+      "file_path": "app/api/usage/costs/route.ts"
     },
     {
       "path": "/api/webhooks",
@@ -2678,7 +2678,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/webhooks/route.js"
+      "file_path": "app/api/webhooks/route.ts"
     },
     {
       "path": "/api/webhooks/[webhookId]/deliveries",
@@ -2688,7 +2688,7 @@
       "dynamic_params": [
         "webhookId"
       ],
-      "file_path": "app/api/webhooks/[webhookId]/deliveries/route.js"
+      "file_path": "app/api/webhooks/[webhookId]/deliveries/route.ts"
     },
     {
       "path": "/api/workflows/templates",
@@ -2696,7 +2696,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/workflows/templates/route.js"
+      "file_path": "app/api/workflows/templates/route.ts"
     },
     {
       "path": "/api/workflows/templates/[templateId]",
@@ -2706,7 +2706,7 @@
       "dynamic_params": [
         "templateId"
       ],
-      "file_path": "app/api/workflows/templates/[templateId]/route.js"
+      "file_path": "app/api/workflows/templates/[templateId]/route.ts"
     },
     {
       "path": "/api/workflows/templates/[templateId]/runs",
@@ -2716,7 +2716,7 @@
       "dynamic_params": [
         "templateId"
       ],
-      "file_path": "app/api/workflows/templates/[templateId]/runs/route.js"
+      "file_path": "app/api/workflows/templates/[templateId]/runs/route.ts"
     },
     {
       "path": "/api/workflows/templates/[templateId]/runs/[runActionId]",
@@ -2727,7 +2727,7 @@
         "templateId",
         "runActionId"
       ],
-      "file_path": "app/api/workflows/templates/[templateId]/runs/[runActionId]/route.js"
+      "file_path": "app/api/workflows/templates/[templateId]/runs/[runActionId]/route.ts"
     },
     {
       "path": "/api/x402/providers",
@@ -2735,7 +2735,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/x402/providers/route.js"
+      "file_path": "app/api/x402/providers/route.ts"
     },
     {
       "path": "/api/x402/providers/[id]",
@@ -2745,7 +2745,7 @@
       "dynamic_params": [
         "id"
       ],
-      "file_path": "app/api/x402/providers/[id]/route.js"
+      "file_path": "app/api/x402/providers/[id]/route.ts"
     },
     {
       "path": "/api/x402/providers/[id]/endpoints",
@@ -2755,7 +2755,7 @@
       "dynamic_params": [
         "id"
       ],
-      "file_path": "app/api/x402/providers/[id]/endpoints/route.js"
+      "file_path": "app/api/x402/providers/[id]/endpoints/route.ts"
     },
     {
       "path": "/api/x402/purchases",
@@ -2763,7 +2763,7 @@
         "GET"
       ],
       "dynamic_params": [],
-      "file_path": "app/api/x402/purchases/route.js"
+      "file_path": "app/api/x402/purchases/route.ts"
     }
   ],
   "all_routes": [
@@ -2776,7 +2776,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/actions/route.js"
+      "file_path": "app/api/actions/route.ts"
     },
     {
       "path": "/api/actions/[actionId]",
@@ -2788,7 +2788,7 @@
         "actionId"
       ],
       "archived": false,
-      "file_path": "app/api/actions/[actionId]/route.js"
+      "file_path": "app/api/actions/[actionId]/route.ts"
     },
     {
       "path": "/api/actions/[actionId]/artifacts",
@@ -2799,7 +2799,7 @@
         "actionId"
       ],
       "archived": false,
-      "file_path": "app/api/actions/[actionId]/artifacts/route.js"
+      "file_path": "app/api/actions/[actionId]/artifacts/route.ts"
     },
     {
       "path": "/api/actions/[actionId]/graph",
@@ -2810,7 +2810,7 @@
         "actionId"
       ],
       "archived": false,
-      "file_path": "app/api/actions/[actionId]/graph/route.js"
+      "file_path": "app/api/actions/[actionId]/graph/route.ts"
     },
     {
       "path": "/api/actions/[actionId]/messages",
@@ -2821,7 +2821,7 @@
         "actionId"
       ],
       "archived": false,
-      "file_path": "app/api/actions/[actionId]/messages/route.js"
+      "file_path": "app/api/actions/[actionId]/messages/route.ts"
     },
     {
       "path": "/api/actions/[actionId]/outcome",
@@ -2833,7 +2833,7 @@
         "actionId"
       ],
       "archived": false,
-      "file_path": "app/api/actions/[actionId]/outcome/route.js"
+      "file_path": "app/api/actions/[actionId]/outcome/route.ts"
     },
     {
       "path": "/api/actions/[actionId]/trace",
@@ -2844,7 +2844,7 @@
         "actionId"
       ],
       "archived": false,
-      "file_path": "app/api/actions/[actionId]/trace/route.js"
+      "file_path": "app/api/actions/[actionId]/trace/route.ts"
     },
     {
       "path": "/api/actions/costs",
@@ -2853,7 +2853,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/actions/costs/route.js"
+      "file_path": "app/api/actions/costs/route.ts"
     },
     {
       "path": "/api/actions/loops",
@@ -2863,7 +2863,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/actions/loops/route.js"
+      "file_path": "app/api/actions/loops/route.ts"
     },
     {
       "path": "/api/actions/loops/[loopId]",
@@ -2875,7 +2875,7 @@
         "loopId"
       ],
       "archived": false,
-      "file_path": "app/api/actions/loops/[loopId]/route.js"
+      "file_path": "app/api/actions/loops/[loopId]/route.ts"
     },
     {
       "path": "/api/actions/stats",
@@ -2884,7 +2884,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/actions/stats/route.js"
+      "file_path": "app/api/actions/stats/route.ts"
     },
     {
       "path": "/api/activity",
@@ -2893,7 +2893,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/activity/route.js"
+      "file_path": "app/api/activity/route.ts"
     },
     {
       "path": "/api/admin/trigger-outcome-sweep",
@@ -2902,7 +2902,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/admin/trigger-outcome-sweep/route.js"
+      "file_path": "app/api/admin/trigger-outcome-sweep/route.ts"
     },
     {
       "path": "/api/agents",
@@ -2911,7 +2911,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/agents/route.js"
+      "file_path": "app/api/agents/route.ts"
     },
     {
       "path": "/api/agents/[agentId]",
@@ -2922,7 +2922,7 @@
         "agentId"
       ],
       "archived": false,
-      "file_path": "app/api/agents/[agentId]/route.js"
+      "file_path": "app/api/agents/[agentId]/route.ts"
     },
     {
       "path": "/api/agents/[agentId]/profile",
@@ -2933,7 +2933,7 @@
         "agentId"
       ],
       "archived": false,
-      "file_path": "app/api/agents/[agentId]/profile/route.js"
+      "file_path": "app/api/agents/[agentId]/profile/route.ts"
     },
     {
       "path": "/api/agents/connections",
@@ -2943,7 +2943,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/agents/connections/route.js"
+      "file_path": "app/api/agents/connections/route.ts"
     },
     {
       "path": "/api/agents/heartbeat",
@@ -2952,7 +2952,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/agents/heartbeat/route.js"
+      "file_path": "app/api/agents/heartbeat/route.ts"
     },
     {
       "path": "/api/agents/invoke",
@@ -2961,7 +2961,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/agents/invoke/route.js"
+      "file_path": "app/api/agents/invoke/route.ts"
     },
     {
       "path": "/api/agents/registry",
@@ -2971,7 +2971,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/agents/registry/route.js"
+      "file_path": "app/api/agents/registry/route.ts"
     },
     {
       "path": "/api/agents/registry/[id]",
@@ -2983,7 +2983,7 @@
         "id"
       ],
       "archived": false,
-      "file_path": "app/api/agents/registry/[id]/route.js"
+      "file_path": "app/api/agents/registry/[id]/route.ts"
     },
     {
       "path": "/api/agents/registry/[id]/capabilities",
@@ -2995,7 +2995,7 @@
         "id"
       ],
       "archived": false,
-      "file_path": "app/api/agents/registry/[id]/capabilities/route.js"
+      "file_path": "app/api/agents/registry/[id]/capabilities/route.ts"
     },
     {
       "path": "/api/analytics",
@@ -3004,7 +3004,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/analytics/route.js"
+      "file_path": "app/api/analytics/route.ts"
     },
     {
       "path": "/api/approvals/[actionId]",
@@ -3015,7 +3015,7 @@
         "actionId"
       ],
       "archived": false,
-      "file_path": "app/api/approvals/[actionId]/route.js"
+      "file_path": "app/api/approvals/[actionId]/route.ts"
     },
     {
       "path": "/api/artifacts",
@@ -3025,7 +3025,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/artifacts/route.js"
+      "file_path": "app/api/artifacts/route.ts"
     },
     {
       "path": "/api/artifacts/[artifactId]",
@@ -3037,7 +3037,7 @@
         "artifactId"
       ],
       "archived": false,
-      "file_path": "app/api/artifacts/[artifactId]/route.js"
+      "file_path": "app/api/artifacts/[artifactId]/route.ts"
     },
     {
       "path": "/api/artifacts/evidence-bundle",
@@ -3046,7 +3046,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/artifacts/evidence-bundle/route.js"
+      "file_path": "app/api/artifacts/evidence-bundle/route.ts"
     },
     {
       "path": "/api/assumptions",
@@ -3056,7 +3056,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/assumptions/route.js"
+      "file_path": "app/api/assumptions/route.ts"
     },
     {
       "path": "/api/assumptions/[assumptionId]",
@@ -3068,7 +3068,7 @@
         "assumptionId"
       ],
       "archived": false,
-      "file_path": "app/api/assumptions/[assumptionId]/route.js"
+      "file_path": "app/api/assumptions/[assumptionId]/route.ts"
     },
     {
       "path": "/api/auth/[...nextauth]",
@@ -3077,7 +3077,7 @@
         "nextauth"
       ],
       "archived": false,
-      "file_path": "app/api/auth/[...nextauth]/route.js"
+      "file_path": "app/api/auth/[...nextauth]/route.ts"
     },
     {
       "path": "/api/auth/config",
@@ -3086,7 +3086,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/auth/config/route.js"
+      "file_path": "app/api/auth/config/route.ts"
     },
     {
       "path": "/api/auth/local",
@@ -3096,7 +3096,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/auth/local/route.js"
+      "file_path": "app/api/auth/local/route.ts"
     },
     {
       "path": "/api/behavior/recorder",
@@ -3106,7 +3106,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/behavior/recorder/route.js"
+      "file_path": "app/api/behavior/recorder/route.ts"
     },
     {
       "path": "/api/behavior/samples",
@@ -3115,7 +3115,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/behavior/samples/route.js"
+      "file_path": "app/api/behavior/samples/route.ts"
     },
     {
       "path": "/api/behavior/simulate",
@@ -3124,7 +3124,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/behavior/simulate/route.js"
+      "file_path": "app/api/behavior/simulate/route.ts"
     },
     {
       "path": "/api/behavior/suggestions",
@@ -3134,7 +3134,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/behavior/suggestions/route.js"
+      "file_path": "app/api/behavior/suggestions/route.ts"
     },
     {
       "path": "/api/billing/checkout",
@@ -3143,7 +3143,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/billing/checkout/route.js"
+      "file_path": "app/api/billing/checkout/route.ts"
     },
     {
       "path": "/api/billing/portal",
@@ -3152,7 +3152,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/billing/portal/route.js"
+      "file_path": "app/api/billing/portal/route.ts"
     },
     {
       "path": "/api/capabilities",
@@ -3162,7 +3162,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/capabilities/route.js"
+      "file_path": "app/api/capabilities/route.ts"
     },
     {
       "path": "/api/capabilities/[capabilityId]",
@@ -3175,7 +3175,7 @@
         "capabilityId"
       ],
       "archived": false,
-      "file_path": "app/api/capabilities/[capabilityId]/route.js"
+      "file_path": "app/api/capabilities/[capabilityId]/route.ts"
     },
     {
       "path": "/api/capabilities/[capabilityId]/access",
@@ -3187,7 +3187,7 @@
         "capabilityId"
       ],
       "archived": false,
-      "file_path": "app/api/capabilities/[capabilityId]/access/route.js"
+      "file_path": "app/api/capabilities/[capabilityId]/access/route.ts"
     },
     {
       "path": "/api/capabilities/[capabilityId]/access/[ruleId]",
@@ -3199,7 +3199,7 @@
         "ruleId"
       ],
       "archived": false,
-      "file_path": "app/api/capabilities/[capabilityId]/access/[ruleId]/route.js"
+      "file_path": "app/api/capabilities/[capabilityId]/access/[ruleId]/route.ts"
     },
     {
       "path": "/api/capabilities/[capabilityId]/access/check",
@@ -3210,7 +3210,7 @@
         "capabilityId"
       ],
       "archived": false,
-      "file_path": "app/api/capabilities/[capabilityId]/access/check/route.js"
+      "file_path": "app/api/capabilities/[capabilityId]/access/check/route.ts"
     },
     {
       "path": "/api/capabilities/[capabilityId]/health",
@@ -3221,7 +3221,7 @@
         "capabilityId"
       ],
       "archived": false,
-      "file_path": "app/api/capabilities/[capabilityId]/health/route.js"
+      "file_path": "app/api/capabilities/[capabilityId]/health/route.ts"
     },
     {
       "path": "/api/capabilities/[capabilityId]/history",
@@ -3232,7 +3232,7 @@
         "capabilityId"
       ],
       "archived": false,
-      "file_path": "app/api/capabilities/[capabilityId]/history/route.js"
+      "file_path": "app/api/capabilities/[capabilityId]/history/route.ts"
     },
     {
       "path": "/api/capabilities/[capabilityId]/invoke",
@@ -3243,7 +3243,7 @@
         "capabilityId"
       ],
       "archived": false,
-      "file_path": "app/api/capabilities/[capabilityId]/invoke/route.js"
+      "file_path": "app/api/capabilities/[capabilityId]/invoke/route.ts"
     },
     {
       "path": "/api/capabilities/[capabilityId]/test",
@@ -3254,7 +3254,7 @@
         "capabilityId"
       ],
       "archived": false,
-      "file_path": "app/api/capabilities/[capabilityId]/test/route.js"
+      "file_path": "app/api/capabilities/[capabilityId]/test/route.ts"
     },
     {
       "path": "/api/capabilities/health",
@@ -3263,7 +3263,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/capabilities/health/route.js"
+      "file_path": "app/api/capabilities/health/route.ts"
     },
     {
       "path": "/api/code-sessions/alerts",
@@ -3272,7 +3272,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/code-sessions/alerts/route.js"
+      "file_path": "app/api/code-sessions/alerts/route.ts"
     },
     {
       "path": "/api/code-sessions/alerts/read-all",
@@ -3281,7 +3281,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/code-sessions/alerts/read-all/route.js"
+      "file_path": "app/api/code-sessions/alerts/read-all/route.ts"
     },
     {
       "path": "/api/code-sessions/ingest-jsonl",
@@ -3290,7 +3290,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/code-sessions/ingest-jsonl/route.js"
+      "file_path": "app/api/code-sessions/ingest-jsonl/route.ts"
     },
     {
       "path": "/api/code-sessions/ingest-live",
@@ -3299,7 +3299,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/code-sessions/ingest-live/route.js"
+      "file_path": "app/api/code-sessions/ingest-live/route.ts"
     },
     {
       "path": "/api/code-sessions/manifests/[manifestId]",
@@ -3310,7 +3310,7 @@
         "manifestId"
       ],
       "archived": false,
-      "file_path": "app/api/code-sessions/manifests/[manifestId]/route.js"
+      "file_path": "app/api/code-sessions/manifests/[manifestId]/route.ts"
     },
     {
       "path": "/api/code-sessions/memos",
@@ -3319,7 +3319,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/code-sessions/memos/route.js"
+      "file_path": "app/api/code-sessions/memos/route.ts"
     },
     {
       "path": "/api/code-sessions/memos/regenerate",
@@ -3328,7 +3328,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/code-sessions/memos/regenerate/route.js"
+      "file_path": "app/api/code-sessions/memos/regenerate/route.ts"
     },
     {
       "path": "/api/code-sessions/projects",
@@ -3337,7 +3337,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/code-sessions/projects/route.js"
+      "file_path": "app/api/code-sessions/projects/route.ts"
     },
     {
       "path": "/api/code-sessions/projects/[projectId]/sessions",
@@ -3348,7 +3348,7 @@
         "projectId"
       ],
       "archived": false,
-      "file_path": "app/api/code-sessions/projects/[projectId]/sessions/route.js"
+      "file_path": "app/api/code-sessions/projects/[projectId]/sessions/route.ts"
     },
     {
       "path": "/api/code-sessions/sessions/[sessionId]",
@@ -3359,7 +3359,7 @@
         "sessionId"
       ],
       "archived": false,
-      "file_path": "app/api/code-sessions/sessions/[sessionId]/route.js"
+      "file_path": "app/api/code-sessions/sessions/[sessionId]/route.ts"
     },
     {
       "path": "/api/code-sessions/sessions/[sessionId]/autopsy",
@@ -3370,7 +3370,7 @@
         "sessionId"
       ],
       "archived": false,
-      "file_path": "app/api/code-sessions/sessions/[sessionId]/autopsy/route.js"
+      "file_path": "app/api/code-sessions/sessions/[sessionId]/autopsy/route.ts"
     },
     {
       "path": "/api/code-sessions/sessions/[sessionId]/insights",
@@ -3381,7 +3381,7 @@
         "sessionId"
       ],
       "archived": false,
-      "file_path": "app/api/code-sessions/sessions/[sessionId]/insights/route.js"
+      "file_path": "app/api/code-sessions/sessions/[sessionId]/insights/route.ts"
     },
     {
       "path": "/api/code-sessions/sessions/[sessionId]/optimal-files/manifest",
@@ -3392,7 +3392,7 @@
         "sessionId"
       ],
       "archived": false,
-      "file_path": "app/api/code-sessions/sessions/[sessionId]/optimal-files/manifest/route.js"
+      "file_path": "app/api/code-sessions/sessions/[sessionId]/optimal-files/manifest/route.ts"
     },
     {
       "path": "/api/code-sessions/sessions/[sessionId]/optimal-files/merge-preview",
@@ -3403,7 +3403,7 @@
         "sessionId"
       ],
       "archived": false,
-      "file_path": "app/api/code-sessions/sessions/[sessionId]/optimal-files/merge-preview/route.js"
+      "file_path": "app/api/code-sessions/sessions/[sessionId]/optimal-files/merge-preview/route.ts"
     },
     {
       "path": "/api/code-sessions/sessions/[sessionId]/optimal-files/preview",
@@ -3414,7 +3414,7 @@
         "sessionId"
       ],
       "archived": false,
-      "file_path": "app/api/code-sessions/sessions/[sessionId]/optimal-files/preview/route.js"
+      "file_path": "app/api/code-sessions/sessions/[sessionId]/optimal-files/preview/route.ts"
     },
     {
       "path": "/api/code-sessions/subagent-roi",
@@ -3423,7 +3423,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/code-sessions/subagent-roi/route.js"
+      "file_path": "app/api/code-sessions/subagent-roi/route.ts"
     },
     {
       "path": "/api/compliance/evidence",
@@ -3432,7 +3432,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/compliance/evidence/route.js"
+      "file_path": "app/api/compliance/evidence/route.ts"
     },
     {
       "path": "/api/compliance/exports",
@@ -3442,7 +3442,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/compliance/exports/route.js"
+      "file_path": "app/api/compliance/exports/route.ts"
     },
     {
       "path": "/api/compliance/exports/[exportId]",
@@ -3454,7 +3454,7 @@
         "exportId"
       ],
       "archived": false,
-      "file_path": "app/api/compliance/exports/[exportId]/route.js"
+      "file_path": "app/api/compliance/exports/[exportId]/route.ts"
     },
     {
       "path": "/api/compliance/exports/[exportId]/download",
@@ -3465,7 +3465,7 @@
         "exportId"
       ],
       "archived": false,
-      "file_path": "app/api/compliance/exports/[exportId]/download/route.js"
+      "file_path": "app/api/compliance/exports/[exportId]/download/route.ts"
     },
     {
       "path": "/api/compliance/frameworks",
@@ -3474,7 +3474,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/compliance/frameworks/route.js"
+      "file_path": "app/api/compliance/frameworks/route.ts"
     },
     {
       "path": "/api/compliance/gaps",
@@ -3483,7 +3483,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/compliance/gaps/route.js"
+      "file_path": "app/api/compliance/gaps/route.ts"
     },
     {
       "path": "/api/compliance/map",
@@ -3492,7 +3492,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/compliance/map/route.js"
+      "file_path": "app/api/compliance/map/route.ts"
     },
     {
       "path": "/api/compliance/report",
@@ -3501,7 +3501,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/compliance/report/route.js"
+      "file_path": "app/api/compliance/report/route.ts"
     },
     {
       "path": "/api/compliance/schedules",
@@ -3511,7 +3511,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/compliance/schedules/route.js"
+      "file_path": "app/api/compliance/schedules/route.ts"
     },
     {
       "path": "/api/compliance/schedules/[scheduleId]",
@@ -3523,7 +3523,7 @@
         "scheduleId"
       ],
       "archived": false,
-      "file_path": "app/api/compliance/schedules/[scheduleId]/route.js"
+      "file_path": "app/api/compliance/schedules/[scheduleId]/route.ts"
     },
     {
       "path": "/api/compliance/trends",
@@ -3532,7 +3532,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/compliance/trends/route.js"
+      "file_path": "app/api/compliance/trends/route.ts"
     },
     {
       "path": "/api/cron/code-session-cache-crater",
@@ -3541,7 +3541,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/cron/code-session-cache-crater/route.js"
+      "file_path": "app/api/cron/code-session-cache-crater/route.ts"
     },
     {
       "path": "/api/cron/code-session-weekly-memo",
@@ -3550,7 +3550,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/cron/code-session-weekly-memo/route.js"
+      "file_path": "app/api/cron/code-session-weekly-memo/route.ts"
     },
     {
       "path": "/api/cron/integration-health",
@@ -3559,7 +3559,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/cron/integration-health/route.js"
+      "file_path": "app/api/cron/integration-health/route.ts"
     },
     {
       "path": "/api/cron/jti-sweep",
@@ -3568,7 +3568,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/cron/jti-sweep/route.js"
+      "file_path": "app/api/cron/jti-sweep/route.ts"
     },
     {
       "path": "/api/cron/learning-episodes-backfill",
@@ -3577,7 +3577,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/cron/learning-episodes-backfill/route.js"
+      "file_path": "app/api/cron/learning-episodes-backfill/route.ts"
     },
     {
       "path": "/api/cron/learning-recommendations",
@@ -3586,7 +3586,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/cron/learning-recommendations/route.js"
+      "file_path": "app/api/cron/learning-recommendations/route.ts"
     },
     {
       "path": "/api/cron/memory-maintenance",
@@ -3595,7 +3595,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/cron/memory-maintenance/route.js"
+      "file_path": "app/api/cron/memory-maintenance/route.ts"
     },
     {
       "path": "/api/cron/outcome-sweep",
@@ -3604,7 +3604,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/cron/outcome-sweep/route.js"
+      "file_path": "app/api/cron/outcome-sweep/route.ts"
     },
     {
       "path": "/api/cron/policy-suggestions",
@@ -3613,7 +3613,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/cron/policy-suggestions/route.js"
+      "file_path": "app/api/cron/policy-suggestions/route.ts"
     },
     {
       "path": "/api/cron/reset-meters",
@@ -3622,7 +3622,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/cron/reset-meters/route.js"
+      "file_path": "app/api/cron/reset-meters/route.ts"
     },
     {
       "path": "/api/cron/routing-maintenance",
@@ -3631,7 +3631,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/cron/routing-maintenance/route.js"
+      "file_path": "app/api/cron/routing-maintenance/route.ts"
     },
     {
       "path": "/api/cron/signals",
@@ -3640,7 +3640,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/cron/signals/route.js"
+      "file_path": "app/api/cron/signals/route.ts"
     },
     {
       "path": "/api/discord/interactions",
@@ -3649,7 +3649,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/discord/interactions/route.js"
+      "file_path": "app/api/discord/interactions/route.ts"
     },
     {
       "path": "/api/docs/raw",
@@ -3658,7 +3658,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/docs/raw/route.js"
+      "file_path": "app/api/docs/raw/route.ts"
     },
     {
       "path": "/api/doctor",
@@ -3667,7 +3667,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/doctor/route.js"
+      "file_path": "app/api/doctor/route.ts"
     },
     {
       "path": "/api/doctor/fix",
@@ -3676,7 +3676,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/doctor/fix/route.js"
+      "file_path": "app/api/doctor/fix/route.ts"
     },
     {
       "path": "/api/drift/alerts",
@@ -3686,7 +3686,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/drift/alerts/route.js"
+      "file_path": "app/api/drift/alerts/route.ts"
     },
     {
       "path": "/api/drift/alerts/[alertId]",
@@ -3698,7 +3698,7 @@
         "alertId"
       ],
       "archived": false,
-      "file_path": "app/api/drift/alerts/[alertId]/route.js"
+      "file_path": "app/api/drift/alerts/[alertId]/route.ts"
     },
     {
       "path": "/api/drift/metrics",
@@ -3707,7 +3707,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/drift/metrics/route.js"
+      "file_path": "app/api/drift/metrics/route.ts"
     },
     {
       "path": "/api/drift/snapshots",
@@ -3716,7 +3716,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/drift/snapshots/route.js"
+      "file_path": "app/api/drift/snapshots/route.ts"
     },
     {
       "path": "/api/drift/stats",
@@ -3725,7 +3725,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/drift/stats/route.js"
+      "file_path": "app/api/drift/stats/route.ts"
     },
     {
       "path": "/api/evaluations",
@@ -3735,7 +3735,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/evaluations/route.js"
+      "file_path": "app/api/evaluations/route.ts"
     },
     {
       "path": "/api/evaluations/runs",
@@ -3745,7 +3745,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/evaluations/runs/route.js"
+      "file_path": "app/api/evaluations/runs/route.ts"
     },
     {
       "path": "/api/evaluations/runs/[runId]",
@@ -3757,7 +3757,7 @@
         "runId"
       ],
       "archived": false,
-      "file_path": "app/api/evaluations/runs/[runId]/route.js"
+      "file_path": "app/api/evaluations/runs/[runId]/route.ts"
     },
     {
       "path": "/api/evaluations/scorers",
@@ -3767,7 +3767,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/evaluations/scorers/route.js"
+      "file_path": "app/api/evaluations/scorers/route.ts"
     },
     {
       "path": "/api/evaluations/scorers/[scorerId]",
@@ -3779,7 +3779,7 @@
         "scorerId"
       ],
       "archived": false,
-      "file_path": "app/api/evaluations/scorers/[scorerId]/route.js"
+      "file_path": "app/api/evaluations/scorers/[scorerId]/route.ts"
     },
     {
       "path": "/api/evaluations/scorers/preview",
@@ -3788,7 +3788,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/evaluations/scorers/preview/route.js"
+      "file_path": "app/api/evaluations/scorers/preview/route.ts"
     },
     {
       "path": "/api/evaluations/stats",
@@ -3797,7 +3797,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/evaluations/stats/route.js"
+      "file_path": "app/api/evaluations/stats/route.ts"
     },
     {
       "path": "/api/finops/spend",
@@ -3806,7 +3806,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/finops/spend/route.js"
+      "file_path": "app/api/finops/spend/route.ts"
     },
     {
       "path": "/api/guard",
@@ -3816,7 +3816,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/guard/route.js"
+      "file_path": "app/api/guard/route.ts"
     },
     {
       "path": "/api/guard/decisions",
@@ -3825,7 +3825,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/guard/decisions/route.js"
+      "file_path": "app/api/guard/decisions/route.ts"
     },
     {
       "path": "/api/handoffs",
@@ -3835,7 +3835,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/handoffs/route.js"
+      "file_path": "app/api/handoffs/route.ts"
     },
     {
       "path": "/api/handoffs/[id]",
@@ -3846,7 +3846,7 @@
         "id"
       ],
       "archived": false,
-      "file_path": "app/api/handoffs/[id]/route.js"
+      "file_path": "app/api/handoffs/[id]/route.ts"
     },
     {
       "path": "/api/handoffs/[id]/consume",
@@ -3857,7 +3857,7 @@
         "id"
       ],
       "archived": false,
-      "file_path": "app/api/handoffs/[id]/consume/route.js"
+      "file_path": "app/api/handoffs/[id]/consume/route.ts"
     },
     {
       "path": "/api/handoffs/latest",
@@ -3866,7 +3866,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/handoffs/latest/route.js"
+      "file_path": "app/api/handoffs/latest/route.ts"
     },
     {
       "path": "/api/health",
@@ -3875,7 +3875,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/health/route.js"
+      "file_path": "app/api/health/route.ts"
     },
     {
       "path": "/api/hosted/cleanup",
@@ -3884,7 +3884,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/hosted/cleanup/route.js"
+      "file_path": "app/api/hosted/cleanup/route.ts"
     },
     {
       "path": "/api/hosted/workspaces",
@@ -3894,7 +3894,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/hosted/workspaces/route.js"
+      "file_path": "app/api/hosted/workspaces/route.ts"
     },
     {
       "path": "/api/hosted/workspaces/[workspaceId]",
@@ -3906,7 +3906,7 @@
         "workspaceId"
       ],
       "archived": false,
-      "file_path": "app/api/hosted/workspaces/[workspaceId]/route.js"
+      "file_path": "app/api/hosted/workspaces/[workspaceId]/route.ts"
     },
     {
       "path": "/api/identities",
@@ -3916,7 +3916,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/identities/route.js"
+      "file_path": "app/api/identities/route.ts"
     },
     {
       "path": "/api/identities/[agentId]",
@@ -3927,7 +3927,7 @@
         "agentId"
       ],
       "archived": false,
-      "file_path": "app/api/identities/[agentId]/route.js"
+      "file_path": "app/api/identities/[agentId]/route.ts"
     },
     {
       "path": "/api/integrations/health",
@@ -3936,7 +3936,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/integrations/health/route.js"
+      "file_path": "app/api/integrations/health/route.ts"
     },
     {
       "path": "/api/integrations/health/refresh",
@@ -3945,7 +3945,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/integrations/health/refresh/route.js"
+      "file_path": "app/api/integrations/health/refresh/route.ts"
     },
     {
       "path": "/api/integrity/jwks",
@@ -3954,7 +3954,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/integrity/jwks/route.js"
+      "file_path": "app/api/integrity/jwks/route.ts"
     },
     {
       "path": "/api/integrity/verify",
@@ -3963,7 +3963,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/integrity/verify/route.js"
+      "file_path": "app/api/integrity/verify/route.ts"
     },
     {
       "path": "/api/invite/[token]",
@@ -3975,7 +3975,7 @@
         "token"
       ],
       "archived": false,
-      "file_path": "app/api/invite/[token]/route.js"
+      "file_path": "app/api/invite/[token]/route.ts"
     },
     {
       "path": "/api/keys",
@@ -3986,7 +3986,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/keys/route.js"
+      "file_path": "app/api/keys/route.ts"
     },
     {
       "path": "/api/keys/reveal",
@@ -3995,7 +3995,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/keys/reveal/route.js"
+      "file_path": "app/api/keys/reveal/route.ts"
     },
     {
       "path": "/api/knowledge/collections",
@@ -4005,7 +4005,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/knowledge/collections/route.js"
+      "file_path": "app/api/knowledge/collections/route.ts"
     },
     {
       "path": "/api/knowledge/collections/[collectionId]",
@@ -4018,7 +4018,7 @@
         "collectionId"
       ],
       "archived": false,
-      "file_path": "app/api/knowledge/collections/[collectionId]/route.js"
+      "file_path": "app/api/knowledge/collections/[collectionId]/route.ts"
     },
     {
       "path": "/api/knowledge/collections/[collectionId]/items",
@@ -4030,7 +4030,7 @@
         "collectionId"
       ],
       "archived": false,
-      "file_path": "app/api/knowledge/collections/[collectionId]/items/route.js"
+      "file_path": "app/api/knowledge/collections/[collectionId]/items/route.ts"
     },
     {
       "path": "/api/knowledge/collections/[collectionId]/search",
@@ -4041,7 +4041,7 @@
         "collectionId"
       ],
       "archived": false,
-      "file_path": "app/api/knowledge/collections/[collectionId]/search/route.js"
+      "file_path": "app/api/knowledge/collections/[collectionId]/search/route.ts"
     },
     {
       "path": "/api/knowledge/collections/[collectionId]/sync",
@@ -4052,7 +4052,7 @@
         "collectionId"
       ],
       "archived": false,
-      "file_path": "app/api/knowledge/collections/[collectionId]/sync/route.js"
+      "file_path": "app/api/knowledge/collections/[collectionId]/sync/route.ts"
     },
     {
       "path": "/api/learning",
@@ -4062,7 +4062,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/learning/route.js"
+      "file_path": "app/api/learning/route.ts"
     },
     {
       "path": "/api/learning/analytics/curves",
@@ -4072,7 +4072,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/learning/analytics/curves/route.js"
+      "file_path": "app/api/learning/analytics/curves/route.ts"
     },
     {
       "path": "/api/learning/analytics/maturity",
@@ -4081,7 +4081,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/learning/analytics/maturity/route.js"
+      "file_path": "app/api/learning/analytics/maturity/route.ts"
     },
     {
       "path": "/api/learning/analytics/summary",
@@ -4090,7 +4090,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/learning/analytics/summary/route.js"
+      "file_path": "app/api/learning/analytics/summary/route.ts"
     },
     {
       "path": "/api/learning/analytics/velocity",
@@ -4100,7 +4100,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/learning/analytics/velocity/route.js"
+      "file_path": "app/api/learning/analytics/velocity/route.ts"
     },
     {
       "path": "/api/learning/code-signals",
@@ -4109,7 +4109,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/learning/code-signals/route.js"
+      "file_path": "app/api/learning/code-signals/route.ts"
     },
     {
       "path": "/api/learning/lessons",
@@ -4118,7 +4118,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/learning/lessons/route.js"
+      "file_path": "app/api/learning/lessons/route.ts"
     },
     {
       "path": "/api/learning/recommendations",
@@ -4128,7 +4128,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/learning/recommendations/route.js"
+      "file_path": "app/api/learning/recommendations/route.ts"
     },
     {
       "path": "/api/learning/recommendations/[recommendationId]",
@@ -4139,7 +4139,7 @@
         "recommendationId"
       ],
       "archived": false,
-      "file_path": "app/api/learning/recommendations/[recommendationId]/route.js"
+      "file_path": "app/api/learning/recommendations/[recommendationId]/route.ts"
     },
     {
       "path": "/api/learning/recommendations/events",
@@ -4148,7 +4148,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/learning/recommendations/events/route.js"
+      "file_path": "app/api/learning/recommendations/events/route.ts"
     },
     {
       "path": "/api/learning/recommendations/metrics",
@@ -4157,7 +4157,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/learning/recommendations/metrics/route.js"
+      "file_path": "app/api/learning/recommendations/metrics/route.ts"
     },
     {
       "path": "/api/learning/suggestions",
@@ -4167,7 +4167,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/learning/suggestions/route.js"
+      "file_path": "app/api/learning/suggestions/route.ts"
     },
     {
       "path": "/api/marketing/event",
@@ -4176,7 +4176,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/marketing/event/route.js"
+      "file_path": "app/api/marketing/event/route.ts"
     },
     {
       "path": "/api/mcp",
@@ -4185,7 +4185,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/mcp/route.js"
+      "file_path": "app/api/mcp/route.ts"
     },
     {
       "path": "/api/messages",
@@ -4196,7 +4196,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/messages/route.js"
+      "file_path": "app/api/messages/route.ts"
     },
     {
       "path": "/api/messages/attachments",
@@ -4205,7 +4205,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/messages/attachments/route.js"
+      "file_path": "app/api/messages/attachments/route.ts"
     },
     {
       "path": "/api/messages/threads",
@@ -4216,7 +4216,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/messages/threads/route.js"
+      "file_path": "app/api/messages/threads/route.ts"
     },
     {
       "path": "/api/messages/threads/[threadId]",
@@ -4227,7 +4227,7 @@
         "threadId"
       ],
       "archived": false,
-      "file_path": "app/api/messages/threads/[threadId]/route.js"
+      "file_path": "app/api/messages/threads/[threadId]/route.ts"
     },
     {
       "path": "/api/model-strategies",
@@ -4237,7 +4237,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/model-strategies/route.js"
+      "file_path": "app/api/model-strategies/route.ts"
     },
     {
       "path": "/api/model-strategies/[strategyId]",
@@ -4250,7 +4250,7 @@
         "strategyId"
       ],
       "archived": false,
-      "file_path": "app/api/model-strategies/[strategyId]/route.js"
+      "file_path": "app/api/model-strategies/[strategyId]/route.ts"
     },
     {
       "path": "/api/model-strategies/[strategyId]/complete",
@@ -4261,7 +4261,7 @@
         "strategyId"
       ],
       "archived": false,
-      "file_path": "app/api/model-strategies/[strategyId]/complete/route.js"
+      "file_path": "app/api/model-strategies/[strategyId]/complete/route.ts"
     },
     {
       "path": "/api/oauth/authorize",
@@ -4271,7 +4271,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/oauth/authorize/route.js"
+      "file_path": "app/api/oauth/authorize/route.ts"
     },
     {
       "path": "/api/oauth/metadata/authorization-server",
@@ -4280,7 +4280,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/oauth/metadata/authorization-server/route.js"
+      "file_path": "app/api/oauth/metadata/authorization-server/route.ts"
     },
     {
       "path": "/api/oauth/metadata/protected-resource",
@@ -4289,7 +4289,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/oauth/metadata/protected-resource/route.js"
+      "file_path": "app/api/oauth/metadata/protected-resource/route.ts"
     },
     {
       "path": "/api/oauth/register",
@@ -4298,7 +4298,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/oauth/register/route.js"
+      "file_path": "app/api/oauth/register/route.ts"
     },
     {
       "path": "/api/oauth/token",
@@ -4307,7 +4307,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/oauth/token/route.js"
+      "file_path": "app/api/oauth/token/route.ts"
     },
     {
       "path": "/api/operations/feed",
@@ -4316,7 +4316,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/operations/feed/route.js"
+      "file_path": "app/api/operations/feed/route.ts"
     },
     {
       "path": "/api/operations/summary",
@@ -4325,7 +4325,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/operations/summary/route.js"
+      "file_path": "app/api/operations/summary/route.ts"
     },
     {
       "path": "/api/orgs",
@@ -4335,7 +4335,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/orgs/route.js"
+      "file_path": "app/api/orgs/route.ts"
     },
     {
       "path": "/api/orgs/[orgId]",
@@ -4347,7 +4347,7 @@
         "orgId"
       ],
       "archived": false,
-      "file_path": "app/api/orgs/[orgId]/route.js"
+      "file_path": "app/api/orgs/[orgId]/route.ts"
     },
     {
       "path": "/api/orgs/[orgId]/keys",
@@ -4360,7 +4360,7 @@
         "orgId"
       ],
       "archived": false,
-      "file_path": "app/api/orgs/[orgId]/keys/route.js"
+      "file_path": "app/api/orgs/[orgId]/keys/route.ts"
     },
     {
       "path": "/api/pairings",
@@ -4370,7 +4370,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/pairings/route.js"
+      "file_path": "app/api/pairings/route.ts"
     },
     {
       "path": "/api/pairings/[pairingId]",
@@ -4382,7 +4382,7 @@
         "pairingId"
       ],
       "archived": false,
-      "file_path": "app/api/pairings/[pairingId]/route.js"
+      "file_path": "app/api/pairings/[pairingId]/route.ts"
     },
     {
       "path": "/api/pairings/[pairingId]/approve",
@@ -4393,7 +4393,7 @@
         "pairingId"
       ],
       "archived": false,
-      "file_path": "app/api/pairings/[pairingId]/approve/route.js"
+      "file_path": "app/api/pairings/[pairingId]/approve/route.ts"
     },
     {
       "path": "/api/policies",
@@ -4405,7 +4405,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/policies/route.js"
+      "file_path": "app/api/policies/route.ts"
     },
     {
       "path": "/api/policies/generate",
@@ -4414,7 +4414,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/policies/generate/route.js"
+      "file_path": "app/api/policies/generate/route.ts"
     },
     {
       "path": "/api/policies/import",
@@ -4423,7 +4423,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/policies/import/route.js"
+      "file_path": "app/api/policies/import/route.ts"
     },
     {
       "path": "/api/policies/proof",
@@ -4432,7 +4432,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/policies/proof/route.js"
+      "file_path": "app/api/policies/proof/route.ts"
     },
     {
       "path": "/api/policies/simulate",
@@ -4441,7 +4441,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/policies/simulate/route.js"
+      "file_path": "app/api/policies/simulate/route.ts"
     },
     {
       "path": "/api/policies/templates",
@@ -4450,7 +4450,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/policies/templates/route.js"
+      "file_path": "app/api/policies/templates/route.ts"
     },
     {
       "path": "/api/policies/test",
@@ -4459,7 +4459,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/policies/test/route.js"
+      "file_path": "app/api/policies/test/route.ts"
     },
     {
       "path": "/api/prompts/agent-connect/raw",
@@ -4468,7 +4468,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/prompts/agent-connect/raw/route.js"
+      "file_path": "app/api/prompts/agent-connect/raw/route.ts"
     },
     {
       "path": "/api/prompts/render",
@@ -4477,7 +4477,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/prompts/render/route.js"
+      "file_path": "app/api/prompts/render/route.ts"
     },
     {
       "path": "/api/prompts/runs",
@@ -4486,7 +4486,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/prompts/runs/route.js"
+      "file_path": "app/api/prompts/runs/route.ts"
     },
     {
       "path": "/api/prompts/sdk-coverage/raw",
@@ -4495,7 +4495,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/prompts/sdk-coverage/raw/route.js"
+      "file_path": "app/api/prompts/sdk-coverage/raw/route.ts"
     },
     {
       "path": "/api/prompts/server-setup/raw",
@@ -4504,7 +4504,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/prompts/server-setup/raw/route.js"
+      "file_path": "app/api/prompts/server-setup/raw/route.ts"
     },
     {
       "path": "/api/prompts/stats",
@@ -4513,7 +4513,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/prompts/stats/route.js"
+      "file_path": "app/api/prompts/stats/route.ts"
     },
     {
       "path": "/api/prompts/templates",
@@ -4523,7 +4523,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/prompts/templates/route.js"
+      "file_path": "app/api/prompts/templates/route.ts"
     },
     {
       "path": "/api/prompts/templates/[templateId]",
@@ -4536,7 +4536,7 @@
         "templateId"
       ],
       "archived": false,
-      "file_path": "app/api/prompts/templates/[templateId]/route.js"
+      "file_path": "app/api/prompts/templates/[templateId]/route.ts"
     },
     {
       "path": "/api/prompts/templates/[templateId]/versions",
@@ -4548,7 +4548,7 @@
         "templateId"
       ],
       "archived": false,
-      "file_path": "app/api/prompts/templates/[templateId]/versions/route.js"
+      "file_path": "app/api/prompts/templates/[templateId]/versions/route.ts"
     },
     {
       "path": "/api/prompts/templates/[templateId]/versions/[versionId]",
@@ -4561,7 +4561,7 @@
         "versionId"
       ],
       "archived": false,
-      "file_path": "app/api/prompts/templates/[templateId]/versions/[versionId]/route.js"
+      "file_path": "app/api/prompts/templates/[templateId]/versions/[versionId]/route.ts"
     },
     {
       "path": "/api/reputation/agents/[agentId]",
@@ -4572,7 +4572,7 @@
         "agentId"
       ],
       "archived": false,
-      "file_path": "app/api/reputation/agents/[agentId]/route.js"
+      "file_path": "app/api/reputation/agents/[agentId]/route.ts"
     },
     {
       "path": "/api/reputation/agents/[agentId]/events",
@@ -4583,7 +4583,7 @@
         "agentId"
       ],
       "archived": false,
-      "file_path": "app/api/reputation/agents/[agentId]/events/route.js"
+      "file_path": "app/api/reputation/agents/[agentId]/events/route.ts"
     },
     {
       "path": "/api/reputation/agents/[agentId]/receipt",
@@ -4594,7 +4594,7 @@
         "agentId"
       ],
       "archived": false,
-      "file_path": "app/api/reputation/agents/[agentId]/receipt/route.js"
+      "file_path": "app/api/reputation/agents/[agentId]/receipt/route.ts"
     },
     {
       "path": "/api/reputation/agents/[agentId]/recompute",
@@ -4605,7 +4605,7 @@
         "agentId"
       ],
       "archived": false,
-      "file_path": "app/api/reputation/agents/[agentId]/recompute/route.js"
+      "file_path": "app/api/reputation/agents/[agentId]/recompute/route.ts"
     },
     {
       "path": "/api/reputation/agents/[agentId]/summary",
@@ -4616,7 +4616,7 @@
         "agentId"
       ],
       "archived": false,
-      "file_path": "app/api/reputation/agents/[agentId]/summary/route.js"
+      "file_path": "app/api/reputation/agents/[agentId]/summary/route.ts"
     },
     {
       "path": "/api/reputation/leaderboard",
@@ -4625,7 +4625,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/reputation/leaderboard/route.js"
+      "file_path": "app/api/reputation/leaderboard/route.ts"
     },
     {
       "path": "/api/reputation/verify",
@@ -4634,7 +4634,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/reputation/verify/route.js"
+      "file_path": "app/api/reputation/verify/route.ts"
     },
     {
       "path": "/api/scoring/calibrate",
@@ -4643,7 +4643,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/scoring/calibrate/route.js"
+      "file_path": "app/api/scoring/calibrate/route.ts"
     },
     {
       "path": "/api/scoring/profiles",
@@ -4653,7 +4653,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/scoring/profiles/route.js"
+      "file_path": "app/api/scoring/profiles/route.ts"
     },
     {
       "path": "/api/scoring/profiles/[profileId]",
@@ -4666,7 +4666,7 @@
         "profileId"
       ],
       "archived": false,
-      "file_path": "app/api/scoring/profiles/[profileId]/route.js"
+      "file_path": "app/api/scoring/profiles/[profileId]/route.ts"
     },
     {
       "path": "/api/scoring/profiles/[profileId]/dimensions",
@@ -4677,7 +4677,7 @@
         "profileId"
       ],
       "archived": false,
-      "file_path": "app/api/scoring/profiles/[profileId]/dimensions/route.js"
+      "file_path": "app/api/scoring/profiles/[profileId]/dimensions/route.ts"
     },
     {
       "path": "/api/scoring/profiles/[profileId]/dimensions/[dimensionId]",
@@ -4690,7 +4690,7 @@
         "dimensionId"
       ],
       "archived": false,
-      "file_path": "app/api/scoring/profiles/[profileId]/dimensions/[dimensionId]/route.js"
+      "file_path": "app/api/scoring/profiles/[profileId]/dimensions/[dimensionId]/route.ts"
     },
     {
       "path": "/api/scoring/risk-templates",
@@ -4700,7 +4700,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/scoring/risk-templates/route.js"
+      "file_path": "app/api/scoring/risk-templates/route.ts"
     },
     {
       "path": "/api/scoring/risk-templates/[templateId]",
@@ -4712,7 +4712,7 @@
         "templateId"
       ],
       "archived": false,
-      "file_path": "app/api/scoring/risk-templates/[templateId]/route.js"
+      "file_path": "app/api/scoring/risk-templates/[templateId]/route.ts"
     },
     {
       "path": "/api/scoring/score",
@@ -4722,7 +4722,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/scoring/score/route.js"
+      "file_path": "app/api/scoring/score/route.ts"
     },
     {
       "path": "/api/secrets",
@@ -4732,7 +4732,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/secrets/route.js"
+      "file_path": "app/api/secrets/route.ts"
     },
     {
       "path": "/api/secrets/[id]",
@@ -4744,7 +4744,7 @@
         "id"
       ],
       "archived": false,
-      "file_path": "app/api/secrets/[id]/route.js"
+      "file_path": "app/api/secrets/[id]/route.ts"
     },
     {
       "path": "/api/secrets/rotation-due",
@@ -4753,7 +4753,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/secrets/rotation-due/route.js"
+      "file_path": "app/api/secrets/rotation-due/route.ts"
     },
     {
       "path": "/api/security/prompt-injection",
@@ -4763,7 +4763,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/security/prompt-injection/route.js"
+      "file_path": "app/api/security/prompt-injection/route.ts"
     },
     {
       "path": "/api/security/scan",
@@ -4772,7 +4772,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/security/scan/route.js"
+      "file_path": "app/api/security/scan/route.ts"
     },
     {
       "path": "/api/security/status",
@@ -4781,7 +4781,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/security/status/route.js"
+      "file_path": "app/api/security/status/route.ts"
     },
     {
       "path": "/api/session/effective",
@@ -4790,7 +4790,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/session/effective/route.js"
+      "file_path": "app/api/session/effective/route.ts"
     },
     {
       "path": "/api/sessions",
@@ -4800,7 +4800,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/sessions/route.js"
+      "file_path": "app/api/sessions/route.ts"
     },
     {
       "path": "/api/sessions/[sessionId]",
@@ -4812,7 +4812,7 @@
         "sessionId"
       ],
       "archived": false,
-      "file_path": "app/api/sessions/[sessionId]/route.js"
+      "file_path": "app/api/sessions/[sessionId]/route.ts"
     },
     {
       "path": "/api/sessions/[sessionId]/events",
@@ -4823,7 +4823,7 @@
         "sessionId"
       ],
       "archived": false,
-      "file_path": "app/api/sessions/[sessionId]/events/route.js"
+      "file_path": "app/api/sessions/[sessionId]/events/route.ts"
     },
     {
       "path": "/api/settings",
@@ -4834,7 +4834,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/settings/route.js"
+      "file_path": "app/api/settings/route.ts"
     },
     {
       "path": "/api/settings/llm-status",
@@ -4843,7 +4843,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/settings/llm-status/route.js"
+      "file_path": "app/api/settings/llm-status/route.ts"
     },
     {
       "path": "/api/settings/test",
@@ -4852,7 +4852,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/settings/test/route.js"
+      "file_path": "app/api/settings/test/route.ts"
     },
     {
       "path": "/api/setup/live-proof",
@@ -4861,7 +4861,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/setup/live-proof/route.js"
+      "file_path": "app/api/setup/live-proof/route.ts"
     },
     {
       "path": "/api/setup/migrate",
@@ -4870,7 +4870,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/setup/migrate/route.js"
+      "file_path": "app/api/setup/migrate/route.ts"
     },
     {
       "path": "/api/setup/ping",
@@ -4879,7 +4879,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/setup/ping/route.js"
+      "file_path": "app/api/setup/ping/route.ts"
     },
     {
       "path": "/api/setup/proof",
@@ -4888,7 +4888,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/setup/proof/route.js"
+      "file_path": "app/api/setup/proof/route.ts"
     },
     {
       "path": "/api/setup/status",
@@ -4897,7 +4897,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/setup/status/route.js"
+      "file_path": "app/api/setup/status/route.ts"
     },
     {
       "path": "/api/signals",
@@ -4906,7 +4906,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/signals/route.js"
+      "file_path": "app/api/signals/route.ts"
     },
     {
       "path": "/api/skills/scan",
@@ -4915,7 +4915,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/skills/scan/route.js"
+      "file_path": "app/api/skills/scan/route.ts"
     },
     {
       "path": "/api/skills/scans/[id]",
@@ -4926,7 +4926,7 @@
         "id"
       ],
       "archived": false,
-      "file_path": "app/api/skills/scans/[id]/route.js"
+      "file_path": "app/api/skills/scans/[id]/route.ts"
     },
     {
       "path": "/api/stream",
@@ -4935,7 +4935,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/stream/route.js"
+      "file_path": "app/api/stream/route.ts"
     },
     {
       "path": "/api/swarm/graph",
@@ -4944,7 +4944,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/swarm/graph/route.js"
+      "file_path": "app/api/swarm/graph/route.ts"
     },
     {
       "path": "/api/swarm/link",
@@ -4953,7 +4953,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/swarm/link/route.js"
+      "file_path": "app/api/swarm/link/route.ts"
     },
     {
       "path": "/api/team",
@@ -4962,7 +4962,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/team/route.js"
+      "file_path": "app/api/team/route.ts"
     },
     {
       "path": "/api/team/[userId]",
@@ -4974,7 +4974,7 @@
         "userId"
       ],
       "archived": false,
-      "file_path": "app/api/team/[userId]/route.js"
+      "file_path": "app/api/team/[userId]/route.ts"
     },
     {
       "path": "/api/team/invite",
@@ -4985,7 +4985,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/team/invite/route.js"
+      "file_path": "app/api/team/invite/route.ts"
     },
     {
       "path": "/api/telegram/webhook",
@@ -4994,7 +4994,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/telegram/webhook/route.js"
+      "file_path": "app/api/telegram/webhook/route.ts"
     },
     {
       "path": "/api/usage",
@@ -5003,7 +5003,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/usage/route.js"
+      "file_path": "app/api/usage/route.ts"
     },
     {
       "path": "/api/usage/costs",
@@ -5012,7 +5012,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/usage/costs/route.js"
+      "file_path": "app/api/usage/costs/route.ts"
     },
     {
       "path": "/api/webhooks",
@@ -5023,7 +5023,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/webhooks/route.js"
+      "file_path": "app/api/webhooks/route.ts"
     },
     {
       "path": "/api/webhooks/[webhookId]/deliveries",
@@ -5034,7 +5034,7 @@
         "webhookId"
       ],
       "archived": false,
-      "file_path": "app/api/webhooks/[webhookId]/deliveries/route.js"
+      "file_path": "app/api/webhooks/[webhookId]/deliveries/route.ts"
     },
     {
       "path": "/api/webhooks/[webhookId]/test",
@@ -5045,7 +5045,7 @@
         "webhookId"
       ],
       "archived": false,
-      "file_path": "app/api/webhooks/[webhookId]/test/route.js"
+      "file_path": "app/api/webhooks/[webhookId]/test/route.ts"
     },
     {
       "path": "/api/webhooks/stripe",
@@ -5054,7 +5054,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/webhooks/stripe/route.js"
+      "file_path": "app/api/webhooks/stripe/route.ts"
     },
     {
       "path": "/api/workflows/draft",
@@ -5063,7 +5063,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/workflows/draft/route.js"
+      "file_path": "app/api/workflows/draft/route.ts"
     },
     {
       "path": "/api/workflows/templates",
@@ -5073,7 +5073,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/workflows/templates/route.js"
+      "file_path": "app/api/workflows/templates/route.ts"
     },
     {
       "path": "/api/workflows/templates/[templateId]",
@@ -5086,7 +5086,7 @@
         "templateId"
       ],
       "archived": false,
-      "file_path": "app/api/workflows/templates/[templateId]/route.js"
+      "file_path": "app/api/workflows/templates/[templateId]/route.ts"
     },
     {
       "path": "/api/workflows/templates/[templateId]/duplicate",
@@ -5097,7 +5097,7 @@
         "templateId"
       ],
       "archived": false,
-      "file_path": "app/api/workflows/templates/[templateId]/duplicate/route.js"
+      "file_path": "app/api/workflows/templates/[templateId]/duplicate/route.ts"
     },
     {
       "path": "/api/workflows/templates/[templateId]/execute",
@@ -5108,7 +5108,7 @@
         "templateId"
       ],
       "archived": false,
-      "file_path": "app/api/workflows/templates/[templateId]/execute/route.js"
+      "file_path": "app/api/workflows/templates/[templateId]/execute/route.ts"
     },
     {
       "path": "/api/workflows/templates/[templateId]/launch",
@@ -5119,7 +5119,7 @@
         "templateId"
       ],
       "archived": false,
-      "file_path": "app/api/workflows/templates/[templateId]/launch/route.js"
+      "file_path": "app/api/workflows/templates/[templateId]/launch/route.ts"
     },
     {
       "path": "/api/workflows/templates/[templateId]/runs",
@@ -5130,7 +5130,7 @@
         "templateId"
       ],
       "archived": false,
-      "file_path": "app/api/workflows/templates/[templateId]/runs/route.js"
+      "file_path": "app/api/workflows/templates/[templateId]/runs/route.ts"
     },
     {
       "path": "/api/workflows/templates/[templateId]/runs/[runActionId]",
@@ -5142,7 +5142,7 @@
         "runActionId"
       ],
       "archived": false,
-      "file_path": "app/api/workflows/templates/[templateId]/runs/[runActionId]/route.js"
+      "file_path": "app/api/workflows/templates/[templateId]/runs/[runActionId]/route.ts"
     },
     {
       "path": "/api/workflows/templates/[templateId]/runs/[runActionId]/cancel",
@@ -5154,7 +5154,7 @@
         "runActionId"
       ],
       "archived": false,
-      "file_path": "app/api/workflows/templates/[templateId]/runs/[runActionId]/cancel/route.js"
+      "file_path": "app/api/workflows/templates/[templateId]/runs/[runActionId]/cancel/route.ts"
     },
     {
       "path": "/api/workflows/templates/[templateId]/runs/[runActionId]/resume",
@@ -5166,7 +5166,7 @@
         "runActionId"
       ],
       "archived": false,
-      "file_path": "app/api/workflows/templates/[templateId]/runs/[runActionId]/resume/route.js"
+      "file_path": "app/api/workflows/templates/[templateId]/runs/[runActionId]/resume/route.ts"
     },
     {
       "path": "/api/x402/providers",
@@ -5176,7 +5176,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/x402/providers/route.js"
+      "file_path": "app/api/x402/providers/route.ts"
     },
     {
       "path": "/api/x402/providers/[id]",
@@ -5188,7 +5188,7 @@
         "id"
       ],
       "archived": false,
-      "file_path": "app/api/x402/providers/[id]/route.js"
+      "file_path": "app/api/x402/providers/[id]/route.ts"
     },
     {
       "path": "/api/x402/providers/[id]/endpoints",
@@ -5200,7 +5200,7 @@
         "id"
       ],
       "archived": false,
-      "file_path": "app/api/x402/providers/[id]/endpoints/route.js"
+      "file_path": "app/api/x402/providers/[id]/endpoints/route.ts"
     },
     {
       "path": "/api/x402/purchases",
@@ -5210,7 +5210,7 @@
       ],
       "dynamic_params": [],
       "archived": false,
-      "file_path": "app/api/x402/purchases/route.js"
+      "file_path": "app/api/x402/purchases/route.ts"
     }
   ]
 }

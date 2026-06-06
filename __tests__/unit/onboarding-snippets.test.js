@@ -26,7 +26,7 @@ import { resolve } from 'path';
 
 const repoRoot = resolve(__dirname, '..', '..');
 const promptPath = resolve(repoRoot, 'docs/prompts/dashclaw-agent-connect.md');
-const setupTabsPath = resolve(repoRoot, 'app/self-host/SetupTabs.js');
+const setupTabsPath = resolve(repoRoot, 'app/self-host/SetupTabs.tsx');
 
 const promptText = readFileSync(promptPath, 'utf8');
 const setupTabsText = readFileSync(setupTabsPath, 'utf8');

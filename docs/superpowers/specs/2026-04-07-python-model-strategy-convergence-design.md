@@ -43,7 +43,7 @@ Out of scope:
 
 ### Existing route
 
-- [route.js](../../../app/api/model-strategies/[strategyId]/complete/route.js)
+- [route.js](../../../app/api/model-strategies/[strategyId]/complete/route.ts)
 
 The route expects:
 

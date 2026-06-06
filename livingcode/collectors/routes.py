@@ -11,17 +11,22 @@ DYNAMIC_PARAM_RE = re.compile(r"\[([^\]]+)\]")
 
 
 def collect_routes(repo_path: str) -> list[RouteInfo]:
-    """Scan app/api/ for route.js files and extract the API surface."""
+    """Scan app/api/ for route.{ts,tsx,js} files and extract the API surface."""
     api_dir = os.path.join(repo_path, "app", "api")
     if not os.path.isdir(api_dir):
         return []
 
     routes: list[RouteInfo] = []
     for root, _dirs, files in os.walk(api_dir):
-        if "route.js" not in files:
+        # Route files may be route.js, route.ts, or route.tsx (TypeScript
+        # migration). Prefer the TS variants; method extraction is identical.
+        route_name = next(
+            (n for n in ("route.ts", "route.tsx", "route.js") if n in files), None
+        )
+        if route_name is None:
             continue
 
-        route_file = os.path.join(root, "route.js")
+        route_file = os.path.join(root, route_name)
 
         # Convert filesystem path to API path: app/api/guard/decide → /api/guard/decide
         rel_dir = os.path.relpath(root, os.path.join(repo_path, "app"))

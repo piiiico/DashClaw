@@ -12,7 +12,7 @@ describe('trial action counter integration', () => {
     const path = await import('node:path');
     const routePath = path.resolve(
       process.cwd(),
-      'app/api/actions/route.js',
+      'app/api/actions/route.ts',
     );
     const src = await fs.readFile(routePath, 'utf8');
     expect(src).toMatch(/incrementTrialActionCount/);

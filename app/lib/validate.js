@@ -142,6 +142,14 @@ function validateField(key, value, rule) {
   return null;
 }
 
+/**
+ * Core schema validator. The returned `data` is a permissive bag of validated
+ * fields; callers read domain-specific keys off it (typed Record so the
+ * still-JS validator interops with TS route callers during the migration).
+ * @param {*} body
+ * @param {*} schema
+ * @returns {{ valid: boolean, data: Record<string, any>, errors: string[] }}
+ */
 function validate(body, schema) {
   const errors = [];
   const data = {};

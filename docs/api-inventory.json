@@ -528,7 +528,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/actions",
-      "file": "app/api/actions/route.js"
+      "file": "app/api/actions/route.ts"
     },
     {
       "path": "/api/actions/costs",
@@ -537,7 +537,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/actions",
-      "file": "app/api/actions/costs/route.js"
+      "file": "app/api/actions/costs/route.ts"
     },
     {
       "path": "/api/actions/loops",
@@ -547,7 +547,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/actions",
-      "file": "app/api/actions/loops/route.js"
+      "file": "app/api/actions/loops/route.ts"
     },
     {
       "path": "/api/actions/loops/{loopId}",
@@ -557,7 +557,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/actions",
-      "file": "app/api/actions/loops/[loopId]/route.js"
+      "file": "app/api/actions/loops/[loopId]/route.ts"
     },
     {
       "path": "/api/actions/stats",
@@ -566,7 +566,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/actions",
-      "file": "app/api/actions/stats/route.js"
+      "file": "app/api/actions/stats/route.ts"
     },
     {
       "path": "/api/actions/{actionId}",
@@ -576,7 +576,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/actions",
-      "file": "app/api/actions/[actionId]/route.js"
+      "file": "app/api/actions/[actionId]/route.ts"
     },
     {
       "path": "/api/actions/{actionId}/artifacts",
@@ -585,7 +585,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/actions",
-      "file": "app/api/actions/[actionId]/artifacts/route.js"
+      "file": "app/api/actions/[actionId]/artifacts/route.ts"
     },
     {
       "path": "/api/actions/{actionId}/graph",
@@ -594,7 +594,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/actions",
-      "file": "app/api/actions/[actionId]/graph/route.js"
+      "file": "app/api/actions/[actionId]/graph/route.ts"
     },
     {
       "path": "/api/actions/{actionId}/messages",
@@ -603,7 +603,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/actions",
-      "file": "app/api/actions/[actionId]/messages/route.js"
+      "file": "app/api/actions/[actionId]/messages/route.ts"
     },
     {
       "path": "/api/actions/{actionId}/outcome",
@@ -613,7 +613,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/actions",
-      "file": "app/api/actions/[actionId]/outcome/route.js"
+      "file": "app/api/actions/[actionId]/outcome/route.ts"
     },
     {
       "path": "/api/actions/{actionId}/trace",
@@ -622,7 +622,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/actions",
-      "file": "app/api/actions/[actionId]/trace/route.js"
+      "file": "app/api/actions/[actionId]/trace/route.ts"
     },
     {
       "path": "/api/activity",
@@ -631,7 +631,7 @@
       ],
       "maturity": "beta",
       "matched_prefix": "/api/activity",
-      "file": "app/api/activity/route.js"
+      "file": "app/api/activity/route.ts"
     },
     {
       "path": "/api/admin/trigger-outcome-sweep",
@@ -640,7 +640,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/admin/trigger-outcome-sweep/route.js"
+      "file": "app/api/admin/trigger-outcome-sweep/route.ts"
     },
     {
       "path": "/api/agents",
@@ -649,7 +649,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/agents",
-      "file": "app/api/agents/route.js"
+      "file": "app/api/agents/route.ts"
     },
     {
       "path": "/api/agents/connections",
@@ -659,7 +659,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/agents",
-      "file": "app/api/agents/connections/route.js"
+      "file": "app/api/agents/connections/route.ts"
     },
     {
       "path": "/api/agents/heartbeat",
@@ -668,7 +668,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/agents",
-      "file": "app/api/agents/heartbeat/route.js"
+      "file": "app/api/agents/heartbeat/route.ts"
     },
     {
       "path": "/api/agents/invoke",
@@ -677,7 +677,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/agents",
-      "file": "app/api/agents/invoke/route.js"
+      "file": "app/api/agents/invoke/route.ts"
     },
     {
       "path": "/api/agents/registry",
@@ -687,7 +687,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/agents",
-      "file": "app/api/agents/registry/route.js"
+      "file": "app/api/agents/registry/route.ts"
     },
     {
       "path": "/api/agents/registry/{id}",
@@ -697,7 +697,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/agents",
-      "file": "app/api/agents/registry/[id]/route.js"
+      "file": "app/api/agents/registry/[id]/route.ts"
     },
     {
       "path": "/api/agents/registry/{id}/capabilities",
@@ -707,7 +707,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/agents",
-      "file": "app/api/agents/registry/[id]/capabilities/route.js"
+      "file": "app/api/agents/registry/[id]/capabilities/route.ts"
     },
     {
       "path": "/api/agents/{agentId}",
@@ -716,7 +716,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/agents",
-      "file": "app/api/agents/[agentId]/route.js"
+      "file": "app/api/agents/[agentId]/route.ts"
     },
     {
       "path": "/api/agents/{agentId}/profile",
@@ -725,7 +725,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/agents",
-      "file": "app/api/agents/[agentId]/profile/route.js"
+      "file": "app/api/agents/[agentId]/profile/route.ts"
     },
     {
       "path": "/api/analytics",
@@ -734,7 +734,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/analytics/route.js"
+      "file": "app/api/analytics/route.ts"
     },
     {
       "path": "/api/approvals/{actionId}",
@@ -743,7 +743,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/approvals/[actionId]/route.js"
+      "file": "app/api/approvals/[actionId]/route.ts"
     },
     {
       "path": "/api/artifacts",
@@ -753,7 +753,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/artifacts/route.js"
+      "file": "app/api/artifacts/route.ts"
     },
     {
       "path": "/api/artifacts/evidence-bundle",
@@ -762,7 +762,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/artifacts/evidence-bundle/route.js"
+      "file": "app/api/artifacts/evidence-bundle/route.ts"
     },
     {
       "path": "/api/artifacts/{artifactId}",
@@ -772,7 +772,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/artifacts/[artifactId]/route.js"
+      "file": "app/api/artifacts/[artifactId]/route.ts"
     },
     {
       "path": "/api/assumptions",
@@ -782,7 +782,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/assumptions/route.js"
+      "file": "app/api/assumptions/route.ts"
     },
     {
       "path": "/api/assumptions/{assumptionId}",
@@ -792,7 +792,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/assumptions/[assumptionId]/route.js"
+      "file": "app/api/assumptions/[assumptionId]/route.ts"
     },
     {
       "path": "/api/auth/config",
@@ -801,7 +801,7 @@
       ],
       "maturity": "beta",
       "matched_prefix": "/api/auth",
-      "file": "app/api/auth/config/route.js"
+      "file": "app/api/auth/config/route.ts"
     },
     {
       "path": "/api/auth/local",
@@ -811,7 +811,7 @@
       ],
       "maturity": "beta",
       "matched_prefix": "/api/auth",
-      "file": "app/api/auth/local/route.js"
+      "file": "app/api/auth/local/route.ts"
     },
     {
       "path": "/api/behavior/recorder",
@@ -821,7 +821,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/behavior",
-      "file": "app/api/behavior/recorder/route.js"
+      "file": "app/api/behavior/recorder/route.ts"
     },
     {
       "path": "/api/behavior/samples",
@@ -830,7 +830,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/behavior",
-      "file": "app/api/behavior/samples/route.js"
+      "file": "app/api/behavior/samples/route.ts"
     },
     {
       "path": "/api/behavior/simulate",
@@ -839,7 +839,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/behavior",
-      "file": "app/api/behavior/simulate/route.js"
+      "file": "app/api/behavior/simulate/route.ts"
     },
     {
       "path": "/api/behavior/suggestions",
@@ -849,7 +849,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/behavior",
-      "file": "app/api/behavior/suggestions/route.js"
+      "file": "app/api/behavior/suggestions/route.ts"
     },
     {
       "path": "/api/billing/checkout",
@@ -858,7 +858,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/billing/checkout/route.js"
+      "file": "app/api/billing/checkout/route.ts"
     },
     {
       "path": "/api/billing/portal",
@@ -867,7 +867,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/billing/portal/route.js"
+      "file": "app/api/billing/portal/route.ts"
     },
     {
       "path": "/api/capabilities",
@@ -877,7 +877,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/capabilities/route.js"
+      "file": "app/api/capabilities/route.ts"
     },
     {
       "path": "/api/capabilities/health",
@@ -886,7 +886,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/capabilities/health/route.js"
+      "file": "app/api/capabilities/health/route.ts"
     },
     {
       "path": "/api/capabilities/{capabilityId}",
@@ -897,7 +897,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/capabilities/[capabilityId]/route.js"
+      "file": "app/api/capabilities/[capabilityId]/route.ts"
     },
     {
       "path": "/api/capabilities/{capabilityId}/access",
@@ -907,7 +907,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/capabilities/[capabilityId]/access/route.js"
+      "file": "app/api/capabilities/[capabilityId]/access/route.ts"
     },
     {
       "path": "/api/capabilities/{capabilityId}/access/check",
@@ -916,7 +916,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/capabilities/[capabilityId]/access/check/route.js"
+      "file": "app/api/capabilities/[capabilityId]/access/check/route.ts"
     },
     {
       "path": "/api/capabilities/{capabilityId}/access/{ruleId}",
@@ -925,7 +925,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/capabilities/[capabilityId]/access/[ruleId]/route.js"
+      "file": "app/api/capabilities/[capabilityId]/access/[ruleId]/route.ts"
     },
     {
       "path": "/api/capabilities/{capabilityId}/health",
@@ -934,7 +934,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/capabilities/[capabilityId]/health/route.js"
+      "file": "app/api/capabilities/[capabilityId]/health/route.ts"
     },
     {
       "path": "/api/capabilities/{capabilityId}/history",
@@ -943,7 +943,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/capabilities/[capabilityId]/history/route.js"
+      "file": "app/api/capabilities/[capabilityId]/history/route.ts"
     },
     {
       "path": "/api/capabilities/{capabilityId}/invoke",
@@ -952,7 +952,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/capabilities/[capabilityId]/invoke/route.js"
+      "file": "app/api/capabilities/[capabilityId]/invoke/route.ts"
     },
     {
       "path": "/api/capabilities/{capabilityId}/test",
@@ -961,7 +961,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/capabilities/[capabilityId]/test/route.js"
+      "file": "app/api/capabilities/[capabilityId]/test/route.ts"
     },
     {
       "path": "/api/code-sessions/alerts",
@@ -970,7 +970,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/code-sessions/alerts/route.js"
+      "file": "app/api/code-sessions/alerts/route.ts"
     },
     {
       "path": "/api/code-sessions/alerts/read-all",
@@ -979,7 +979,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/code-sessions/alerts/read-all/route.js"
+      "file": "app/api/code-sessions/alerts/read-all/route.ts"
     },
     {
       "path": "/api/code-sessions/ingest-jsonl",
@@ -988,7 +988,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/code-sessions/ingest-jsonl/route.js"
+      "file": "app/api/code-sessions/ingest-jsonl/route.ts"
     },
     {
       "path": "/api/code-sessions/ingest-live",
@@ -997,7 +997,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/code-sessions/ingest-live/route.js"
+      "file": "app/api/code-sessions/ingest-live/route.ts"
     },
     {
       "path": "/api/code-sessions/manifests/{manifestId}",
@@ -1006,7 +1006,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/code-sessions/manifests/[manifestId]/route.js"
+      "file": "app/api/code-sessions/manifests/[manifestId]/route.ts"
     },
     {
       "path": "/api/code-sessions/memos",
@@ -1015,7 +1015,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/code-sessions/memos/route.js"
+      "file": "app/api/code-sessions/memos/route.ts"
     },
     {
       "path": "/api/code-sessions/memos/regenerate",
@@ -1024,7 +1024,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/code-sessions/memos/regenerate/route.js"
+      "file": "app/api/code-sessions/memos/regenerate/route.ts"
     },
     {
       "path": "/api/code-sessions/projects",
@@ -1033,7 +1033,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/code-sessions/projects/route.js"
+      "file": "app/api/code-sessions/projects/route.ts"
     },
     {
       "path": "/api/code-sessions/projects/{projectId}/sessions",
@@ -1042,7 +1042,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/code-sessions/projects/[projectId]/sessions/route.js"
+      "file": "app/api/code-sessions/projects/[projectId]/sessions/route.ts"
     },
     {
       "path": "/api/code-sessions/sessions/{sessionId}",
@@ -1051,7 +1051,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/code-sessions/sessions/[sessionId]/route.js"
+      "file": "app/api/code-sessions/sessions/[sessionId]/route.ts"
     },
     {
       "path": "/api/code-sessions/sessions/{sessionId}/autopsy",
@@ -1060,7 +1060,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/code-sessions/sessions/[sessionId]/autopsy/route.js"
+      "file": "app/api/code-sessions/sessions/[sessionId]/autopsy/route.ts"
     },
     {
       "path": "/api/code-sessions/sessions/{sessionId}/insights",
@@ -1069,7 +1069,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/code-sessions/sessions/[sessionId]/insights/route.js"
+      "file": "app/api/code-sessions/sessions/[sessionId]/insights/route.ts"
     },
     {
       "path": "/api/code-sessions/sessions/{sessionId}/optimal-files/manifest",
@@ -1078,7 +1078,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/code-sessions/sessions/[sessionId]/optimal-files/manifest/route.js"
+      "file": "app/api/code-sessions/sessions/[sessionId]/optimal-files/manifest/route.ts"
     },
     {
       "path": "/api/code-sessions/sessions/{sessionId}/optimal-files/merge-preview",
@@ -1087,7 +1087,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/code-sessions/sessions/[sessionId]/optimal-files/merge-preview/route.js"
+      "file": "app/api/code-sessions/sessions/[sessionId]/optimal-files/merge-preview/route.ts"
     },
     {
       "path": "/api/code-sessions/sessions/{sessionId}/optimal-files/preview",
@@ -1096,7 +1096,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/code-sessions/sessions/[sessionId]/optimal-files/preview/route.js"
+      "file": "app/api/code-sessions/sessions/[sessionId]/optimal-files/preview/route.ts"
     },
     {
       "path": "/api/code-sessions/subagent-roi",
@@ -1105,7 +1105,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/code-sessions/subagent-roi/route.js"
+      "file": "app/api/code-sessions/subagent-roi/route.ts"
     },
     {
       "path": "/api/compliance/evidence",
@@ -1114,7 +1114,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/compliance/evidence/route.js"
+      "file": "app/api/compliance/evidence/route.ts"
     },
     {
       "path": "/api/compliance/exports",
@@ -1124,7 +1124,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/compliance/exports/route.js"
+      "file": "app/api/compliance/exports/route.ts"
     },
     {
       "path": "/api/compliance/exports/{exportId}",
@@ -1134,7 +1134,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/compliance/exports/[exportId]/route.js"
+      "file": "app/api/compliance/exports/[exportId]/route.ts"
     },
     {
       "path": "/api/compliance/exports/{exportId}/download",
@@ -1143,7 +1143,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/compliance/exports/[exportId]/download/route.js"
+      "file": "app/api/compliance/exports/[exportId]/download/route.ts"
     },
     {
       "path": "/api/compliance/frameworks",
@@ -1152,7 +1152,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/compliance/frameworks/route.js"
+      "file": "app/api/compliance/frameworks/route.ts"
     },
     {
       "path": "/api/compliance/gaps",
@@ -1161,7 +1161,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/compliance/gaps/route.js"
+      "file": "app/api/compliance/gaps/route.ts"
     },
     {
       "path": "/api/compliance/map",
@@ -1170,7 +1170,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/compliance/map/route.js"
+      "file": "app/api/compliance/map/route.ts"
     },
     {
       "path": "/api/compliance/report",
@@ -1179,7 +1179,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/compliance/report/route.js"
+      "file": "app/api/compliance/report/route.ts"
     },
     {
       "path": "/api/compliance/schedules",
@@ -1189,7 +1189,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/compliance/schedules/route.js"
+      "file": "app/api/compliance/schedules/route.ts"
     },
     {
       "path": "/api/compliance/schedules/{scheduleId}",
@@ -1199,7 +1199,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/compliance/schedules/[scheduleId]/route.js"
+      "file": "app/api/compliance/schedules/[scheduleId]/route.ts"
     },
     {
       "path": "/api/compliance/trends",
@@ -1208,7 +1208,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/compliance/trends/route.js"
+      "file": "app/api/compliance/trends/route.ts"
     },
     {
       "path": "/api/cron/code-session-cache-crater",
@@ -1217,7 +1217,7 @@
       ],
       "maturity": "beta",
       "matched_prefix": "/api/cron",
-      "file": "app/api/cron/code-session-cache-crater/route.js"
+      "file": "app/api/cron/code-session-cache-crater/route.ts"
     },
     {
       "path": "/api/cron/code-session-weekly-memo",
@@ -1226,7 +1226,7 @@
       ],
       "maturity": "beta",
       "matched_prefix": "/api/cron",
-      "file": "app/api/cron/code-session-weekly-memo/route.js"
+      "file": "app/api/cron/code-session-weekly-memo/route.ts"
     },
     {
       "path": "/api/cron/integration-health",
@@ -1235,7 +1235,7 @@
       ],
       "maturity": "beta",
       "matched_prefix": "/api/cron",
-      "file": "app/api/cron/integration-health/route.js"
+      "file": "app/api/cron/integration-health/route.ts"
     },
     {
       "path": "/api/cron/jti-sweep",
@@ -1244,7 +1244,7 @@
       ],
       "maturity": "beta",
       "matched_prefix": "/api/cron",
-      "file": "app/api/cron/jti-sweep/route.js"
+      "file": "app/api/cron/jti-sweep/route.ts"
     },
     {
       "path": "/api/cron/learning-episodes-backfill",
@@ -1253,7 +1253,7 @@
       ],
       "maturity": "beta",
       "matched_prefix": "/api/cron",
-      "file": "app/api/cron/learning-episodes-backfill/route.js"
+      "file": "app/api/cron/learning-episodes-backfill/route.ts"
     },
     {
       "path": "/api/cron/learning-recommendations",
@@ -1262,7 +1262,7 @@
       ],
       "maturity": "beta",
       "matched_prefix": "/api/cron",
-      "file": "app/api/cron/learning-recommendations/route.js"
+      "file": "app/api/cron/learning-recommendations/route.ts"
     },
     {
       "path": "/api/cron/memory-maintenance",
@@ -1271,7 +1271,7 @@
       ],
       "maturity": "beta",
       "matched_prefix": "/api/cron",
-      "file": "app/api/cron/memory-maintenance/route.js"
+      "file": "app/api/cron/memory-maintenance/route.ts"
     },
     {
       "path": "/api/cron/outcome-sweep",
@@ -1280,7 +1280,7 @@
       ],
       "maturity": "beta",
       "matched_prefix": "/api/cron",
-      "file": "app/api/cron/outcome-sweep/route.js"
+      "file": "app/api/cron/outcome-sweep/route.ts"
     },
     {
       "path": "/api/cron/policy-suggestions",
@@ -1289,7 +1289,7 @@
       ],
       "maturity": "beta",
       "matched_prefix": "/api/cron",
-      "file": "app/api/cron/policy-suggestions/route.js"
+      "file": "app/api/cron/policy-suggestions/route.ts"
     },
     {
       "path": "/api/cron/reset-meters",
@@ -1298,7 +1298,7 @@
       ],
       "maturity": "beta",
       "matched_prefix": "/api/cron",
-      "file": "app/api/cron/reset-meters/route.js"
+      "file": "app/api/cron/reset-meters/route.ts"
     },
     {
       "path": "/api/cron/routing-maintenance",
@@ -1307,7 +1307,7 @@
       ],
       "maturity": "beta",
       "matched_prefix": "/api/cron",
-      "file": "app/api/cron/routing-maintenance/route.js"
+      "file": "app/api/cron/routing-maintenance/route.ts"
     },
     {
       "path": "/api/cron/signals",
@@ -1316,7 +1316,7 @@
       ],
       "maturity": "beta",
       "matched_prefix": "/api/cron",
-      "file": "app/api/cron/signals/route.js"
+      "file": "app/api/cron/signals/route.ts"
     },
     {
       "path": "/api/discord/interactions",
@@ -1325,7 +1325,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/discord/interactions/route.js"
+      "file": "app/api/discord/interactions/route.ts"
     },
     {
       "path": "/api/docs/raw",
@@ -1334,7 +1334,7 @@
       ],
       "maturity": "beta",
       "matched_prefix": "/api/docs",
-      "file": "app/api/docs/raw/route.js"
+      "file": "app/api/docs/raw/route.ts"
     },
     {
       "path": "/api/doctor",
@@ -1343,7 +1343,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/doctor/route.js"
+      "file": "app/api/doctor/route.ts"
     },
     {
       "path": "/api/doctor/fix",
@@ -1352,7 +1352,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/doctor/fix/route.js"
+      "file": "app/api/doctor/fix/route.ts"
     },
     {
       "path": "/api/drift/alerts",
@@ -1362,7 +1362,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/drift/alerts/route.js"
+      "file": "app/api/drift/alerts/route.ts"
     },
     {
       "path": "/api/drift/alerts/{alertId}",
@@ -1372,7 +1372,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/drift/alerts/[alertId]/route.js"
+      "file": "app/api/drift/alerts/[alertId]/route.ts"
     },
     {
       "path": "/api/drift/metrics",
@@ -1381,7 +1381,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/drift/metrics/route.js"
+      "file": "app/api/drift/metrics/route.ts"
     },
     {
       "path": "/api/drift/snapshots",
@@ -1390,7 +1390,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/drift/snapshots/route.js"
+      "file": "app/api/drift/snapshots/route.ts"
     },
     {
       "path": "/api/drift/stats",
@@ -1399,7 +1399,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/drift/stats/route.js"
+      "file": "app/api/drift/stats/route.ts"
     },
     {
       "path": "/api/evaluations",
@@ -1409,7 +1409,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/evaluations/route.js"
+      "file": "app/api/evaluations/route.ts"
     },
     {
       "path": "/api/evaluations/runs",
@@ -1419,7 +1419,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/evaluations/runs/route.js"
+      "file": "app/api/evaluations/runs/route.ts"
     },
     {
       "path": "/api/evaluations/runs/{runId}",
@@ -1429,7 +1429,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/evaluations/runs/[runId]/route.js"
+      "file": "app/api/evaluations/runs/[runId]/route.ts"
     },
     {
       "path": "/api/evaluations/scorers",
@@ -1439,7 +1439,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/evaluations/scorers/route.js"
+      "file": "app/api/evaluations/scorers/route.ts"
     },
     {
       "path": "/api/evaluations/scorers/preview",
@@ -1448,7 +1448,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/evaluations/scorers/preview/route.js"
+      "file": "app/api/evaluations/scorers/preview/route.ts"
     },
     {
       "path": "/api/evaluations/scorers/{scorerId}",
@@ -1458,7 +1458,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/evaluations/scorers/[scorerId]/route.js"
+      "file": "app/api/evaluations/scorers/[scorerId]/route.ts"
     },
     {
       "path": "/api/evaluations/stats",
@@ -1467,7 +1467,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/evaluations/stats/route.js"
+      "file": "app/api/evaluations/stats/route.ts"
     },
     {
       "path": "/api/finops/spend",
@@ -1476,7 +1476,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/finops/spend/route.js"
+      "file": "app/api/finops/spend/route.ts"
     },
     {
       "path": "/api/guard",
@@ -1486,7 +1486,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/guard",
-      "file": "app/api/guard/route.js"
+      "file": "app/api/guard/route.ts"
     },
     {
       "path": "/api/guard/decisions",
@@ -1495,7 +1495,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/guard",
-      "file": "app/api/guard/decisions/route.js"
+      "file": "app/api/guard/decisions/route.ts"
     },
     {
       "path": "/api/handoffs",
@@ -1505,7 +1505,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/handoffs",
-      "file": "app/api/handoffs/route.js"
+      "file": "app/api/handoffs/route.ts"
     },
     {
       "path": "/api/handoffs/latest",
@@ -1514,7 +1514,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/handoffs",
-      "file": "app/api/handoffs/latest/route.js"
+      "file": "app/api/handoffs/latest/route.ts"
     },
     {
       "path": "/api/handoffs/{id}",
@@ -1523,7 +1523,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/handoffs",
-      "file": "app/api/handoffs/[id]/route.js"
+      "file": "app/api/handoffs/[id]/route.ts"
     },
     {
       "path": "/api/handoffs/{id}/consume",
@@ -1532,7 +1532,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/handoffs",
-      "file": "app/api/handoffs/[id]/consume/route.js"
+      "file": "app/api/handoffs/[id]/consume/route.ts"
     },
     {
       "path": "/api/health",
@@ -1541,7 +1541,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/health",
-      "file": "app/api/health/route.js"
+      "file": "app/api/health/route.ts"
     },
     {
       "path": "/api/hosted/cleanup",
@@ -1550,7 +1550,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/hosted/cleanup/route.js"
+      "file": "app/api/hosted/cleanup/route.ts"
     },
     {
       "path": "/api/hosted/workspaces",
@@ -1560,7 +1560,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/hosted/workspaces/route.js"
+      "file": "app/api/hosted/workspaces/route.ts"
     },
     {
       "path": "/api/hosted/workspaces/{workspaceId}",
@@ -1570,7 +1570,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/hosted/workspaces/[workspaceId]/route.js"
+      "file": "app/api/hosted/workspaces/[workspaceId]/route.ts"
     },
     {
       "path": "/api/identities",
@@ -1580,7 +1580,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/identities",
-      "file": "app/api/identities/route.js"
+      "file": "app/api/identities/route.ts"
     },
     {
       "path": "/api/identities/{agentId}",
@@ -1589,7 +1589,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/identities",
-      "file": "app/api/identities/[agentId]/route.js"
+      "file": "app/api/identities/[agentId]/route.ts"
     },
     {
       "path": "/api/integrations/health",
@@ -1598,7 +1598,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/integrations/health/route.js"
+      "file": "app/api/integrations/health/route.ts"
     },
     {
       "path": "/api/integrations/health/refresh",
@@ -1607,7 +1607,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/integrations/health/refresh/route.js"
+      "file": "app/api/integrations/health/refresh/route.ts"
     },
     {
       "path": "/api/integrity/jwks",
@@ -1616,7 +1616,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/integrity/jwks/route.js"
+      "file": "app/api/integrity/jwks/route.ts"
     },
     {
       "path": "/api/integrity/verify",
@@ -1625,7 +1625,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/integrity/verify/route.js"
+      "file": "app/api/integrity/verify/route.ts"
     },
     {
       "path": "/api/invite/{token}",
@@ -1635,7 +1635,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/invite",
-      "file": "app/api/invite/[token]/route.js"
+      "file": "app/api/invite/[token]/route.ts"
     },
     {
       "path": "/api/keys",
@@ -1646,7 +1646,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/keys",
-      "file": "app/api/keys/route.js"
+      "file": "app/api/keys/route.ts"
     },
     {
       "path": "/api/keys/reveal",
@@ -1655,7 +1655,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/keys",
-      "file": "app/api/keys/reveal/route.js"
+      "file": "app/api/keys/reveal/route.ts"
     },
     {
       "path": "/api/knowledge/collections",
@@ -1665,7 +1665,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/knowledge/collections/route.js"
+      "file": "app/api/knowledge/collections/route.ts"
     },
     {
       "path": "/api/knowledge/collections/{collectionId}",
@@ -1676,7 +1676,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/knowledge/collections/[collectionId]/route.js"
+      "file": "app/api/knowledge/collections/[collectionId]/route.ts"
     },
     {
       "path": "/api/knowledge/collections/{collectionId}/items",
@@ -1686,7 +1686,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/knowledge/collections/[collectionId]/items/route.js"
+      "file": "app/api/knowledge/collections/[collectionId]/items/route.ts"
     },
     {
       "path": "/api/knowledge/collections/{collectionId}/search",
@@ -1695,7 +1695,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/knowledge/collections/[collectionId]/search/route.js"
+      "file": "app/api/knowledge/collections/[collectionId]/search/route.ts"
     },
     {
       "path": "/api/knowledge/collections/{collectionId}/sync",
@@ -1704,7 +1704,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/knowledge/collections/[collectionId]/sync/route.js"
+      "file": "app/api/knowledge/collections/[collectionId]/sync/route.ts"
     },
     {
       "path": "/api/learning",
@@ -1714,7 +1714,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/learning",
-      "file": "app/api/learning/route.js"
+      "file": "app/api/learning/route.ts"
     },
     {
       "path": "/api/learning/analytics/curves",
@@ -1724,7 +1724,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/learning",
-      "file": "app/api/learning/analytics/curves/route.js"
+      "file": "app/api/learning/analytics/curves/route.ts"
     },
     {
       "path": "/api/learning/analytics/maturity",
@@ -1733,7 +1733,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/learning",
-      "file": "app/api/learning/analytics/maturity/route.js"
+      "file": "app/api/learning/analytics/maturity/route.ts"
     },
     {
       "path": "/api/learning/analytics/summary",
@@ -1742,7 +1742,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/learning",
-      "file": "app/api/learning/analytics/summary/route.js"
+      "file": "app/api/learning/analytics/summary/route.ts"
     },
     {
       "path": "/api/learning/analytics/velocity",
@@ -1752,7 +1752,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/learning",
-      "file": "app/api/learning/analytics/velocity/route.js"
+      "file": "app/api/learning/analytics/velocity/route.ts"
     },
     {
       "path": "/api/learning/code-signals",
@@ -1761,7 +1761,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/learning",
-      "file": "app/api/learning/code-signals/route.js"
+      "file": "app/api/learning/code-signals/route.ts"
     },
     {
       "path": "/api/learning/lessons",
@@ -1770,7 +1770,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/learning",
-      "file": "app/api/learning/lessons/route.js"
+      "file": "app/api/learning/lessons/route.ts"
     },
     {
       "path": "/api/learning/recommendations",
@@ -1780,7 +1780,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/learning",
-      "file": "app/api/learning/recommendations/route.js"
+      "file": "app/api/learning/recommendations/route.ts"
     },
     {
       "path": "/api/learning/recommendations/events",
@@ -1789,7 +1789,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/learning",
-      "file": "app/api/learning/recommendations/events/route.js"
+      "file": "app/api/learning/recommendations/events/route.ts"
     },
     {
       "path": "/api/learning/recommendations/metrics",
@@ -1798,7 +1798,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/learning",
-      "file": "app/api/learning/recommendations/metrics/route.js"
+      "file": "app/api/learning/recommendations/metrics/route.ts"
     },
     {
       "path": "/api/learning/recommendations/{recommendationId}",
@@ -1807,7 +1807,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/learning",
-      "file": "app/api/learning/recommendations/[recommendationId]/route.js"
+      "file": "app/api/learning/recommendations/[recommendationId]/route.ts"
     },
     {
       "path": "/api/learning/suggestions",
@@ -1817,7 +1817,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/learning",
-      "file": "app/api/learning/suggestions/route.js"
+      "file": "app/api/learning/suggestions/route.ts"
     },
     {
       "path": "/api/marketing/event",
@@ -1826,7 +1826,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/marketing/event/route.js"
+      "file": "app/api/marketing/event/route.ts"
     },
     {
       "path": "/api/mcp",
@@ -1835,7 +1835,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/mcp/route.js"
+      "file": "app/api/mcp/route.ts"
     },
     {
       "path": "/api/messages",
@@ -1846,7 +1846,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/messages",
-      "file": "app/api/messages/route.js"
+      "file": "app/api/messages/route.ts"
     },
     {
       "path": "/api/messages/attachments",
@@ -1855,7 +1855,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/messages",
-      "file": "app/api/messages/attachments/route.js"
+      "file": "app/api/messages/attachments/route.ts"
     },
     {
       "path": "/api/messages/threads",
@@ -1866,7 +1866,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/messages",
-      "file": "app/api/messages/threads/route.js"
+      "file": "app/api/messages/threads/route.ts"
     },
     {
       "path": "/api/messages/threads/{threadId}",
@@ -1875,7 +1875,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/messages",
-      "file": "app/api/messages/threads/[threadId]/route.js"
+      "file": "app/api/messages/threads/[threadId]/route.ts"
     },
     {
       "path": "/api/model-strategies",
@@ -1885,7 +1885,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/model-strategies/route.js"
+      "file": "app/api/model-strategies/route.ts"
     },
     {
       "path": "/api/model-strategies/{strategyId}",
@@ -1896,7 +1896,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/model-strategies/[strategyId]/route.js"
+      "file": "app/api/model-strategies/[strategyId]/route.ts"
     },
     {
       "path": "/api/model-strategies/{strategyId}/complete",
@@ -1905,7 +1905,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/model-strategies/[strategyId]/complete/route.js"
+      "file": "app/api/model-strategies/[strategyId]/complete/route.ts"
     },
     {
       "path": "/api/oauth/authorize",
@@ -1915,7 +1915,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/oauth/authorize/route.js"
+      "file": "app/api/oauth/authorize/route.ts"
     },
     {
       "path": "/api/oauth/metadata/authorization-server",
@@ -1924,7 +1924,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/oauth/metadata/authorization-server/route.js"
+      "file": "app/api/oauth/metadata/authorization-server/route.ts"
     },
     {
       "path": "/api/oauth/metadata/protected-resource",
@@ -1933,7 +1933,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/oauth/metadata/protected-resource/route.js"
+      "file": "app/api/oauth/metadata/protected-resource/route.ts"
     },
     {
       "path": "/api/oauth/register",
@@ -1942,7 +1942,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/oauth/register/route.js"
+      "file": "app/api/oauth/register/route.ts"
     },
     {
       "path": "/api/oauth/token",
@@ -1951,7 +1951,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/oauth/token/route.js"
+      "file": "app/api/oauth/token/route.ts"
     },
     {
       "path": "/api/operations/feed",
@@ -1960,7 +1960,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/operations/feed/route.js"
+      "file": "app/api/operations/feed/route.ts"
     },
     {
       "path": "/api/operations/summary",
@@ -1969,7 +1969,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/operations/summary/route.js"
+      "file": "app/api/operations/summary/route.ts"
     },
     {
       "path": "/api/orgs",
@@ -1979,7 +1979,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/orgs",
-      "file": "app/api/orgs/route.js"
+      "file": "app/api/orgs/route.ts"
     },
     {
       "path": "/api/orgs/{orgId}",
@@ -1989,7 +1989,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/orgs",
-      "file": "app/api/orgs/[orgId]/route.js"
+      "file": "app/api/orgs/[orgId]/route.ts"
     },
     {
       "path": "/api/orgs/{orgId}/keys",
@@ -2000,7 +2000,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/orgs",
-      "file": "app/api/orgs/[orgId]/keys/route.js"
+      "file": "app/api/orgs/[orgId]/keys/route.ts"
     },
     {
       "path": "/api/pairings",
@@ -2010,7 +2010,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/pairings/route.js"
+      "file": "app/api/pairings/route.ts"
     },
     {
       "path": "/api/pairings/{pairingId}",
@@ -2020,7 +2020,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/pairings/[pairingId]/route.js"
+      "file": "app/api/pairings/[pairingId]/route.ts"
     },
     {
       "path": "/api/pairings/{pairingId}/approve",
@@ -2029,7 +2029,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/pairings/[pairingId]/approve/route.js"
+      "file": "app/api/pairings/[pairingId]/approve/route.ts"
     },
     {
       "path": "/api/policies",
@@ -2041,7 +2041,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/policies",
-      "file": "app/api/policies/route.js"
+      "file": "app/api/policies/route.ts"
     },
     {
       "path": "/api/policies/generate",
@@ -2050,7 +2050,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/policies",
-      "file": "app/api/policies/generate/route.js"
+      "file": "app/api/policies/generate/route.ts"
     },
     {
       "path": "/api/policies/import",
@@ -2059,7 +2059,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/policies",
-      "file": "app/api/policies/import/route.js"
+      "file": "app/api/policies/import/route.ts"
     },
     {
       "path": "/api/policies/proof",
@@ -2068,7 +2068,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/policies",
-      "file": "app/api/policies/proof/route.js"
+      "file": "app/api/policies/proof/route.ts"
     },
     {
       "path": "/api/policies/simulate",
@@ -2077,7 +2077,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/policies",
-      "file": "app/api/policies/simulate/route.js"
+      "file": "app/api/policies/simulate/route.ts"
     },
     {
       "path": "/api/policies/templates",
@@ -2086,7 +2086,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/policies",
-      "file": "app/api/policies/templates/route.js"
+      "file": "app/api/policies/templates/route.ts"
     },
     {
       "path": "/api/policies/test",
@@ -2095,7 +2095,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/policies",
-      "file": "app/api/policies/test/route.js"
+      "file": "app/api/policies/test/route.ts"
     },
     {
       "path": "/api/prompts/agent-connect/raw",
@@ -2104,7 +2104,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/prompts/agent-connect/raw/route.js"
+      "file": "app/api/prompts/agent-connect/raw/route.ts"
     },
     {
       "path": "/api/prompts/render",
@@ -2113,7 +2113,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/prompts/render/route.js"
+      "file": "app/api/prompts/render/route.ts"
     },
     {
       "path": "/api/prompts/runs",
@@ -2122,7 +2122,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/prompts/runs/route.js"
+      "file": "app/api/prompts/runs/route.ts"
     },
     {
       "path": "/api/prompts/sdk-coverage/raw",
@@ -2131,7 +2131,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/prompts/sdk-coverage/raw/route.js"
+      "file": "app/api/prompts/sdk-coverage/raw/route.ts"
     },
     {
       "path": "/api/prompts/server-setup/raw",
@@ -2140,7 +2140,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/prompts/server-setup/raw/route.js"
+      "file": "app/api/prompts/server-setup/raw/route.ts"
     },
     {
       "path": "/api/prompts/stats",
@@ -2149,7 +2149,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/prompts/stats/route.js"
+      "file": "app/api/prompts/stats/route.ts"
     },
     {
       "path": "/api/prompts/templates",
@@ -2159,7 +2159,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/prompts/templates/route.js"
+      "file": "app/api/prompts/templates/route.ts"
     },
     {
       "path": "/api/prompts/templates/{templateId}",
@@ -2170,7 +2170,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/prompts/templates/[templateId]/route.js"
+      "file": "app/api/prompts/templates/[templateId]/route.ts"
     },
     {
       "path": "/api/prompts/templates/{templateId}/versions",
@@ -2180,7 +2180,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/prompts/templates/[templateId]/versions/route.js"
+      "file": "app/api/prompts/templates/[templateId]/versions/route.ts"
     },
     {
       "path": "/api/prompts/templates/{templateId}/versions/{versionId}",
@@ -2190,7 +2190,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/prompts/templates/[templateId]/versions/[versionId]/route.js"
+      "file": "app/api/prompts/templates/[templateId]/versions/[versionId]/route.ts"
     },
     {
       "path": "/api/reputation/agents/{agentId}",
@@ -2199,7 +2199,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/reputation/agents/[agentId]/route.js"
+      "file": "app/api/reputation/agents/[agentId]/route.ts"
     },
     {
       "path": "/api/reputation/agents/{agentId}/events",
@@ -2208,7 +2208,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/reputation/agents/[agentId]/events/route.js"
+      "file": "app/api/reputation/agents/[agentId]/events/route.ts"
     },
     {
       "path": "/api/reputation/agents/{agentId}/receipt",
@@ -2217,7 +2217,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/reputation/agents/[agentId]/receipt/route.js"
+      "file": "app/api/reputation/agents/[agentId]/receipt/route.ts"
     },
     {
       "path": "/api/reputation/agents/{agentId}/recompute",
@@ -2226,7 +2226,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/reputation/agents/[agentId]/recompute/route.js"
+      "file": "app/api/reputation/agents/[agentId]/recompute/route.ts"
     },
     {
       "path": "/api/reputation/agents/{agentId}/summary",
@@ -2235,7 +2235,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/reputation/agents/[agentId]/summary/route.js"
+      "file": "app/api/reputation/agents/[agentId]/summary/route.ts"
     },
     {
       "path": "/api/reputation/leaderboard",
@@ -2244,7 +2244,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/reputation/leaderboard/route.js"
+      "file": "app/api/reputation/leaderboard/route.ts"
     },
     {
       "path": "/api/reputation/verify",
@@ -2253,7 +2253,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/reputation/verify/route.js"
+      "file": "app/api/reputation/verify/route.ts"
     },
     {
       "path": "/api/scoring/calibrate",
@@ -2262,7 +2262,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/scoring/calibrate/route.js"
+      "file": "app/api/scoring/calibrate/route.ts"
     },
     {
       "path": "/api/scoring/profiles",
@@ -2272,7 +2272,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/scoring/profiles/route.js"
+      "file": "app/api/scoring/profiles/route.ts"
     },
     {
       "path": "/api/scoring/profiles/{profileId}",
@@ -2283,7 +2283,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/scoring/profiles/[profileId]/route.js"
+      "file": "app/api/scoring/profiles/[profileId]/route.ts"
     },
     {
       "path": "/api/scoring/profiles/{profileId}/dimensions",
@@ -2292,7 +2292,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/scoring/profiles/[profileId]/dimensions/route.js"
+      "file": "app/api/scoring/profiles/[profileId]/dimensions/route.ts"
     },
     {
       "path": "/api/scoring/profiles/{profileId}/dimensions/{dimensionId}",
@@ -2302,7 +2302,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/scoring/profiles/[profileId]/dimensions/[dimensionId]/route.js"
+      "file": "app/api/scoring/profiles/[profileId]/dimensions/[dimensionId]/route.ts"
     },
     {
       "path": "/api/scoring/risk-templates",
@@ -2312,7 +2312,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/scoring/risk-templates/route.js"
+      "file": "app/api/scoring/risk-templates/route.ts"
     },
     {
       "path": "/api/scoring/risk-templates/{templateId}",
@@ -2322,7 +2322,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/scoring/risk-templates/[templateId]/route.js"
+      "file": "app/api/scoring/risk-templates/[templateId]/route.ts"
     },
     {
       "path": "/api/scoring/score",
@@ -2332,7 +2332,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/scoring/score/route.js"
+      "file": "app/api/scoring/score/route.ts"
     },
     {
       "path": "/api/secrets",
@@ -2342,7 +2342,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/secrets/route.js"
+      "file": "app/api/secrets/route.ts"
     },
     {
       "path": "/api/secrets/rotation-due",
@@ -2351,7 +2351,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/secrets/rotation-due/route.js"
+      "file": "app/api/secrets/rotation-due/route.ts"
     },
     {
       "path": "/api/secrets/{id}",
@@ -2361,7 +2361,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/secrets/[id]/route.js"
+      "file": "app/api/secrets/[id]/route.ts"
     },
     {
       "path": "/api/security/prompt-injection",
@@ -2371,7 +2371,7 @@
       ],
       "maturity": "beta",
       "matched_prefix": "/api/security",
-      "file": "app/api/security/prompt-injection/route.js"
+      "file": "app/api/security/prompt-injection/route.ts"
     },
     {
       "path": "/api/security/scan",
@@ -2380,7 +2380,7 @@
       ],
       "maturity": "beta",
       "matched_prefix": "/api/security",
-      "file": "app/api/security/scan/route.js"
+      "file": "app/api/security/scan/route.ts"
     },
     {
       "path": "/api/security/status",
@@ -2389,7 +2389,7 @@
       ],
       "maturity": "beta",
       "matched_prefix": "/api/security",
-      "file": "app/api/security/status/route.js"
+      "file": "app/api/security/status/route.ts"
     },
     {
       "path": "/api/session/effective",
@@ -2398,7 +2398,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/session/effective/route.js"
+      "file": "app/api/session/effective/route.ts"
     },
     {
       "path": "/api/sessions",
@@ -2408,7 +2408,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/sessions/route.js"
+      "file": "app/api/sessions/route.ts"
     },
     {
       "path": "/api/sessions/{sessionId}",
@@ -2418,7 +2418,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/sessions/[sessionId]/route.js"
+      "file": "app/api/sessions/[sessionId]/route.ts"
     },
     {
       "path": "/api/sessions/{sessionId}/events",
@@ -2427,7 +2427,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/sessions/[sessionId]/events/route.js"
+      "file": "app/api/sessions/[sessionId]/events/route.ts"
     },
     {
       "path": "/api/settings",
@@ -2438,7 +2438,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/settings",
-      "file": "app/api/settings/route.js"
+      "file": "app/api/settings/route.ts"
     },
     {
       "path": "/api/settings/llm-status",
@@ -2447,7 +2447,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/settings",
-      "file": "app/api/settings/llm-status/route.js"
+      "file": "app/api/settings/llm-status/route.ts"
     },
     {
       "path": "/api/settings/test",
@@ -2456,7 +2456,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/settings",
-      "file": "app/api/settings/test/route.js"
+      "file": "app/api/settings/test/route.ts"
     },
     {
       "path": "/api/setup/live-proof",
@@ -2465,7 +2465,7 @@
       ],
       "maturity": "beta",
       "matched_prefix": "/api/setup",
-      "file": "app/api/setup/live-proof/route.js"
+      "file": "app/api/setup/live-proof/route.ts"
     },
     {
       "path": "/api/setup/migrate",
@@ -2474,7 +2474,7 @@
       ],
       "maturity": "beta",
       "matched_prefix": "/api/setup",
-      "file": "app/api/setup/migrate/route.js"
+      "file": "app/api/setup/migrate/route.ts"
     },
     {
       "path": "/api/setup/ping",
@@ -2483,7 +2483,7 @@
       ],
       "maturity": "beta",
       "matched_prefix": "/api/setup",
-      "file": "app/api/setup/ping/route.js"
+      "file": "app/api/setup/ping/route.ts"
     },
     {
       "path": "/api/setup/proof",
@@ -2492,7 +2492,7 @@
       ],
       "maturity": "beta",
       "matched_prefix": "/api/setup",
-      "file": "app/api/setup/proof/route.js"
+      "file": "app/api/setup/proof/route.ts"
     },
     {
       "path": "/api/setup/status",
@@ -2501,7 +2501,7 @@
       ],
       "maturity": "beta",
       "matched_prefix": "/api/setup",
-      "file": "app/api/setup/status/route.js"
+      "file": "app/api/setup/status/route.ts"
     },
     {
       "path": "/api/signals",
@@ -2510,7 +2510,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/signals/route.js"
+      "file": "app/api/signals/route.ts"
     },
     {
       "path": "/api/skills/scan",
@@ -2519,7 +2519,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/skills/scan/route.js"
+      "file": "app/api/skills/scan/route.ts"
     },
     {
       "path": "/api/skills/scans/{id}",
@@ -2528,7 +2528,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/skills/scans/[id]/route.js"
+      "file": "app/api/skills/scans/[id]/route.ts"
     },
     {
       "path": "/api/stream",
@@ -2537,7 +2537,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/stream/route.js"
+      "file": "app/api/stream/route.ts"
     },
     {
       "path": "/api/swarm/graph",
@@ -2546,7 +2546,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/swarm",
-      "file": "app/api/swarm/graph/route.js"
+      "file": "app/api/swarm/graph/route.ts"
     },
     {
       "path": "/api/swarm/link",
@@ -2555,7 +2555,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/swarm",
-      "file": "app/api/swarm/link/route.js"
+      "file": "app/api/swarm/link/route.ts"
     },
     {
       "path": "/api/team",
@@ -2564,7 +2564,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/team",
-      "file": "app/api/team/route.js"
+      "file": "app/api/team/route.ts"
     },
     {
       "path": "/api/team/invite",
@@ -2575,7 +2575,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/team",
-      "file": "app/api/team/invite/route.js"
+      "file": "app/api/team/invite/route.ts"
     },
     {
       "path": "/api/team/{userId}",
@@ -2585,7 +2585,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/team",
-      "file": "app/api/team/[userId]/route.js"
+      "file": "app/api/team/[userId]/route.ts"
     },
     {
       "path": "/api/telegram/webhook",
@@ -2594,7 +2594,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/telegram/webhook/route.js"
+      "file": "app/api/telegram/webhook/route.ts"
     },
     {
       "path": "/api/usage",
@@ -2603,7 +2603,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/usage",
-      "file": "app/api/usage/route.js"
+      "file": "app/api/usage/route.ts"
     },
     {
       "path": "/api/usage/costs",
@@ -2612,7 +2612,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/usage",
-      "file": "app/api/usage/costs/route.js"
+      "file": "app/api/usage/costs/route.ts"
     },
     {
       "path": "/api/webhooks",
@@ -2623,7 +2623,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/webhooks",
-      "file": "app/api/webhooks/route.js"
+      "file": "app/api/webhooks/route.ts"
     },
     {
       "path": "/api/webhooks/stripe",
@@ -2632,7 +2632,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/webhooks",
-      "file": "app/api/webhooks/stripe/route.js"
+      "file": "app/api/webhooks/stripe/route.ts"
     },
     {
       "path": "/api/webhooks/{webhookId}/deliveries",
@@ -2641,7 +2641,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/webhooks",
-      "file": "app/api/webhooks/[webhookId]/deliveries/route.js"
+      "file": "app/api/webhooks/[webhookId]/deliveries/route.ts"
     },
     {
       "path": "/api/webhooks/{webhookId}/test",
@@ -2650,7 +2650,7 @@
       ],
       "maturity": "stable",
       "matched_prefix": "/api/webhooks",
-      "file": "app/api/webhooks/[webhookId]/test/route.js"
+      "file": "app/api/webhooks/[webhookId]/test/route.ts"
     },
     {
       "path": "/api/workflows/draft",
@@ -2659,7 +2659,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/workflows",
-      "file": "app/api/workflows/draft/route.js"
+      "file": "app/api/workflows/draft/route.ts"
     },
     {
       "path": "/api/workflows/templates",
@@ -2669,7 +2669,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/workflows",
-      "file": "app/api/workflows/templates/route.js"
+      "file": "app/api/workflows/templates/route.ts"
     },
     {
       "path": "/api/workflows/templates/{templateId}",
@@ -2680,7 +2680,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/workflows",
-      "file": "app/api/workflows/templates/[templateId]/route.js"
+      "file": "app/api/workflows/templates/[templateId]/route.ts"
     },
     {
       "path": "/api/workflows/templates/{templateId}/duplicate",
@@ -2689,7 +2689,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/workflows",
-      "file": "app/api/workflows/templates/[templateId]/duplicate/route.js"
+      "file": "app/api/workflows/templates/[templateId]/duplicate/route.ts"
     },
     {
       "path": "/api/workflows/templates/{templateId}/execute",
@@ -2698,7 +2698,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/workflows",
-      "file": "app/api/workflows/templates/[templateId]/execute/route.js"
+      "file": "app/api/workflows/templates/[templateId]/execute/route.ts"
     },
     {
       "path": "/api/workflows/templates/{templateId}/launch",
@@ -2707,7 +2707,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/workflows",
-      "file": "app/api/workflows/templates/[templateId]/launch/route.js"
+      "file": "app/api/workflows/templates/[templateId]/launch/route.ts"
     },
     {
       "path": "/api/workflows/templates/{templateId}/runs",
@@ -2716,7 +2716,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/workflows",
-      "file": "app/api/workflows/templates/[templateId]/runs/route.js"
+      "file": "app/api/workflows/templates/[templateId]/runs/route.ts"
     },
     {
       "path": "/api/workflows/templates/{templateId}/runs/{runActionId}",
@@ -2725,7 +2725,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/workflows",
-      "file": "app/api/workflows/templates/[templateId]/runs/[runActionId]/route.js"
+      "file": "app/api/workflows/templates/[templateId]/runs/[runActionId]/route.ts"
     },
     {
       "path": "/api/workflows/templates/{templateId}/runs/{runActionId}/cancel",
@@ -2734,7 +2734,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/workflows",
-      "file": "app/api/workflows/templates/[templateId]/runs/[runActionId]/cancel/route.js"
+      "file": "app/api/workflows/templates/[templateId]/runs/[runActionId]/cancel/route.ts"
     },
     {
       "path": "/api/workflows/templates/{templateId}/runs/{runActionId}/resume",
@@ -2743,7 +2743,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "/api/workflows",
-      "file": "app/api/workflows/templates/[templateId]/runs/[runActionId]/resume/route.js"
+      "file": "app/api/workflows/templates/[templateId]/runs/[runActionId]/resume/route.ts"
     },
     {
       "path": "/api/x402/providers",
@@ -2753,7 +2753,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/x402/providers/route.js"
+      "file": "app/api/x402/providers/route.ts"
     },
     {
       "path": "/api/x402/providers/{id}",
@@ -2763,7 +2763,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/x402/providers/[id]/route.js"
+      "file": "app/api/x402/providers/[id]/route.ts"
     },
     {
       "path": "/api/x402/providers/{id}/endpoints",
@@ -2773,7 +2773,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/x402/providers/[id]/endpoints/route.js"
+      "file": "app/api/x402/providers/[id]/endpoints/route.ts"
     },
     {
       "path": "/api/x402/purchases",
@@ -2783,7 +2783,7 @@
       ],
       "maturity": "experimental",
       "matched_prefix": "(default)",
-      "file": "app/api/x402/purchases/route.js"
+      "file": "app/api/x402/purchases/route.ts"
     }
   ]
 }

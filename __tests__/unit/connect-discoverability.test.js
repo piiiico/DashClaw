@@ -8,13 +8,13 @@ function readRepoFile(relativePath) {
 
 describe('connect page discoverability', () => {
   it('exposes /connect in the public navbar source', () => {
-    const source = readRepoFile('app/components/PublicNavbar.js');
+    const source = readRepoFile('app/components/PublicNavbar.tsx');
 
     expect(source).toContain('href="/connect"');
   });
 
   it('exposes /connect from the self-host page source', () => {
-    const source = readRepoFile('app/self-host/page.js');
+    const source = readRepoFile('app/self-host/page.tsx');
 
     expect(source).toContain('href="/connect"');
   });

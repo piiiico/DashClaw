@@ -5,7 +5,7 @@ This is a thin pointer document. Client setup content is maintained on several c
 | Task | Where to look |
 |---|---|
 | Deploy DashClaw (Vercel + Neon or local) | [`README.md`](../README.md) · [`QUICK-START.md`](../QUICK-START.md) |
-| Connect your first agent (Node / Python / MCP) | `/connect` on your running instance (rendered from [`app/connect/page.jsx`](../app/connect/page.jsx)) |
+| Connect your first agent (Node / Python / MCP) | `/connect` on your running instance (rendered from [`app/connect/page.tsx`](../app/connect/page.tsx)) |
 | Install and use the SDK | [`sdk/README.md`](../sdk/README.md) · Python: [`sdk-python/README.md`](../sdk-python/README.md) |
 | Local auth without OAuth | [`docs/deploy-without-oauth.md`](./deploy-without-oauth.md) |
 | Full SDK method reference | [`sdk/README.md`](../sdk/README.md) |

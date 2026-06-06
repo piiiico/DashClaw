@@ -231,8 +231,11 @@ async function main() {
   }
 
   // Read current files and compute diffs.
-  const billingPath = path.join(REPO_ROOT, 'app', 'lib', 'billing.js');
-  const pricingPath = path.join(REPO_ROOT, 'app', 'lib', 'claude-code', 'pricing.js');
+  // Pricing modules are TypeScript (migrated); the marker-block rewrite is
+  // extension-agnostic — only these paths and the exact MODEL_PRICING_GENERATED
+  // marker strings matter.
+  const billingPath = path.join(REPO_ROOT, 'app', 'lib', 'billing.ts');
+  const pricingPath = path.join(REPO_ROOT, 'app', 'lib', 'claude-code', 'pricing.ts');
   const billingSrc = fs.readFileSync(billingPath, 'utf8');
   const pricingSrc = fs.readFileSync(pricingPath, 'utf8');
 

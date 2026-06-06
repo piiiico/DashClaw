@@ -10,7 +10,7 @@
       "label": "sql.query call"
     }
   ],
-  "files_scanned": 212,
+  "files_scanned": 242,
   "files_with_direct_sql": 29,
   "totals": {
     "tagged_template": 74,
@@ -19,175 +19,175 @@
   },
   "files": [
     {
-      "file": "app/api/actions/loops/[loopId]/route.js",
+      "file": "app/api/actions/loops/[loopId]/route.ts",
       "tagged_template": 3,
       "query_call": 0,
       "total": 3
     },
     {
-      "file": "app/api/actions/loops/route.js",
+      "file": "app/api/actions/loops/route.ts",
       "tagged_template": 3,
       "query_call": 2,
       "total": 5
     },
     {
-      "file": "app/api/actions/route.js",
+      "file": "app/api/actions/route.ts",
       "tagged_template": 0,
       "query_call": 3,
       "total": 3
     },
     {
-      "file": "app/api/activity/route.js",
+      "file": "app/api/activity/route.ts",
       "tagged_template": 0,
       "query_call": 2,
       "total": 2
     },
     {
-      "file": "app/api/billing/checkout/route.js",
+      "file": "app/api/billing/checkout/route.ts",
       "tagged_template": 2,
       "query_call": 0,
       "total": 2
     },
     {
-      "file": "app/api/billing/portal/route.js",
+      "file": "app/api/billing/portal/route.ts",
       "tagged_template": 1,
       "query_call": 0,
       "total": 1
     },
     {
-      "file": "app/api/capabilities/[capabilityId]/invoke/route.js",
+      "file": "app/api/capabilities/[capabilityId]/invoke/route.ts",
       "tagged_template": 1,
       "query_call": 0,
       "total": 1
     },
     {
-      "file": "app/api/cron/memory-maintenance/route.js",
+      "file": "app/api/cron/memory-maintenance/route.ts",
       "tagged_template": 1,
       "query_call": 0,
       "total": 1
     },
     {
-      "file": "app/api/cron/reset-meters/route.js",
+      "file": "app/api/cron/reset-meters/route.ts",
       "tagged_template": 1,
       "query_call": 0,
       "total": 1
     },
     {
-      "file": "app/api/cron/signals/route.js",
+      "file": "app/api/cron/signals/route.ts",
       "tagged_template": 4,
       "query_call": 0,
       "total": 4
     },
     {
-      "file": "app/api/keys/route.js",
+      "file": "app/api/keys/route.ts",
       "tagged_template": 4,
       "query_call": 0,
       "total": 4
     },
     {
-      "file": "app/api/learning/route.js",
+      "file": "app/api/learning/route.ts",
       "tagged_template": 2,
       "query_call": 0,
       "total": 2
     },
     {
-      "file": "app/api/operations/summary/route.js",
+      "file": "app/api/operations/summary/route.ts",
       "tagged_template": 5,
       "query_call": 0,
       "total": 5
     },
     {
-      "file": "app/api/orgs/[orgId]/keys/route.js",
+      "file": "app/api/orgs/[orgId]/keys/route.ts",
       "tagged_template": 6,
       "query_call": 0,
       "total": 6
     },
     {
-      "file": "app/api/orgs/[orgId]/route.js",
+      "file": "app/api/orgs/[orgId]/route.ts",
       "tagged_template": 4,
       "query_call": 0,
       "total": 4
     },
     {
-      "file": "app/api/orgs/route.js",
+      "file": "app/api/orgs/route.ts",
       "tagged_template": 3,
       "query_call": 0,
       "total": 3
     },
     {
-      "file": "app/api/policies/route.js",
+      "file": "app/api/policies/route.ts",
       "tagged_template": 3,
       "query_call": 2,
       "total": 5
     },
     {
-      "file": "app/api/security/scan/route.js",
+      "file": "app/api/security/scan/route.ts",
       "tagged_template": 1,
       "query_call": 0,
       "total": 1
     },
     {
-      "file": "app/api/security/status/route.js",
+      "file": "app/api/security/status/route.ts",
       "tagged_template": 1,
       "query_call": 0,
       "total": 1
     },
     {
-      "file": "app/api/settings/test/route.js",
+      "file": "app/api/settings/test/route.ts",
       "tagged_template": 1,
       "query_call": 0,
       "total": 1
     },
     {
-      "file": "app/api/setup/migrate/route.js",
+      "file": "app/api/setup/migrate/route.ts",
       "tagged_template": 3,
       "query_call": 0,
       "total": 3
     },
     {
-      "file": "app/api/swarm/graph/route.js",
+      "file": "app/api/swarm/graph/route.ts",
       "tagged_template": 4,
       "query_call": 0,
       "total": 4
     },
     {
-      "file": "app/api/team/[userId]/route.js",
+      "file": "app/api/team/[userId]/route.ts",
       "tagged_template": 5,
       "query_call": 0,
       "total": 5
     },
     {
-      "file": "app/api/usage/costs/route.js",
+      "file": "app/api/usage/costs/route.ts",
       "tagged_template": 3,
       "query_call": 0,
       "total": 3
     },
     {
-      "file": "app/api/usage/route.js",
+      "file": "app/api/usage/route.ts",
       "tagged_template": 1,
       "query_call": 0,
       "total": 1
     },
     {
-      "file": "app/api/webhooks/[webhookId]/deliveries/route.js",
+      "file": "app/api/webhooks/[webhookId]/deliveries/route.ts",
       "tagged_template": 2,
       "query_call": 0,
       "total": 2
     },
     {
-      "file": "app/api/webhooks/[webhookId]/test/route.js",
+      "file": "app/api/webhooks/[webhookId]/test/route.ts",
       "tagged_template": 1,
       "query_call": 0,
       "total": 1
     },
     {
-      "file": "app/api/webhooks/route.js",
+      "file": "app/api/webhooks/route.ts",
       "tagged_template": 4,
       "query_call": 0,
       "total": 4
     },
     {
-      "file": "app/api/webhooks/stripe/route.js",
+      "file": "app/api/webhooks/stripe/route.ts",
       "tagged_template": 5,
       "query_call": 0,
       "total": 5
