@@ -65,6 +65,8 @@ const TABLES = [
   "oauth_clients",
   "open_loops",
   "organizations",
+  "posture_findings_state",
+  "posture_snapshots",
   "profile_scores",
   "prompt_runs",
   "prompt_templates",

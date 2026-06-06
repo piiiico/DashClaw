@@ -1,5 +1,5 @@
 {
-  "timestamp": "sha1:20b69f370541ba73fe0dc9d836105fe59a42d4ba",
+  "timestamp": "sha1:ea5bb940cc369e7417592d879b2765787bcf1493",
   "routes": [
     {
       "path": "/api/_archive/agent-schedules",
@@ -4734,6 +4734,16 @@
       "name": "organizations",
       "file_path": "schema/schema.js",
       "domain": null
+    },
+    {
+      "name": "posture_findings_state",
+      "file_path": "schema/schema.js",
+      "domain": "governance"
+    },
+    {
+      "name": "posture_snapshots",
+      "file_path": "schema/schema.js",
+      "domain": "governance"
     },
     {
       "name": "profile_scores",

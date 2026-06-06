@@ -1369,3 +1369,35 @@ export const skillScanResults = pgTable('skill_scan_results', {
 }, (table) => ({
   dedupe: unique('skill_scan_results_dedupe').on(table.orgId, table.skillName, table.targetHash),
 }));
+
+// @domain governance
+// Governance posture: per-finding resolution state so a resolved / snoozed /
+// risk-accepted finding stops re-surfacing in the remediation queue. Keyed by
+// the deterministic posture finding_key (stable across scans). A `drafted`
+// status records that an INACTIVE policy draft exists for the finding — it does
+// NOT count as covered, so the score is unaffected until a human activates it.
+export const postureFindingsState = pgTable('posture_findings_state', {
+  orgId: text('org_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
+  findingKey: text('finding_key').notNull(),
+  status: text('status').notNull(),
+  note: text('note'),
+  actor: text('actor'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => ({
+  pk: primaryKey({ columns: [t.orgId, t.findingKey] }),
+}));
+
+// @domain governance
+// Governance posture: trend snapshots written on explicit `scan`. `score` is
+// NUMERIC (the Neon HTTP driver returns it as a string — coerce with Number()
+// on read). `dimensions` holds the six-dimension breakdown at snapshot time.
+export const postureSnapshots = pgTable('posture_snapshots', {
+  id: text('id').primaryKey(),
+  orgId: text('org_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
+  score: numeric('score').notNull(),
+  dimensions: jsonb('dimensions').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => ({
+  orgCreatedIdx: index('idx_posture_snapshots_org_created').on(t.orgId, t.createdAt),
+}));

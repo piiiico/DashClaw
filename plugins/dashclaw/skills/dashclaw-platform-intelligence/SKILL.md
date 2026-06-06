@@ -5,7 +5,7 @@ description: DashClaw platform expert for integration, troubleshooting, and gove
 
 # DashClaw Platform Intelligence
 
-**Shape snapshot:** `sha1:20b69f370541ba73fe0dc9d836105fe59a42d4ba`
+**Shape snapshot:** `sha1:ea5bb940cc369e7417592d879b2765787bcf1493`
 **This file is auto-generated.** Do not edit by hand — regenerate with:
 
 ```bash
@@ -47,7 +47,7 @@ neither exists. When you cannot run the queries above, fall back **in this order
 
 - **243** active API routes across **61** categories
 - **4** required + **137** optional environment variables
-- **89** database tables
+- **91** database tables
 
 ## API Surface
 
@@ -630,7 +630,7 @@ These have fallbacks or only activate specific features.
 
 ## Database Tables
 
-All 89 tables defined in `schema/schema.js` (Drizzle ORM):
+All 91 tables defined in `schema/schema.js` (Drizzle ORM):
 
 - `action_embeddings`
 - `action_records`
@@ -691,6 +691,8 @@ All 89 tables defined in `schema/schema.js` (Drizzle ORM):
 - `oauth_clients`
 - `open_loops`
 - `organizations`
+- `posture_findings_state`
+- `posture_snapshots`
 - `profile_scores`
 - `prompt_runs`
 - `prompt_templates`
