@@ -16,17 +16,17 @@ describe('deriveFindings', () => {
   it('produces a create_policy_draft finding for an uncovered unit, policyType chosen by dimension', () => {
     const f = deriveFindings([unit({ key: 'a', dimension: 'spend' })], { a: 0 }, noAdj);
     expect(f).toHaveLength(1);
-    expect(f[0].fix.type).toBe('create_policy_draft');
-    expect(f[0].fix).toMatchObject({ policyType: 'x402_spend_limit' });
-    expect(f[0].status).toBe('open');
-    expect(f[0].dimension).toBe('spend');
+    expect(f[0]!.fix.type).toBe('create_policy_draft');
+    expect(f[0]!.fix).toMatchObject({ policyType: 'x402_spend_limit' });
+    expect(f[0]!.status).toBe('open');
+    expect(f[0]!.dimension).toBe('spend');
   });
 
   it('finding keys are deterministic and stable across runs', () => {
     const a = deriveFindings([unit({ key: 'a' })], { a: 0 }, noAdj);
     const b = deriveFindings([unit({ key: 'a' })], { a: 0 }, noAdj);
-    expect(a[0].key).toBe(b[0].key);
-    expect(a[0].key).toMatch(/^[0-9a-f]{8}$/);
+    expect(a[0]!.key).toBe(b[0]!.key);
+    expect(a[0]!.key).toMatch(/^[0-9a-f]{8}$/);
   });
 
   it('orders coverage gaps by scoreDelta desc (higher-risk uncovered first)', () => {
@@ -36,15 +36,15 @@ describe('deriveFindings', () => {
     ];
     const f = deriveFindings(units, { minor: 0, crit: 0 }, noAdj);
     expect(f).toHaveLength(2);
-    expect(f[0].title).toContain('"crit"');
-    expect(f[0].scoreDelta).toBeGreaterThanOrEqual(f[1].scoreDelta);
+    expect(f[0]!.title).toContain('"crit"');
+    expect(f[0]!.scoreDelta).toBeGreaterThanOrEqual(f[1]!.scoreDelta);
   });
 
   it('a coach open-gap forces at most partial coverage, yielding a finding even if a policy fires', () => {
     const adj: Adjustments = { incidents: [], approvalFollowThrough: 1, coachOpenGapUnitKeys: ['a'] };
     const f = deriveFindings([unit({ key: 'a' })], { a: 1 }, adj);
     expect(f).toHaveLength(1);
-    expect(f[0].scoreDelta).toBeGreaterThan(0);
+    expect(f[0]!.scoreDelta).toBeGreaterThan(0);
   });
 
   it('an ungoverned incident becomes a critical review_incident finding sorted above coverage gaps', () => {
