@@ -22,6 +22,7 @@ import {
 import { installCodex, codexConfigPath, codexHooksDir } from '../lib/codex/install.js';
 import { runCodexNotify } from '../lib/codex/notify.js';
 import { apiRequest } from '../lib/api.js';
+import { fetchPosture, fetchFindings, fetchNext, resolveFinding } from '../lib/posture.js';
 
 process.on('unhandledRejection', (reason) => {
   console.error('Unhandled Rejection:', reason);
@@ -101,6 +102,10 @@ ${bold('Usage:')}
   dashclaw inbox archive <id> [<id> ...] Archive messages
   dashclaw behavior status               Behavior Learning sample status (local recorder)
   dashclaw behavior suggestions          Evidence-backed policy suggestions per agent
+  dashclaw posture                       Governance posture score + remediation queue
+  dashclaw posture resolve <key>         Draft a fix (inactive) | --snooze | --accept-risk
+    --note "..."                         Attach a note to the resolution
+  dashclaw next                          The single top open governance gap + its fix
     --agent-id <id>                      Filter to one agent
   dashclaw logout                        Remove saved config (~/.dashclaw/config.json)
   dashclaw help                          Show this help
@@ -964,9 +969,113 @@ async function cmdBehavior() {
   }
 }
 
+// -- posture subcommand group ------------------------------------------------
+//
+// Direct-API (apiRequest via cli/lib/posture.js) — the governance posture score
+// + the prioritized remediation queue. `posture resolve` is DRAFT-ONLY: it can
+// create an inactive policy draft / snooze / accept risk, never activate
+// enforcement (a human does that at /policies).
+
+function postureClient() {
+  return { baseUrl, apiKey };
+}
+
+const POSTURE_DIM_LABEL = {
+  identity: 'Identity', enforcement: 'Enforcement', spend: 'Spend',
+  auditability: 'Audit', approval: 'Approval', data_protection: 'Data',
+};
+
+function printFinding(f, indent = '   ') {
+  console.log(`${indent}${bold('+' + f.scoreDelta)}  ${dim('[' + f.severity + ']')}  ${f.title}`);
+  console.log(dim(`${indent}    ${f.key}`));
+}
+
+async function cmdPostureShow() {
+  try {
+    const [data, queue] = await Promise.all([fetchPosture(postureClient()), fetchFindings(postureClient())]);
+    const status = data.status === 'healthy' ? green(data.status)
+      : data.status === 'at_risk' ? red(data.status) : data.status;
+    console.log();
+    console.log(`  ${bold('Governance posture')}  ${bold(String(data.score))}${dim('/100')}  ${status}` +
+      `${data.cappedBy ? '  ' + red('[capped: incident]') : ''}`);
+    console.log(dim(`  ${data.summary?.openFindings ?? 0} open · +${Math.round(data.summary?.pointsRecoverable ?? 0)} points recoverable`));
+    console.log();
+    for (const d of data.dimensions || []) {
+      const label = POSTURE_DIM_LABEL[d.dimension] || d.dimension;
+      const mark = d.score < 70 ? red('!') : ' ';
+      console.log(`   ${mark} ${label.padEnd(12)} ${String(d.score).padStart(3)}`);
+    }
+    console.log();
+    const findings = queue.findings || [];
+    console.log(dim(`  Next — ${findings.length} open`));
+    if (findings.length === 0) {
+      console.log(green('   Queue is clear — no open coverage gaps.'));
+    } else {
+      for (const f of findings.slice(0, 5)) printFinding(f);
+      if (findings.length > 5) console.log(dim(`   … ${findings.length - 5} more`));
+    }
+    console.log();
+  } catch (err) {
+    console.error(`Error: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+async function cmdPostureResolve() {
+  const key = args[2];
+  if (!key || key.startsWith('-')) {
+    console.error('Error: usage — dashclaw posture resolve <key> [--snooze | --accept-risk] [--note "..."]');
+    process.exit(1);
+  }
+  const action = args.includes('--snooze') ? 'snooze'
+    : args.includes('--accept-risk') ? 'accept_risk' : 'create_draft';
+  try {
+    await resolveFinding(postureClient(), key, action, getFlag('--note'));
+    if (action === 'create_draft') {
+      console.log(green('  Draft created (inactive).') +
+        dim(' Activate it at /policies and rescan — drafting does not change the score.'));
+    } else {
+      console.log(green(`  Finding ${action === 'snooze' ? 'snoozed' : 'risk-accepted'}.`));
+    }
+  } catch (err) {
+    console.error(`Error: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+async function cmdPosture() {
+  const sub = args[1];
+  if (sub === undefined) return cmdPostureShow();
+  if (sub === 'resolve') return cmdPostureResolve();
+  console.error(`Unknown subcommand: dashclaw posture ${sub}\n` +
+    'Try: dashclaw posture\n     dashclaw posture resolve <key>');
+  process.exit(1);
+}
+
+async function cmdNext() {
+  try {
+    const f = await fetchNext(postureClient());
+    if (!f) {
+      console.log(green('  Queue is clear — no open coverage gaps.'));
+      return;
+    }
+    console.log();
+    printFinding(f, '  ');
+    if (f.fix?.type === 'create_policy_draft') {
+      console.log(dim(`  Fix: draft a ${f.fix.policyType} policy →  dashclaw posture resolve ${f.key}`));
+    } else if (f.fix?.deepLink) {
+      console.log(dim(`  Fix: ${f.fix.type} →  ${f.fix.deepLink}`));
+    }
+    console.log();
+  } catch (err) {
+    console.error(`Error: ${err.message}`);
+    process.exit(1);
+  }
+}
+
 // -- Router -------------------------------------------------------------------
 
-const COMMANDS_NEEDING_CONFIG = new Set(['approvals', 'approve', 'deny', 'doctor', 'code', 'prompts', 'inbox', 'behavior']);
+const COMMANDS_NEEDING_CONFIG = new Set(['approvals', 'approve', 'deny', 'doctor', 'code', 'prompts', 'inbox', 'behavior', 'posture', 'next']);
 // `install` deliberately omitted: provisioning hooks and AGENTS.md shouldn't
 // require the user to have already configured API keys. If config happens to
 // be present, install will pick up baseUrl for the AGENTS.md instance link.
@@ -1028,6 +1137,12 @@ async function main() {
       break;
     case 'behavior':
       await cmdBehavior();
+      break;
+    case 'posture':
+      await cmdPosture();
+      break;
+    case 'next':
+      await cmdNext();
       break;
     case 'help':
     case '--help':
