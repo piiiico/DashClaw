@@ -7,6 +7,8 @@
  * ("$2000" vs "$2,000.00") compares equal on `normalized`.
  */
 
+import { assertSafePattern } from './pattern-safety.js';
+
 const MONEY_RE = /\$\s?\d{1,3}(?:,\d{3})+(?:\.\d{1,2})?|\$\s?\d+(?:\.\d{1,2})?/g;
 const PERCENT_RE = /\d+(?:\.\d+)?\s?%/g;
 const ISO_DATE_RE = /\b(\d{4})-(\d{2})-(\d{2})\b/g;
@@ -92,5 +94,6 @@ export function extractDates(text: string): ExtractedValue[] {
 }
 
 export function extractPattern(text: string, pattern: string): string[] {
+  assertSafePattern(pattern); // fail closed on oversized / ReDoS-prone caller patterns (CodeQL js/regex-injection)
   return matchAll(text, new RegExp(pattern, 'g'));
 }

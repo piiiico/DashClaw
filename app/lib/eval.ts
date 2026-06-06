@@ -142,14 +142,71 @@ function _executeNumericRange(config: ScorerConfig, action: ActionRow): ScorerRe
   }
 }
 
+// A custom_function scorer's expression may reference only these five action
+// fields (plus the literals true/false/null). IMPORTANT: node:vm is NOT a
+// security sandbox — an expression like `this.constructor.constructor('return
+// process')()` would escape the context and reach the host realm (process.env,
+// require, the filesystem). So before the string ever reaches vm.Script we
+// reject anything that could reach a host object: no computed member access
+// (`[`/`]`), no template literals (backtick), no escapes (`\`), and every
+// identifier OUTSIDE a string literal must be in the allow-list below. Ordinary
+// scorers — `risk_score > 0.7 ? 1 : 0`, `outcome === 'success' ? 1 : 0` — pass.
+const ALLOWED_SCORER_IDENTS = new Set([
+  // the five exposed action fields + literals
+  'outcome', 'action_type', 'risk_score', 'declared_goal', 'status',
+  'true', 'false', 'null',
+  // safe String/Number members + Math/Number globals so realistic scorers work
+  // (`outcome.length`, `Math.max(risk_score, 0)`). None of these reach a
+  // constructor: the escape names constructor/__proto__/prototype/Function/eval/
+  // require/process/globalThis are simply ABSENT from this allow-list, so an
+  // expression that references any of them is rejected (deny-by-default).
+  'length', 'includes', 'startsWith', 'endsWith', 'indexOf', 'lastIndexOf',
+  'slice', 'substring', 'charAt', 'toLowerCase', 'toUpperCase', 'trim',
+  'toFixed', 'toString',
+  'Math', 'Number', 'parseInt', 'parseFloat', 'isNaN',
+  'abs', 'min', 'max', 'round', 'floor', 'ceil', 'pow', 'sqrt', 'sign',
+]);
+
+function _isSafeScorerExpression(expr: string): boolean {
+  if (typeof expr !== 'string' || expr.length === 0 || expr.length > 500) return false;
+  if (/[[\]`\\]/.test(expr)) return false; // no computed member access, template literals, or escapes
+  let i = 0;
+  while (i < expr.length) {
+    const c = expr[i] as string;
+    if (c === '"' || c === "'") {
+      // Skip a string literal — its contents are inert data (escapes banned above).
+      const quote = c;
+      i++;
+      while (i < expr.length && expr[i] !== quote) i++;
+      if (i >= expr.length) return false; // unterminated string
+      i++;
+      continue;
+    }
+    if (/[A-Za-z_$]/.test(c)) {
+      let j = i + 1;
+      while (j < expr.length && /[A-Za-z0-9_$]/.test(expr[j] as string)) j++;
+      if (!ALLOWED_SCORER_IDENTS.has(expr.slice(i, j))) return false;
+      i = j;
+      continue;
+    }
+    i++;
+  }
+  return true;
+}
+
 function _executeCustomFunction(config: ScorerConfig, action: ActionRow): ScorerResult {
   try {
     const expression = config.expression || 'null';
-    // Evaluate in an isolated vm context that only exposes the allowed
-    // action fields as sandbox globals. The outer realm (process, require,
-    // filesystem, network) is not reachable from within the script, so a
-    // compromised scorer definition cannot exfiltrate env vars or issue
-    // I/O. A short timeout bounds infinite loops.
+    // Restrict to a numeric/comparison expression over the five action fields
+    // BEFORE it reaches the (non-sandbox) vm — see _isSafeScorerExpression.
+    if (!_isSafeScorerExpression(expression)) {
+      return {
+        score: null,
+        label: null,
+        reasoning: null,
+        error: 'Custom expression rejected: only outcome, action_type, risk_score, declared_goal, status with numeric/comparison operators are allowed',
+      };
+    }
     const context = vm.createContext({
       outcome: action.outcome || '',
       action_type: action.action_type || '',
