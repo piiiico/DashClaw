@@ -302,7 +302,7 @@ await claw.createAction({ /* ... */, idempotency_key: key });
 
 DashClaw is not observability. It is control before execution. The model:
 
-1. **Every agent action is evaluated against active policies before the action runs.** Policies are declarative; the policy builder ships with eight pre-built safety switches (Deploy Gate, Risk Threshold, Rate Limiter, and others), an AI generator, and YAML import.
+1. **Every agent action is evaluated against active policies before the action runs.** Policies are declarative; the policy builder ships with nine pre-built safety switches (Deploy Gate, Risk Threshold, Rate Limiter, and others), an AI generator, and YAML import.
 2. **Sensitive actions require human approval.** Approvals route to the dashboard, the CLI (`@dashclaw/cli`), the mobile PWA at `/approve`, Telegram, or Discord. Same action, any surface.
 3. **Every decision is recorded.** The decisions ledger is replayable: declared goal, reasoning, matched policies, assumptions, signals, and the final outcome.
 4. **Outcomes are durable.** The five-state finality machine guarantees no silent double-execute on retry, and the sweep catches lost confirmations.
