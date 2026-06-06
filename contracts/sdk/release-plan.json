@@ -1,14 +1,14 @@
 {
   "node": {
-    "current_version": "4.3.0",
+    "current_version": "4.3.1",
     "next_bump": "none",
-    "reason": "4.3.0 — minor. Governance Posture Score subsystem (additive): 4 experimental routes (GET /api/posture, GET /api/posture/findings, POST /api/posture/findings/[key]/resolve, POST /api/posture/scan), 2 tables (posture_findings_state, posture_snapshots), the /posture operator page, 2 read-only MCP tools (dashclaw_posture, dashclaw_posture_next → 28 tools total), and 3 CLI commands (posture/next/resolve, draft-only). No new SDK methods — Node surface stays 126; the SDK is byte-identical to 4.2.3 but republishes at 4.3.0 per the unified-version model. Self-dep stays ^4.0.0 (minor within the major).",
-    "domains": ["platform", "mcp", "cli", "docs"]
+    "reason": "4.3.1 — patch. Fixes the Optimal Files `dashclaw code apply` pipeline end-to-end: the manifest builder now backfills file content into every plan entry (manifests were saved content-less, so apply wrote nothing), and the CLI parses `--dest=value` plus lazy-loads the codex parser (a static TS import was crashing every command). Platform + CLI only; no SDK change — Node surface stays 126, byte-identical to 4.3.0, republishes at 4.3.1 per the unified-version model. Self-dep stays ^4.0.0 (patch within the major).",
+    "domains": ["platform", "cli", "docs"]
   },
   "python": {
-    "current_version": "4.3.0",
+    "current_version": "4.3.1",
     "next_bump": "none",
-    "reason": "4.3.0 — minor. Governance Posture Score subsystem shipped on the platform/MCP/CLI side. No Python SDK change — surface stays 224; byte-identical to 4.2.3, republishes at 4.3.0 per the unified-version model.",
-    "domains": ["platform", "mcp", "cli", "docs"]
+    "reason": "4.3.1 — patch. Platform + CLI fix for the Optimal Files apply pipeline. No Python SDK change — surface stays 224; byte-identical to 4.3.0, republishes at 4.3.1 per the unified-version model.",
+    "domains": ["platform", "cli", "docs"]
   }
 }

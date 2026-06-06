@@ -13,6 +13,16 @@ Through 3.x the platform and the SDKs versioned independently, which is why olde
 
 ## [Unreleased]
 
+## [4.3.1] — 2026-06-06
+
+> Patch: fixes the `dashclaw code apply` (Optimal Files) pipeline end-to-end. Platform + CLI only; no SDK method change (Node 126 / Python 224 unchanged), both SDKs republish at 4.3.1 per the unified-version model.
+
+### Fixed
+
+- **Optimal Files manifests were saved without file content**, so `dashclaw code apply` returned `no_content` for every entry and wrote nothing. The manifest builder (`POST /api/code-sessions/sessions/[sessionId]/optimal-files/manifest`) planned unknown-existence selections as `safe` (path-only) and never copied the file bodies — already validated against `built.bundle` — into the saved plan. It now backfills `content` for every entry, so manifests are applyable.
+- **CLI `@dashclaw/cli` 0.3.1: `dashclaw code apply --dest=<dir>` failed with "--dest required".** `getFlag` parsed only the space-separated form (`--dest <dir>`), but the UI-generated command and `--help` use `--dest=<dir>`. It now accepts both `--name value` and `--name=value`.
+- **CLI `@dashclaw/cli` 0.3.1: every command crashed at load, and `code ingest-codex` could never run from the published package.** `cli/lib/code/ingest-codex.js` imported the app's TypeScript parser (`app/lib/codex/parser.js`) — unresolvable by the raw-Node CLI and absent from the published tarball (which ships only `cli/`), and eagerly loaded by the bin, so it took down every command. The parser is now vendored as a compiled ESM copy (`cli/lib/code/codex-parser.vendored.js`), matching the CLI's existing `vendored.js` pattern; the whole CLI loads and `code ingest-codex` actually works.
+
 ## [4.3.0] — 2026-06-06
 
 > Governance Posture Score + remediation loop — a new govern-the-governance subsystem. Minor bump (additive routes/tools/CLI/page); no SDK method change (Node 126 / Python 224 unchanged), both SDKs republish at 4.3.0 per the unified-version model.

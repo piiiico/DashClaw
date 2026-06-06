@@ -46,9 +46,12 @@ const args = process.argv.slice(2);
 const command = args[0] || 'help';
 
 function getFlag(name) {
-  const idx = args.indexOf(name);
-  if (idx === -1 || idx + 1 >= args.length) return undefined;
-  return args[idx + 1];
+  for (let i = 0; i < args.length; i++) {
+    const a = args[i];
+    if (a === name) return i + 1 < args.length ? args[i + 1] : undefined; // --name value
+    if (a.startsWith(name + '=')) return a.slice(name.length + 1);          // --name=value
+  }
+  return undefined;
 }
 
 // -- Commands -----------------------------------------------------------------

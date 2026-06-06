@@ -90,6 +90,20 @@ export async function POST(request: Request, { params }: { params: Promise<{ ses
     }
   }
 
+  // Backfill content for every entry. The 'safe'/unknown-existence plan branch
+  // omits it, but the CLI writes entry.content and skips entries without it
+  // (no_content). Each path was validated against the bundle above, so the body
+  // is available there — a manifest is only applyable if it carries content.
+  const bundleContentByPath = new Map<string, unknown>(
+    built.bundle.map((f: any) => [f.path as string, f.content]),
+  );
+  for (const result of plan.results as Array<Record<string, unknown>>) {
+    if (typeof result.content !== 'string') {
+      const c = bundleContentByPath.get(result.path as string);
+      if (typeof c === 'string') result.content = c;
+    }
+  }
+
   const saved = (await saveManifest(sql, orgId, sessionId, session.project_cwd || '', plan.results, 24)) as { id: string; expires_at: unknown };
   return NextResponse.json({
     manifest_id: saved.id,

@@ -22,7 +22,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { homedir } from 'node:os';
 
-import { parseCodexSessionFile } from '../../../app/lib/codex/parser.js';
+// Vendored: the CLI is published without app/, so it can't import the app's
+// TypeScript parser directly. See codex-parser.vendored.js.
+import { parseCodexSessionFile } from './codex-parser.vendored.js';
 
 const MAX_FILE_BYTES = 100 * 1024 * 1024; // codex rollouts can grow large
 
